@@ -15,8 +15,9 @@ In-Memory-Datenbanksysteme. Die Professur für Datenbanken an der TU Dresden adr
 die hardware-nahe Optimierung solcher Systeme. Seit der Einführung des Adaptive
 Radix Tree wurde eine Vielzahl cache-bewusster Techniken und verwandter
 Algorithmenfamilien vorgeschlagen --- von Knoten-Layout über Prefetching und
-Succinct-Repräsentationen bis zur Allokation ---, doch nutzt jede Veröffentlichung eigene Datenstrukturen, Lastprofile und
-Messmethodik. Ergebnisse sind dadurch über Veröffentlichungen hinweg schwer
+Succinct-Repräsentationen bis zur Allokation ---, doch nutzt fast jede Veröffentlichung 
+eigene Datenstrukturen, verschiedene Lastprofile und
+inkonsistente Messmethodik. Ergebnisse sind dadurch über Veröffentlichungen hinweg schwer
 vergleichbar.
 
 \minisec{Problemstellung}
@@ -31,44 +32,57 @@ repräsentiert, durchlaufen, im Speicher angeordnet und alloziert werden
 Verhalten entsteht dabei nicht an einer einzelnen dieser Stellen, sondern an
 \emph{vielen verschiedenen strukturellen Stellen} eines Algorithmus und aus deren
 Zusammenspiel. Bestehende Arbeiten optimieren meist einzelne Stellen isoliert und
-berichten schwer vergleichbare Ergebnisse. Es fehlt ein gemeinsames
+berichten schwer vergleichbare Ergebnisse. Es fehlt ein gemeinsames generisches Konzept und
 \textbf{Prinzip}, das cache-line-bewusstes Verhalten an den verschiedenen Stellen
 eines Suchalgorithmus --- austauschbar, systematisch und fair --- messen und
 auswerten kann.
 
 \minisec{Zielsetzung}
 Ziel der Arbeit ist es, ein solches Prinzip (ein Rahmenwerk) zu finden, zu
-entwerfen und prototypisch umzusetzen, das (i) cache-bewusste Suchalgorithmen in
-austauschbare Entwurfsbestandteile zerlegt, (ii) Algorithmen des Stands der
-Technik als explizite Konfigurationen (Punkte im Entwurfsraum) rekonstruiert und
-(iii) cache-line-bewusstes Verhalten sowohl an den einzelnen Stellen als auch für
-den gesamten Algorithmus auf gemeinsamer CPU-only-Basis misst und auswertet. Als
-Prüfling für die Zugehörigkeit zum Stand der Technik trägt die Arbeit
-\mbox{PRT-ART} bei (einen Probst-Redirect-Tree-/ART-Hybriden).
+entwerfen und prototypisch als Experimentier-Framework umzusetzen, das 
+(i) cache-bewusste Suchalgorithmen in austauschbare Entwurfsbestandteile zerlegt, 
+(ii) Algorithmen des Stands der Technik als explizite Konfigurationen (Punkte im Entwurfsraum) rekonstruiert und
+(iii) cache-line-bewusstes Verhalten sowohl an den einzelnen direkt/indirekt betroffenen Stellen als auch für
+den gesamten Algorithmus auf gemeinsamer CPU-only-Basis misst und auswertet,
+(iv) nach Bekanntwerden der feingliedrigen Messergebnisse den besten Gesamtalgorithmus als binary 
+mit Suchalgorithmus-Hüllen interface ausliefern kann.
+Als Prüfling für die testweise Eingliederung in den Stand der Technik einer neuen Technologie, trägt die Arbeit
+\mbox{PRT-ART} bei (einen Probst-Redirect-Tree-/ART-Hybriden), den wir als konzeptionell neuartigen Suchalgorithmus betrachten.
 
 \minisec{Teilaufgaben}
 \begin{enumerate}
-  \item Systematische Erfassung der Entwurfsbestandteile cache-bewusster
+  \item Systematische Erfassung der allgemeinen Entwurfsbestandteile, insbesondere cache-bewusster,
         Suchalgorithmen und Identifikation der Stellen, an denen
-        cache-line-bewusste Entscheidungen wirksam werden.
-  \item Rekonstruktion von Entwürfen des Stands der Technik (ART, HOT, Masstree,
+        cache-line-bewusste und Suchalgorithmus-spezifische Entscheidungen wirksam werden.
+  \item Rekonstruktion von Entwürfen, möglichst immer aus deren Paper Originalcode, 
+        des Stands der Technik (ART, HOT, Masstree,
         CoCo-trie, START, B\textsuperscript{2}-Tree, Wormhole, SuRF sowie weitere
         Verfahren) als explizite, vergleichbare Konfigurationen.
-  \item Entwurf und Implementierung von PRT-ART als Prüfling.
+  \item Entwurf und Implementierung von PRT-ART als Prüfling mit multiplen eigenen 
+        Bestandteilen gegen den vorbereiteten Stand der Technik der systematischen Erfassung.
   \item Aufbau einer reproduzierbaren Mess-Pipeline
         (Binary~$\to$~CSV~$\to$~LaTeX~$\to$~Diagramm) mit profilbewusstem
-        YCSB-Workload-Routing und Hardware-Counter-Erfassung.
+        YCSB-Workload-Routing über \emph{alle} verfügbaren workloads und Hardware-Counter-Erfassung.
   \item Systematische, möglichst vollständige Messung über die Konfigurationen in
         drei verpflichtenden Messreihen: (A)~Prüfling gegen den Stand der Technik,
         (B)~systematische Variation der Entwurfsentscheidungen,
         (C)~Merge/Regression alter gegen neue Varianten.
+        Die Systematische Messung erfolgt über die verpflichtenden Messreihen in den
+        Dimensionen, dass innerhalb der Hülle des Suchalgorithmus jeder allgemeine Entwurfsbestandteil
+        einzeln als Vergleich über das allgemeine Interface der Kategorie durchgemessen und gegen Lastprofile
+        verglichen wird, dann werden in einer weiteren Dimension die Gesamtgeschwindigkeiten
+        der Interface Operationen des Suchalgorithmus einzeln gegen Beispiel-Lasten gemessen (push_back, delete, read, etc.),
+        und als letzte Dimension werden allgemein bekannte wissenschaftliche Lastprofile aus YCSB über jede Rekombinatorik
+        der Entwurfsbestandteile gemessen. Dies lässt sich als Micro-, Makro- und Gesamt-benchmarking zusammenfassen.
   \item Auswertung: an welchen Stellen und in welchen Kombinationen
         cache-line-bewusste Entscheidungen für welche datentyp-spezifischen
-        Lastmuster vorteilhaft oder nachteilig sind.
+        Lastmuster vorteilhaft oder nachteilig sind. Dies wird aus dem Ranking des Micro-, Makro- und Gesamt-benchmarking über
+        die Erstellung von auswertbaren Diagrammen und Tabellen ermittelt.
 \end{enumerate}
 
 \minisec{Methodik und Evaluation}
-Die Evaluation ist CPU-only und vergleicht die Konfigurationen gegen etablierte
+Die Evaluation ist neben CPU-only auch SIMD und concurrency multi-threading erweitert
+und vergleicht die Konfigurationen gegen etablierte
 Baselines unter variierten Datenvolumina, Keylängen, Präfixüberlappungen, lokaler
 Dichte, Skew, Treffer-/Fehlerquoten und Value-Größen. Gemessen werden
 Exact-/Prefix-Lookup, Prefix-Enumeration, Insert/Update/Delete,
@@ -78,6 +92,4 @@ Single-Thread-Verhalten untersucht, danach folgen leseparallele
 Multi-Thread-Szenarien.
 
 \minisec{Umfangsabgrenzung}
-Der Kernbeitrag ist CPU-only und single-threaded mit Lese-Skalierung. GPU liegt
-außerhalb des Umfangs; Schreibparallelität, SIMD und Engine-/Optimierer-Integration
-sind optionale Erweiterungen.
+Der Kernbeitrag ist CPU fokussiert mit SIMD Erweiterungen, Multithreading, aber nur multi-read und single write technologien. GPU liegt noch außerhalb des Umfangs (kann zukünftig erweitert werden); Schreibparallelität und Engine-/Optimierer-Integration sind optionale Erweiterungen.
