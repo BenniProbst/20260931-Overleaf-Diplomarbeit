@@ -52,10 +52,11 @@ Bibliothek.
         Plattform-Ausmess-System, das die Sieben-Phasen-Pipeline implementiert (discover,
         measure, classify, publish, bind, execute, compare) und je registrierter Engine den
         Permutationsraum enumeriert.
-  \item \textbf{CacheEngine} (\texttt{cache-engine/libs}) --- die Werkzeug-Bibliothek: zwölf
-        interne Sub-Engines $C_1$--$C_{12}$ (Layout, Pinning, Prefetch, Coherence, Telemetry,
-        Allocation, Migration, Encoding, Heuristik, Topologie, Scheduler, Filter) und die
-        Cache-Strategie-Familien, bereitgestellt als C++23-Concept-API.
+  \item \textbf{CacheEngine} (\texttt{cache-engine/libs}) --- die Werkzeug-Bibliothek: sie stellt für
+        jede der neunzehn Bausteine-Achsen (Abschnitt~\ref{sec:axes}) die
+        Standard-Implementierungen und die zugehörigen Cache-Strategie-Familien als
+        C++23-Concept-API bereit, aus denen der Builder die Permutations-Konfigurationen
+        zusammensetzt.
   \item \textbf{Prüfling (PRT-ART)} (\texttt{prt-art}) --- eine bei der Cache-Engine als
         \texttt{IExecutingEngine} registrierte Algorithmus-Implementierung; sie implementiert
         die Such-Engine-Schicht für jede Achse und konsumiert Cache-Engine-Dienste während
@@ -82,8 +83,8 @@ einer einzigen Builder-Pipeline.
     PrtArtSearchEngineAdapter             (Prüfling-Anbindung)
 \end{verbatim}
 
-\textbf{Schicht~1 (CacheEngine)} stellt Cache-Page-Topologie, Allokator-Familien,
-Sub-Engines und Telemetrie-Strategien als Bibliothek bereit. \textbf{Schicht~2
+\textbf{Schicht~1 (CacheEngine)} stellt die Standard-Bausteine der neunzehn Achsen
+--- etwa Memory-Layout, Allokator-Familien, Prefetch und Telemetrie --- als Bibliothek bereit. \textbf{Schicht~2
 (ExecutionEngine)} kapselt diese zu höheren OS-Primitiven (cache-line-aligned Allokation,
 NUMA-konformes Read-Pin, coherence-aware Write). \textbf{Schicht~3 (SearchEngine)} bietet
 such-spezifische Muster (Trie-Walk, B\textsuperscript{+}-Bereichs-Scan, Hot-Path-Lookup) auf
