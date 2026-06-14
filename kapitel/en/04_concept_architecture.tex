@@ -3,7 +3,7 @@
 This chapter presents the core contribution of the thesis: an axis library framework that
 decomposes cache-aware search algorithms into interchangeable, orthogonal building-block
 axes, the layered engine architecture that realizes it, the ABI-stable module interface,
-the fourteen-axis permutation matrix, the probe PRT-ART, and the builder that orchestrates
+the nineteen-axis permutation matrix, the probe PRT-ART, and the builder that orchestrates
 the three-stage evaluation.
 
 \section{The Axis Library Framework}\label{sec:axis-framework}
@@ -18,6 +18,20 @@ in isolation --- and measure its effect, per axis and for the whole algorithm --
 re-implementing all the others. This turns the comparison of two \texttt{std::map}
 implementations (Section~\ref{sec:stdmap-interface}) into a controlled, reproducible
 experiment.
+
+This decomposition rests on two observations. First, search algorithms share, in the
+large, the same \emph{tree anatomy} in different expressions --- from balanced search
+trees through tries and radix trees to custom constructs; even a sorted key--value list
+is, strictly speaking, a single leaf of a tree whose values point onward to data leaves.
+The tree structure is therefore universal across search-algorithm architectures and forms
+the canvas on which the axes are placed. Second, an instructive metaphor treats a concrete
+algorithm as an \emph{organism} (an ``animal'') whose \emph{organs} are the axes: every
+algorithm has a node-layout organ, a traversal organ, an allocation organ, and so on, each
+in a different expression. Permuting the axes then resembles a genetic experiment ---
+exchanging organs between organisms yields new composite algorithms with previously unknown
+cache-line behaviour. The research goal is to find this shared anatomy and, within the
+resulting design space~\cite{idreos2018periodic, idreos2018datacalculator}, the fastest
+composite for a given data-type-favourable load pattern.
 
 \section{Four-Subsystem Separation (M Model)}\label{sec:m-model}
 
@@ -81,15 +95,17 @@ binary-stable so that the builder can load pre-compiled permutation modules
 
 \section{The Building-Block Axes}\label{sec:axes}
 
-After the N-phase extension, the
-matrix comprises \textbf{fourteen main axes plus roughly thirty sub-axes}: (1)~Page-Type,
-(2)~Node-Type, (3)~Traversal (split into 3.A search-algorithm, 3.B cache-memory, 3.M
-mapping), (4)~ValueHandle, (5)~Memory-Layout, (6)~Allocator (split into 6.1 allocation,
-6.2 reclamation, 6.3 NUMA, 6.4 huge-page, 6.5 free-list), (7)~Prefetch, (8)~Concurrency
-(8.1 pattern, 8.2 locking-mode), (9)~ISA, (10)~Measurement, (11)~Telemetry, (12)~Hardware-Strategy
-\emph{(new)}, (13)~Scheduling-Strategy \emph{(new)}, and (14)~Identity. Per stack level a
-\texttt{std::variant} enumerates all concretizations; the Cartesian product yields more
-than $10^{11}$ permutations (Section~\ref{sec:explosion}).
+After the N-phase extension and the consolidation into the search-algorithm anatomy, the
+matrix comprises \textbf{nineteen main axes plus roughly fifty-seven sub-axes}:
+(1)~search-algorithm, (2)~cache-traversal, (3)~mapping, (4)~path-compression, (5)~node-type,
+(6)~memory-layout, (7)~allocator (allocation, reclamation, NUMA, huge-page, free-list),
+(8)~prefetch, (9)~concurrency (pattern, locking-mode), (10)~serialization, (11)~telemetry,
+(12)~value-handle, (13)~ISA, (14)~index-organization, (15)~I/O-dispatch, (16)~migration,
+(17)~filter, (18)~queuing-buffer, and (19)~flush-policy --- the seventeen search axes plus
+the two queuing axes, exactly the nineteen organs that the \texttt{IsComposition} concept
+enforces per algorithm. Per axis a \texttt{std::variant} enumerates all concretizations (the
+allocator axis alone offers about two dozen); the Cartesian product spans far more than
+$10^{11}$ configurations (Section~\ref{sec:explosion}).
 
 \section{PRT-ART as Probe}\label{sec:prt-art}
 
