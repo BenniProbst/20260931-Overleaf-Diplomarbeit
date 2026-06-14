@@ -3,7 +3,7 @@
 Dieses Kapitel präsentiert den Kernbeitrag der Arbeit: ein Achsen-Bibliotheks-Framework, das
 cache-bewusste Suchalgorithmen in austauschbare, orthogonale Bausteine-Achsen zerlegt, die
 geschichtete Engine-Architektur, die es realisiert, die ABI-stabile Modul-Schnittstelle, die
-vierzehn-Achsen-Permutationsmatrix, den Prüfling PRT-ART und den Builder, der die
+neunzehn-Achsen-Permutationsmatrix, den Prüfling PRT-ART und den Builder, der die
 Drei-Stufen-Prüfung orchestriert.
 
 \section{Das Achsen-Bibliotheks-Framework}\label{sec:axis-framework}
@@ -19,6 +19,22 @@ untersuchen --- und ihren Effekt pro Achse und für den gesamten Algorithmus mes
 alle anderen neu zu implementieren. Das macht den Vergleich zweier
 \texttt{std::map}-Implementierungen (Abschnitt~\ref{sec:stdmap-interface}) zu einem
 kontrollierten, reproduzierbaren Experiment.
+
+Diese Zerlegung beruht auf zwei Beobachtungen. Erstens teilen Suchalgorithmen im großen
+Bild dieselbe \emph{Baum-Anatomie} in unterschiedlicher Ausprägung --- von ausgewogenen
+Suchbäumen über Tries und Radix-Bäume bis zu eigenentwickelten Konstrukten; selbst eine
+sortierte Schlüssel-Wert-Liste ist streng genommen ein einzelnes Blatt eines Baumes, dessen
+Werte über Verweise weiter auf Daten-Blätter zeigen. Die Baum-Struktur ist damit universell
+über alle Suchalgorithmus-Architekturen hinweg und bildet die Leinwand, auf der die Achsen
+platziert werden. Zweitens fasst eine anschauliche Metapher einen konkreten Algorithmus als
+\emph{Lebewesen} (ein \emph{Tier}) auf, dessen \emph{Organe} die Achsen sind: Jeder
+Algorithmus besitzt ein Knoten-Layout-Organ, ein Traversal-Organ, ein Allokations-Organ und
+so weiter, jeweils in anderer Ausprägung. Die Permutation der Achsen gleicht dann einem
+genetischen Experiment --- der Austausch von Organen zwischen Lebewesen erzeugt neue
+Komposit-Algorithmen mit bisher unbekanntem Cache-Line-Verhalten. Das Forschungsziel ist es,
+diese gemeinsame Anatomie und im resultierenden Entwurfsraum
+(\emph{design space})~\cite{idreos2018periodic, idreos2018datacalculator} das schnellste
+Komposit für ein gegebenes datentyp-vorzügliches Lastmuster zu finden.
 
 \section{Vier-Subsystem-Trennung (M-Modell)}\label{sec:m-model}
 
@@ -84,15 +100,17 @@ binär-stabil, sodass der Builder vorkompilierte Permutations-Module laden
 
 \section{Die Bausteine-Achsen}\label{sec:axes}
 
-Nach der N-Phasen-Erweiterung umfasst die Matrix \textbf{vierzehn Hauptachsen plus etwa
-dreißig Sub-Achsen}: (1)~Page-Type, (2)~Node-Type, (3)~Traversal (gesplittet in 3.A
-SearchAlgo, 3.B Cache-Memory, 3.M Mapping), (4)~ValueHandle, (5)~Memory-Layout, (6)~Allocator
-(gesplittet in 6.1 Allocation, 6.2 Reclamation, 6.3 NUMA, 6.4 Huge-Page, 6.5 Free-List),
-(7)~Prefetch, (8)~Concurrency (8.1 Pattern, 8.2 Locking-Mode), (9)~ISA, (10)~Measurement,
-(11)~Telemetry, (12)~Hardware-Strategie \emph{(neu)}, (13)~Scheduling-Strategie \emph{(neu)}
-und (14)~Identity. Je Stack-Ebene enumeriert ein \texttt{std::variant} alle
-Konkretisierungen; das kartesische Produkt ergibt mehr als $10^{11}$ Permutationen
-(Abschnitt~\ref{sec:explosion}).
+Nach der N-Phasen-Erweiterung und der Konsolidierung zur Suchalgorithmus-Anatomie umfasst
+die Matrix \textbf{neunzehn Hauptachsen plus etwa siebenundfünfzig Sub-Achsen}:
+(1)~Search-Algorithm, (2)~Cache-Traversal, (3)~Mapping, (4)~Path-Compression, (5)~Node-Type,
+(6)~Memory-Layout, (7)~Allocator (Allocation, Reclamation, NUMA, Huge-Page, Free-List),
+(8)~Prefetch, (9)~Concurrency (Pattern, Locking-Mode), (10)~Serialization, (11)~Telemetry,
+(12)~Value-Handle, (13)~ISA, (14)~Index-Organization, (15)~I/O-Dispatch, (16)~Migration,
+(17)~Filter, (18)~Queuing-Buffer und (19)~Flush-Policy --- die siebzehn Such-Achsen plus die
+beiden Queuing-Achsen, genau die neunzehn Organe, die das \texttt{IsComposition}-Concept je
+Algorithmus erzwingt. Je Achse enumeriert ein \texttt{std::variant} alle Konkretisierungen
+(allein die Allocator-Achse bietet rund zwei Dutzend); das kartesische Produkt ergibt weit
+mehr als $10^{11}$ Konfigurationen (Abschnitt~\ref{sec:explosion}).
 
 \section{PRT-ART als Prüfling}\label{sec:prt-art}
 
