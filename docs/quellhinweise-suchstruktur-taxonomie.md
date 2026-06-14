@@ -12,6 +12,14 @@
 > `[VERIFIZIERT]` = durch eine seriöse Quelle in dieser Recherche bestätigt;
 > `[STD]` = Standard-Lehrbuchzuschreibung (sehr wahrscheinlich korrekt), Primärquelle
 > zur Zitierung noch zu beschaffen; `[GOOGLE]` = nur KI-Hinweis, unbelegt.
+>
+> **Quellen-Politik (User 2026-06-14):** Wikipedia ist **keine** zitierfähige Quelle —
+> bestenfalls zählen die auf einer Wikipedia-Seite verlinkten **wissenschaftlichen
+> Direktquellen**. Seriös sind ACM-/IEEE-/Springer-DOIs und universitäre Repositorien
+> (z. B. uni-saarland). Paywall-Artikel über den **SLUB-/TU-Dresden-Zugang** (manuell
+> durch den Autor) oder über frei zugängliche Zweitveröffentlichungen beschaffen
+> (arXiv, Autoren-Homepage, ResearchGate, institutionelle Repositorien) — bei einer
+> Paywall lohnt fast immer die Suche nach einer freien Fassung.
 
 ---
 
@@ -19,8 +27,8 @@
 
 Suchen (und die sie tragenden Datenstrukturen) gliedern sich klassisch nach dem
 **Mechanismus**, mit dem der Schlüssel auf einen Datensatz abgebildet wird. Diese
-Einordnung ist Lehrbuch-Standard (Knuth, *TAOCP* Bd. 3 *Sorting and Searching*;
-Wikipedia „Search algorithm" als Sekundär-Einstieg):
+Einordnung ist Lehrbuch-Standard und in Knuths *TAOCP* Bd. 3 *Sorting and Searching*
+(Kap. 6) als zitierfähige Primärquelle belegt:
 
 1. **Vergleichsbasiert / ordnungsbasiert** (*comparison-based*) — der Schlüssel wird
    durch `<,>,=`-Vergleiche lokalisiert; setzt eine totale Ordnung voraus.
@@ -50,7 +58,7 @@ Wikipedia „Search algorithm" als Sekundär-Einstieg):
 **Quellen (zu prüfen/zitieren):**
 - D. E. Knuth, *The Art of Computer Programming, Vol. 3: Sorting and Searching*,
   2. Aufl., Addison-Wesley 1998 (Kap. 6.2 vergleichsbasiert, 6.3 digital, 6.4 Hashing). `[STD]`
-- Wikipedia, „Search algorithm" — https://en.wikipedia.org/wiki/Search_algorithm (nur Sekundär-Einstieg). `[VERIFIZIERT]` (Mechanismus-Klassifikation linear/binär/hashing)
+- *(Wikipedia „Search algorithm" als Quelle **verworfen** — keine zitierfähige Sekundärquelle. Die Mechanismus-Klassifikation linear/binär/digital/Hashing ist über Knuth Kap. 6 primär belegt; Wikipedia diente nur als Einstieg in die Recherche.)*
 - S. Idreos et al., *The Periodic Table of Data Structures* (Data Eng. Bull. 2018) +
   *The Data Calculator* (SIGMOD 2018) — bereits in `literatur.bib` (design-space-Taxonomie). `[VERIFIZIERT]`
 
@@ -119,5 +127,24 @@ technischer Grenzen (Externspeicher-I/O, Zeichenketten, Raumdaten).
 3. Entscheiden, welche dieser Strukturen als **SOTA-Vergleichsprofile** in die
    Messung aufgenommen werden (vgl. SOTA-Liste Kap. 3) und welche nur als
    Hintergrund-Einordnung im Grundlagenkapitel dienen.
-4. Bei Aufnahme ins Grundlagenkapitel: Knuth *TAOCP* Bd. 3 als Klassifikations-Beleg
-   in `literatur.bib` aufnehmen.
+4. ~~Knuth *TAOCP* Bd. 3 als Klassifikations-Beleg in `literatur.bib` aufnehmen~~ —
+   **erledigt** (`knuth1998taocp3`, im Grundlagen-§2.2 „Klassen von Suchstrukturen" zitiert).
+
+---
+
+## §5 Seriöse Sekundärquellen (Web-Recherche Juni 2026)
+
+Nur wissenschaftliche/universitäre Quellen; Wikipedia ausgeschlossen. Paywalls mit
+freier Zweitfassung vermerkt.
+
+- **Tree Data Structures and Efficient Indexing Techniques for Big Data Management:
+  A Comprehensive Study** — 26th Pan-Hellenic Conference on Informatics (PCI) 2022,
+  DOI `10.1145/3575879.3575977` (ACM, **Paywall** → via SLUB/TU-Dresden beziehbar).
+  **Freie Fassung:** ResearchGate, Publication `369621229`. Survey-Überblick über
+  B⁺-Baum, k-d-Baum, Quadtree, R-Baum (Belegkandidat für §2 Zweige B/D).
+- **A Comparison of Adaptive Radix Trees and Hash Tables** (V. Álvarez, S. Richter,
+  X. Chen, J. Dittrich) — ICDE 2015, Universität des Saarlandes (seriös, frei):
+  `https://bigdata.uni-saarland.de/publications/ARCD15.pdf`. Beleg für die
+  Vergleichsachse „ART vs. Hashtabelle" (§1 Hashing, §3).
+- Die Original-Paper der einzelnen Baum-Strukturen (§2-Tabellen) tragen jeweils
+  Venue/DOI im Titel; Volltexte über SLUB/TU-Dresden oder freie Zweitfassungen.
