@@ -146,6 +146,13 @@ in die Lösungs-Kapitel (Kap. 4)** — **nie** in Code-Identifier (dort technisc
 `SearchAlgorithmAbiAdapter`) und **nie** in die Aufgabenstellung (linearer Aufbau: Lösung wird
 dort nicht vorweggenommen).
 
+**⚠️ Wort-Doppeldeutigkeit „Tier" (User 2026-06-15):** Das englische *tier* (= Stufe/Ebene/Rang)
+darf NIE im deutschen Text stehen — es kollidiert mit *Tier* (animal) der Metapher und ist
+gefährlich doppeldeutig (animal vs. level). Für Reifegrad-/Prioritäts-Klassifikationen
+(SOTA-Algorithmen, Allokatoren, Plattformen) gilt **„Rang" (DE) / „Rank" (EN)**, niemals
+„Tier". (Manuskript 2026-06-15 durchgängig umgestellt: Tier-1/2/3 → Rang-1/2/3 bzw.
+Rank-1/2/3; in der Kurzfassung ganz vermieden.)
+
 ---
 
 ## §8 Häufige Kategorienfehler (zu vermeiden)
