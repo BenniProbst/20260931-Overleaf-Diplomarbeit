@@ -22,6 +22,15 @@ Reihen oder über eine externe \texttt{messreihen.xml}.
         MultiLevel-Layout + Wormhole-Page.
 \end{description}
 
+Jede dieser drei Reihen wird in drei Granularitäten erhoben (Aufgabenstellung-Methodik): Das
+\emph{Micro-Benchmarking} vergleicht jeden einzelnen Entwurfsbestandteil (Achse) isoliert
+über das gemeinsame Interface seiner Kategorie gegen Lastprofile; das \emph{Makro-Benchmarking}
+misst die einzelnen \texttt{std::map}-Interface-Operationen (Einfügen, Punkt- und
+Bereichssuche, Aktualisieren, Löschen) gegen Beispiel-Lasten; und das \emph{Gesamt-Benchmarking}
+fährt die etablierten YCSB-Lastprofile über jede Rekombination der Bausteine. Aus dem Ranking
+über diese drei Granularitäten ergibt sich, welche Entscheidung an welcher Stelle für welches
+Lastmuster vorteilhaft ist.
+
 \section{ExperimentDriver-Phasen}\label{sec:experimentdriver}
 
 Der \texttt{ExperimentDriver} durchläuft sieben Phasen je Reihe: (1)~\textbf{Enumerate}
@@ -68,13 +77,52 @@ Default-Workload.
 \end{tabular}
 \end{table}
 
+Als Datengrundlage dienen reale String-Datensätze unterschiedlicher Charakteristik
+(Tabelle~\ref{tab:datasets}); jeder trägt eine Reproduzierbarkeits-Akte aus Quelle, Prüfsumme,
+Zeilenzahl, Vorverarbeitung und Seed-Regel für die synthetischen Miss-, Update- und
+Delete-Schlüssel.
+
+\begin{table}[h]
+\centering
+\caption{Reale Datensätze und ihre Charakteristik}\label{tab:datasets}
+\begin{tabular}{ll}
+\toprule
+\textbf{Datensatz} & \textbf{Charakteristik} \\
+\midrule
+\texttt{url} & sehr lange Schlüssel, lange gemeinsame Präfixe, mittleres Alphabet \\
+\texttt{dna} & kleines Alphabet, hohe Wiederholung, tiefe Präfix-Entropie \\
+\texttt{protein} & biologische Sequenzen, kleines bis mittleres Alphabet \\
+\texttt{xml} & strukturierte Strings mit wiederkehrenden Präfixen \\
+\texttt{tpcds-id} & datenbanknahe IDs, sortiert und unsortiert \\
+\texttt{trec-terms} & Wörterbuch-/Suchindex-Terme mit definierten Miss-Schlüsseln \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Versuchsplattformen}\label{sec:platforms}
 
 Die Messungen zielen auf eine lokale Workstation zur Entwicklungs-Verifikation und den
 TU-Dresden-ZIH-Cluster (Barnard CPU, Capella GPU) für die vollständigen Sweeps, plus die
 Tier-3-Plattformen (Ryzen~9~9950X3D, Intel~i9~14900KS und eine HBM-Plattform). Ein
 \texttt{IPlatformProbe} (Phase~1) meldet je Plattform die lauffähige Teilmenge der Achsen
-(z.\,B.\ AVX-512 nur dort, wo verfügbar, HBM-aware nur auf HBM-Hardware).
+(z.\,B.\ AVX-512 nur dort, wo verfügbar, HBM-aware nur auf HBM-Hardware). Je Plattform werden
+ein Scalar-, ein AVX2- und --- auf Barnard --- ein AVX-512-Build vorbereitet; auf Hybrid-CPUs
+werden P- und E-Cores getrennt vermessen (eigene Zähler-Domänen
+\texttt{cpu\_core}/\texttt{cpu\_atom}) statt zusammenaggregiert.
+
+\section{Fairness und Reproduzierbarkeit}\label{sec:fairness}
+
+Faire Vergleichbarkeit ist über feste Regeln gesichert. Jeder Vergleich trennt einen
+gemeinsamen Minimalmodus (Common-Denominator: externe Werte-Handles, keine
+PRT-ART-Spezialpfade) vom PRT-ART-Native-Modus (Inline-Umschaltung, Cache-Engine,
+Seitentyp-Scheduler). Alle Verfahren erhalten identische, normalisierte Byte-Schlüssel sowie
+identische Miss-, Update- und Delete-Mengen; Warmup, Randomisierung und Thread-Pinning werden
+je Plattform und Workload protokolliert. Fehlende Fähigkeiten einer Baseline --- etwa
+Bereichs-Scans einer Hash-Tabelle --- werden als N/A ausgewiesen statt über Hilfsstrukturen
+verdeckt emuliert; für jede Fremdbibliothek werden Compiler, Flags, ISA-Pfad, Allokator und
+Commit-Hash mitgeloggt. Für die Reproduzierbarkeit wird jede Konfiguration in mehreren
+getrennten Läufen vermessen, deren Streuung Teil der Aussage bleibt: Perzentile werden über
+HDR-Histogramme bestimmt statt gemittelt.
 
 \section{Permutations-Explosion und Reduktion}\label{sec:explosion}
 
