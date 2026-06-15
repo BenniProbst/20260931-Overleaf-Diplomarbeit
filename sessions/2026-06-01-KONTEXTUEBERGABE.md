@@ -41,7 +41,7 @@ thesis/
     ├── config/language.tex          ← Schaltzeile: \providecommand{\thesislang}{en}
     ├── zihpub.cls                   ← Vorlagen-Kopie + Fixes + custom Erklärung
     ├── alphadin.bst, plaindin.bst, zih_logo_de_sw.{eps,pdf}, Makefile
-    ├── literatur.bib                ← GETEILT/sprachneutral (8 Tier-1-Quellen, mit DOIs)
+    ├── literatur.bib                ← GETEILT/sprachneutral (8 Rang-1-Quellen, mit DOIs)
     ├── build.ps1                    ← lokaler Build: pwsh -File build.ps1 -Lang en|de
     ├── .gitignore                   ← schließt Build-Artefakte aus
     ├── kapitel/en/  01..08          ← ENGLISCH = Original (Blindentwurf migriert)
