@@ -50,7 +50,7 @@ Einordnung ist Lehrbuch-Standard und in Knuths *TAOCP* Bd. 3 *Sorting and Search
      künftige Erweiterung relevant.
 
 > **Bezug zur Metapher (Lösung, Kap. 4):** Diese Kategorien entsprechen den
-> „Gattungen/Tier-Unterklassen" des Frameworks (im Code: SearchAlgorithm, Set,
+> „Gattungen/Lebewesen-Unterklassen" des Frameworks (im Code: SearchAlgorithm, Set,
 > Sequence, View, Adapter). Die Arbeit baut die **SearchAlgorithm**-Gattung
 > (vergleichs- + digital-basierte **Bäume**) voll aus; die übrigen Gattungen sind
 > über dieselbe höherwertige Abstraktion erweiterbar (→ Ausblick).
