@@ -3,7 +3,7 @@
 \section{Motivation}\label{sec:motivation}
 
 Suchalgorithmen und Indexstrukturen sind das Rückgrat moderner Hauptspeicher-Datenbanken;
-trie-basierte Indizes stehen im Zentrum dieser Arbeit. Seit
+trie-basierte Indizes und cache-line optimierte Verarbeitung stehen im Zentrum dieser Arbeit. Seit
 dem Adaptive Radix Tree (ART) von Leis et al.~\cite{leis2013art} im Jahr 2013 hat sich die
 Forschung in mehrere Richtungen ausdifferenziert: Trie-Höhen-Optimierung
 (HOT~\cite{binna2018hot}), hybride B\textsuperscript{+}-Strukturen
@@ -13,9 +13,11 @@ selbstoptimierende Ansätze (START~\cite{fent2020start}).
 
 Parallel dazu hat sich ein eigener Forschungskorpus zu Cache-Bewusstheit, Prefetching und
 Allokationsstrategien entwickelt. Heuristiken wie Cache-Sensitive Search Trees,
-cache-oblivious Layouts und hierarchisches Prefetching adressieren jeweils eine einzelne
-Achse der Cache-Hierarchie --- sie wurden jedoch nie systematisch in einer einzigen,
-permutierten Mess-Architektur kombiniert.
+cache-oblivious Layouts und hierarchisches Prefetching adressieren jeweils eine separat betrachteter Aspekt
+der Suchalgorithmus-Architektur. Aufgrund der fundamentalen Vorkommnisse auf cache-line optimierem
+Verhalten basierender Code, ist eine Segmentierung der Suchalgorithmus-Hüllen-Bestandteile in Achsen sinnvoll.
+Dies entspricht der rückwärts Abstraktion von bekannten Suchalgorithmus-Bestandteilen in wiederverwendbare
+Module über die wichtigsten Paper des Standes der Technik hinweg.
 
 Diese Arbeit schließt diese Lücke mit einer dreischichtigen Cache-Engine-Architektur
 (CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine), deren Bausteine als austauschbare
@@ -23,7 +25,7 @@ Entwurfsdimensionen eines großen Entwurfsraums (\emph{design space}) aufgefasst
 werden~\cite{idreos2018periodic, idreos2018datacalculator}. Strukturell verschiedene
 Suchverfahren --- von baumartigen Indizes bis zu nicht-baumartigen Hash-Tabellen --- werden so
 als Punkte desselben Entwurfsraums vergleichbar; nicht-baumartige Verfahren belegen dabei ein
-eingeschränktes Subset der Dimensionen. Als Prüfling für die
+eingeschränktes Subset der Dimensionen mit denselben Suchalgorithmus-interfaces. Als Prüfling für die
 Stand-der-Technik-Zugehörigkeit dient PRT-ART (ein Probst-Redirect-Tree-/ART-Hybrid).
 
 \section{Problemstellung}\label{sec:problem}
@@ -33,7 +35,7 @@ berichten Ergebnisse, die sich über Veröffentlichungen hinweg schwer vergleich
 jede Arbeit eigene Datenstrukturen, Workloads und Mess-Methodiken verwendet. Es fehlt ein
 gemeinsamer Rahmen, der (i) solche Entwürfe in austauschbare Achsen zerlegt, (ii)
 publizierte Algorithmen als explizite Konfigurationen rekonstruiert und (iii) sowohl
-einzelne Achsen als auch ganze Algorithmen auf einer einheitlichen, fairen Basis vermisst.
+einzelne Achsen als auch ganze Algorithmen auf einer einheitlichen, fairen Basis vermessen kann.
 
 \section{Forschungsfragen}\label{sec:rqs}
 
