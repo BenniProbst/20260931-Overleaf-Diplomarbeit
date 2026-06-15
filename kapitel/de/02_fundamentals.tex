@@ -92,7 +92,7 @@ entwickelt Kapitel~\ref{ch:concept}.
 
 \section{Klassen von Suchstrukturen}\label{sec:search-classes}
 % Die als großes Bild dargelegten SUchbäume und Suchalgorithmen sind korrekt, aber dieses Kapitel muss alle Bestandteile eines Suchalgorithmus und der einzelnen Typen von Suchalgorithmen im Bezug auf die von uns im Code gefundenen Achsen vollständig als Unterkapitel aufgliedern. Unsere Arbeit besteht schließlich im Kern aus deren "Sezierung". Alle bekannten Paper belegten Suchalgorithmen aufzulisten, mit Quellen zu versehen und kurz zu benennen ist die eine Sache, deren Interna in Achsen Algorithmen zu sezieren, sodass eine Basis an gleichen Achsen (mit je veriablen Algorithmen) als Entwurfsraum erkennbar bleibt, ist die andere Sache. Wir listen also alle Algorithmen als Ganzes allgemein für die Typen der "Lebewesen" Gesamtalgorithmen und danach Zerlegen wir erst im Stand der Technik alle "Lebewesen" Gesamtalgorithmen in jede Achse einzeln mit den laut Papern bekannten Algorithmen, ordnen aber die "Organe"-Algorithmen einer Achse zu und verweisen nur ganz kurz zu welchem "Lebewesen" sie angehören. Bezüglich des Kerns der Arbeit sollte sich diese nicht nur ausschließlich auf baumartige Strukturen konzentrieren, sondern auch auf Container, die wir testweise als std::vector Hülle abbilden, weiterhin sind auch flache Suchalgorithmen und "Exoten" wissenschaftlich ausfindig zu machen und ausdrücklich erlaubt, müssen aber noch ergänzt werden. Der Teil über den Anschluss weiterer Strukturklassen/Achsen ohne die Grundorganisation des Messapparates und der Observer Struktur zu stören, ist korrekt.
-\subsection{Gattungen nach Abbildungsmechanismus}\label{ssec:genera}
+\subsection{Etablierte Untergliederung der Suchalgorithmen}\label{ssec:genera}
 Suchstrukturen lassen sich danach einordnen, mit welchem Mechanismus sie einen Schlüssel auf
 einen Datensatz abbilden~\cite{knuth1998taocp3}. \emph{Vergleichsbasierte} Strukturen
 lokalisieren den Schlüssel über Ordnungsvergleiche und setzen eine totale Ordnung voraus;
@@ -108,11 +108,43 @@ Umfangs liegen. Das in Kapitel~\ref{ch:concept} entwickelte Prinzip ist jedoch n
 gebunden: über eine höherwertige Abstraktion lassen sich weitere Strukturklassen anschließen,
 ohne den Mess- und Permutationsapparat neu zu bauen (Abschnitt~\ref{sec:outlook}).
 
-\subsection{Lebewesen-Typen als Ganzes}\label{ssec:organism-types}
-% [AP-G3] folgt: 5 Lebewesen-Unterklassen, ganze Algorithmen allgemein; Sezierung erst in Kap. 3
+Innerhalb der baumartigen Klasse gruppiert die Literatur konkrete Gesamt-Verfahren traditionell
+zu „Familien": balancierte Suchbäume (AVL, Rot-Schwarz), block- und externspeicherorientierte
+B-/B\textsuperscript{+}-Bäume, präfixbasierte Tries und Radix-Bäume (PATRICIA, ART) sowie
+succinct-kodierte Varianten~\cite{knuth1998taocp3}. Ergänzend treten \emph{flache} Verfahren auf
+--- ein sortiertes Array mit Binär- oder Interpolationssuche ist streng genommen das einzelne
+Blatt eines Baumes --- und vereinzelt theoretische „Exoten" (van-Emde-Boas-Baum, Fusion Tree,
+y-fast Trie).% [Beleg-TODO 2.2.1] Exoten-Primaerquellen (van Emde Boas 1975; Fredman/Willard 1993; Willard 1983) via SLUB nachtragen
+Diese Familien sind für die vorliegende Arbeit zunächst nur eine \emph{Lese-Gruppierung}; ihre
+innere Zerlegung folgt im Stand der Technik (Kapitel~\ref{ch:sota}).
 
-\subsection{Nicht-baumartige Strukturen, Container und Exoten}\label{ssec:non-tree}
-% [AP-G3] folgt: Container/std::vector-Huelle, flache Verfahren, "Exoten" (wiss. recherchiert)
+\subsection{Untergliederung der Container}\label{ssec:container-taxonomy}
+Quer zur Suchalgorithmus-Sicht steht die etablierte Untergliederung der \emph{Container} der
+C++-Standardbibliothek~\cite{iso_cpp}: \emph{Sequenz-Container} (etwa \texttt{std::vector})
+ordnen Elemente nach Einfügeposition, \emph{geordnet-assoziative} Container (\texttt{std::map},
+\texttt{std::set}) nach Schlüsselordnung, und \emph{ungeordnete} Varianten
+(\texttt{std::unordered\_map}) bilden über eine Hashfunktion ab. Diese Container stellen genormte
+Schnittstellen-Verträge bereit, gegen die sich strukturell verschiedene Verfahren einheitlich
+vermessen lassen (Abschnitt~\ref{sec:compare-interfaces}): die geordnete Map ist der gemeinsame
+Nenner für vergleichs- wie digitalbasierte Suchstrukturen, ein \texttt{std::vector} liefert die
+Sequenz-Sicht und eine Hash-Tabelle (etwa \texttt{absl::flat\_hash\_map}/SwissTable) die
+ungeordnete Gegenprobe.
+
+\subsection{Begriffliche Einordnung im vorliegenden Framework}\label{ssec:own-framework}
+Die vorliegende Arbeit ordnet diese fremden Verfahren in ein eigenes Begriffsgerüst ein, das
+Kapitel~\ref{ch:concept} ausführlich entwickelt und hier nur einführt. Auf oberster Ebene steht
+die \emph{Gattung} als ein nach außen sichtbares Interface --- SearchAlgorithm, Container und
+Graph; darunter liegen \emph{Lebewesen-Unterklassen} mit festem Achsensatz (die
+SearchAlgorithm-Unterklasse mit ihren neunzehn Achsen sowie Set, Sequence, Adapter und View unter
+dem Container-Interface). Eine \emph{Achse} ist eine orthogonale Teilentscheidung --- ein „Organ"
+--- eines Gesamt-Algorithmus; ein konkretes Verfahren ist damit ein Punkt im kartesischen Produkt
+der Achsen, und die klassischen Familien aus Abschnitt~\ref{ssec:genera} erweisen sich als bloße
+Lese-Gruppierungen orthogonaler Achsen-Belegungen~\cite{idreos2018periodic,idreos2018datacalculator}.
+Als eigenen Prüfling steuert diese Arbeit den PRT-ART bei (einen Probst-Redirect-Tree-/ART-Hybrid),
+dessen Achsen-Beiträge ebenfalls erst in den Kapiteln~\ref{ch:concept} und~\ref{ch:impl} seziert
+werden. So bleiben die fremde Klassifikation (Abschnitte~\ref{ssec:genera}
+und~\ref{ssec:container-taxonomy}) und die in dieser Arbeit verwendete, achsenorientierte
+Sezierungs-Sicht sauber getrennt.
 
 \section{Trie-basierte Indexstrukturen}\label{sec:trie-basics}
 % Das ist korrekt aber zu grob. Weiterhin sind unter den baumförmigen alle Kategorien auszuführen, weitere kategorien sind hinzuzufügen, ich denke an sections, subsections und subsubsections. Wissenschaftliche Belege und Zitate für die Korrektheit der Definitionen sind immer Pflicht
