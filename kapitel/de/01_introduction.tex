@@ -19,14 +19,18 @@ Verhalten basierender Code, ist eine Segmentierung der Suchalgorithmus-Hüllen-B
 Dies entspricht der rückwärts Abstraktion von bekannten Suchalgorithmus-Bestandteilen in wiederverwendbare
 Module über die wichtigsten Paper des Standes der Technik hinweg.
 
-Diese Arbeit schließt diese Lücke mit einer dreischichtigen Cache-Engine-Architektur
-(CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine), deren Bausteine als austauschbare
+Diese Arbeit schließt diese Lücke mit einer mehrschichtigen Cache-Engine-Architektur innerhalb
+des sogenannten CacheEngine Frameworks
+(ExecutionEngine $\to$ SearchEngine $\to$ SearchEngineType $\to$ SearchEngineType-Algorithmus-Permutation),
+deren Bausteine als austauschbare
 Entwurfsdimensionen eines großen Entwurfsraums (\emph{design space}) aufgefasst
 werden~\cite{idreos2018periodic, idreos2018datacalculator}. Strukturell verschiedene
-Suchverfahren --- von baumartigen Indizes bis zu nicht-baumartigen Hash-Tabellen --- werden so
+Suchverfahren --- von baumartigen Indizes bis zu nicht-baumartigen Hash-Tabellen, sowie 
+Spezialeigenschaften wie cache-lines --- werden so
 als Punkte desselben Entwurfsraums vergleichbar; nicht-baumartige Verfahren belegen dabei ein
-eingeschränktes Subset der Dimensionen mit denselben Suchalgorithmus-interfaces. Als Prüfling für die
-Stand-der-Technik-Zugehörigkeit dient PRT-ART (ein Probst-Redirect-Tree-/ART-Hybrid).
+eingeschränktes Subset (unterschiedlicher SearchEngineType) der Dimensionen mit denselben Suchalgorithmus-interfaces. 
+Als Prüfling für die Stand-der-Technik-Zugehörigkeit dient PRT-ART (ein Probst-Redirect-Tree-/ART-Hybrid)
+als eine abstrakte unvollständige Ansammlung neuartiger Suchalgorithmus-Bestandteile.
 
 \section{Problemstellung}\label{sec:problem}
 
@@ -38,18 +42,20 @@ publizierte Algorithmen als explizite Konfigurationen rekonstruiert und (iii) so
 einzelne Achsen als auch ganze Algorithmen auf einer einheitlichen, fairen Basis vermessen kann.
 
 \section{Forschungsfragen}\label{sec:rqs}
-
+% Begriffsdefinition von SOTA und anderen Abkürzungen gehören in ein Glossar, sowie die Erklärung der Ränge in den Text
+% Bezüglich der Forschungsfragen finden sich weitere Fragen in den Dokumenten der vorangegangenen Termine, wir müssen diese übernehmen
+% In allen gesammelten Papern, die wir vollständig bezüglich ihrer Forschungsfragen ausnehmen müssen, finden wir hinweise, welche Aspekte im Fokus der cache-line Optimierung über verschiedene Suchalgorithmus-Bausteine hinweg, wir noch vergessen haben. Ich denke 3 Forschungsfragen sind zu wenig und wir sollten im Web nach Diplomarbeiten aus der Informatik suchen, um den Umfang besser abzuschätzen
 \begin{description}
-  \item[FF1 (Komposition)] Welche Algorithmus-Achsen eines cache-bewussten Trie-Index lassen
-        sich kanonisch in einer Permutationsmatrix systematisieren, sodass
+  \item[FF1 (Komposition)] Welche Algorithmus-Achsen eines cache-line-bewussten und damit cache-bewussten
+        Trie-Index lassen sich kanonisch in einer Permutationsmatrix systematisieren, sodass
         Stand-der-Technik-Implementierungen als Profil-Konfigurationen rekonstruiert werden
-        können?
+        können? Lassen sich cache-line bewusste Messungen über multiple Aspekte von Suchalgorithmen mithilfe
+        dieses Messsystems isolieren und leichter betrachten?
   \item[FF2 (Mess-Methodik)] Wie lässt sich pro Permutation ein fairer, reproduzierbarer
         YCSB-Workload-Lauf durchführen, der eine profilspezifische Workload-Auswahl (z.\,B.\
         ein Range-Scan-Profil $\to$ YCSB-E) erlaubt und dabei den Mess-Overhead über einen
-        opt-in-Experiment-Modus minimiert?
-  \item[FF3 (Prüfling-Vergleich)] Wie schneidet PRT-ART als Prüfling gegen die acht
-        Rang-1-SOTA-Entwürfe (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum,
+        opt-in-Experiment-Modus minimiert? Welche Workloads gehören gerade für Suchalgorithmen zum Stand der Technik?
+  \item[FF3 (Prüfling-Vergleich)] Wie schneiden die angebotenen Permutationen des PRT-ART als Prüfling und Testintegration             gegen die acht Rang-1-SOTA-Entwürfe (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum,
         Wormhole, SuRF) und die Rang-2/3-SOTA unter den drei Pflicht-Messreihen A (Prüfling
         vs.\ SOTA), B (SOTA-Vergleichsbasis) und C (Merge-Punkte) ab?
 \end{description}
@@ -57,7 +63,7 @@ einzelne Achsen als auch ganze Algorithmen auf einer einheitlichen, fairen Basis
 \section{Zielsetzung und Beiträge}\label{sec:contributions}
 
 Die zentralen Beiträge dieser Arbeit sind:
-
+% im Text vorhin habe ich die Schichten der Architektur nochmal nachgezogen, weiterhin ist der Code der Diplomarbeit der formale Bediener der cache-engine, welche sich den PRT-ART als Prüfling herunterläd und diesen per Metaprogrammierung gegen die Kernbestandteile der cache-engine kompiliert und als ABI-stabile Tiere ausliefert und über das Prüfdock zur Messung jagt. Die Zielsetzung ist korrekt, aber noch etwas unscharf bzw. da fehlen etliche Punkte und wir können gerne die Zielstellung scharf zeichnen.
 \begin{itemize}
   \item Eine dreischichtige Architektur (CacheEngine $\to$ ExecutionEngine $\to$
         SearchEngine) mit ABI-stabilen C++23-Modul-Schnittstellen und variadisch
@@ -82,7 +88,7 @@ Die zentralen Beiträge dieser Arbeit sind:
 \end{itemize}
 
 \section{Aufbau der Arbeit}\label{sec:structure}
-
+% Es sind nicht nur Such- und Allokator-Cluster. Es gibt mehrere Achsen Repositories, die thematisch mehrere Achsen abbilden und die Sub-Achsen sollten wir auch nicht vergessen, die derzeit dokumentiert sind. Da die Diplomarbeit durchaus eine Arbeit mit 60 bis 80 Seiten eigenem Volltext sein darf, ist genug Platz für Details der mehrstufigen Untergliederung der Architektur. Derzeit fehlt aber hauptsächlich im Stand der Technik ein eigenes Unterkapitel, was sich mit dem nicht-technischen Bereich des Suchalgorithmus Architektur-Designs beschäftigt, weil unser Framework eine Architektur-Design-Erfindung mithilfe von fortgeschrittenen Design-Pattern zur Lösung eines technischen Problems darstellt, welches bisher immer mit "bloßen Händen" gelöst wurde, wir konstruieren aber vor der Arbeit erst eine Schaufel -> lösen das Problem also indierekt auf einem nicht sofort ersichtlichen Weg. Der Stand der Technik ist komplett richtig, muss aber durch Konteption und Voraussetzungen von Suchalgorithmen beginnen, was eine Webrecherche erfordert und natürlich professionelle wissenschaftliche Zitate. Wir bewegen uns also parallel zur Forschungsfeld der Datenbanken im Bereich des Software-Engineerings an der TU Dresden und deren Zielen (Webrecherche bitte).
 Kapitel~\ref{ch:fundamentals} führt in die nötigen Grundlagen ein.
 Kapitel~\ref{ch:sota} fasst den Stand der Technik über sechs Such-Cluster (A--F) und einen
 Allokator-Cluster zusammen. Kapitel~\ref{ch:concept} stellt das Achsen-Bibliotheks-Framework,
