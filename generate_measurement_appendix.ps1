@@ -40,12 +40,12 @@ try {
   # im Textmodus + propagiert in die .lof → "Missing $ inserted").
   $specIdTex = $SpecId -replace '([\\&%#_{}$])', '\$1'
   $captions = @{
-    de = "Messreihe ${SpecId}: vorkonfigurierte Tier-Permutationen (Pfad A, run_workload)";
-    en = "Measurement series ${SpecId}: pre-configured tier permutations (Path A, run_workload)"
+    de = "Messreihe ${SpecId}: vorkonfigurierte Lebewesen-Permutationen (Pfad A, run_workload)";
+    en = "Measurement series ${SpecId}: pre-configured organism permutations (Path A, run_workload)"
   }
   $diagCaptions = @{
-    de = "Zyklen je Tier-Permutation (${specIdTex})";
-    en = "Cycles per tier permutation (${specIdTex})"
+    de = "Zyklen je Lebewesen-Permutation (${specIdTex})";
+    en = "Cycles per organism permutation (${specIdTex})"
   }
   $label = "tab:measurements:${SpecId}"
   $diagLabel = "fig:measurements:${SpecId}"
