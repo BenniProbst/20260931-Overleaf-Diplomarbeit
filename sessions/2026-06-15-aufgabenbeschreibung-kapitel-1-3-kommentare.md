@@ -60,6 +60,15 @@ für die gesamte Bearbeitung **bindend**, damit „trotz toller Arbeit" kein Dur
 
 ## 2. Arbeitsweise (kleinschrittig)
 
+**Provenienz-Governance (verbindlich, Autor 2026-06-15):** In die Diplomarbeit dürfen ausschließlich
+Ideen persistiert werden, die (a) vom Autor stammen (Kommentare / Coding-Docs) oder (b) zitierte
+wissenschaftliche Primärquellen sind. **Ideen, die aus dem KI-Modell entspringen, werden NIE ohne
+ausdrückliche Autor-Anweisung in den Text geschrieben.** Claude darf eigene Vorschläge im Chat
+äußern (um Hilfe zu fragen ist erlaubt); der Autor muss jedoch selbst über die Validität nachgedacht
+und freigegeben haben, bevor ein Vorschlag eingebaut wird. Claude liefert Struktur, Recherche-Synthese
+und Formulierung — **nicht neue Substanz**. Workflow je AP:
+**Vorschlag/Stichpunkte im Chat → Autor prüft Validität + weist an → erst dann persistieren.**
+
 1. **Ein Arbeitspaket (AP) pro Schritt**, je mit eigener Recherche → Edit → Commit/Push (kein
    Rebase, fetch+merge), damit jeder Schritt einzeln prüf- und rückrollbar ist.
 2. **Provenienz zuerst:** Jedes AP zitiert den auslösenden Autor-Kommentar wörtlich; der
@@ -67,8 +76,10 @@ für die gesamte Bearbeitung **bindend**, damit „trotz toller Arbeit" kein Dur
 3. **Referenziert, nicht erfunden:** Inhalte stammen aus den Coding-Docs (`Code/external/
    comdare-cache-engine/docs/`, `docs/` im Superprojekt) + belegter Web-Recherche. Pro Aussage
    eine zitierfähige Primärquelle.
-4. **EN ≡ DE:** Jede DE-Änderung erhält die englische Entsprechung (`kapitel/en/`); Build via
-   `build.ps1 -Lang de|en`.
+4. **DE führt, EN folgt nachgelagert (Autor 2026-06-15):** Der Autor arbeitet ausschließlich auf
+   Deutsch. Der englische Teil wird NACH finalisiertem DE-Inhalt (je Kapitel) aus dem Deutschen
+   nachgezogen — NICHT im Lockstep pro Edit. Der alte EN-Stand ist veraltet und dient NICHT als
+   Referenz.
 5. **Keine editierenden Agenten** (Autor-Veto); nur-lesende Recherche/Audit-Agenten erlaubt.
 
 ---
@@ -339,3 +350,42 @@ Jeder Schritt: Recherche → Edit (DE+EN) → lokaler Build-Check → Commit/Pus
 3. **Compliance:** KI-Erklärung/zwei-Fassungen-Regel jetzt vorbereiten oder erst zur Endabgabe?
 4. **Großer Beleg:** ist `20250811_Großer_Beleg_Beispiel.zip` der inhaltlich relevante (eigene) Beleg
    oder nur ein Struktur-Beispiel?
+
+---
+
+## 8. Einlese-Synthese (2026-06-15, verifizierter Ist-Stand)
+
+**Entscheidungen Autor (2026-06-15):** Reihenfolge Kap. 2 → 3 → 1; Tiefe = erst Gliederung +
+belegte Stichpunkte zur Abnahme, dann Ausformulierung; Großer Beleg = eigener (Inhalt+Struktur);
+Compliance/Struktur NICHT nachbauen (Suite fertig) — voller Fokus auf Inhalt Kap. 1–3, „fehlt"
+nur nach gründlicher Verifikation. Provenienz-Governance (§2) bindend.
+
+**Thesis-Zustand (verifiziert):**
+- Kap. 1–3 = Rahmenkapitel: Kap. 1+2 tragen die Autor-Kommentare; Kap. 3 („korrekt, aber
+  chaotisch") wird als Instanz-Spiegel aus Kap. 2 abgeleitet.
+- Kap. 4–8 sind bereits substanziell (Konzept/M-Modell/3-Schichten/19 Achsen; Methodik mit
+  3 Messreihen/3 Granularitäten/Fairness; FF-Antworten). Die Substanz, die Grundlagen
+  *grundlegen* und SoTA *instanziieren* müssen, liegt in Kap. 4/6.
+- Anhänge A–E (DE+EN) großteils Stubs (Glossar/Bausteine-Matrix/Code-Struktur = TODO-Übersetzung)
+  → bekannter Übersetzungs-TODO, NICHT Teil dieses Auftrags.
+- **`literatur.bib` = nur 11 Einträge** vs. ~54 im Text genannte Paper (P01–P33 + A01–A23), die
+  meisten ohne `\cite` → real verifizierter Beleg-Mangel (trifft C02-4/C01-5).
+- Kap. 7 (Ergebnisse) bewusst Platzhalter (Messungen ausstehend).
+
+**Quellen-Map (alle autor-dokumentiert → persistierbar):**
+- Suchstruktur-Taxonomie + Original-Paper + Verifikationsstatus: `docs/quellhinweise-suchstruktur-taxonomie.md` (Thesis-Repo) → AP-G3/G4.
+- Begriffe/Ränge/Abkürzungen: `docs/glossar/01_begriffsglossar_v7_master.md` (Superprojekt; §9 = P01–P33 mit Rang) → AP-E2.
+- Vollständige Zitate: `docs/forschungslandkarte/01_quellen_gesamtkatalog.md` + Cluster A–F + Allokatoren → Beleg-Lücke schließen.
+- Weitere Forschungsfragen: `docs/termine_konsolidiert/01–08*.md` + Termin 7/9/10 → AP-E3.
+- Architektur autoritativ: cache-engine `docs/architecture/34_KONSOLIDIERTER_MASTER_IST_STAND.md` (3-Ebenen, 19 Achsen, M-Modell) + AP-spezifische Docs (14/18/24/32/15/16/11), je AP just-in-time gelesen + verifiziert.
+
+**⚠️ Superseded-Vokabular (Doc 34 §11) — NICHT in den Text:** altes F1–F29 / S1–S30 / „4-Ebenen-
+Strategie" / „5 Gattungen" (= 5 Lebewesen-Unterklassen) / alte 11 Achsen / 3-Säulen. IST =
+Achsen/Organ-Modell + 3-Ebenen: **3 Gattungen-Interfaces (SearchAlgorithm/Container/Graph) > 5
+Lebewesen-Unterklassen (SearchAlgorithm/Set/Sequence/Adapter/View) > 19 Achsen (Organe)**.
+
+**Großer-Beleg-Befund (Korrektur zur Q3-Antwort):** Das Zip enthält die **ZIH-Vorlagen-Anleitung**
+(`doku.tex`/`doku.toc` = „Die ZIH-Formatvorlage"/„Diplomarbeiten…"/„Umlaute") + die eigenen
+Diagramme (`Flaw1–10`, `Snowflake`, `StructureNode`). Der kompilierte Fließtext ist das
+Template-Handbuch, nicht die Topologie-Arbeit. → Klärung, wo der tatsächliche Großer-Beleg-Fließtext
+liegt (für AP-E1, nicht blockierend).

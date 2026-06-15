@@ -1,4 +1,6 @@
 \chapter{Grundlagen}\label{ch:fundamentals}
+% [AP-G1] Gliederung vom Autor freigegeben (2026-06-15); Inhalt folgt sektionsweise (AP-G2..G8)
+% als belegte Stichpunkte zur Abnahme, dann Ausformulierung. Intro nach Befuellung aktualisieren.
 % Mir ist aufgefallen, dass hier Grundlagen als Teilkapitel fehlen
 Dieses Kapitel schafft die für den Rest der Arbeit nötigen Grundlagen: die Cache-Hierarchie
 und den Begriff der Cache-Bewusstheit, trie-basierte Indexstrukturen mit dem Adaptive Radix
@@ -9,6 +11,8 @@ und die C++23-Metaprogrammierungs-Mittel, auf denen die Cache-Engine aufbaut.
 
 \section{Cache-Hierarchie und Cache-Bewusstheit}\label{sec:cache-basics}
 % Es stimmt generell nicht, dass Speicher in festen Einheiten zwischen den Cache-Ebenen Übertragen wird, dies erfordert eine Webrecherche für die Funktionalität der per Dokumentation und Termine unterstützten Architektur. Weiterhin sind seit einiger Zeit die cache-line Größen auf CPUs dynamisch anpassbar, was Ziel dieser Arbeit ist. Nach einer Messung plane ich, anhand der Messergebnisse ausfindig gemachte Eigenschaften der je Achse eingestellten cache-line Größen je nach zu behandelnder Daten und Interfacefunktion zur Runtime anpassen zu können, um die Geschwindigkeit aller erzeugter Lebewesen-Binaries jedem bekannten usecase zuordnen und automatisch anpassen zu können. Dies bedeutet eine Verschränkung des Prefetching mit unterschiedlich großen etwa 32/64/128 Byte großen Cache lines, die je Architektur unterschieden werden und gelistet werden müssen. Die Unterscheidung der Cache write-back Methodik je ISA ist hier ebenfalls relevant und eine Erklärung und Einführung wert. Der Unterschied zwischen TLB und dTLB ist noch nicht hinreichend erklärt. Wissenschaftliche Quellen und Herstellerhinweise sind pflicht. Der Fokus auf cache-line aware bezieht sich nicht auf die statische Abstimmung sondern Ermittlung dynamischer cache-line Grenzen je Architektur + Betriebssystem, um anhand eines ausgewerteten Profils bzw. einer Profil-Funktion die korrekten cache-line Einstellungen aktiv zur runtime zu wählen. Die Neuheit dieser Arbeit beinhaltet im Kern zuerst die Ermittlung der statischen cache-line Eigenschaften zur systemoptimierten binary-Kompilation als Automatisierung der Optimierung. Wir erweitern damit cache-oblivious Verhalten mit gemessenem Wissen über die heuristisch wahrscheinlich korrekte Lokalität und können damit bewusste Entscheidungen mithilfe eingehender Eingangs-Lasten über die Suchalgorithmus-Funktionen und schichten treffen.
+\subsection{Speicher- und Cache-Ebenen}\label{ssec:cache-levels}
+% [AP-G2] folgt: reale Transfer-/Kohaerenz-Mechanik; Aussage "feste Einheiten" korrigieren (Hersteller-/Web-Quellen)
 Moderne Prozessoren schalten mehrere Cache-Ebenen (L1, L2, L3) zwischen die Register und den
 Hauptspeicher. Daten werden zwischen diesen Ebenen in festen Einheiten übertragen, den
 \emph{Cache-Lines}, typischerweise 64\,Byte. Ein Zugriff, der sein Datum in einer Cache-Ebene
@@ -20,6 +24,17 @@ dTLB-Miss ist seinerseits teuer. Auf Mehr-Sockel-Systemen macht der nicht-unifor
 Speicherzugriff (NUMA) die Latenz einer Referenz davon abhängig, welcher Knoten die Seite
 besitzt.
 
+\subsection{Cache-Line-Größen: statisch und dynamisch}\label{ssec:cache-line-sizes}
+% [AP-G2] folgt: 32/64/128 B je Architektur; dynamisch anpassbar; Verschraenkung mit Prefetch
+
+\subsection{Adressübersetzung: TLB und dTLB}\label{ssec:tlb}
+% [AP-G2] folgt: TLB vs. dTLB sauber abgrenzen
+
+\subsection{Cache-Kohärenz und Write-Back je ISA}\label{ssec:coherence}
+% [AP-G2] folgt: Write-Back/Write-Through je ISA
+
+\subsection{Cache-bewusst und cache-oblivious}\label{ssec:aware-oblivious}
+% [AP-G2] folgt: Neuheits-Abgrenzung -- gemessene Lokalitaet statt nur statischer Abstimmung
 Eine Datenstruktur ist \emph{cache-bewusst}, wenn ihr Layout auf konkrete Cache-Parameter
 (Line-Größe, Ebenen-Kapazitäten) abgestimmt ist, und \emph{cache-oblivious}, wenn sie über
 alle Ebenen hinweg gute Lokalität erreicht, ohne sie zu kennen. Beide Philosophien tauchen im
@@ -28,6 +43,7 @@ und Hardware-Achsen der vorgeschlagenen Engine.
 
 \section{Klassen von Suchstrukturen}\label{sec:search-classes}
 % Die als großes Bild dargelegten SUchbäume und Suchalgorithmen sind korrekt, aber dieses Kapitel muss alle Bestandteile eines Suchalgorithmus und der einzelnen Typen von Suchalgorithmen im Bezug auf die von uns im Code gefundenen Achsen vollständig als Unterkapitel aufgliedern. Unsere Arbeit besteht schließlich im Kern aus deren "Sezierung". Alle bekannten Paper belegten Suchalgorithmen aufzulisten, mit Quellen zu versehen und kurz zu benennen ist die eine Sache, deren Interna in Achsen Algorithmen zu sezieren, sodass eine Basis an gleichen Achsen (mit je veriablen Algorithmen) als Entwurfsraum erkennbar bleibt, ist die andere Sache. Wir listen also alle Algorithmen als Ganzes allgemein für die Typen der "Lebewesen" Gesamtalgorithmen und danach Zerlegen wir erst im Stand der Technik alle "Lebewesen" Gesamtalgorithmen in jede Achse einzeln mit den laut Papern bekannten Algorithmen, ordnen aber die "Organe"-Algorithmen einer Achse zu und verweisen nur ganz kurz zu welchem "Lebewesen" sie angehören. Bezüglich des Kerns der Arbeit sollte sich diese nicht nur ausschließlich auf baumartige Strukturen konzentrieren, sondern auch auf Container, die wir testweise als std::vector Hülle abbilden, weiterhin sind auch flache Suchalgorithmen und "Exoten" wissenschaftlich ausfindig zu machen und ausdrücklich erlaubt, müssen aber noch ergänzt werden. Der Teil über den Anschluss weiterer Strukturklassen/Achsen ohne die Grundorganisation des Messapparates und der Observer Struktur zu stören, ist korrekt.
+\subsection{Gattungen nach Abbildungsmechanismus}\label{ssec:genera}
 Suchstrukturen lassen sich danach einordnen, mit welchem Mechanismus sie einen Schlüssel auf
 einen Datensatz abbilden~\cite{knuth1998taocp3}. \emph{Vergleichsbasierte} Strukturen
 lokalisieren den Schlüssel über Ordnungsvergleiche und setzen eine totale Ordnung voraus;
@@ -43,8 +59,15 @@ Umfangs liegen. Das in Kapitel~\ref{ch:concept} entwickelte Prinzip ist jedoch n
 gebunden: über eine höherwertige Abstraktion lassen sich weitere Strukturklassen anschließen,
 ohne den Mess- und Permutationsapparat neu zu bauen (Abschnitt~\ref{sec:outlook}).
 
+\subsection{Lebewesen-Typen als Ganzes}\label{ssec:organism-types}
+% [AP-G3] folgt: 5 Lebewesen-Unterklassen, ganze Algorithmen allgemein; Sezierung erst in Kap. 3
+
+\subsection{Nicht-baumartige Strukturen, Container und Exoten}\label{ssec:non-tree}
+% [AP-G3] folgt: Container/std::vector-Huelle, flache Verfahren, "Exoten" (wiss. recherchiert)
+
 \section{Trie-basierte Indexstrukturen}\label{sec:trie-basics}
 % Das ist korrekt aber zu grob. Weiterhin sind unter den baumförmigen alle Kategorien auszuführen, weitere kategorien sind hinzuzufügen, ich denke an sections, subsections und subsubsections. Wissenschaftliche Belege und Zitate für die Korrektheit der Definitionen sind immer Pflicht
+\subsection{Trie-Konzept, Radix- und PATRICIA-Bäume}\label{ssec:trie-concept}
 Ein \emph{Trie} (Digital-/Radix-Baum) indiziert Schlüssel anhand ihrer Byte-Folge statt durch
 Vergleich: jede Ebene unterscheidet anhand eines oder mehrerer Schlüssel-Bytes, sodass die
 Länge des Suchpfads von der Schlüssellänge abhängt, nicht von der Anzahl gespeicherter
@@ -55,8 +78,12 @@ an, nutzt dazu vier Knotentypen (Node4, Node16, Node48, Node256) und wendet Pfad
 (Lazy Expansion, Präfix-Faltung) an, um den Baum flach zu halten. ART dient in dieser Arbeit
 durchgängig als Referenzentwurf.
 
-\section{Das einheitliche Vergleichsinterface (\texorpdfstring{\texttt{std::map}}{std::map})}\label{sec:stdmap-interface}
+\subsection{Adaptive Radix Tree (ART)}\label{ssec:art}
+% [AP-G4] folgt: feingliedrig + Zitate (de la Briandais 1959, Fredkin 1960, Morrison 1968, Leis 2013)
+
+\section{Einheitliche Vergleichsinterfaces}\label{sec:compare-interfaces}
 % Das Vergleichsinterface ist (Webrecherche) aus der C++ Hauptdokumentation übernommen worden und muss auch für std:: vector separat als subsection parallel zu std::map gelistet werden. Dazu gehört die Aufgliederung ALLER im Standard verfügbaren Interface funktionen und Gewährleistung der jeweiligen Funktionalität samt tests. Falls sich interfaces "unter der Haube" als Zusammensetzung anderer Interfaces entpuppen, müssen diese je Funktionsinterface beschrieben werden, ansonsten ist für jede Standard-Interface-Funktion die offizielle erwartete Funktionalität gegen den Suchalgorithmus in der Arbeit zu dokumentieren. Dies ist ausnahmsweise in die Arbeit zu übernehmen, weil wir im weiteren Verlauf schließlich die Suchalgorithmus-Hülle intern mit dynamisch austauschbaren Achsen-Algorithmen ersetzen werden, wodurch die interne Verarbeitung einer jeden Interface Funktion erklärungsbedürftig wird, wie diese nun wirklich verkabelt ist, anstelle des Standardfalls. Diese Dokumentation muss auch für die Weiterentwicklung der cache-engine als zentrales Dokument verfügbar gemacht werden, um anderen Entwicklern den Einstieg und die exakten cache-engine function-handle-hops zu erklären. Bezüglich der Schnittstellen und dem Verhalten zwischen innen und außen müssen wir unterscheiden, welche Ebenen der Dynamik es in unserem System gibt: Meiner Auffassug nach unterscheidet sich dies zuerst in compile-time und run-time Dynamik und innerhalb der beiden Kategorien einmal in Lebewesen-Typen die nur eine bestimmte Anzahl der vorhandenen Achsen verwenden, dann die Achsenalgorithmen selbst die zur Compile time in ein Lebewesen-Binary hineinkompiliert werden; dann unterscheiden wir noch die Subachsen die dynamische runtime Parameter aufweisen und wir kennen eine weitere Aufgliederung in statische Sub-Achsen die compile-time Auswahl an statischen Teil-Algorithmen betiteln, die unterschiedliche Komplexität haben. Diese Prinzipien sind in unserem System wahrscheinlich neu, aber bedürfen noch eine ausführliche Webrecherche zum Stand der Technik
+\subsection{Das \texttt{std::map}-Interface}\label{sec:stdmap-interface}
 Um strukturell verschiedene Suchalgorithmen fair zu vergleichen, werden sie alle auf eine
 einzige, gut verstandene Schnittstelle abgebildet: den C++-Vertrag der geordneten Map
 \texttt{std::map<Key,\,Value>} (\texttt{find}/\texttt{insert}/\texttt{erase}/Bereichs-Iteration).
@@ -67,8 +94,18 @@ variadische Spezialisierung hält die Schnittstelle ergonomisch: ein Template-Pa
 eine \texttt{std::vector}-artige API bereit, zwei Parameter die \texttt{std::map}-API und
 $N>2$ eine \texttt{std::map<K,\,std::tuple<\ldots>>}.
 
-\section{YCSB-Workloads}\label{sec:ycsb}
+\subsection{Das \texttt{std::vector}-Interface}\label{ssec:stdvector-interface}
+% [AP-G5] folgt: parallel zu std::map; ALLE Standard-Interface-Funktionen + erwartete Semantik
+
+\subsection{Ebenen der Dynamik}\label{ssec:dynamics-levels}
+% [AP-G5] folgt: compile-time vs. run-time x Lebewesen-Typ / Achse / Sub-Achse (statisch/dynamisch)
+
+\section{Lasten und Workloads}\label{sec:workloads}
 % Simples Feedback: Was ist eine Last? Was ist ein Workload? Was ist das Ziel der Variation? Welche Workloads konnten über ALLE Paper recherchiert werden, die derzeit in der Diplomarbeit gelistet sind? Welche Messdaten stecken per Diplomarbeit Dokumentation genau hinter den verwendeten Workloads, woraus bestehen sie? Gibt es Lastprofil-playbooks die mit multiplen Interface Anfragen durchgeführt werden oder handelt es sich bezüglich des Inerfaces um isolierte und unrealistische Einzelzugriffe? Bezüglich der Workloads erwarte ich auch zuerst ein verallgemeinertes Hauptkapitel und dann die Frameworks, welche diese Workloads bereitstellen können, denn durch die große Verteilung verschiedener Workloads und nicht vergleichbarer Lasten über multiple Paper und Suchalgorithmen, sind wir gezwungen ALL DIESE gegen alle Lebewesen-Binaries also Suchalgorithmen (und zusätzlich Container) angepasst laufen zu lassen, um die absolute Vergleichbarkeit aus den Messwerten zu ermitteln.
+\subsection{Begriff: Last, Workload und Ziel der Variation}\label{ssec:load-terms}
+% [AP-G6] folgt: Definitionen; Begruendung "alle Workloads gegen alle Lebewesen-Binaries"
+
+\subsection{Workload-Frameworks: YCSB}\label{sec:ycsb}
 Der Yahoo!\ Cloud Serving Benchmark (YCSB) definiert eine Familie von Schlüssel-Wert-Workloads,
 die hier als gemeinsames Lastprofil dienen: YCSB-A (50/50 Lesen/Aktualisieren, Zipf-verteilt),
 YCSB-B (95/5 Lesen/Aktualisieren), YCSB-C (nur Lesen), YCSB-D (jüngste Werte), YCSB-E (kurze
@@ -76,8 +113,21 @@ Bereichs-Scans) und YCSB-F (Read-Modify-Write). Jedes Algorithmus-Profil deklari
 erwarteten Workload (Kapitel~\ref{ch:sota}), den der Mess-Treiber für das profilbewusste
 Routing nutzt (Kapitel~\ref{ch:methodology}).
 
-\section{C++23-Metaprogrammierung}\label{sec:cpp23}
+\section{Wissenschaftliches Messen}\label{sec:measurement-basics}
+% [AP-G8] NEU (verifiziert fehlend). Vgl. Kapitel-Schluss-Kommentar (Mess-Thema + Grundlagen/SoTA-Verzahnung).
+
+\subsection{Gütekriterien wissenschaftlichen Messens}\label{ssec:measurement-criteria}
+% [AP-G8] folgt: Reproduzierbarkeit, Validitaet, Fairness + wiss. Quellen
+
+\subsection{Verwendete Mess-Muster und -Konzepte}\label{ssec:measurement-patterns}
+% [AP-G8] folgt: welche Muster/Konzepte; das WARUM erst in Kap. 4
+
+\section{C++23-Metaprogrammierung und Design-Pattern}\label{sec:cpp23}
 % Korrekt aber zu grob. In der heutigen Zeit sind klassische Software-Design Pattern bekannt, die wir möglicherweise nur ganz kurz als Grundlage über die verwendeten darlegen sollten, aber durch das Aufkommen von Metaprogrammierung in C++ entstehen auch hier neue und teils noch unbekannte/unbenannte Designpattern, denen wir Namen und Bedeutung geben sollten, dazu gehört auch eine Webrecherche, ob jemand diese schon definiert hat. Denn einen PRT-ART als Prüfling gegen ein bestehendes Konstrukt in Matrix-Schichten zu kompilieren ist ein neuartiges komplexes Konzept und in der Welt der Software-Architektur möglicherweise unbekannt.
+\subsection{Klassische Design-Pattern}\label{ssec:classic-patterns}
+% [AP-G7] folgt: kurz, verwendete GoF-Pattern als Grundlage
+
+\subsection{Metaprogrammier-Mittel}\label{ssec:metaprog-facilities}
 Die Engine stützt sich auf Komposition zur Übersetzungszeit, um Laufzeit-Dispatch im
 Hot-Path zu vermeiden. \emph{Concepts} schränken die Bausteine-Schnittstellen ein; das
 \emph{Curiously Recurring Template Pattern} (CRTP) liefert statischen Polymorphismus;
@@ -85,5 +135,8 @@ Hot-Path zu vermeiden. \emph{Concepts} schränken die Bausteine-Schnittstellen e
 Prüfling-Implementierung und einem Cache-Engine-Standard; und C++23-\emph{Module} bilden eine
 ABI-stabile Grenze zwischen den Permutations-Binaries und dem Builder. Zusammen realisieren
 diese Mittel die \emph{zero-cost abstraction}, auf der die Permutationsmatrix beruht.
+
+\subsection{Neue und unbenannte Metaprogrammier-Pattern}\label{ssec:new-patterns}
+% [AP-G7] folgt: benennen + Web-Recherche, ob bereits in der Literatur definiert
 
 % Hier gibt es viel Raum für Ergänzungen - Das Thema Messungen fehlt komplett und muss recherchiert und mit wissenschaftlichen Quellen hinterlegt werden, welche wissenschaftliches Messen definieren und welche Muster und Konzepte wir hier verwendet haben. Das WARUM wir sie verwendet haben kommt erst in Kapitel "Konzept und Architektur". Das Kapitel "Grundlagen" beschäftigt sich mit dem was KONZEPTIONELL existiert als "Bibliothek" für folgende Kapitel, das nächste Kapitel "Stand der Technik" bietet an, was es WISSENSCHAFTLICH nachweisbar schon gibt und was verwendet wird, um die nachfolgende Arbeit zu stützen. Für alle Bestandteile der Grundlagen und des Standes der Technik folgen in der Regel aus den Grundlagen wissenschaftliche Standards, sodass beide Kapitel strukturell ineinandergreifen müssen, was sie derzeit nicht tun. Wenn wir in den Grundlagen die Basis-Konzepte für wissenschaftliches Messen erklären, dann müssen wir im Stand der Technik auch Technologien anführen, welche dies Implementieren. Daher ist der Stand der Technik immer mindestens eine Instanz der konzeptionellen Grundlagen als Definitions-Klasse - fast so wie in der Software-Architektur.
