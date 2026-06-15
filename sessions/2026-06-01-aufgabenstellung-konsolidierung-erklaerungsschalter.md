@@ -5,7 +5,7 @@
    Diplomarbeit-Projekts und gegen die **GESAMTE Architektur + Sessions**.
 2. **Selbständigkeitserklärung:** separater Sprach-Schalter `de | en | same_as_document`
    (Default `same_as_document` = folgt Dokumentsprache).
-3. **Tier/Organ-Metapher** (Suchalgorithmus = „Tier", Achse = „Organ") in Abstract +
+3. **Lebewesen/Organ-Metapher** (Suchalgorithmus = „Lebewesen", Achse = „Organ") in Abstract +
    Kapitel 1 + Aufgabenstellung verankern; ermitteln, welche Achsen existieren und welche
    **cache-line-aware relevant** sind; begründen, warum **vollständig permutativ** gemessen
    werden muss.
@@ -17,7 +17,7 @@
   CSS/CSB+/B²); Termin 7/8: Drei-Repo-Architektur, 3 Pflicht-Messreihen A/B/C, 30 SOTA- +
   10 Allokator-Profile, F15-Bausteine-Permutation, 1800+ Permutationen.
 - **Architektur** (`docs/architektur/14_achsen_komposition_organ_metapher.md`): autoritative
-  Tier/Organ-Metapher (Säugetier-Anatomie, „genetisches Experiment", schnellstes Tier =
+  Lebewesen/Organ-Metapher (Säugetier-Anatomie, „genetisches Experiment", schnellstes Lebewesen =
   F15-Ziel). `docs/bausteine/07_bausteine_matrix_N_erweitert.md` + `kapitel/04`: 14 Haupt-
   achsen + ~30 Sub-Achsen; Traversal 3.A→3.B→3.M als cache-line-zentrale Übersetzung.
 
@@ -25,7 +25,7 @@
 
 ### 1. Aufgabenstellung (bilingual, `aufgabenstellung/{en,de}.tex`)
 Konsolidierte Themenstellung mit Abschnitten: Kontext/Motivation, Zielsetzung,
-**Methodischer Ansatz (Tier/Organ-Metapher)**, **Bausteinachsen + Cache-Line-Relevanz**
+**Methodischer Ansatz (Lebewesen/Organ-Metapher)**, **Bausteinachsen + Cache-Line-Relevanz**
 (14 Achsen aufgelistet, cache-line-relevante markiert: Node-Type, Memory-Layout,
 Traversal 3.B/3.M, Allocator NUMA/Huge-Page, Prefetch, ISA, Hardware-Strategie),
 **Warum vollständige Permutation** (Achsen-Interaktion, keine Isolation, >10¹¹),
@@ -49,10 +49,10 @@ Methodik/Evaluation, Umfangsabgrenzung. EN = Original, DE = treue Übersetzung.
   „11~April 1996"): Titelseite folgt `\thesislang`, Erklärung folgt `\declarationlang`
   → korrektes Format auch im gemischten Fall.
 
-### 4. Tier/Organ-Metapher verankert
+### 4. Lebewesen/Organ-Metapher verankert
 - Abstract (`\abstracten`/`\abstractde`) + Kapitel 1 (`kapitel/{en,de}/01`): je ein Satz/
-  Absatz „Suchalgorithmus = Tier, Achsen = Organe, Permutation = genetisches Experiment,
-  Ziel = schnellstes Tier".
+  Absatz „Suchalgorithmus = Lebewesen, Achsen = Organe, Permutation = genetisches Experiment,
+  Ziel = schnellstes Lebewesen".
 
 ## Verifikation (MiKTeX lokal, alle Builds 48 S, 0 Fehler, 0 undefinierte Makros)
 | Test | Ergebnis |

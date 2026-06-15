@@ -41,7 +41,7 @@ Nur **Fließtext-Sprache**, **Bib-Stil** und **Typografie-Konventionen** untersc
 
 ## 1. Warum die DE-Fassung aktuell „leer" wirkt (Auflösung des Bib-Missverständnisses)
 
-Die Bibliografie ist **nicht** je Sprache getrennt. `literatur.bib` (derzeit 8 Tier-1-Quellen)
+Die Bibliografie ist **nicht** je Sprache getrennt. `literatur.bib` (derzeit 8 Rang-1-Quellen)
 liegt **einmal** im Projekt und wird von **beiden** Builds genutzt. Das deutsche
 Literaturverzeichnis ist momentan nur deshalb leer, weil die **deutschen Kapitel noch
 Platzhalter** sind (nur `\chapter{…}` + `\label`, ohne übersetzten Text und damit ohne
