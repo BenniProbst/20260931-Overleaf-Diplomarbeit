@@ -1,12 +1,14 @@
 \chapter{Grundlagen}\label{ch:fundamentals}
-
+% Mir ist aufgefallen, dass Grundlagen als Teilkapitelfehlen
 Dieses Kapitel schafft die für den Rest der Arbeit nötigen Grundlagen: die Cache-Hierarchie
 und den Begriff der Cache-Bewusstheit, trie-basierte Indexstrukturen mit dem Adaptive Radix
-Tree als durchgängiger Referenz, das einheitliche \texttt{std::map}-Vergleichsinterface, die
-YCSB-Workloads und die C++23-Metaprogrammierungs-Mittel, auf denen die Cache-Engine aufbaut.
+Tree als durchgängiger Referenz, das einheitliche \texttt{std::map}-Vergleichsinterface als 
+Suchalgorithmus-Hülle mit std-Interfaces, das einheitliche \texttt{std::vector}-Vergleichsinterface
+als Container Hülle, die verschiedenen Messdimensionen und -methoden, die YCSB-Workload-Typen
+und die C++23-Metaprogrammierungs-Mittel, auf denen die Cache-Engine aufbaut.
 
 \section{Cache-Hierarchie und Cache-Bewusstheit}\label{sec:cache-basics}
-
+% Es stimmt generell nicht, dass Speicher in festen Einheiten zwischen den Cache-Ebenen Übertragen wird, dies erfordert eine Webrecherche für die Funktionalität der per Dokumentation und Termine unterstützten Architektur. Weiterhin sind seit einiger Zeit die cache-line Größen auf CPUs dynamisch anpassbar, was Ziel dieser Arbeit ist. Nach einer Messung plane ich, anhand der Messergebnisse ausfindig gemachte Eigenschaften der je Achse eingestellten cache-line Größen je nach zu behandelnder Daten und Interfacefunktion zur Runtime anpassen zu können, um die Geschwindigkeit aller erzeugter Lebewesen-Binaries jedem bekannten usecase zuordnen und automatisch anpassen zu können. Dies bedeutet eine Verschränkung des Prefetching mit unterschiedlich großen etwa 32/64/128 Byte großen Cache lines, die je Architektur unterschieden werden und gelistet werden müssen. Die Unterscheidung der Cache write-back Methodik je ISA ist hier ebenfalls relevant und eine Erklärung und Einführung wert. Der Unterschied zwischen TLB und dTLB ist noch nicht hinreichend erklärt. Wissenschaftliche Quellen und Herstellerhinweise sind pflicht. Der Fokus auf cache-line aware bezieht sich nicht auf die statische Abstimmung sondern Ermittlung dynamischer cache-line Grenzen je Architektur + Betriebssystem, um anhand eines ausgewerteten Profils bzw. einer Profil-Funktion die korrekten cache-line Einstellungen aktiv zur runtime zu wählen. Die Neuheit dieser Arbeit beinhaltet im Kern zuerst die Ermittlung der statischen cache-line Eigenschaften zur systemoptimierten binary-Kompilation als Automatisierung der Optimierung. Wir erweitern damit cache-oblivious Verhalten mit gemessenem Wissen über die heuristisch wahrscheinlich korrekte Lokalität und können damit bewusste Entscheidungen mithilfe eingehender Eingangs-Lasten über die Suchalgorithmus-Funktionen und schichten treffen.
 Moderne Prozessoren schalten mehrere Cache-Ebenen (L1, L2, L3) zwischen die Register und den
 Hauptspeicher. Daten werden zwischen diesen Ebenen in festen Einheiten übertragen, den
 \emph{Cache-Lines}, typischerweise 64\,Byte. Ein Zugriff, der sein Datum in einer Cache-Ebene
@@ -25,7 +27,7 @@ Stand der Technik (Kapitel~\ref{ch:sota}) wiederholt auf und motivieren die Layo
 und Hardware-Achsen der vorgeschlagenen Engine.
 
 \section{Klassen von Suchstrukturen}\label{sec:search-classes}
-
+% Die als großes Bild dargelegten SUchbäume und Suchalgorithmen sind korrekt, aber dieses Kapitel muss alle Bestandteile eines Suchalgorithmus und der einzelnen Typen von Suchalgorithmen im Bezug auf die von uns im Code gefundenen Achsen vollständig als Unterkapitel aufgliedern. Unsere Arbeit besteht schließlich im Kern aus deren "Sezierung". Alle bekannten Paper belegten Suchalgorithmen aufzulisten, mit Quellen zu versehen und kurz zu benennen ist die eine Sache, deren Interna in Achsen Algorithmen zu sezieren, sodass eine Basis an gleichen Achsen (mit je veriablen Algorithmen) als Entwurfsraum erkennbar bleibt, ist die andere Sache. Wir listen also alle Algorithmen als Ganzes allgemein für die Typen der "Lebewesen" Gesamtalgorithmen und danach Zerlegen wir erst im Stand der Technik alle "Lebewesen" Gesamtalgorithmen in jede Achse einzeln mit den laut Papern bekannten Algorithmen, ordnen aber die "Organe"-Algorithmen einer Achse zu und verweisen nur ganz kurz zu welchem "Lebewesen" sie gehören
 Suchstrukturen lassen sich danach einordnen, mit welchem Mechanismus sie einen Schlüssel auf
 einen Datensatz abbilden~\cite{knuth1998taocp3}. \emph{Vergleichsbasierte} Strukturen
 lokalisieren den Schlüssel über Ordnungsvergleiche und setzen eine totale Ordnung voraus;
