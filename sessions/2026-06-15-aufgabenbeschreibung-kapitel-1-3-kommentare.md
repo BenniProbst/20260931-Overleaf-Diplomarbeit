@@ -426,3 +426,82 @@ RDM-Mirroring vs. cache-engine). Z:-Laufwerk in der Agent-Umgebung nicht gemount
 **Strukturunterschied (kein Wholesale-Restrukturieren):** Beleg front-lädt Methodik in Kap. 1; die
 Diplomarbeit hat dafür ein eigenes Kap. 6 (Evaluationsmethodik). Beleg informiert FF-Umfang + Rigor,
 nicht die Kapitelaufteilung.
+
+---
+
+## 10. Maschinen-Inventar (AP-G2a) + B+-Baum-Verifikation (AP-C1-Teil) — 2026-06-15
+
+### 10.1 Testmaschinen (lt. Doku; physische Verfügbarkeit + OS vom Autor zu bestätigen)
+Quelle: `docs/architektur/04_konzepte_saeule_b.md` §4.1 (Architekt-Beschluss 2026-05-08, „Block AO") +
+Glossar v7 §7.3 + Kap. 6 Versuchsplattformen.
+- **AMD Ryzen 9 9950X3D** (Zen 5, X3D-V-Cache): 16C/32T; asymmetrischer L3 96+32 MiB (CCD0 mit V-Cache,
+  CCD1 ohne); DDR5-5600, 64 GB. x86-Cache-Line 64 B. → `has_asymmetric_l3`.
+- **Intel Core i9-14900KS** (Raptor Lake Refresh): Hybrid 8 P + 16 E (24C/32T); cpu_core/cpu_atom-Perf-
+  Trennung Pflicht; DDR5-5600, 64 GB. Cache-Line 64 B; AVX-512 (Hybrid) i. d. R. deaktiviert.
+- **lokal Intel i7-1270P** (Alder Lake, Hybrid): bisher reale Messdaten (Doc 34, p50 479–653 ns).
+- **ZIH**: Barnard (CPU, SLURM, AVX-512) · Capella (GPU A100) · Grace Hopper (ARM Neoverse V2, SVE2,
+  via Alpha Centauri). HBM-aware.
+- **Architektur-Prinzip (kein Hardcoding):** `IPlatformProbe`-Auto-Discovery — Discover (CPUID/sysfs/
+  hwloc, statisch) + Measure (clflush-cycle, dynamisch) + Classify (`ICacheLine`-Größe / `has_asymmetric_l3`
+  / `has_hybrid_cores` / `has_hbm_tier`) + Publish + Bind. CPU-spezifische Klassen verworfen.
+- **Bestätigtes Voll-Mess-Fleet (Autor 2026-06-15)** — Laptop i7-1270P/Windows ist **NICHT** für Messwerte
+  (zu jitter-behaftet); Macs = **experimentelle Blackbox** (Apple veröffentlicht keine HW-Details):
+
+| Maschine | ISA / CPU | OS | Cache-Notiz |
+|---|---|---|---|
+| Ryzen 9 9950X3D | x86-64 Zen 5 | **Talos OS** | asym. L3 96+32 MiB |
+| Intel i9-14900KS | x86-64 Raptor Lake | **Talos OS** | Hybrid 8P+16E |
+| Odroid H4 Ultra | x86-64 Alder-Lake-N | Debian/Ubuntu | ggf. ohne L3 |
+| VisionFive 2 | **RISC-V** JH7110 / SiFive U74 | Hersteller-Debian (GNOME) | einfache Hierarchie |
+| Raspberry Pi 5 | **ARM** Cortex-A76 (BCM2712) | Ubuntu Server | — |
+| Mac Mini 2019 | x86-64 (Intel) | macOS | **BLACKBOX** |
+| Mac Mini M1 | **ARM** Apple M1 | macOS | 128 B Line · **BLACKBOX** |
+| ZIH Grace Hopper | **ARM** Neoverse V2 (GH200) | Linux HPC | SVE2 · HBM · via VPN |
+| ZIH Barnard/Capella | x86 / GPU A100 | Linux HPC | AVX-512 (Barnard) · via VPN |
+| (i7-1270P Laptop) | x86-64 Alder Lake | Windows 11 | NICHT für Messwerte |
+
+→ Span x86 + ARM + RISC-V. AP-G2b recherchiert je Maschine: Cache-Hierarchie (L3 ja/nein, Line-Größe),
+Memory-I/O, und statisch-vs-Laufzeit-Konfigurierbarkeit je OS. Speist 2.1 (Grundlagen-Beispiele) + Kap. 6
+(Versuchsplattformen erweitern).
+
+### 11. AP-G2b — Plattform-Cache-/Konfig-Recherche (read-only Explore-Agenten, 2026-06-15, quellenbelegt)
+
+Quellen: AMD/Intel ARK, ARM Cortex-A76-TRM + Neoverse-V2, SiFive-U74-Manual, StarFive-JH7110-Datasheet,
+NVIDIA-Grace-Docs, Apple-Reverse-Eng. (Dougall Johnson) + Lemire (empirisch). Macs = Blackbox (Apple geheim).
+
+| Maschine | ISA | L3? | Cache-Line | Laufzeit-Konfig (Cache/Prefetcher) je OS |
+|---|---|---|---|---|
+| Ryzen 9 9950X3D (Zen 5) | x86-64 | ja, **asym. 96+32 MiB** | 64 B | **Talos: restricted** (immutable, CAP_SYS_RAWIO blockiert → MSR-Write zur Laufzeit nicht machbar; nur Boot-Args+Reboot) |
+| i9-14900KS (Raptor) | x86-64 | ja, 36 MiB | 64 B | **Talos: restricted**; AVX-512 deaktiviert |
+| Odroid H4 Ultra (Alder-N, i3-N305, 8×E) | x86-64 | **ja, 6 MiB** (Intel ARK; + 8 MiB L2) | 64 B | **Linux: runtime-MSR möglich** (MSR 0x1A4 Prefetcher) |
+| VisionFive 2 (JH7110/U74) | RISC-V | **NEIN** | 64 B | **fixed** (riscv_hwprobe read-only; U74 ohne Prefetcher-Control) |
+| Raspberry Pi 5 (Cortex-A76) | ARM | ja, 2 MiB | 64 B | **fixed** (CTR_EL0 read-only; kein Prefetcher-Control) |
+| Mac Mini 2019 (Coffee Lake) | x86-64 | ja, 9–12 MiB | 64 B | **macOS: none** (kein User-MSR, SIP) — x86-Specs öffentlich |
+| Mac Mini M1 | ARM | SLC 16 MiB (gemessen) | **L1 64 B / L2+SLC 128 B** (gemessen) | **macOS: none/Blackbox** |
+| ZIH Grace Hopper (Neoverse V2) | ARM | ja, 114 MiB/Socket | 64 B | **fixed** (CTR_EL0 read-only); SVE2 4×128-bit |
+
+**Schlüssel-Befunde für 2.1 (grounding „je ISA+OS verschieden"):** (1) Cache-Line fast überall **64 B fix**, AUSSER
+**Apple M1: 128 B auf L2/SLC** → Binary je Plattform abstimmen. (2) **Kein L3** bei VisionFive 2 (RISC-V); Alder-N
+fraglich → bestätigt „manche vermissen einen L3". (3) Statisch-vs-Laufzeit-**Spektrum**: Linux/Intel-N = runtime-MSR;
+**Talos (Produktion) = restricted → effektiv Boot/Compile-statisch**; ARM+RISC-V = fixed/read-only; macOS = none.
+(4) Cache-Line-**Größe** nirgends zur Laufzeit änderbar (fix je Mikroarch) → **Compile-Zeit je Plattform**; zur Laufzeit
+permutierbar sind die **Software-Knobs** (`prefetch_distance`/`batch_size`/`inline_threshold`/`pool_budget`,
+`ComdareResourceControlV1`) + HW-Prefetcher (nur wo OS erlaubt) = korrekte Lesart der Neuheit.
+✅ Verifiziert: Odroid/Alder-N i3-N305 = **6 MiB L3** (Intel ARK). ⚠️ Verbleibt vor Persistierung:
+Talos-MSR-Restriktion (Agent: „restricted/unknown") — vom Autor (Talos-Betreiber) bestätigbar.
+
+### 10.2 B+-Experiment-Baum — verifiziert am Code (`experiment_tree.hpp` + `runtime_variable_loop.hpp`)
+Bestätigt: „jeder Achse ist eine dynamische Konfigurations-Permutation unterstellt".
+- `enum NodeKind{Static,Dynamic}` + `AxisLevel{…, bool is_static, …}` → jede Achse = Baum-Ebene, static
+  **oder** dynamic, gleichrangig. `StaticAxisNode` (compile-time → je Pfad eine Tier-Binary) vs.
+  `DynamicVariableNode` (`is_runtime_loop()=true`, virtuelle for-Schleife).
+- `RuntimeVariableLoop` (KF-7): durchläuft dyn. Dimensionen auf EINER geladenen Binary (kein Neu-Bau),
+  wendet je Kombination `ComdareResourceControlV1` an (`thread_count`/`prefetch_distance`/`pool_budget_bytes`/
+  `batch_size`/`inline_threshold_bytes`) via `tier_apply_resource_control`.
+- **Cache-Line/Prefetcher:** „architektonische Laufzeit-Ausnahmen (z. B. `hw_prefetcher` via MSR `0x1A4`)
+  … erst vom SLURM/MSR-Launcher angewandt (KF-12, Cluster-gated)" → hardware-nahe Settings dort angewandt,
+  wo Architektur+OS+Rechte es erlauben.
+- ⇒ Experiment permutiert **statische Lebewesen-Binary × Laufzeit-Konfiguration**.
+- **Korrigierte Rahmung 2.1.2/2.1.5/2.4.3 — drei Dynamik-Ebenen:** (1) compile-time (statische Binary, 19
+  Achsen) · (2) run-time Resource-Control-POD (dyn. Sub-Achsen) · (3) architektonisch (MSR-gated, z. B.
+  `hw_prefetcher`), je Architektur+OS verfügbar oder nicht.
