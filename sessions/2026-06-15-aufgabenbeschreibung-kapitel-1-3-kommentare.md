@@ -387,5 +387,42 @@ Lebewesen-Unterklassen (SearchAlgorithm/Set/Sequence/Adapter/View) > 19 Achsen (
 **Großer-Beleg-Befund (Korrektur zur Q3-Antwort):** Das Zip enthält die **ZIH-Vorlagen-Anleitung**
 (`doku.tex`/`doku.toc` = „Die ZIH-Formatvorlage"/„Diplomarbeiten…"/„Umlaute") + die eigenen
 Diagramme (`Flaw1–10`, `Snowflake`, `StructureNode`). Der kompilierte Fließtext ist das
-Template-Handbuch, nicht die Topologie-Arbeit. → Klärung, wo der tatsächliche Großer-Beleg-Fließtext
-liegt (für AP-E1, nicht blockierend).
+Template-Handbuch, nicht die Topologie-Arbeit. **Aufgelöst:** Autor stellte den echten Beleg als
+`thesis/20250917_Großer_Beleg.pdf` bereit (read-only ausgewertet, s. §9).
+
+---
+
+## 9. Großer-Beleg-Strukturanregungen (AP-E1, read-only aus `thesis/20250917_Großer_Beleg.pdf`)
+
+Eigener Großer Beleg des Autors: **„LRDMSim with fragmented Network optimization – Snowflake"**
+(TU Dresden, Prof. Aßmann, Tutor Dr. Götz, 2025-09). Bewährte, angenommene Struktur + Methodik
+desselben Autors → Struktur-/Methodik-Vorlage (Provenienz = Autor), NICHT Inhalt (anderes Thema:
+RDM-Mirroring vs. cache-engine). Z:-Laufwerk in der Agent-Umgebung nicht gemountet; daher PDF im Repo-`thesis/`.
+
+**Struktur-Vorlage (TOC):**
+- Kap. 1 Introduction: 1.1 Background/Task · 1.2 **sechs** Research Questions · 1.3 Objective/Scope ·
+  1.4 Research Methodology (ZOPP-lite Logical Framework · Methodological Principles · System/Topology
+  Model · Instrumentation/Metrics/Invariants · Generic Experimental Procedure · Data Management/
+  Reproducibility · Validity Considerations) · 1.5 per-RQ-Methodik (je RQ: Hypotheses · Design factors ·
+  Failure models · Response variables · Instrumentation · Procedure · Analysis plan · Evaluation
+  criteria · Threats to validity).
+- Kap. 2 Fundamentals: Graph-Theoretic · Network/Performance · Simulation Semantics · Structural
+  Compositions · Metrics and Indicators · Software-Engineering Terms (Adapter-Based Integration) ·
+  Assumptions and Boundaries.
+- Kap. 3 Problem Analysis (je Abschnitt: Occurring Problems / Consequence / Solution; inkl.
+  „Architecture, Design and Effective project transformation").
+- Kap. 4 Concept (alle Domänen-Klassen als Subsubsections; Pattern Builder/Factory/Strategy/Command).
+- Kap. 5 Evaluation/Results · Kap. 6 Outlook (inkl. „Architectural Refactoring"). Anhänge A–F + Declaration.
+
+**Map auf unsere APs:**
+- **AP-E3** (FF erweitern): Autor-Stil = 6 RQ mit voller Methodik je RQ → stützt „3 FF sind zu wenig".
+- **AP-G8** (Wiss. Messen): ZOPP-lite + Methodological Principles (Reproducibility/Determinism, Isolation,
+  Measurement Validity, Fair Comparisons, Lean Footprint, Transparency) + Validity (internal/construct/
+  external) = bewährte Mess-/Güte-Begriffe des Autors.
+- **AP-G7/AP-S2** (Design-Pattern): RQ5 = „which design patterns … most effective"; Pattern-Katalog
+  (Builder/Factory/Strategy/Command); 6.3 Architectural Refactoring; `Flaw1–10`-Diagramme.
+- **AP-G3** (Klassen/Achsen als Unterkapitel): Kap.-4-Muster „jede Baustein-Klasse als Subsection".
+
+**Strukturunterschied (kein Wholesale-Restrukturieren):** Beleg front-lädt Methodik in Kap. 1; die
+Diplomarbeit hat dafür ein eigenes Kap. 6 (Evaluationsmethodik). Beleg informiert FF-Umfang + Rigor,
+nicht die Kapitelaufteilung.
