@@ -127,11 +127,14 @@ Gate-1-Kardinalität = exakt 137.594.142.720.000 (≈1,4·10^14, `test_br1_full2
   DE-Entwicklung dieser Kapitel erneut nachziehen. Methode (für künftige DE-Änderungen): DE voll lesen → getreue
   EN-Entsprechung (Äquivalenz Pflicht, keine neuen Ideen, RQ statt FF, `\label`/`\cite` erhalten) → `build.ps1
   -Lang en` → Commit. Der §4a-Residuum (EN-P20-LeanStore) ist damit erledigt.
-- **#80 AP-Z1** ← NÄCHSTES. SLUB-/TU-Dresden-Beschaffung historischer/Exoten-PDFs (van-Emde-Boas 1975, Fusion
-  Tree, y-fast Trie, PATRICIA 1968, Trie 1959/60 …) zum Volltext-Lesen. **Benötigt User-Login (Bibliotheks-Portal)**
-  — ich kann die Beschaffungs-Liste + Bib-Metadaten (web-verifiziert) vorbereiten, die PDFs aber nicht selbst ziehen.
-- **#81 AP-Z2** Bib-Fill: literatur.bib hat alle in Kap. 1–3 zitierten Keys (verifiziert); offen = Bib-Einträge für
-  die noch per P-ID/Name (ohne `\cite`) referenzierten Korpus-Paper (~50), damit sie zitierfähig werden — web-verifiziert.
+- **#81 AP-Z2 ✅ ERLEDIGT (2026-06-16, `6b6f3e2`).** 41 web-verifizierte Korpus-Einträge (SOTA P08/P09/P11–P33 +
+  Allokatoren) via 4-Agenten-Workflow `wdgknzjqu` (Quelle Doc 18 + Direktquellen, keine Wikipedia) in `literatur.bib`
+  (jetzt 96 Einträge); Korpus-Übersicht 3.1.1 DE+EN auf `\cite` umgestellt (33 SOTA + 9 Allokatoren in der
+  Bibliografie). Unpublished-Paper sauber `note={To appear}`. 7 Allokator-Einträge (scalloc/rpmalloc/lrmalloc/
+  dlmalloc/cama/vmem/michael-lockfree) = verfügbare orphans (zitierbar bei Detail-Diskussion, z.B. tab:allocator-profiles).
+- **#80 AP-Z1 — Liste fertig (User-Aktion).** Beschaffungs-/Finalisierungs-Liste = `sessions/2026-06-16-AP-Z1-beschaffungsliste.md`
+  (13 Paper: 8 paywalled-publiziert → **dein SLUB/TU-Dresden-Login**; 5 unpubliziert/„to appear" → Metadaten beim
+  Erscheinen finalisieren). P-ID→Key-Map: `sessions/ap-z1-z2-keymap.json`. PDF-Zug + DOI-Finalisierung = nicht von mir machbar.
 - **#79 AP-G5-Anhang ✅ ERLEDIGT (2026-06-16, `879945d`).** Dedizierter **Anhang F** `app:interfaces`
   (`anhang/{de,en}/F_comparison_interfaces.tex`): 3 `longtable`s je Sprache — volles `std::map`- und
   `std::vector`-Interface (C++23) + Zusammensetzungs-Tabelle; †=Konformitäts-Teilmenge; ISO-C++-belegt; via
