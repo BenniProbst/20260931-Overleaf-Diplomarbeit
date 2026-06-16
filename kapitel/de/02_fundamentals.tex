@@ -276,10 +276,34 @@ nicht-YCSB-Frameworks erfolgt über einen Datensatz-Lader.
 % [AP-G8] NEU (verifiziert fehlend). Vgl. Kapitel-Schluss-Kommentar (Mess-Thema + Grundlagen/SoTA-Verzahnung).
 
 \subsection{Gütekriterien wissenschaftlichen Messens}\label{ssec:measurement-criteria}
-% [AP-G8] folgt: Reproduzierbarkeit, Validitaet, Fairness + wiss. Quellen
+Wissenschaftliches Messen unterliegt etablierten Gütekriterien~\cite{hoefler2015benchmarking}.
+\emph{Reproduzierbarkeit} verlangt feste Zufalls-Seeds, eine deterministische Ausführungsreihenfolge
+und vollständig dokumentierte Mess-Konfigurationen, sodass ein Lauf bit-genau wiederholbar ist.
+\emph{Validität} gliedert sich in interne (kausal sauber isolierte Effekte), Konstrukt- (die Metrik
+misst tatsächlich das gemeinte Konzept) und externe Validität (Übertragbarkeit auf andere
+Plattformen und Lasten). \emph{Fairness} fordert identische Eingaben --- gleiche Schlüssel,
+Workloads und Warmup --- für alle Vergleichskandidaten; fehlende Fähigkeiten einer Baseline werden
+als \emph{N/A} ausgewiesen statt über Hilfskonstrukte verdeckt emuliert. Schließlich ist die
+\emph{Streuung} Teil der Aussage: statt arithmetischer Mittel werden Perzentile über
+HDR-Histogramme berichtet und die statistische Signifikanz von Unterschieden
+geprüft~\cite{hoefler2015benchmarking}.
 
 \subsection{Verwendete Mess-Muster und -Konzepte}\label{ssec:measurement-patterns}
-% [AP-G8] folgt: welche Muster/Konzepte; das WARUM erst in Kap. 4
+Auf diesen Kriterien bauen mehrere Mess-Muster auf, deren \emph{Warum} erst
+Kapitel~\ref{ch:concept} entwickelt. Eine \emph{Zwei-Phasen-Operationsschleife} trennt einen
+verworfenen Warmlauf von der eigentlichen Messung und entkoppelt so die Latenz vom akkumulierten
+Zustand. Die Erhebung erfolgt \emph{hybrid} auf zwei Wegen: isolierte Achsen-Algorithmen werden
+direkt gegeneinander vermessen, während ein zusammengesetztes Lebewesen zentral über eine
+ABI-stabile Beobachter-Schnittstelle (Per-Achsen-Observer) erhoben wird. Ein
+\emph{Konformitäts-Gatter} prüft vor jeder Messung, dass eine Implementierung den
+\texttt{std::map}-Vertrag erfüllt, damit nur Vergleichbares verglichen wird; jede Konfiguration
+wird in mehreren getrennten Läufen mit ausgewiesener Streuung erhoben.
+
+Diese Konzepte bilden die \emph{Definitions-Klassen} des Messens; der Stand der Technik
+(Kapitel~\ref{ch:sota}) führt die \emph{Instanzen} an, die sie technisch umsetzen --- etwa
+Hardware-Performance-Zähler (PMC), die OTF2-/VAMPIR-Profiling-Werkzeuge oder die
+TU-Dresden-Hardware-Messmethodik. So greifen Grundlagen und Stand der Technik unmittelbar
+ineinander.
 
 \section{C++23-Metaprogrammierung und Design-Pattern}\label{sec:cpp23}
 % Korrekt aber zu grob. In der heutigen Zeit sind klassische Software-Design Pattern bekannt, die wir möglicherweise nur ganz kurz als Grundlage über die verwendeten darlegen sollten, aber durch das Aufkommen von Metaprogrammierung in C++ entstehen auch hier neue und teils noch unbekannte/unbenannte Designpattern, denen wir Namen und Bedeutung geben sollten, dazu gehört auch eine Webrecherche, ob jemand diese schon definiert hat. Denn einen PRT-ART als Prüfling gegen ein bestehendes Konstrukt in Matrix-Schichten zu kompilieren ist ein neuartiges komplexes Konzept und in der Welt der Software-Architektur möglicherweise unbekannt.
