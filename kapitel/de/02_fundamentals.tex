@@ -53,19 +53,37 @@ Für Suchstrukturen ist der dTLB die zweite, eigenständige Lokalitätsgrenze ne
 große oder weit gestreute Knoten erhöhen den dTLB-Druck unabhängig von der Cache-Auslastung,
 weshalb große Seiten (Huge-Pages, 2\,MiB/1\,GiB) den TLB-Reach vergrößern.
 
-\subsection{Cache-Kohärenz und Write-Back je ISA}\label{ssec:coherence}
+\subsection{Cache-Kohärenz, Schreib- und Update-Verhalten je ISA}\label{ssec:coherence}
 Schreibzugriffe behandeln Caches nach zwei Grundstrategien: \emph{Write-Through} schreibt
 unmittelbar bis in die nächste Ebene durch, während \emph{Write-Back} die Änderung zunächst nur
 in der Cache-Line vermerkt (\emph{dirty}) und erst bei deren Verdrängung zurückschreibt --- das
-spart Bus-Verkehr und senkt die Schreiblatenz~\cite{hennessy2019architecture}. In
-Mehrkern-Systemen sichert ein \emph{Kohärenzprotokoll} die Konsistenz gemeinsam genutzter Linien;
+spart Bus-Verkehr und senkt die Schreiblatenz~\cite{hennessy2019architecture}. Orthogonal dazu legt
+die \emph{Allokations-Politik} fest, wie ein Schreib-Fehlzugriff behandelt wird: \emph{Write-Allocate}
+lädt die Ziel-Line zuerst in den Cache (typisch bei Write-Back), \emph{No-Write-Allocate} schreibt
+direkt zur nächsten Ebene durch (typisch bei Write-Through). ARMv8 macht diese Wahl über
+Seiten-Attribute --- Write-Through, Write-Back oder Non-Cacheable sowie Read- bzw.\ Read-Write-Allocate
+--- explizit~\cite{arm_arm}, während x86 als Normalfall Write-Back mit Write-Allocate
+verwendet~\cite{intel_sdm}.
+
+Welche Line bei einem Fehlzugriff \emph{verdrängt} und damit ersetzt wird, entscheidet eine
+\emph{heuristische Ersetzungsstrategie}. Neben exakten und approximierten Klassikern (LRU, Pseudo-LRU)
+sind scan- und thrash-resistente Verfahren verbreitet: die \emph{Re-Reference Interval Prediction}
+(RRIP, dynamisch DRRIP) kommt mit zwei Bit je Line aus~\cite{jaleel2010rrip} und baut auf der
+adaptiven Insertions-Politik auf~\cite{qureshi2007adaptive}. Wie viele Ebenen eine Line zugleich
+führen, regelt schließlich die \emph{Inklusions-Politik}: ein \emph{inklusiver} Cache hält jede Line
+der höheren Ebenen redundant, ein \emph{exklusiver} (Victim-Cache) schließt sie aus, ein
+\emph{nicht-inklusiver} lässt beides zu~\cite{hennessy2019architecture}.
+
+In Mehrkern-Systemen sichert ein \emph{Kohärenzprotokoll} die Konsistenz gemeinsam genutzter Linien;
 das verbreitete, invalidierungsbasierte \emph{MESI}-Protokoll führt jede Line in einem der
 Zustände \emph{Modified}, \emph{Exclusive}, \emph{Shared} oder \emph{Invalid}, herstellerseitig
 um Varianten wie MOESI (AMD) oder MESIF (Intel) erweitert~\cite{hennessy2019architecture}. Welche
-Write-Policy und welches Protokoll konkret greifen, ist Teil der ISA- und
-Mikroarchitektur-Definition; ihre Wirkung --- insbesondere das \emph{Cache-Line-Ping-Pong} bei
-konkurrierenden Schreibzugriffen auf dieselbe Line --- motiviert die Telemetrie- und
-Nebenläufigkeits-Achsen der Engine (Kapitel~\ref{ch:concept} und~\ref{ch:impl}).
+Schreib-, Allokations-, Ersetzungs-, Inklusions- und Kohärenz-Strategie konkret greift, ist je ISA
+und je Cache-Ebene Teil der Mikroarchitektur-Definition und zur Laufzeit nicht wählbar; ihre konkreten
+Ausprägungen führt der Stand der Technik an (Abschnitt~\ref{sec:sota-cache}), und ihre Wirkung ---
+insbesondere das \emph{Cache-Line-Ping-Pong} bei konkurrierenden Schreibzugriffen auf dieselbe Line
+--- motiviert die Telemetrie- und Nebenläufigkeits-Achsen der Engine (Kapitel~\ref{ch:concept}
+und~\ref{ch:impl}).
 
 \subsection{Cache-bewusst und cache-oblivious}\label{ssec:aware-oblivious}
 Eine Datenstruktur ist \emph{cache-bewusst} (\emph{cache-aware}), wenn ihr Layout auf konkrete
@@ -231,7 +249,7 @@ Laufzeit-Schleifen über derselben Binary. Erst dadurch wird je Interface-Funkti
 sie intern verdrahtet ist --- ein Aspekt, den ein eigenes Entwickler-Dokument der Cache-Engine
 vertieft.
 
-\section{Lasten und Workloads}\label{sec:workloads}
+\section{Lasten und Workloads}\label{sec:workloads-basics}
 % Simples Feedback: Was ist eine Last? Was ist ein Workload? Was ist das Ziel der Variation? Welche Workloads konnten über ALLE Paper recherchiert werden, die derzeit in der Diplomarbeit gelistet sind? Welche Messdaten stecken per Diplomarbeit Dokumentation genau hinter den verwendeten Workloads, woraus bestehen sie? Gibt es Lastprofil-playbooks die mit multiplen Interface Anfragen durchgeführt werden oder handelt es sich bezüglich des Inerfaces um isolierte und unrealistische Einzelzugriffe? Bezüglich der Workloads erwarte ich auch zuerst ein verallgemeinertes Hauptkapitel und dann die Frameworks, welche diese Workloads bereitstellen können, denn durch die große Verteilung verschiedener Workloads und nicht vergleichbarer Lasten über multiple Paper und Suchalgorithmen, sind wir gezwungen ALL DIESE gegen alle Lebewesen-Binaries also Suchalgorithmen (und zusätzlich Container) angepasst laufen zu lassen, um die absolute Vergleichbarkeit aus den Messwerten zu ermitteln.
 \subsection{Begriff: Last, Workload und Ziel der Variation}\label{ssec:load-terms}
 Eine \emph{Last} (Operation) ist ein einzelner Aufruf der Such-Schnittstelle --- eine Punktanfrage,
