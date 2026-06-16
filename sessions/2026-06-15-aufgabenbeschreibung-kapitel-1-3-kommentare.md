@@ -525,6 +525,37 @@ C02-1 Z2 Teilkapitel → **AP-G1 ✓** · C02-2 Z11 Cache/dyn/novelty → **AP-G
 - KEIN `Co-Authored-By`-Trailer · nur User-Ideen/zitierte Quellen persistieren (Vorschlag→Abnahme→persist) · DE führt/EN folgt · BELASSEN Autor-Kommentare bis Abnahme · Reihenfolge Kap.2→3→1 · je AP: Stichpunkte→Abnahme→Ausformulierung.
 - **LEKTION 2026-06-16:** NICHT aggressiv löschen/falten — geforderte Detailtiefe (Unter-/Unterunterabschnitte + Belege) NICHT zu Kurzabsätzen kollabieren; Substanz erhalten.
 
+---
+
+## 13. Workload-Framework-Survey (AP-G6, 4 read-only Explore-Agenten, 2026-06-16)
+
+**Befund: weit mehr als YCSB.** Korpus laut Survey unverändert **33 SOTA + 23 Allokatoren** (KEINE neuen
+Paper in den Docs gefunden — falls neue, noch undokumentierte Paper existieren, vom Autor nachzureichen).
+Distinkte Frameworks (für 2.4.2 + AP-CE2):
+
+| Framework | Typ | Paper (Beispiele) | YCSB? |
+|---|---|---|---|
+| YCSB | KV-Workload | P02,P03,P07,P20,P26 | JA |
+| SOSD (Search On Sorted Data) | Index-Benchmark (FB/OSM/Books) | P05 (verifizieren) | nein |
+| TPC-C / TPC-DS | OLTP/analytisch | P19 (MySQL/InnoDB), tpcds-id | nein |
+| Real-String-Korpora | String-Datasets | P04 (urls/dna), P06, P10 | nein |
+| RocksDB-Integration | Real-System | P10 SuRF | nein |
+| SPEC CPU 2006/2017 | CPU-Suite | P23, P24, P27, A18 | nein |
+| CloudSuite | Scale-Out-Server | P24, P27 | nein |
+| gem5 | Architektur-Simulation | P27 | nein |
+| IBM DB2 (Produktion) | Real-DBMS | P22 | nein |
+| mimalloc-bench | Allokator-Suite (cfrac/larsonN/sh6benchN/xmalloc-testN/cache-scratchN/…) | A04,A07,A09,A10,A18 | nein |
+| Larson / threadtest / shbench | Allokator-Klassiker | A01,A03,P08,P30 | nein |
+| LADDIS | Kernel-Allokator | A02 | nein |
+| AggSum / Memory-Stream | Bandbreite | P32 | nein |
+| Custom-Microbench (+ Zipfian/Uniform) | per-Paper | P01,P04,P06,P11–P14,P21,P28 | nein |
+| N/A (Survey/Theorie/HW) | — | P09,P15,P16,P17,P18,P31,P33 | — |
+
+**Agenten-Vorbehalt:** SOSD@P05 + einige Custom/Unknowns sind nur Hinweise → vor Persistierung verifizieren.
+2.4.2 fasst diese Frameworks (Plural); **AP-CE2** = Impl-Agent baut die Nicht-YCSB-Frameworks (TPC, SOSD,
+Real-Korpora, SPEC/CloudSuite-Profile, Allokator-Benches) als Workload-Achse ein. Bib via AP-Z1/Z2:
+Cooper 2010 (YCSB), Kipf/Marcus (SOSD), TPC, SPEC, mimalloc-bench.
+
 ### 10.2 B+-Experiment-Baum — verifiziert am Code (`experiment_tree.hpp` + `runtime_variable_loop.hpp`)
 Bestätigt: „jeder Achse ist eine dynamische Konfigurations-Permutation unterstellt".
 - `enum NodeKind{Static,Dynamic}` + `AxisLevel{…, bool is_static, …}` → jede Achse = Baum-Ebene, static
