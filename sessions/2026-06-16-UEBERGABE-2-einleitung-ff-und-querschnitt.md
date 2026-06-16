@@ -115,10 +115,15 @@ wird ohnehin aus finalem DE neu gezogen). (b) **cache-engine-Repo (Impl-Agent):*
   -Lang en` → Commit. Der §4a-Residuum (EN-P20-LeanStore) ist damit erledigt.
 - **#81 AP-Z2** Bib-Fill: literatur.bib ist schon weit (alle in Kap. 1–3 zitierten Keys vorhanden + verifiziert);
   Rest = noch nicht zitierte Korpus-Paper bei Bedarf. **#80 AP-Z1** SLUB-Beschaffung historischer/Exoten-PDFs.
+- **#79 AP-G5-Anhang ✅ ERLEDIGT (2026-06-16, `879945d`).** Dedizierter **Anhang F** `app:interfaces`
+  (`anhang/{de,en}/F_comparison_interfaces.tex`): 3 `longtable`s je Sprache — volles `std::map`- und
+  `std::vector`-Interface (C++23) + Zusammensetzungs-Tabelle; †=Konformitäts-Teilmenge; ISO-C++-belegt; via
+  6-Agenten-Workflow verifiziert (C++23/C++26 abgegrenzt). In `diplomarbeit.tex` eingebunden, Kap.-2.3-Refs
+  (DE+EN) auf `\ref{app:interfaces}` präzisiert. DE 82 S. / EN, beide 0 undefined / 0 Overfull>50pt.
 - **#74 AP-C1** Code-Gegenprüfung: durch die Querschnitt-Verifikation weitgehend erledigt (Text↔Code stimmt).
-- **#78 AP-M1** Experiment-OS (Talos + root-Ubuntu) + Kap. 6 Plattformen; **#79 AP-G5-Anhang** Voll-Interface-
-  Tabellen; **#83 AP-CE1**/**#84 AP-CE2** = Impl-Agent (cache-engine).
-- Erledigt: #59–#69 (AP-E1, G1–G8, S1, S2), #70 (E2), #72 (E4), #73 (E5), #75–#77.
+- **#78 AP-M1** Experiment-OS (Talos + root-Ubuntu) + Kap. 6 Plattformen = zukunftsoffen (braucht Messläufe);
+  **#83 AP-CE1**/**#84 AP-CE2** = Impl-Agent (cache-engine).
+- Erledigt: #59–#69 (AP-E1, G1–G8, S1, S2), #70 (E2), #71 (E3), #72 (E4), #73 (E5), #75–#77, #82 (AP-EN), #79.
 
 ## §6 — Schlüssel-Dokumente + Workflow-Outputs
 | Doc | Pfad | Zweck |
