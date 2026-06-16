@@ -106,14 +106,13 @@ wird ohnehin aus finalem DE neu gezogen). (b) **cache-engine-Repo (Impl-Agent):*
 03_cross_paper_konzeptmatrix.md` Z.152 „P20 LeanStore" + `permutation_axes.xml` „11 Achsen REV7.6" = SUPERSEDED.
 
 ## §5 — Verbleibende Arbeitspakete (nach AP-E3)
-- **#82 AP-EN** ← **NÄCHSTES (in Arbeit).** EN-Kapitel aus finalem DE nachziehen. **EN nutzt RQ-Labels (nicht FF):
-  RQ0--RQ4.** Stand: **EN 01 ✅** (`2ec4973`), **EN 08 ✅** (`0373a3d`); **EN 04--07 ≈ DE** (diese Session nicht
-  geändert, in sync). **VERBLEIBT: EN 02 + EN 03** = die großen (DE 02 ~336 Z. inkl. 2.1.4 Cache-Update +
-  Achsen-Unterkapitel; DE 03 ~499 Z. voller Instanz-Spiegel). **Die 2 noch offenen EN-Overfull > 50 pt liegen in
-  den alten EN 02/03 und verschwinden beim Angleichen.** Methode: DE-Kapitel voll lesen → getreue EN-Entsprechung
-  (Äquivalenz Pflicht, keine neuen Ideen) → `build.ps1 -Lang en` → Commit je Kapitel. **Noch zu prüfen:** EN-
-  `hw-sched`-Tabelle „P20 LeanStore"-Fix (§4a) sitzt in EN 03; **EN-Glossar** `anhang/en/C_glossary.tex` an DE-
-  Glossar angleichen (Begriffe probe/genus/living being/ranks …).
+- **#82 AP-EN ✅ ERLEDIGT (für aktuellen Stand, 2026-06-16).** EN nutzt **RQ-Labels** (RQ0--RQ4). Gespiegelt:
+  **EN 01** (`2ec4973`), **EN 08** (`0373a3d`), **EN 02+03** (`6646a94`, inkl. „P20 B-Trees Are Back"-Fix in
+  hw-sched), **EN-Glossar** (`6fe710d`). EN-Build sauber: 72 S., 0 undefined, 0 Overfull > 50 pt. **EN 04--07 sind
+  deckungsgleich mit den noch zukunftsoffenen DE 04--07** (diese Session nicht geändert) → bei späterer
+  DE-Entwicklung dieser Kapitel erneut nachziehen. Methode (für künftige DE-Änderungen): DE voll lesen → getreue
+  EN-Entsprechung (Äquivalenz Pflicht, keine neuen Ideen, RQ statt FF, `\label`/`\cite` erhalten) → `build.ps1
+  -Lang en` → Commit. Der §4a-Residuum (EN-P20-LeanStore) ist damit erledigt.
 - **#81 AP-Z2** Bib-Fill: literatur.bib ist schon weit (alle in Kap. 1–3 zitierten Keys vorhanden + verifiziert);
   Rest = noch nicht zitierte Korpus-Paper bei Bedarf. **#80 AP-Z1** SLUB-Beschaffung historischer/Exoten-PDFs.
 - **#74 AP-C1** Code-Gegenprüfung: durch die Querschnitt-Verifikation weitgehend erledigt (Text↔Code stimmt).
