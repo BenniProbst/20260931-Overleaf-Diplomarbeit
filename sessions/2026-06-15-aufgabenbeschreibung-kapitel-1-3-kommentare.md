@@ -490,6 +490,41 @@ permutierbar sind die **Software-Knobs** (`prefetch_distance`/`batch_size`/`inli
 ✅ Verifiziert: Odroid/Alder-N i3-N305 = **6 MiB L3** (Intel ARK). ⚠️ Verbleibt vor Persistierung:
 Talos-MSR-Restriktion (Agent: „restricted/unknown") — vom Autor (Talos-Betreiber) bestätigbar.
 
+---
+
+## 12. Detaillierter TODO-/Status-Audit (2026-06-16, gesamte Session)
+
+### 12.1 Kapitel-2-Struktur (Ist nach Umnummerierung)
+| Sektion | Status |
+|---|---|
+| 2.1 Cache-Hierarchie (2.1.1–2.1.5) | **ausformuliert** (AP-G2 ✓) |
+| 2.2 Klassen von Suchstrukturen (2.2.1 fremd / 2.2.2 Container / 2.2.3 eigen) | Struktur ✓ (AP-G3); **C02-4 OFFEN** — Such-/Baum-Klassen nur 2-Satz-Faltung statt „alle Kategorien als Unter-/Unterunterabschnitte + Belege" → **AP-G4 reopen** |
+| 2.3 Einheitliche Vergleichsinterfaces (Hüllen) | Skelett; AP-G5 (Variante 1: Kern 2.3 + Voll-Tabelle Anhang) |
+| 2.4 Lasten und Workloads | Skelett; AP-G6 |
+| 2.5 Wissenschaftliches Messen | Skelett; AP-G8 |
+| 2.6 C++23-Metaprog + Design-Pattern | Skelett; AP-G7 |
+
+### 12.2 Autor-Kommentare → AP-Status
+C01-1 Z45 Glossar+Ränge → **AP-E2** offen · C01-2 Z46 FF aus Terminen → **AP-E3** offen · C01-3 Z47 FF aus Papern+Web → **AP-E3** offen · C01-4 Z66 Zielsetzung+Schichten → **AP-E4** offen · C01-5 Z91 Achsen-Repos/Sub-Achsen/60–80 S/SoTA-Design-Pattern/SE-TUD → **AP-E5+AP-S2** offen · C01-6 Z102 Großer Beleg → **AP-E1 ✓**
+C02-1 Z2 Teilkapitel → **AP-G1 ✓** · C02-2 Z11 Cache/dyn/novelty → **AP-G2 ✓** · C02-3 Z30 Klassen als Achsen → **AP-G3 ✓ (Struktur)** · C02-4 Z47 Trie/Baum alle Kategorien+sub/subsubsections+Belege → **AP-G4 OFFEN** · C02-5 Z59 std::vector+ALLE Funktionen+Tests+Dynamik → **AP-G5** (Variante 1) · C02-6 Z71 Workloads → **AP-G6** offen · C02-7 Z80 Design-Pattern → **AP-G7** offen · C02-8 Z89 Wiss. Messen+Verzahnung → **AP-G8** offen
+
+### 12.3 Neue/abgeleitete Aufgaben (Session 2026-06-15/16)
+- **#63 AP-G4 (reopen):** 2.2 Such-/Baum-Klassen ausführlich (class-level Unterabschnitte + Belege; Instanzen→Kap.3).
+- **#79 AP-G5-Anhang:** Voll-Tabelle aller std::map+std::vector-Funktionen + Semantik + Tests (Variante 1).
+- **#80 AP-Z1:** Zitat-Beschaffung SLUB (de la Briandais 1959, Fredkin 1960, Morrison 1968, van Emde Boas 1975, Fredman/Willard 1993, Willard 1983, Pagh/Rodler Cuckoo, SwissTable, Apple-M-128B).
+- **#81 AP-Z2:** Bib-Fill ~54 SOTA+Allokator-Paper (literatur.bib hat erst 13) aus `forschungslandkarte/01_quellen_gesamtkatalog.md`.
+- **#82 AP-EN:** EN-Kapitel aus finalem DE nachziehen (je Kapitel; kein Lockstep).
+- **#83 AP-CE1:** cache-engine-Doku „function-handle-hops" (C02-5, cache-engine-seitig).
+- **#78 AP-M1:** Experiment-OS (Talos + root-Ubuntu, sequentiell) + Kap.6 Versuchsplattformen (Voll-Fleet + Dual-OS).
+- **#74 AP-C1:** Code-Gegenprüfung (laufend).
+
+### 12.4 Offene Beleg-TODO-Marker im Text
+- 2.1.2 Apple-128B (Primärquelle nachtragen) · 2.2.1 Exoten (vEB/Fusion/y-fast) · 2.2.1 Trie (de la Briandais/Fredkin/Morrison). → alle via **AP-Z1**.
+
+### 12.5 Governance + Lektion
+- KEIN `Co-Authored-By`-Trailer · nur User-Ideen/zitierte Quellen persistieren (Vorschlag→Abnahme→persist) · DE führt/EN folgt · BELASSEN Autor-Kommentare bis Abnahme · Reihenfolge Kap.2→3→1 · je AP: Stichpunkte→Abnahme→Ausformulierung.
+- **LEKTION 2026-06-16:** NICHT aggressiv löschen/falten — geforderte Detailtiefe (Unter-/Unterunterabschnitte + Belege) NICHT zu Kurzabsätzen kollabieren; Substanz erhalten.
+
 ### 10.2 B+-Experiment-Baum — verifiziert am Code (`experiment_tree.hpp` + `runtime_variable_loop.hpp`)
 Bestätigt: „jeder Achse ist eine dynamische Konfigurations-Permutation unterstellt".
 - `enum NodeKind{Static,Dynamic}` + `AxisLevel{…, bool is_static, …}` → jede Achse = Baum-Ebene, static
