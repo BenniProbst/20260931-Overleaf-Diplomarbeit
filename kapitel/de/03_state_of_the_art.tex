@@ -1,19 +1,99 @@
 \chapter{Stand der Technik}\label{ch:sota}
+% [AP-S1] Instanz-Spiegel von Kapitel 2 (Autor-Direktive 2026-06-16): jede Grundlagen-Definitionsklasse
+% (Kap. 2) erhaelt hier ihre wissenschaftlich nachweisbaren Instanzen. 3.1 + 3.2 sind ausformuliert; die
+% darunter folgenden Cluster-Sektionen (Cluster A--F + 3 Tabellen + Forschungsluecke) sind ROHMATERIAL und
+% werden in den naechsten AP-S1-Inkrementen in 3.3 (Achsen-Sezierung) / 3.4 (Workloads) / 3.5 (Messen) /
+% 3.6 (Architektur-Design) reorganisiert; die Forschungsluecke wird zu 3.7. Bis dahin vorlaeufige Nummerierung.
 
-Der Stand der Technik bei cache-bewussten Trie-Indexstrukturen gliedert sich in sechs
-thematische Such-Cluster (A--F) und einen parallelen Allokator-Korpus (A01--A23). Insgesamt
-wurden 33 Such-Algorithmus-Paper und 21 Allokations-Paper tiefenanalysiert; die Ergebnisse
-liegen als persistierte XML-Konfigurationen unter \texttt{algorithm\_profiles/} in der
-\texttt{comdare-cache-engine} vor. Die vollständigen Bausteine- und Allokator-Matrizen finden
-sich in Anhang~\ref{app:blocks}. Als nicht-baumartige Gegenprobe innerhalb derselben
-Suchalgorithmus-Gattung tritt zusätzlich eine reine Hash-Tabelle
-(\texttt{absl::flat\_hash\_map}/SwissTable) an: Sie realisiert dasselbe
-\texttt{std::map}-Interface über ein \emph{limitiertes Achsen-Subset} --- die baum- und
-trie-spezifischen Achsen (Pfadkompression, Knotentyp, Bereichs-Index) entfallen als
-Durchreich-Variante, während Allokation, Prefetch, Nebenläufigkeit, Speicher-Layout und
-ISA-SIMD (für das SwissTable-Gruppen-Lookup) geteilt bleiben. Sie belegt damit, dass das
-Achsen-Framework auch nicht-baumartige Suchverfahren trägt, ohne eine eigene Gattung zu
-erfordern.
+Wo Kapitel~\ref{ch:fundamentals} die konzeptionellen \emph{Definitions-Klassen} bereitstellt, führt
+dieser Stand der Technik ihre wissenschaftlich nachweisbaren \emph{Instanzen} an: zu jeder
+Grundlagen-Klasse die konkreten Veröffentlichungen, Algorithmen und Technologien, die sie umsetzen.
+Beide Kapitel greifen damit unmittelbar ineinander (Abschnitt~\ref{ssec:measurement-patterns}).
+
+\section{Überblick und Sezierungs-Prinzip}\label{sec:sota-overview}
+Die Analyse stützt sich auf 33 tiefenanalysierte Suchalgorithmus-Veröffentlichungen (P01--P33) und einen
+parallelen Allokator-Korpus aus 23 Arbeiten (A01--A23); die Achsen-Belegung jeder Arbeit ist als
+XML-Profil in der \texttt{comdare-cache-engine} (\texttt{algorithm\_profiles/}) persistiert, die
+vollständigen Bausteine- und Allokator-Matrizen stehen in Anhang~\ref{app:blocks}. Die
+Veröffentlichungen entstammen sechs thematischen \emph{Herkunfts-Clustern} --- Trie-Familie, Hybrid-
+und B\textsuperscript{+}-Familie, Layout-Theorie, Prefetching, Synchronisation und den hardware-nahen
+TU-Dresden-Arbeiten ---; diese Cluster dienen hier nur der Herkunfts-Einordnung, nicht als
+Gliederungsachse.
+
+Der Kernbeitrag dieser Arbeit ist die \emph{Sezierung} (Abschnitt~\ref{ssec:own-framework}): Jeder
+Gesamt-Algorithmus (ein „Lebewesen") wird in seine orthogonalen Organe --- die Achsen --- zerlegt, und
+die so gewonnenen Organ-Algorithmen werden \emph{je Achse} einsortiert, mit kurzem Verweis auf das
+Herkunfts-Lebewesen. Diese achsenweise Sezierung bildet den Kern des Kapitels; die Zuordnung
+Achse\,$\leftrightarrow$\,Algorithmus\,$\leftrightarrow$\,Veröffentlichung folgt einer web-verifizierten
+Provenienz-Map über rund 110 Organ-Algorithmen.
+
+Dass das Achsen-Gerüst auch \emph{nicht-baumartige} Verfahren trägt, belegt eine reine Hash-Tabelle
+(\texttt{absl::flat\_hash\_map}/SwissTable~\cite{abseil_swisstable}) als Gegenprobe innerhalb der
+SearchAlgorithm-Gattung: Sie erfüllt dasselbe \texttt{std::map}-Interface über ein \emph{limitiertes
+Achsen-Subset} --- die trie-spezifischen Achsen (Pfadkompression, Knotentyp, Bereichs-Index) entfallen
+als Durchreich-Variante, während Allokation, Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD
+(für das SwissTable-Gruppen-Lookup) geteilt bleiben --- und erfordert so keine eigene Gattung.
+
+\section{Cache-Konzepte als Instanzen}\label{sec:sota-cache}
+Die Cache-Hierarchie-Konzepte aus Abschnitt~\ref{sec:cache-basics} treten im Stand der Technik als
+konkrete Entwürfe und Mechanismen auf; jeder der folgenden Unterabschnitte spiegelt eine
+Grundlagen-Definition aus Abschnitt~\ref{sec:cache-basics}.
+
+\subsection{Speicher- und Cache-Ebenen}\label{ssec:sota-levels}
+Die mehrstufige Hierarchie (Abschnitt~\ref{ssec:cache-levels}) ist Gegenstand grundlegender
+Vermessungen: Graefe und Larson (P15, 2001) untersuchen B-Baum-Indizes explizit gegenüber den
+CPU-Cache-Ebenen, Bender, Demaine und Farach-Colton (P16, 2002; P17, 2005) modellieren ein
+mehrstufiges Speicher-Modell mit einem Block-Transfer-Parameter, und Zhang (P27, ASPLOS 2025) bündelt
+Prefetches hierarchisch über L1/L2/L3.
+
+\subsection{Cache-Line-bewusstes Layout}\label{ssec:sota-cacheline}
+Das cache-line-orientierte Layout (Abschnitt~\ref{ssec:cache-line-sizes}) ist der dominante
+Leitgedanke der Layout-Theorie: Der CSS-Baum (P11, Rao/Ross 1999) führt den Cache-Line-Knoten ein, der
+CSB\textsuperscript{+}-Baum (P12, Rao/Ross 2000) das zusammenhängende Geschwister-Cluster; Hankins und
+Patel (P13, 2003) vermessen den Effekt der Knotengröße, Samuel et al.\ (P14, 2005) machen den Knoten
+prozessor-bewusst. Der Adaptive Radix Tree (P01~\cite{leis2013art}) staffelt mit Node4/16/48/256 die
+Knotengröße cache-line-orientiert, und Schmidt et al.\ (P32, 2025) optimieren für die HBM-Bandbreite.
+Auf der Speicher-Layout-Achse stehen damit konkret: dichtes Array-of-Structs, cache-line-ausgerichtetes
+AoS, spaltenorientiertes Struct-of-Arrays, bit-gepacktes LOUDS (P09, Jacobson 1989) und das
+SIMD-gekachelte AoSoA.
+
+\subsection{Adressübersetzung: TLB und dTLB}\label{ssec:sota-tlb}
+Der dTLB (Abschnitt~\ref{ssec:tlb}) tritt im Stand der Technik vorwiegend als \emph{Mess-Ziel} auf ---
+die Mess-Architektur führt eine eigene dTLB-Miss-Kategorie (Abschnitt~\ref{sec:measurement-basics}).
+Algorithmenseitig adressieren ihn große Seiten (Huge-Pages), die mehrere Allokatoren (mimalloc,
+jemalloc, TCMalloc, snmalloc) unterstützen, sowie Schmidt et al.\ (P32, 2025) empirisch mit
+2-MiB-Seiten. Eine \emph{eigene} dTLB-Optimierungs-Achse bleibt in den Suchalgorithmus-Papern jedoch
+unterbelegt --- eine Beobachtung, auf die die Forschungslücke (Abschnitt~\ref{sec:gap}) zurückkommt.
+
+\subsection{Schreib-Protokolle, Update-Heuristiken und Inklusions-Politik}\label{ssec:sota-update}
+Das in Abschnitt~\ref{ssec:coherence} eingeführte Cache-Update-Verhalten ist je ISA und je Cache-Ebene
+konkret festgelegt. \emph{Schreib-Protokolle:} ARMv8 wählt Write-Through, Write-Back oder
+Non-Cacheable sowie Read- bzw.\ Read-Write-Allocate über Seiten-Attribute~\cite{arm_arm}, während x86
+als Normalfall Write-Back mit Write-Allocate verwendet~\cite{intel_sdm}. \emph{Heuristische
+Ersetzungs-/Update-Strategien:} von LRU und Pseudo-LRU bis zur \emph{Re-Reference Interval Prediction}
+(RRIP/DRRIP), die mit zwei Bit je Line scan- und thrash-resistente Verdrängung
+erreicht~\cite{jaleel2010rrip} und auf der adaptiven Insertions-Politik aufbaut~\cite{qureshi2007adaptive}.
+\emph{Inklusions-Politik:} Intel-Client-Prozessoren führen einen inklusiven L3, Intel-Server ab
+Skylake-X einen nicht-inklusiven, während AMD Zen den L3 als überwiegend exklusiven Victim-Cache
+betreibt~\cite{intel_optimization,amd_sog}. Diese drei Aspekte bestimmen gemeinsam, welche Ebenen ein
+Schreibzugriff aktualisiert; da sie mikroarchitektonisch fixiert und zur Laufzeit nicht wählbar sind,
+fließen sie als \emph{vermessene} Plattform-Eigenschaften in die systemoptimierte Binary ein
+(Abschnitt~\ref{ssec:aware-oblivious}).
+
+\subsection{Cache-bewusste und cache-oblivious Entwürfe}\label{ssec:sota-aware}
+Beide Philosophien aus Abschnitt~\ref{ssec:aware-oblivious} sind im Stand der Technik instanziiert:
+Bender et al.\ (P17, 2005) begründen den cache-oblivious B-Baum über das van-Emde-Boas-Layout, P16
+(2002) erweitert das mehrstufige Layout-Modell, und Saikkonen/Soisalon-Soininen (P18, 2008; P19, 2016)
+halten eine cache-sensitive Layout-Invariante auch unter Updates; Graefe/Larson (P15, 2001) vergleichen
+beide Ansätze. Sämtliche praktischen Trie- und B\textsuperscript{+}-Indizes (P01--P14, P20) sind
+hingegen \emph{cache-bewusst} ausgelegt. Die vorliegende Arbeit ordnet sich als dritter Weg ein
+(Abschnitt~\ref{ssec:aware-oblivious}): gemessenes Lokalitätswissen statt fest verdrahteter oder
+vollständig ignorierter Cache-Parameter.
+
+% [AP-S1] ===== Ab hier ROHMATERIAL (vorlaeufige Nummerierung) — wird im naechsten Inkrement reorganisiert =====
+% Die folgenden Cluster-Sektionen (A--F), die 3 Profil-/HW-Tabellen und die Forschungsluecke bleiben inhaltlich
+% erhalten und werden in 3.3 (Achsen-Sezierung, je Achse Organ-Instanzen) / 3.4 (Workload-Frameworks) /
+% 3.5 (Messen) / 3.6 (Architektur-Design) ueberfuehrt; die Forschungsluecke wird zu 3.7.
 
 \section{Trie-Familie (Cluster A)}\label{sec:cluster-a}
 
