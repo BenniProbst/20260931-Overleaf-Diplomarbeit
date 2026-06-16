@@ -108,27 +108,52 @@ Umfangs liegen. Das in Kapitel~\ref{ch:concept} entwickelte Prinzip ist jedoch n
 gebunden: über eine höherwertige Abstraktion lassen sich weitere Strukturklassen anschließen,
 ohne den Mess- und Permutationsapparat neu zu bauen (Abschnitt~\ref{sec:outlook}).
 
-Innerhalb der baumartigen Klasse gruppiert die Literatur konkrete Gesamt-Verfahren traditionell
-zu „Familien": balancierte Suchbäume (AVL, Rot-Schwarz), block- und externspeicherorientierte
-B-/B\textsuperscript{+}-Bäume, präfixbasierte Tries und Radix-Bäume (PATRICIA, ART) sowie
-succinct-kodierte Varianten~\cite{knuth1998taocp3}. Ergänzend treten \emph{flache} Verfahren auf
---- ein sortiertes Array mit Binär- oder Interpolationssuche ist streng genommen das einzelne
-Blatt eines Baumes --- und vereinzelt theoretische „Exoten" (van-Emde-Boas-Baum, Fusion Tree,
-y-fast Trie).% [Beleg-TODO 2.2.1] Exoten-Primaerquellen (van Emde Boas 1975; Fredman/Willard 1993; Willard 1983) via SLUB nachtragen
-Diese Familien sind für die vorliegende Arbeit zunächst nur eine \emph{Lese-Gruppierung}; ihre
-innere Zerlegung folgt im Stand der Technik (Kapitel~\ref{ch:sota}).
-
 % Das ist korrekt aber zu grob. Weiterhin sind unter den baumförmigen alle Kategorien auszuführen, weitere kategorien sind hinzuzufügen, ich denke an sections, subsections und subsubsections. Wissenschaftliche Belege und Zitate für die Korrektheit der Definitionen sind immer Pflicht
-Unter den digitalen Strukturen indiziert ein \emph{Trie} (Präfix-/Radix-Baum) Schlüssel anhand
-ihrer Byte-Folge statt durch Vergleich, sodass die Länge des Suchpfads von der Schlüssellänge
-abhängt und nicht von der Anzahl gespeicherter Schlüssel; \emph{Radix-} und \emph{PATRICIA}-Bäume
-kollabieren dünn belegte Ein-Kind-Ketten durch Pfadkompression.
-% [Beleg-TODO 2.2.1] Trie-Primaerquellen de la Briandais 1959 / Fredkin 1960 / Morrison 1968 via SLUB nachtragen
-\emph{Verzweigungsgrad} (Fanout) und \emph{Knotenrepräsentation} bestimmen Platzbedarf wie
-Cache-Verhalten, weshalb der \emph{Adaptive Radix Tree} (ART)~\cite{leis2013art} die
-Knotenrepräsentation an den tatsächlichen Fanout anpasst; ART dient dieser Arbeit durchgängig als
-Referenzentwurf. Die konkreten internen Ausprägungen dieser Klassen --- etwa ARTs Knotentypen ---
-werden als \emph{Instanzen} erst im Stand der Technik (Kapitel~\ref{ch:sota}) seziert.
+Innerhalb dieser Mechanismus-Klassen hat die Forschung konkrete Struktur-\emph{Klassen}
+hervorgebracht; sie werden hier auf Klassen-Ebene benannt und belegt, während ihre interne
+Sezierung in Achsen --- inklusive konkreter interner Ausprägungen wie ARTs Knotentypen --- erst im
+Stand der Technik (Kapitel~\ref{ch:sota}) als \emph{Instanzen} erfolgt.
+
+\subsubsection{Vergleichsbasierte Suchbäume}
+Vergleichsbasierte Bäume lokalisieren Schlüssel über Ordnungsvergleiche. Aus dem unbalancierten
+binären Suchbaum gehen die selbstbalancierenden \emph{AVL-Bäume}~\cite{adelsonvelsky1962avl} und
+\emph{Rot-Schwarz-Bäume}~\cite{bayer1972symmetric,guibas1978redblack} hervor; für block- und
+externspeicherorientierte Indizes etablierten sich \emph{B-} und
+\emph{B\textsuperscript{+}-Bäume}~\cite{bayer1972btree,comer1979btree}. Für den Hauptspeicher
+unmittelbar einschlägig ist der \emph{T-Baum}~\cite{lehman1986ttree}.
+
+\subsubsection{Digitale und präfixbasierte Strukturen}
+Digitale Strukturen verzweigen nach den Bytes des Schlüssels statt durch Vergleich, sodass die
+Suchpfadlänge von der Schlüssellänge abhängt und nicht von der Schlüsselanzahl. Der
+\emph{Trie}~\cite{delabriandais1959trie,fredkin1960trie} ist die Grundform; \emph{Radix-} und
+\emph{PATRICIA}-Bäume~\cite{morrison1968patricia} kollabieren dünn belegte Ein-Kind-Ketten durch
+Pfadkompression. Der \emph{Adaptive Radix Tree} (ART)~\cite{leis2013art} passt die
+Knotenrepräsentation an den tatsächlichen Verzweigungsgrad an und dient dieser Arbeit durchgängig
+als Referenzentwurf; \emph{Verzweigungsgrad} (Fanout) und \emph{Knotenrepräsentation} bestimmen
+dabei Platzbedarf wie Cache-Verhalten.
+
+\subsubsection{Hashing}
+Hashing bildet Schlüssel direkt über eine Hashfunktion ab und kennt keine inhärente Ordnung,
+weshalb Bereichsabfragen teuer sind~\cite{knuth1998taocp3}. Neben offener und verketteter
+Adressierung erreicht \emph{Cuckoo-Hashing}~\cite{pagh2004cuckoo} konstante Worst-Case-Lookups,
+und moderne, SIMD-beschleunigte Tabellen wie SwissTable~\cite{abseil_swisstable} erzielen hohe
+praktische Dichte. Hashing tritt in dieser Arbeit nur als nicht-baumartige Vergleichsgröße auf.
+
+\subsubsection{Räumliche Strukturen}
+Räumliche Strukturen partitionieren einen mehrdimensionalen Schlüsselraum --- etwa der
+\emph{k-d-Baum}~\cite{bentley1975kdtree}, der \emph{Quadtree}~\cite{finkel1974quadtree} und der
+\emph{R-Baum}~\cite{guttman1984rtree}. Sie liegen mit ihren mehrdimensionalen Schlüsseln außerhalb
+des Umfangs dieser Arbeit und werden nur der Vollständigkeit halber genannt.
+
+\subsubsection{Flache Verfahren und theoretische Exoten}
+Als Grenzfall steht das \emph{flache} Verfahren: ein sortiertes Array mit Binär- oder
+Interpolationssuche~\cite{knuth1998taocp3} ist streng genommen das einzelne Blatt eines Baumes.
+Theoretische „Exoten" verschieben die Komplexitätsschranken --- der
+\emph{van-Emde-Boas-Baum}~\cite{vanemdeboas1975} und der \emph{y-fast Trie}~\cite{willard1983yfast}
+erreichen $O(\log\log u)$ über einem Schlüssel-Universum der Größe $u$, der \emph{Fusion
+Tree}~\cite{fredman1993fusion} unterschreitet die informationstheoretische Vergleichsschranke. Sie
+sind theoretisch bedeutsam, für den cache-line-bewussten Hauptspeicher-Index dieser Arbeit aber
+nur Randbetrachtung.
 
 \subsection{Untergliederung der Container}\label{ssec:container-taxonomy}
 Quer zur Suchalgorithmus-Sicht steht die etablierte Untergliederung der \emph{Container} der
