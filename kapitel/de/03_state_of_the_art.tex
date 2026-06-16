@@ -43,7 +43,7 @@ und B\textsuperscript{+}-Familie} (Cluster~B) vereint den B\textsuperscript{2}-B
 die cache-sensitiven CSS-, CSB\textsuperscript{+}- und Hankins-Bäume (P11--P13). Die \emph{Layout-Theorie}
 (Cluster~C) reicht von Samuel (P14) und Graefe/Larson (P15) über die cache-oblivious Entwürfe von Bender
 et al.\ (P16/P17) bis zu den layout-invarianten Bäumen von Saikkonen/Soisalon-Soininen (P18/P19). Das
-\emph{Prefetching} (Cluster~D/E) umfasst LeanStore (P20), die Prefetching-B\textsuperscript{+}-Bäume von Chen
+\emph{Prefetching} (Cluster~D/E) umfasst \emph{B-Trees Are Back} (Mueller 2025, P20), die Prefetching-B\textsuperscript{+}-Bäume von Chen
 et al.\ (P21/P22), Khan (P23), Naderan-Tahan (P24), Mahling (P25) sowie Zhang (P26/P27) und Kuehn (P28). Die
 \emph{Synchronisation} (Cluster~F) trägt das optimistische Lock-Coupling von ART (P08), RCU (P29) und
 Hazard-Pointer (P30); die hardware-nahe \emph{TU-Dresden-Linie} schließlich Ungethüm (P31), Schmidt (P32) und
@@ -210,9 +210,10 @@ SIMD-Worker-Limit --- hardwarebedingt typisch zwei von $N$ Kernen ---, 13.3 hete
 13.4 Co-Routine, 13.5 Batch-Granularität). Tabelle~\ref{tab:hw-sched} ordnet beide je Paper zu. Die
 \emph{Telemetrie-Achse} (T10, Sub 11.X1--X4, 6 Bausteine) instanziiert den Density-Tracker (P01), den
 Insert-Zähler (P02), das HdrHistogramm (Gil Tene) für p50/p95/p99, den Pfad-Lese-Zähler (P26) und die
-Probability-Hints (P16/P17 Bender); Kuehn (P28) trägt die kohärenz-schonenden Varianten bei ---
-Leaf-Only-, Sampling- und Offline-Recompute-Zähler ---, während der Zähler in allen (auch inneren) Knoten
-als \emph{Anti-Pattern} (Cache-Line-Ping-Pong) ausgewiesen ist.
+Probability-Hints (P16/P17 Bender). Die kohärenz-schonenden Zähler-Varianten --- Leaf-Only, Sampling und
+Offline-Recompute --- gehen auf Kuehn zurück (P28, persönliche Kommunikation 2023, über den publizierten
+DaMoN-2023-Stand zum cache-/verteilungsbewussten B\textsuperscript{+}-Layout hinaus), während der Zähler in
+allen (auch inneren) Knoten als \emph{Anti-Pattern} (Cache-Line-Ping-Pong) gilt.
 
 \begin{table}[!htbp]
 \centering\small
@@ -225,7 +226,7 @@ P01 ART & AVX2, L1-aware, none, CAS & thread-per-core \\
 P02 HOT & AVX2 (Bit-Vektor), L1-aware, CAS & thread-per-core \\
 P03 Masstree & scalar, L1-aware, CAS & thread-per-core + work-stealing \\
 P05 START & AVX2 (Multi-Byte-Span), L1-aware, CAS & thread-per-core \\
-P20 LeanStore & AVX2, HBM-aware, NUMA-aware, CAS & work-stealing + hybrid \\
+P20 B-Trees Are Back & AVX2, HBM-aware, NUMA-aware, CAS & work-stealing + hybrid \\
 P27 hp-soft & PREFETCH (L1/L2/L3-Bundle), all-cache, CAS & thread-per-core + Co-Routine \\
 P28 Kuehn & PREFETCH (scalar Counter), L1-aware, CAS & thread-per-core + Sampling \\
 P31 Ungethuem & AVX-512 (HBM), HBM-aware, NUMA-aware, CAS & hybrid (P-/E-Kerne) \\
@@ -348,7 +349,11 @@ traversal, value\_handle, concurrency, allocator, prefetch, telemetry, isa, layo
 reclamation), eine Schlüssel-Wert-Signatur und einen optionalen
 \texttt{<expected\_workload>}-Tag, der die \texttt{ExperimentDriver}-Heuristik
 (Kapitel~\ref{ch:methodology}) überschreibt. Alle 30 SOTA-Profile und alle 10
-Allokator-Profile sind getaggt.
+Allokator-Profile sind getaggt. Drei der 33 Korpus-Arbeiten besitzen bewusst kein eigenständiges Profil,
+sondern gehen nur seziert ein: das optimistische Lock-Coupling von ART (P08) als Nebenläufigkeits-Organ des
+\texttt{art}-Profils, die succinct LOUDS-Repräsentation (P09, Jacobson 1989) als Speicher-Layout-Organ (u.\,a.
+in SuRF, P10) und das Profiling-Werkzeug VAMPIR (P33) als Mess-Technologie (Abschnitt~\ref{ssec:sota-meas-tech});
+die übrigen 30 Algorithmen tragen je ein eigenes Profil-XML.
 
 \begin{table}[!htbp]
 \caption{SOTA-Algorithmus-Profile mit Workload-Affinität}\label{tab:sota-profiles}
@@ -424,7 +429,7 @@ Lastprofil, unter dem ihr eigener Entwurf am besten abschneidet. Statische, read
 Filter (HOT, CoCo, B\textsuperscript{2}-Baum, SuRF, CSS) rahmen „build-once, 100\,\% positive Lookups" und
 meiden Aktualisierungen; komprimierte Tries und Filter (CoCo, B\textsuperscript{2}-Baum, SuRF) machen den
 Negativ-Anfrage-Anteil zur Primärachse, weil sie bei Misses früh abbrechen; zipfian-zentrierte Arbeiten
-(LeanStore, Mahling, Kuehn) begünstigen cache-bewusste Reordering-Layouts; schreib- und
+(B-Trees Are Back, Mahling, Kuehn) begünstigen cache-bewusste Reordering-Layouts; schreib- und
 nebenläufigkeits-lastige Arbeiten (ART, Masstree, Wormhole, OLC-ART, RCU) treten umgekehrt nur dort an, wo
 statische Strukturen versagen; und prefetch- bzw.\ hardware-nahe Arbeiten (CSB\textsuperscript{+}, Chen,
 Schmidt) vermessen über Knotengröße und Prefetch eher Cache und TLB als die Algorithmus-Logik. Vierzehn der
@@ -520,8 +525,21 @@ entwickelt Kapitel~\ref{ch:concept} dialektisch (vgl.\ Abschnitt~\ref{ssec:sota-
 
 \section{Forschungslücke}\label{sec:gap}
 
-Jede der untersuchten Arbeiten optimiert eine oder wenige Achsen der Cache-Hierarchie
-isoliert, und die Ergebnisse werden in nicht vergleichbaren Settings berichtet. Was fehlt ---
-und was diese Arbeit beiträgt --- ist eine systematische, orthogonale \emph{Achsen-Zerlegung}
-dieser Entwürfe zusammen mit einer permutierten Mess-Architektur, die sie als explizite
-Konfigurationen rekonstruiert und auf einer gemeinsamen Basis vermisst.
+Die Sezierung in Abschnitt~\ref{sec:sota-axes} legt die zentrale Lücke offen: Jede der untersuchten Arbeiten
+optimiert nur wenige Achsen isoliert, und \emph{kein einziges Verfahren belegt alle neunzehn Achsen
+gemeinsam}. Manche Achsen sind im Stand der Technik ausschließlich mit Baseline- oder Lehrbuch-Varianten
+besetzt (das Mapping zwischen Algorithmus- und Cache-Traversierung), andere treten nur als \emph{Mess-Ziel}
+auf (der dTLB), und die räumliche Such-Klasse fehlt ganz; Achsen wie Ein-/Ausgabe, Migration, Filter und
+Pufferung sind zwar je einzeln belegt, aber nie zusammen mit den Such-Achsen in einem Entwurf.
+
+Hinzu kommt die methodische Lücke: Die Ergebnisse werden in nicht vergleichbaren Settings berichtet, und der
+Paper-Bias --- jede Veröffentlichung wählt ihr Heimspiel-Lastprofil (Abschnitt~\ref{ssec:sota-wl-bias}) ---
+verhindert einen fairen Quervergleich. Es fehlt eine bias-freie Vermessung \emph{aller} Lastprofile gegen
+\emph{alle} Verfahren auf einer gemeinsamen Basis.
+
+Was fehlt --- und was diese Arbeit beiträgt --- ist daher die systematische, orthogonale
+\emph{Achsen-Zerlegung} dieser Entwürfe samt einer \emph{permutierten Mess-Architektur}, die sie als explizite
+Konfigurationen rekonstruiert und auf einer gemeinsamen Basis vermisst. Welche der hier katalogisierten
+Instanzen das vorgeschlagene Framework übernimmt und welche es als überholt ersetzt, entwickelt das folgende
+Kapitel dialektisch (These--Antithese--Synthese, Abschnitt~\ref{ssec:sota-design-contribution}); daraus gehen
+die tieferen Ergebnisse der eigenen Apparatur hervor.
