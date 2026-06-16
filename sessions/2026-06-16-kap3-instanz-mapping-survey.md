@@ -150,3 +150,22 @@ Gegen Code + Doc 34 (Master, §5/§8/§9) selbst gelesen — bestätigt/präzisi
 Doc 34 verifiziert). Kapitel 3 zieht seine Instanzen aus **Doc 18** (Achsen-Paper, §G) + **`MeasurementCategory`/
 Statistik-Triade** (Mess-Technologien anderer Paper: PMC/VAMPIR/gem5/HdrHistogram) + den **HW/ISA-Vendor-Specs**.
 Damit ist die #include-Basis für AP-S1 vollständig und code-geerdet.
+
+## §I — Querschnitt-Verifikation (16-Agenten-Workflow `wasu9ns5q`, 2026-06-16) — bestätigt + korrigiert
+**Lauf:** 6 Dimensionen (Kap-3-Attributionen · Bib ×2 · Code-Erdung/AP-C1 · Vokabular/Zahlen · Sach-Claims) ×
+adversariale Bestätigung; 16 Agenten, ~1,44 M Tokens.
+**Bestätigt korrekt (kein Fix):** 19+3 Achsen + Namen (`composition_factory.hpp`), MeasurementCategory-Enum
+(16 Werte), IPlatformProbe-Properties, 110 Organe (Doc 18), 30 SOTA-/10 Allokator-Profile, 14 LP,
+Statistik-Triade + Zwei-Phasen-Schleife + Konformitäts-Gate; Zahlen-Konsistenz (33/23/19/14/110); KEIN
+superseded-Vokabular im Text; ALLE Cache-/Interface-/Workload-/Mess-/Pattern-Sach-Claims (Cache-Line 64/128 B,
+dTLB read-only, RRIP 2-Bit, Inklusion inclusive/NINE/exclusive, YCSB A–F …); fast alle Bib-Einträge inkl.
+SE-Quellen (Aßmann/Czarnecki/Apel/Batory) + idreos/kraska/gem5/cloudsuite. HdrHistogram=Gil Tene ✓,
+VersionedPointer=Masstree ✓, START/Wormhole/CoCo/Chen/Hazard/ART-Attributionen im Text ✓.
+**Korrigiert (Commit `f078b6e`):** P20 = „B-Trees Are Back" (NICHT LeanStore; 3 Stellen) · Kuehn-P28-Counter =
+persönliche Kommunikation (nicht publiziertes DaMoN-2023-Paper = cache-/verteilungsbewusstes Layout) ·
+Bib boffa(@article IS 120:102316)/fent(ICDEW 2020, „Michael" Jungmair)/schmeisser(BTW 2021, Josef Schmeißer)/
+qureshi(+S.381-391 +DOI) +datacalculator-Komma +halim-DOI · 33-vs-30-Profile-Klarstellung · 3.7 Capstone.
+**Residuen außerhalb Thesis-Scope (zu tracken):** (a) EN-`hw-sched`-Tabelle „P20 LeanStore" → **AP-EN** (EN wird
+ohnehin aus finalem DE neu gezogen). (b) cache-engine-Repo (**Impl-Agent**, NICHT Thesis): `docs/bausteine/
+03_cross_paper_konzeptmatrix.md` Z.152 „P20 LeanStore" + `permutation_axes.xml` „11 Achsen REV7.6" = SUPERSEDED
+→ angleichen/markieren.
