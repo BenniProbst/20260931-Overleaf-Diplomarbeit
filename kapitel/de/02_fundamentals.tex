@@ -194,13 +194,42 @@ hinter dieser Schnittstelle, während die Schnittstelle selbst fest bleibt --- d
 zweier konformer \texttt{std::map}-Implementierungen ist somit der zentrale Mess-Akt. Eine
 variadische Spezialisierung hält die Schnittstelle ergonomisch: ein Template-Parameter stellt
 eine \texttt{std::vector}-artige API bereit, zwei Parameter die \texttt{std::map}-API und
-$N>2$ eine \texttt{std::map<K,\,std::tuple<\ldots>>}.
+$N>2$ eine \texttt{std::map<K,\,std::tuple<\ldots>>}. Der Kern-Vertrag der geordneten Map umfasst
+die Punktanfrage (\texttt{find}, \texttt{at}, \texttt{operator[]}), das Einfügen und Aktualisieren
+(\texttt{insert}, \texttt{insert\_or\_assign}, \texttt{emplace}), das Löschen (\texttt{erase})
+sowie die ordnungsbasierte Navigation (\texttt{lower\_bound}, \texttt{upper\_bound},
+Bereichs-Iteration)~\cite{iso_cpp}; die vollständige Auflistung \emph{aller} Standard-Funktionen
+mit erwarteter Semantik und zugehörigen Konformitätstests führt der Anhang.
 
 \subsection{Das \texttt{std::vector}-Interface}\label{ssec:stdvector-interface}
-% [AP-G5] folgt: parallel zu std::map; ALLE Standard-Interface-Funktionen + erwartete Semantik
+Parallel zur Map-Hülle dient die Sequenz-Hülle \texttt{std::vector} als
+Container-Vergleichsfall~\cite{iso_cpp}. Ihr Ein-Parameter-Vertrag bietet indizierten Zugriff
+(\texttt{operator[]}, \texttt{at}), Größenänderung (\texttt{push\_back}, \texttt{emplace\_back},
+\texttt{insert}, \texttt{erase}, \texttt{resize}) und zusammenhängenden Speicher (\texttt{data});
+mit der Map geteilt sind Iteration sowie \texttt{size}/\texttt{empty}/\texttt{clear}, während sich
+die Adressierung unterscheidet (Position statt Schlüsselordnung). So lässt sich prüfen, ob ein
+Achsen-Komposit auch die Container-Semantik trägt und nicht nur die Suchsemantik; die vollständige
+Funktions-Tabelle beider Hüllen steht im Anhang.
 
 \subsection{Ebenen der Dynamik}\label{ssec:dynamics-levels}
-% [AP-G5] folgt: compile-time vs. run-time x Lebewesen-Typ / Achse / Sub-Achse (statisch/dynamisch)
+Hinter der festen Außen-Schnittstelle unterscheidet das System mehrere \emph{Ebenen der Dynamik},
+die festlegen, \emph{wann} eine Achsen-Entscheidung fällt:
+\begin{itemize}
+  \item \textbf{Übersetzungszeit vs.\ Laufzeit} als oberste Trennung;
+  \item der \textbf{Lebewesen-Typ}, der nur eine bestimmte Teilmenge der vorhandenen Achsen belegt;
+  \item die \textbf{Achsenalgorithmen}, die zur Übersetzungszeit in eine Lebewesen-Binary
+        einkompiliert werden (statische Rekombination);
+  \item die \textbf{dynamischen Sub-Achsen}, deren Laufzeit-Parameter (Prefetch-Distanz,
+        Stapelgröße, Inline-Schwelle, Pool-Budget) ohne Neuübersetzung gegen eine bereits geladene
+        Binary variiert werden;
+  \item die \textbf{statischen Sub-Achsen} als übersetzungszeitliche Auswahl unter statischen
+        Teil-Algorithmen unterschiedlicher Komplexität.
+\end{itemize}
+Diese Trennung ist im Permutations-Baum der Cache-Engine verankert (Kapitel~\ref{ch:concept}):
+statische Achsen-Ebenen erzeugen je Pfad eine eigene Binary, dynamische Sub-Achsen sind virtuelle
+Laufzeit-Schleifen über derselben Binary. Erst dadurch wird je Interface-Funktion erklärbar, wie
+sie intern verdrahtet ist --- ein Aspekt, den ein eigenes Entwickler-Dokument der Cache-Engine
+vertieft.
 
 \section{Lasten und Workloads}\label{sec:workloads}
 % Simples Feedback: Was ist eine Last? Was ist ein Workload? Was ist das Ziel der Variation? Welche Workloads konnten über ALLE Paper recherchiert werden, die derzeit in der Diplomarbeit gelistet sind? Welche Messdaten stecken per Diplomarbeit Dokumentation genau hinter den verwendeten Workloads, woraus bestehen sie? Gibt es Lastprofil-playbooks die mit multiplen Interface Anfragen durchgeführt werden oder handelt es sich bezüglich des Inerfaces um isolierte und unrealistische Einzelzugriffe? Bezüglich der Workloads erwarte ich auch zuerst ein verallgemeinertes Hauptkapitel und dann die Frameworks, welche diese Workloads bereitstellen können, denn durch die große Verteilung verschiedener Workloads und nicht vergleichbarer Lasten über multiple Paper und Suchalgorithmen, sind wir gezwungen ALL DIESE gegen alle Lebewesen-Binaries also Suchalgorithmen (und zusätzlich Container) angepasst laufen zu lassen, um die absolute Vergleichbarkeit aus den Messwerten zu ermitteln.
