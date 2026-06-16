@@ -106,11 +106,17 @@ wird ohnehin aus finalem DE neu gezogen). (b) **cache-engine-Repo (Impl-Agent):*
 03_cross_paper_konzeptmatrix.md` Z.152 „P20 LeanStore" + `permutation_axes.xml` „11 Achsen REV7.6" = SUPERSEDED.
 
 ## §5 — Verbleibende Arbeitspakete (nach AP-E3)
-- **#71 AP-E3** (FF) ← NÄCHSTES, Struktur in §2.
+- **#82 AP-EN** ← **NÄCHSTES (in Arbeit).** EN-Kapitel aus finalem DE nachziehen. **EN nutzt RQ-Labels (nicht FF):
+  RQ0--RQ4.** Stand: **EN 01 ✅** (`2ec4973`), **EN 08 ✅** (`0373a3d`); **EN 04--07 ≈ DE** (diese Session nicht
+  geändert, in sync). **VERBLEIBT: EN 02 + EN 03** = die großen (DE 02 ~336 Z. inkl. 2.1.4 Cache-Update +
+  Achsen-Unterkapitel; DE 03 ~499 Z. voller Instanz-Spiegel). **Die 2 noch offenen EN-Overfull > 50 pt liegen in
+  den alten EN 02/03 und verschwinden beim Angleichen.** Methode: DE-Kapitel voll lesen → getreue EN-Entsprechung
+  (Äquivalenz Pflicht, keine neuen Ideen) → `build.ps1 -Lang en` → Commit je Kapitel. **Noch zu prüfen:** EN-
+  `hw-sched`-Tabelle „P20 LeanStore"-Fix (§4a) sitzt in EN 03; **EN-Glossar** `anhang/en/C_glossary.tex` an DE-
+  Glossar angleichen (Begriffe probe/genus/living being/ranks …).
 - **#81 AP-Z2** Bib-Fill: literatur.bib ist schon weit (alle in Kap. 1–3 zitierten Keys vorhanden + verifiziert);
   Rest = noch nicht zitierte Korpus-Paper bei Bedarf. **#80 AP-Z1** SLUB-Beschaffung historischer/Exoten-PDFs.
 - **#74 AP-C1** Code-Gegenprüfung: durch die Querschnitt-Verifikation weitgehend erledigt (Text↔Code stimmt).
-- **#82 AP-EN** EN-Kapitel aus finalem DE nachziehen (inkl. EN-P20-Fix aus §4a).
 - **#78 AP-M1** Experiment-OS (Talos + root-Ubuntu) + Kap. 6 Plattformen; **#79 AP-G5-Anhang** Voll-Interface-
   Tabellen; **#83 AP-CE1**/**#84 AP-CE2** = Impl-Agent (cache-engine).
 - Erledigt: #59–#69 (AP-E1, G1–G8, S1, S2), #70 (E2), #72 (E4), #73 (E5), #75–#77.
