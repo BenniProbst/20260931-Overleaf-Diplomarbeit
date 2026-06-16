@@ -101,9 +101,23 @@ Fließtext-Forschungsfragen ohne interne Quell-IDs, Belege via späterer Zitate 
 **Erledigt** (16-Agenten-Workflow `wasu9ns5q`, §I im Survey-Doc): Code-Fakten, Zahlen, Vokabular, Sach-Claims,
 fast alle Bib-Einträge bestätigt; korrigiert: P20 = „B-Trees Are Back" (nicht LeanStore), Kuehn-P28-Counter =
 persönliche Kommunikation, 4 Bib-Fehler (CoCo/START/B²-Baum/Qureshi), 33-vs-30-Klarstellung.
-**Residuen (NICHT Thesis-DE-Scope):** (a) **EN-`hw-sched`-Tabelle „P20 LeanStore"** → bei **AP-EN** fixen (EN
-wird ohnehin aus finalem DE neu gezogen). (b) **cache-engine-Repo (Impl-Agent):** `docs/bausteine/
-03_cross_paper_konzeptmatrix.md` Z.152 „P20 LeanStore" + `permutation_axes.xml` „11 Achsen REV7.6" = SUPERSEDED.
+**Residuen (NICHT Thesis-DE-Scope):** (a) **EN-`hw-sched`-Tabelle „P20 LeanStore"** → bei **AP-EN** erledigt (`6646a94`).
+(b) **cache-engine-Repo (Impl-Agent):** `docs/bausteine/03_cross_paper_konzeptmatrix.md` Z.152 „P20 LeanStore" +
+`permutation_axes.xml` „11 Achsen REV7.6" = SUPERSEDED (autoritativ 22 Achsen via `build_all_axis_levels()`).
+
+### §4b — AP-C1 Code-Gegenprüfung ✅ ERLEDIGT (2026-06-16, `688d1e3`)
+5-Agenten read-only Verifikation (Workflow `w3qf3olal`) gegen `…\Code\external\comdare-cache-engine` +
+`…\comdare-prt-art`. **Fundament bestätigt, KEINE refuted-Claims.** Bestätigt: 19 Achsen T0–T18 (kCompositionAxisNames),
+AdHocComposition<19> (composition_factory.hpp), 16-Werte-MeasurementCategory (measurement_category.hpp), Statistik-Triade
+MWU/Holm/Cliff's δ + f15_compare, Zwei-Phasen-Schleife + Konformitäts-Gatter (conformance_gate.hpp), IObservableTier,
+3 Gattungen+5 Genus (anatomy_base.hpp), PlatformPropertySet-Felder, 30 SOTA+10 Allokator-Profile, YCSB 13/9/6/2,
+LP01–LP14, PRT-ARTs 8 Schichten (PoolKind=7, OLC, MultiLevel, path-prefetch, density_tracker, H1/H2/H3, value-handles,
+signaling_bits), alle Design-Pattern, Boost.MP11. **Variadisches 1/2/N-Interface verifiziert real** in
+`abi/type_collection_traits.hpp` (1→uint64-Key+T0, 2→map<T0,T1>, N→map<T0,tuple<…>>) → Agenten-„not_found" war
+Falschdatei. 2 Präzisierungen eingearbeitet (Kap 2.6 10^14=voller Produktraum vs. 10^11=lauffähige Teilmenge;
+Kap 3.3 Sub-Achsen-Kürzel=Bausteine-Matrix-Ebene). **Impl-Agent-Residuum (Code-Doku, nicht Thesis):** echte
+Gate-1-Kardinalität = exakt 137.594.142.720.000 (≈1,4·10^14, `test_br1_full22_count.cpp`); `permutation_axes.xml`
+11-Achsen-Produkt (6,22e8) ist veraltet; LP-Katalog 14 vs. 21 XMLs (LP06-neg%×5) = offene Audit-Frage.
 
 ## §5 — Verbleibende Arbeitspakete (nach AP-E3)
 - **#82 AP-EN ✅ ERLEDIGT (für aktuellen Stand, 2026-06-16).** EN nutzt **RQ-Labels** (RQ0--RQ4). Gespiegelt:
