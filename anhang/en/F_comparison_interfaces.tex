@@ -1,0 +1,222 @@
+\chapter{Comparison Interfaces: \texttt{std::map} and \texttt{std::vector}}\label{app:interfaces}
+
+% [AP-G5-Anhang / AP-EN] Mirror of anhang/de/F_comparison_interfaces.tex. Full standard interface tables (C++23).
+This appendix presents --- complementing Section~\ref{sec:compare-interfaces} --- the complete listing of all
+standard interface functions of the two comparison shells \texttt{std::map} (ordered associative) and
+\texttt{std::vector} (sequence) as of C++23, with their officially expected semantics and complexity
+guarantee per the ISO C++ standard~\cite{iso_cpp}. It also serves as a central reference for the further
+development of the cache engine: because the search-algorithm shell replaces its internals with dynamically
+interchangeable axis algorithms (Section~\ref{ssec:dynamics-levels}), it becomes explanation-worthy, per
+standard function, what behaviour the external contract guarantees.
+
+\emph{Variadic mapping.} One template parameter provides the \texttt{std::vector} API, two parameters the
+\texttt{std::map} API, and $N>2$ a \texttt{std::map<K,\,std::tuple<\ldots>>}
+(Section~\ref{sec:stdmap-interface}); the shared functions (iteration,
+\texttt{size}/\texttt{empty}/\texttt{clear}, \texttt{swap}, \texttt{get\_allocator}) carry the same semantics
+in both shells.
+
+\emph{Composite functions.} Some functions arise ``under the hood'' as a composition of more primitive
+operations --- e.g.\ \texttt{operator[]} as \texttt{lower\_bound} followed by default insertion on a missing
+key, or \texttt{at} as \texttt{find} with a thrown \texttt{std::out\_of\_range} exception on absence ---; such
+cases are marked in the ``Note'' column. The ``Since'' column names the introducing standard version. The
+exact cache-engine-internal function-handle hops are documented in a dedicated cache-engine developer
+document.
+
+\emph{Conformance subset.} The conformance gate (Section~\ref{ssec:measurement-patterns}) checks a core
+subset of the \texttt{std::map} operations before each measurement, so that only comparable things are
+compared; it is marked as such in the \texttt{std::map} table.
+
+\section{\texttt{std::map} (ordered associative)}\label{asec:if-map}
+Table~\ref{tab:if-map} lists the complete interface of \texttt{std::map<Key,\,T,\,Compare,\,Allocator>} as of
+C++23. A $\dagger$ marks the core operations that the conformance gate (Section~\ref{ssec:measurement-patterns})
+checks before each measurement, so that only comparable things are compared. Complexities refer to
+$n=\texttt{size()}$; for range operations $N$ is the number of input elements.
+
+\begin{longtable}{@{}p{2.7cm} p{6.3cm} p{2.5cm} p{1.2cm}@{}}
+\caption{Complete \texttt{std::map} interface (C++23)}\label{tab:if-map}\\
+\toprule
+\textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
+\midrule
+\endhead
+\multicolumn{4}{@{}l}{\textbf{Construction, assignment, allocator}}\\
+\addlinespace[2pt]
+\texttt{(constructor)} & empty; from \texttt{Compare}/\texttt{Allocator}; range; copy/move (incl.\ allocator-extended); \texttt{initializer\_list}; C++23 \texttt{from\_range} & $O(1)$ to $O(N\log N)$ & C++98 \\
+\texttt{(destructor)} & destroys all elements and nodes & $O(n)$ & C++98 \\
+\texttt{operator=} & copy/move/\texttt{initializer\_list} assignment with allocator propagation & $O(n)$ & C++98 \\
+\texttt{get\_allocator} & copy of the associated allocator & $O(1)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Element access}}\\
+\addlinespace[2pt]
+\texttt{at}\,$\dagger$ & reference to the mapped value; throws \texttt{std::out\_of\_range} on absence & $O(\log n)$ & C++11 \\
+\texttt{operator[]}\,$\dagger$ & reference; inserts a value-initialized element on absence (never throws) & $O(\log n)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Iterators}}\\
+\addlinespace[2pt]
+\texttt{begin}/\texttt{end}\,$\dagger$ & iterator to first element / end, in key order (\texttt{cbegin}/\texttt{cend} since C++11) & $O(1)$ & C++98 \\
+\texttt{rbegin}/\texttt{rend} & reverse iterators (\texttt{crbegin}/\texttt{crend} since C++11) & $O(1)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Capacity}}\\
+\addlinespace[2pt]
+\texttt{empty}\,$\dagger$ & empty test ($\texttt{begin()==end()}$); \texttt{[[nodiscard]]} since C++20 & $O(1)$ & C++98 \\
+\texttt{size} & number of elements & $O(1)$ & C++98 \\
+\texttt{max\_size} & theoretical maximum size & $O(1)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Modifiers}}\\
+\addlinespace[2pt]
+\texttt{clear}\,$\dagger$ & remove all elements & $O(n)$ & C++98 \\
+\texttt{insert}\,$\dagger$ & element(s) without overwriting (value, \texttt{P\&\&}, hint, range, \texttt{initializer\_list}, node handle since C++17) & $O(\log n)$; hint amort.\ $O(1)$ & C++98 \\
+\texttt{insert\_range} & insert an input range, no overwrite & $O(N\log(n{+}N))$ & C++23 \\
+\texttt{insert\_or\_assign}\,$\dagger$ & insert, or assign to an existing value; \texttt{bool} reports insertion & $O(\log n)$ & C++17 \\
+\texttt{emplace}\,$\dagger$ & construct in place, only if the key is absent (otherwise discarded) & $O(\log n)$ & C++11 \\
+\texttt{emplace\_hint} & like \texttt{emplace}, near the hint & $O(\log n)$; amort.\ $O(1)$ & C++11 \\
+\texttt{try\_emplace}\,$\dagger$ & like \texttt{emplace}, leaves the arguments untouched on an existing key & $O(\log n)$ & C++17 \\
+\texttt{erase}\,$\dagger$ & by iterator/range/key (key: 0 or 1 removed) & iter.\ amort.\ $O(1)$; key $O(\log n)$ & C++98 \\
+\texttt{swap} & exchange contents and comparator; iterators stay valid & $O(1)$ & C++98 \\
+\texttt{extract} & unlink an element as a node handle (no copy/move) & iter.\ amort.\ $O(1)$; key $O(\log n)$ & C++17 \\
+\texttt{merge} & splice nodes from a source map; existing keys remain there & $O(N\log(n{+}N))$ & C++17 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Lookup}}\\
+\addlinespace[2pt]
+\texttt{find}\,$\dagger$ & iterator to the key, or \texttt{end()} & $O(\log n)$ & C++98 \\
+\texttt{count}\,$\dagger$ & number (0 or 1) & $O(\log n)$ & C++98 \\
+\texttt{contains}\,$\dagger$ & membership (\texttt{bool}) & $O(\log n)$ & C++20 \\
+\texttt{lower\_bound}\,$\dagger$ & first key $\ge$ \texttt{key} & $O(\log n)$ & C++98 \\
+\texttt{upper\_bound}\,$\dagger$ & first key $>$ \texttt{key} & $O(\log n)$ & C++98 \\
+\texttt{equal\_range}\,$\dagger$ & pair \texttt{[lower\_bound,\,upper\_bound)} & $O(\log n)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Observers}}\\
+\addlinespace[2pt]
+\texttt{key\_comp}\,$\dagger$ & copy of the key comparator & $O(1)$ & C++98 \\
+\texttt{value\_comp} & \texttt{value\_compare} (compares pairs by key) & $O(1)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Non-member functions}}\\
+\addlinespace[2pt]
+\texttt{operator==} & equal size and pairwise-equal elements & $O(n)$ & C++98 \\
+\texttt{operator<=>} & lexicographical three-way comparison; synthesizes \texttt{<\,<=\,>\,>=} & $O(n)$ & C++20 \\
+\texttt{std::swap} & specialization; calls \texttt{lhs.swap(rhs)} & $O(1)$ & C++98 \\
+\texttt{std::erase\_if} & removes all elements with \texttt{pred==true}; returns the count & $O(n)$ & C++20 \\
+Deduction guides & CTAD from range/\texttt{initializer\_list}/\texttt{from\_range} & --- (compile time) & C++17 \\
+\bottomrule
+\end{longtable}
+
+\noindent The pre-C++20 standalone relational operators \texttt{<\,<=\,>\,>=} are synthesized from
+\texttt{operator<=>} since C++20, and \texttt{!=} is rewritten from \texttt{operator==}. The heterogeneous
+(transparent-key) overloads of \texttt{operator[]}, \texttt{at}, \texttt{try\_emplace}, and
+\texttt{insert\_or\_assign} belong to C++26 and are excluded here; the C++23 additions are exactly the
+\texttt{from\_range} constructor, \texttt{insert\_range}, and the transparent-key overloads of
+\texttt{erase}/\texttt{extract}.
+
+\section{\texttt{std::vector} (sequence)}\label{asec:if-vector}
+Table~\ref{tab:if-vector} lists the complete interface of \texttt{std::vector<T,\,Allocator>} as of C++23
+($n=\texttt{size()}$). All members are \texttt{constexpr} since C++20.
+
+\begin{longtable}{@{}p{2.7cm} p{6.3cm} p{2.5cm} p{1.2cm}@{}}
+\caption{Complete \texttt{std::vector} interface (C++23)}\label{tab:if-vector}\\
+\toprule
+\textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
+\midrule
+\endhead
+\multicolumn{4}{@{}l}{\textbf{Construction, assignment, allocator}}\\
+\addlinespace[2pt]
+\texttt{(constructor)} & empty/\texttt{Allocator}; $n\times$ default/value; range; copy/move (incl.\ allocator-extended); \texttt{initializer\_list}; C++23 \texttt{from\_range} & $O(1)$ or $O(n)$ & C++98 \\
+\texttt{(destructor)} & destroys all elements, frees storage & $O(n)$ & C++98 \\
+\texttt{operator=} & copy/move/\texttt{initializer\_list} & $O(n)$ & C++98 \\
+\texttt{assign} & replace contents with $n\times$ value/range/\texttt{initializer\_list} & $O(n)$ & C++98 \\
+\texttt{assign\_range} & replace contents with an input range & $O(n)$ & C++23 \\
+\texttt{get\_allocator} & copy of the associated allocator & $O(1)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Element access}}\\
+\addlinespace[2pt]
+\texttt{at} & bounds-checked access; throws \texttt{std::out\_of\_range} & $O(1)$ & C++98 \\
+\texttt{operator[]} & unchecked access (UB out of range) & $O(1)$ & C++98 \\
+\texttt{front}/\texttt{back} & reference to first/last element (UB if empty) & $O(1)$ & C++98 \\
+\texttt{data} & pointer to the contiguous storage (not in \texttt{vector<bool>}) & $O(1)$ & C++11 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Iterators}}\\
+\addlinespace[2pt]
+\texttt{begin}/\texttt{end}, \texttt{rbegin}/\texttt{rend} & forward/reverse iterators in index order (\texttt{c…} variants since C++11) & $O(1)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Capacity}}\\
+\addlinespace[2pt]
+\texttt{empty}/\texttt{size}/\texttt{max\_size} & empty test, element count, maximum size & $O(1)$ & C++98 \\
+\texttt{reserve} & capacity $\ge n$; reallocates and invalidates; throws \texttt{length\_error} if $n>$\texttt{max\_size()} & $O(n)$ & C++98 \\
+\texttt{capacity} & currently allocated capacity & $O(1)$ & C++98 \\
+\texttt{shrink\_to\_fit} & non-binding reduction of capacity toward \texttt{size()} & $O(n)$ & C++11 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Modifiers}}\\
+\addlinespace[2pt]
+\texttt{clear} & remove all elements (capacity unchanged) & $O(n)$ & C++98 \\
+\texttt{insert} & before a position: value/$n\times$/range/\texttt{initializer\_list}; shifts the tail & $O(n)$ & C++98 \\
+\texttt{insert\_range} & insert an input range before a position & $O(n)$ & C++23 \\
+\texttt{emplace} & construct an element in place before a position & $O(n)$ & C++11 \\
+\texttt{erase} & remove a position/range, shift the tail down & $O(n)$ & C++98 \\
+\texttt{push\_back} & append an element (copy/move) & amort.\ $O(1)$ & C++98 \\
+\texttt{emplace\_back} & append in place; returns a reference since C++17 & amort.\ $O(1)$ & C++11 \\
+\texttt{append\_range} & append an input range & amort.\ $O(n)$ & C++23 \\
+\texttt{pop\_back} & remove the last element (UB if empty) & $O(1)$ & C++98 \\
+\texttt{resize} & truncate to $n$, or fill with default/value & $O(n)$ & C++98 \\
+\texttt{swap} & exchange contents and capacity with another vector & $O(1)$ & C++98 \\
+\addlinespace[3pt]
+\multicolumn{4}{@{}l}{\textbf{Non-member functions}}\\
+\addlinespace[2pt]
+\texttt{operator==} & equal size and element-wise equality & $O(n)$ & C++98 \\
+\texttt{operator<=>} & lexicographical three-way comparison & $O(n)$ & C++20 \\
+\texttt{std::swap} & specialization; calls \texttt{lhs.swap(rhs)} & $O(1)$ & C++98 \\
+\texttt{std::erase} & removes all elements equal to a value; returns the count & $O(n)$ & C++20 \\
+\texttt{std::erase\_if} & removes all elements with \texttt{pred==true}; returns the count & $O(n)$ & C++20 \\
+Deduction guides & CTAD from range/\texttt{from\_range} & --- (compile time) & C++17 \\
+\bottomrule
+\end{longtable}
+
+\noindent The specialization \texttt{std::vector<bool>} packs boolean values bitwise: it has no
+\texttt{data()} and no contiguity guarantee, returns a proxy type \texttt{reference} instead of
+\texttt{bool\&} via \texttt{operator[]}/\texttt{at}/\texttt{front}/\texttt{back}, and additionally offers
+\texttt{flip()} (at the vector and the \texttt{reference} level), a static
+\texttt{swap(reference,\allowbreak\ reference)}, and a \texttt{std::hash} specialization. The comparison operators behave as for \texttt{std::map}.
+
+\section{Composite Functions and the Conformance Subset}\label{asec:if-decomp}
+Several interface functions are ``under the hood'' compositions of more primitive operations
+(Table~\ref{tab:if-decomp}). For this thesis that is the central observation: all map accessors and modifiers
+rest on a single ordered-search primitive (\texttt{lower\_bound}/\texttt{find}); an axis implementation
+therefore only needs to provide a correct ordered search plus node linking, and the rest follows as a fixed
+composition --- exactly the substitutability whose comparison is the central measurement act
+(Section~\ref{sec:stdmap-interface}). The conformance gate checks the core subset marked with $\dagger$ in
+Table~\ref{tab:if-map}.
+
+\begin{longtable}{@{}p{3.3cm} p{5.7cm} p{3.2cm}@{}}
+\caption{Composite functions (``under the hood'')}\label{tab:if-decomp}\\
+\toprule
+\textbf{Function} & \textbf{Composition} & \textbf{Note} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Function} & \textbf{Composition} & \textbf{Note} \\
+\midrule
+\endhead
+\texttt{map::operator[]} & \texttt{lower\_bound} + default insertion on absence $\to$ reference & mutates on absence; never throws \\
+\texttt{map::at} & \texttt{find} + throw \texttt{std::out\_of\_range} on absence & the only throwing access; never mutates \\
+\texttt{map::insert} / \texttt{emplace} & ordered search + link a node only if the key is absent & no overwrite; \texttt{emplace} may still consume arguments on a hit \\
+\texttt{map::try\_\allowbreak emplace} & like \texttt{emplace}, but arguments untouched on a hit & preserves move-only arguments \\
+\texttt{map::insert\_\allowbreak or\_\allowbreak assign} & ordered search + insert or assign & overwrites (unlike \texttt{insert}) \\
+\texttt{map::count} / \texttt{contains} / \texttt{equal\_range} & reduce to \texttt{find} resp.\ \texttt{lower\_bound}+\texttt{upper\_bound} & always 0 or 1 for a unique-key map \\
+\texttt{vector::push\_back} / \texttt{emplace\_back} & possible growth (realloc + relocation) + construction at the end & hidden cost + invalidation on realloc \\
+\texttt{vector::insert} / \texttt{emplace} & possible growth + tail shift + insertion & extra $O(n)$ shift \\
+\texttt{vector::resize} & append (default/value) or truncate the tail & bidirectional; does not shrink capacity \\
+\texttt{vector::assign} & \texttt{clear} + insert range/$n\times$ & capacity reused where possible \\
+\bottomrule
+\end{longtable}
+
+\noindent Functions that both shells \emph{share} by name --- \texttt{size}, \texttt{empty}, \texttt{clear},
+the iterator families, \texttt{swap}, \texttt{get\_allocator}, and \texttt{insert}/\texttt{emplace}/%
+\texttt{erase} --- carry key semantics in the map and position/index semantics in the vector;
+\texttt{operator[]}, for instance, inserts in the map but is an unchecked index access in the vector. The exact
+cache-engine-internal function-handle hops behind these contracts are documented in a dedicated cache-engine
+developer document.
