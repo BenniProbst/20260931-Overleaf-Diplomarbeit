@@ -52,7 +52,12 @@ das ist zugleich Teil der Forschungslücke (3.7) + Bias-Bruch-Begründung (alle 
 
 ## §D — Instanzen zu 2.6 (Design-Space / SE / Pattern)
 - **Im Korpus (Design-Space):** Idreos „Periodic Table" + „Data Calculator" (bereits in `literatur.bib`: idreos2018periodic/datacalculator), START (self-tuning P05), CoCo (data-aware P04), B-Trees-Are-Back (adaptive Layouts P20), Wormhole (Hybrid-Komposition P07).
-- **NEU im Web (NICHT im Korpus) — Kandidaten zur Aufnahme (Autor-Entscheidung):** Kraska et al. 2018 „The Case for Learned Index Structures" (RMI); VEGA (Active-Tuning Learned Index, SIGMOD 2025); Survey Learned Indexes 2024 (arXiv 2403.06456); Idreos „Database Cracking"/„Stochastic Cracking" (adaptive indexing); „Self-Tuning DB Systems Survey" (ACM CSUR 2023); AirIndex (DSE 2023). Klassisch: Michalewicz „Genetic Algorithms + Data Structures = Evolution Programs".
+- **NEU — AUFGENOMMEN (Autor-Entscheidung 2026-06-16: „voll aufnehmen", Korpus erweitert):** Bib jetzt
+  ergänzt + in 3.6 einzubauen: Kraska et al. 2018 (RMI, `kraska2018learned`), Idreos et al. 2007 Database
+  Cracking (`idreos2007cracking`), Halim et al. 2012 Stochastic Cracking (`halim2012stochastic`).
+  **Noch via AP-Z1 zu verifizieren + ergänzen:** VEGA (SIGMOD 2025), Survey Learned Indexes 2024
+  (arXiv 2403.06456), Self-Tuning-DB-Survey (ACM CSUR 2023), AirIndex (arXiv 2306.14395), Michalewicz
+  „Genetic Algorithms + Data Structures = Evolution Programs". → Einbau als Design-Space-SoTA in 3.6 (AP-S2).
 - **Pattern (am Code verifiziert, Kap. 2.6):** Strategy/Visitor/Adapter/Abstract-Factory/Composite/Iterator/Observer/Decorator/Memento/CRTP/Template-Method; NICHT Singleton/Command/Flyweight/Bridge.
 
 ## §E — Lücken-Gesamtbild (für Kap. 3 Ehrlichkeit + Forschungslücke 3.7)
