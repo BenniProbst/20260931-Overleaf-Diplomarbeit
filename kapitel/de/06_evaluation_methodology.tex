@@ -110,6 +110,17 @@ ein Scalar-, ein AVX2- und --- auf Barnard --- ein AVX-512-Build vorbereitet; au
 werden P- und E-Cores getrennt vermessen (eigene Zähler-Domänen
 \texttt{cpu\_core}/\texttt{cpu\_atom}) statt zusammenaggregiert.
 
+\smallskip\noindent\emph{Experiment-Betriebssysteme.} Auf den Produktions-Zielmaschinen wird jede Messung
+unter zwei Betriebssystem-Regimes erhoben, um \emph{Produktions-Treue} von \emph{Mess-Tiefe} zu trennen. Ein
+\emph{immutables} Betriebssystem (Talos) spiegelt den Produktiv-Einsatz und erzwingt boot- bzw.\
+übersetzungsstatische Cache-Einstellungen (Abschnitt~\ref{ssec:aware-oblivious}); ein \emph{root-Linux mit
+vollem Hardware-Zähler-Zugriff} (\texttt{perf}/MSR) macht hingegen die zählerbasierten Mess-Kategorien ---
+Cache-, dTLB- und Branch-Misses sowie IPC/CPI (Abschnitt~\ref{ssec:sota-meas-bridge}) --- und die
+laufzeit-konfigurierbaren cache-nahen Achsen-Parameter (Prefetch-Distanz, Hardware-Prefetcher) überhaupt erst
+zugänglich. Die zeit- und observer-basierten Kategorien (Wall-Clock, HdrHistogramm, Per-Achsen-Observer)
+laufen unter beiden Regimes identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
+privilegierten Regime erhoben und je Plattform mit Betriebssystem, Kernel und Zähler-Domäne protokolliert.
+
 \section{Fairness und Reproduzierbarkeit}\label{sec:fairness}
 
 Faire Vergleichbarkeit ist über feste Regeln gesichert. Jeder Vergleich trennt einen
