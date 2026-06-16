@@ -1,9 +1,9 @@
 \chapter{Stand der Technik}\label{ch:sota}
 % [AP-S1] Instanz-Spiegel von Kapitel 2 (Autor-Direktive 2026-06-16): jede Grundlagen-Definitionsklasse
-% (Kap. 2) erhaelt hier ihre wissenschaftlich nachweisbaren Instanzen. 3.1 + 3.2 sind ausformuliert; die
-% darunter folgenden Cluster-Sektionen (Cluster A--F + 3 Tabellen + Forschungsluecke) sind ROHMATERIAL und
-% werden in den naechsten AP-S1-Inkrementen in 3.3 (Achsen-Sezierung) / 3.4 (Workloads) / 3.5 (Messen) /
-% 3.6 (Architektur-Design) reorganisiert; die Forschungsluecke wird zu 3.7. Bis dahin vorlaeufige Nummerierung.
+% (Kap. 2) erhaelt hier ihre wissenschaftlich nachweisbaren Instanzen. 3.1 + 3.2 + 3.3 sind ausformuliert
+% (Cluster A--F in die Achsen-Sezierung aufgeloest). Verbleibendes ROHMATERIAL: Profil-Schema + SOTA-Workload-
+% Tabelle (-> 3.4 Workloads) + HW/Allokator-Tabellen (von 3.3 referenziert, spaeter physisch nach 3.3); die
+% Forschungsluecke wird zu 3.7. Bis dahin vorlaeufige Nummerierung der Rohmaterial-Sektionen.
 
 Wo Kapitel~\ref{ch:fundamentals} die konzeptionellen \emph{Definitions-Klassen} bereitstellt, führt
 dieser Stand der Technik ihre wissenschaftlich nachweisbaren \emph{Instanzen} an: zu jeder
@@ -90,68 +90,147 @@ hingegen \emph{cache-bewusst} ausgelegt. Die vorliegende Arbeit ordnet sich als 
 (Abschnitt~\ref{ssec:aware-oblivious}): gemessenes Lokalitätswissen statt fest verdrahteter oder
 vollständig ignorierter Cache-Parameter.
 
-% [AP-S1] ===== Ab hier ROHMATERIAL (vorlaeufige Nummerierung) — wird im naechsten Inkrement reorganisiert =====
-% Die folgenden Cluster-Sektionen (A--F), die 3 Profil-/HW-Tabellen und die Forschungsluecke bleiben inhaltlich
-% erhalten und werden in 3.3 (Achsen-Sezierung, je Achse Organ-Instanzen) / 3.4 (Workload-Frameworks) /
-% 3.5 (Messen) / 3.6 (Architektur-Design) ueberfuehrt; die Forschungsluecke wird zu 3.7.
+\section{Achsen-Sezierung der Suchverfahren}\label{sec:sota-axes}
+Den Kern dieses Kapitels bildet die achsenweise \emph{Sezierung}: Jeder Gesamt-Algorithmus wird in
+seine Organe zerlegt, und je Achse werden die beitragenden Organ-Algorithmen aufgeführt --- mit
+kurzem Verweis auf das Herkunfts-Lebewesen. Das vorgeschlagene Framework führt \emph{neunzehn
+Kompositions-Achsen} (T0--T18) sowie drei \emph{Build-Achsen} (Seitentyp, SIMD-Erweiterung,
+Hardware-Profil); viele Achsen sind in Sub-Achsen verfeinert. Die Tabellen~\ref{tab:axes-overview-1}
+und~\ref{tab:axes-overview-2} geben den Überblick, welche Veröffentlichungen je Achse ein Organ
+beitragen; die folgenden Unterabschnitte führen sie thematisch gruppiert aus. Die thematischen
+Herkunfts-Cluster der Vorarbeiten (Trie-Familie P01--P10, Hybrid-/B\textsuperscript{+}-Familie
+P03/P06/P07/P11--P13, Layout-Theorie P14--P19, Prefetching P20--P28, Synchronisation P08/P29--P30,
+TU-Dresden-Hardware P31--P33) erscheinen dabei \emph{aufgelöst} in ihren Organ-Beiträgen.
 
-\section{Trie-Familie (Cluster A)}\label{sec:cluster-a}
+\begin{table}[!htbp]
+\caption{Achsen-Sezierung (Teil 1: Kompositions-Achsen T0--T9)}\label{tab:axes-overview-1}
+\centering\footnotesize
+\begin{tabular}{@{}l l p{8.2cm}@{}}
+\toprule
+\textbf{Achse (T)} & \textbf{Sub-Achsen} & \textbf{Beitragende Quellen} \\
+\midrule
+T0 search\_algo & SA1--SA3 & P01,P02,P05,P07,P10; k-ary (TUD 2009), Interpol., Eytzinger, Skip-List, B-Baum, Hash \\
+T1 cache\_traversal & 3.B & Cache-Line-Default; P17,P21,P27,P32 \\
+T2 mapping & 3.M & P03,P07,P27; CE-Baseline \\
+T3 path\_compression & --- & P01,P02,P04,P05,P09 \\
+T4 node\_type & NT1--NT3 & P01,P02,P03,P04,P05,P06,P11,P12,P13 \\
+T5 memory\_layout & HM1--HM4 & P06,P09,P11,P12,P32; Default \\
+T6 allocator & 6.1--6.5 & A01--A23; P29,P30 \\
+T7 prefetch & PF1--PF3 & P07,P21,P23,P25,P26,P27 \\
+T8 concurrency & 8.1,8.2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
+T9 serialization & --- & P01,P09,P10; LZ77 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\textbf{P01 ART}~\cite{leis2013art} führt den Adaptive Radix Tree mit adaptiven Knotengrößen
-Node4/16/48/256 ein. \textbf{P02 HOT}~\cite{binna2018hot} optimiert die Trie-Höhe über
-Multi-Byte-Präfixe und Bit-Vektor-Indizes. \textbf{P03 Masstree}~\cite{mao2012masstree}
-kombiniert einen Trie mit B-Bäumen und einem Permutations-Index je interner Knoten.
-\textbf{P04 CoCo-Trie}~\cite{boffa2024coco} verwendet succinct-kodierte kompakte Seiten.
-\textbf{P05 START}~\cite{fent2020start} erweitert ART um Selbstoptimierung der
-Knotenrepräsentation. P09 LOUDS (Jacobson 1989) ist die succinct-Trie-Grundlage, und
-\textbf{P10 SuRF}~\cite{zhang2018surf} nutzt LOUDS zur Bereichsfilterung.
+\begin{table}[!htbp]
+\caption{Achsen-Sezierung (Teil 2: T10--T18 + Build-Achsen)}\label{tab:axes-overview-2}
+\centering\footnotesize
+\begin{tabular}{@{}l l p{8.2cm}@{}}
+\toprule
+\textbf{Achse} & \textbf{Sub-Achsen} & \textbf{Beitragende Quellen} \\
+\midrule
+T10 telemetry & 11.X1--X4 & P01,P02,P16,P26,P28; HdrHistogram (Gil Tene) \\
+T11 value\_handle & --- & P01,P03,P07,P29 \\
+T12 isa & --- & x86-64/AArch64/Power/RISC-V (Vendor-Spec) \\
+T13 index\_organization & --- & Bayer/McCreight,Comer,Oracle \\
+T14 io\_dispatch & IO1--IO3 & Stonebraker,Crotty; Baselines \\
+T15 migration\_policy & MG1--MG3 & Anti-Caching,NVM-Tiering,LeCaR; None \\
+T16 filter & FT1--FT3 & Bloom,Cuckoo,P10,Xor \\
+T17 queuing\_q1 & --- & Disruptor,Bw-Tree,Driscoll,P29,Pugh,LSM,Lamport,Michael/Scott \\
+T18 queuing\_q2 & --- & Eager/Lazy/Watermark/Kafka/RocksDB \\
+Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (26) \\
+Build simd (09b) & --- & SSE2/AVX2/AVX-512/NEON/SVE2/RVV/CUDA \\
+Build hardware (12) & 12.1--12.5 & HW-Strategie je Paper (Tab.~\ref{tab:hw-sched}) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\section{Hybrid- und B\texorpdfstring{\textsuperscript{+}}{+}-Familie (Cluster B)}\label{sec:cluster-b}
+\subsection{Such- und Navigations-Organe}\label{ssec:sota-ax-nav}
+Die \emph{Such-Achse} (T0, Sub-Achsen SA1--SA3) trägt die meisten Organe: als Original-Bindungen ART
+(P01~\cite{leis2013art}), HOT (P02~\cite{binna2018hot}), START (P05~\cite{fent2020start}), SuRF
+(P10~\cite{zhang2018surf}) und Wormhole (P07~\cite{wu2019wormhole}); dazu generische Such-\emph{Methoden}:
+k-äre Suche (Schlegel/Gemulla/Lehner, DaMoN 2009 --- TU-Dresden), Interpolationssuche (Perl/Itai/Avni
+1978), Eytzinger-Layout-Suche (Khuong/Morin 2017), Skip-Liste (Pugh 1990), binärer Suchbaum und B-Baum
+(Bayer/McCreight~\cite{bayer1972btree}) sowie Open-Addressing-Hashing (Knuth~\cite{knuth1998taocp3}).
+Die \emph{Traversierungs-Achsen} trennen Algorithmus- und Cache-Sicht: T1 (Cache-Memory-Traversierung)
+reicht von der Cache-Line-Wanderung über Stride-Prefetch (P21 Chen) und HBM-Nähe (P32 Schmidt) bis zur
+cache-oblivious-Rekursion (P17 Bender~\cite{frigo1999cache}) und dem L1/L2/L3-Bündel (P27 Zhang); T2
+(Mapping) verbindet beide über lineare 1:1-Abbildung, Hash-Redirect (P07) oder Permutations-Index
+(P03 Masstree) --- eine im Stand der Technik dünn, überwiegend per Baseline besetzte Achse. Die
+\emph{Pfadkompression} (T3) instanziiert die byte-weise Variante (P01), den Single-Bit-Patricia-Split
+(Morrison 1968~\cite{morrison1968patricia}; P02), die kollabierte Macro-Node (P04 CoCo) und das
+Multi-Byte-Rewiring (P05). Die \emph{Knotentyp-Achse} (T4, NT1--NT3, 13 Bausteine) und die Build-Achse
+\emph{Seitentyp} (PG1--PG3, 26 Bausteine) bündeln die adaptiven Layouts: Node4/16/48/256 (P01),
+HOT-Compound (P02), Internal/Border (P03), Decision/Span (P06 B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}),
+LOUDS-Dense/Sparse (P10), CSS-Knoten/CSB\textsuperscript{+}-Node-Group/Hankins-Wide (P11/P12/P13) sowie
+die PRT-ART-Familie.
 
-\textbf{P06 B\textsuperscript{2}-Baum}~\cite{schmeisser2022b2tree} setzt einen zweistufigen
-Verzweigungsgrad für kombinierte L1+L2-Cache-Bewusstheit ein. \textbf{P07
-Wormhole}~\cite{wu2019wormhole} kombiniert eine Hash-Tabelle mit einer linearen Präfix-Sicht.
-P11 CSS-Baum (Rao/Ross 1999) ist der erste Cache-Sensitive Search Tree; P12
-CSB\textsuperscript{+}-Baum (Rao/Ross 2000) entwickelt ihn zu einem B\textsuperscript{+}-Baum
-weiter; P13 Hankins/Patel (2003) untersucht den Effekt der Knotengröße auf die
-Cache-Performance.
+\subsection{Speicher-, Allokations- und Wert-Organe}\label{ssec:sota-ax-mem}
+Die \emph{Speicher-Layout-Achse} (T5, HM1--HM4, 8 Bausteine) reicht vom cache-line-ausgerichteten AoS
+über zeigerfreie zusammenhängende Anordnung (P11 CSS) und Geschwister-Cluster (P12 CSB\textsuperscript{+})
+bis zum eingebetteten Baum (P06), bit-gepacktem LOUDS (P09 Jacobson) und den Huge-Page-Varianten (P32).
+Die \emph{Allokator-Achse} (T6) ist mit dem Korpus A01--A23 am dichtesten besetzt und in fünf Sub-Achsen
+verfeinert: 6.1 Allokationsstrategie (Slab, Buddy, Region, Pool, Object-Cache), 6.2 Reklamation (Epoch,
+RCU P29, Hazard-Pointer P30, QSBR), 6.3 NUMA-Affinität (P31 Ungethüm), 6.4 Huge-Page-Politik und 6.5
+Free-List-Organisation (Size-Class, Best-/First-Fit, segregiert). Tabelle~\ref{tab:allocator-profiles}
+listet die zehn lauffähigen Allokator-Profile mit Lizenz und Workload-Affinität. Die \emph{Wert-Achse}
+(T11, 5 Bausteine) unterscheidet Inline-Wert (P01), Zeiger, Redirect-to-Node bzw.\ externen Pool (P07
+Wormhole), versionierten Zeiger (P03 Masstree) und immutable Shared-Ref (P29 RCU). Die
+\emph{Serialisierungs-Achse} (T9) trägt Raw-Binary, Block-Kompression (LZ77, Ziv/Lempel 1977; LZ4/Snappy),
+succinct LOUDS/FST (P09/P10) und Varint (P01).
 
-\section{Layout-Theorie (Cluster C)}\label{sec:cluster-c}
+\subsection{Hardware-nahe Organe}\label{ssec:sota-ax-hw}
+Die \emph{Prefetch-Achse} (T7, PF1--PF3, 6 Bausteine) reicht von keinem Prefetch über software-festes
+(P21 Chen) und adaptiv-distanziertes (P23 Khan) bis zu fill-buffer-bewusstem (P25 Mahling),
+hot-path-orientiertem (P26 Zhang) und hierarchischem Bündel-Prefetch (P27 Zhang); die explizite
+Hardware-Prefetch-Instruktion stammt aus Wormhole (P07). Die \emph{ISA-Achse} (T12) und die Build-Achse
+\emph{SIMD-Erweiterung} (09b) führen die Vendor-Spezifikationen: x86-64, AArch64, Power und RISC-V mit
+SSE2/AVX2/AVX-512, NEON/SVE2, RVV und CUDA. Zwei übergreifende Strategie-Achsen halten fest, was ein
+Algorithmus aktiv \emph{nutzt} bzw.\ wie er Arbeit \emph{verteilt}: die \emph{Hardware-Strategie}
+(Achse 12; Sub 12.1 SIMD-Familie, 12.2 Cache-Level-Targeting, 12.3 NUMA, 12.4 Prefetch-Hardware,
+12.5 Atomic-Familie) und die \emph{Scheduling-Strategie} (Achse 13; Sub 13.1 Worker-Pool-Layout, 13.2
+SIMD-Worker-Limit --- hardwarebedingt typisch zwei von $N$ Kernen ---, 13.3 heterogener P-/E-Kern-Dispatch,
+13.4 Co-Routine, 13.5 Batch-Granularität). Tabelle~\ref{tab:hw-sched} ordnet beide je Paper zu. Die
+\emph{Telemetrie-Achse} (T10, Sub 11.X1--X4, 6 Bausteine) instanziiert den Density-Tracker (P01), den
+Insert-Zähler (P02), das HdrHistogramm (Gil Tene) für p50/p95/p99, den Pfad-Lese-Zähler (P26) und die
+Probability-Hints (P16/P17 Bender); Kuehn (P28) trägt die kohärenz-schonenden Varianten bei ---
+Leaf-Only-, Sampling- und Offline-Recompute-Zähler ---, während der Zähler in allen (auch inneren) Knoten
+als \emph{Anti-Pattern} (Cache-Line-Ping-Pong) ausgewiesen ist.
 
-P14 Samuel/Pedersen/Bonnet (2005) macht den CSB\textsuperscript{+}-Baum prozessor-bewusst.
-P15 Graefe/Larson (2001) untersucht B-Baum-Indizes gegenüber CPU-Caches. P16
-Bender/Demaine/Farach-Colton (2002) führt cache-oblivious Baum-Layout (van Emde Boas) ein;
-P17 Bender et al.\ (2005) erweitert es zu cache-oblivious B-Bäumen. P18
-Saikkonen/Soisalon-Soininen (2008) und P19 (2016) entwickeln Multi-Level- und
-layout-invariante B-Bäume.
+\subsection{Nebenläufigkeit, I/O, Migration und Pufferung}\label{ssec:sota-ax-conc}
+Die \emph{Nebenläufigkeits-Achse} (T8) gliedert sich in 8.1 Muster und 8.2 Sperr-Modus. Die Muster reichen
+vom seriellen Nullpunkt über grobes Sperren (Dijkstra 1965) und Leser-/Schreiber-Sperren (Courtois 1971)
+zum optimistischen Lock-Coupling (P08), zu lock-freien (Michael/Scott 1996) und wait-freien Verfahren
+(Herlihy 1991) sowie zu RCU (P29) und Hazard-Pointern (P30); der Sperr-Modus unterscheidet read-only,
+read-write, upgradeable und optimistische Validierung. Die \emph{I/O-Achse} (T14, IO1--IO3) instanziiert
+gepufferte (Stonebraker 1981), direkte und memory-mapped Ein-/Ausgabe (Crotty, CIDR 2022) neben dem
+In-Memory-Nullpunkt. Die \emph{Migrations-Achse} (T15, MG1--MG3) trägt statische Platzierung,
+Hot/Cold-Trennung (Anti-Caching 2013), mehrstufige RAM$\to$NVM$\to$SSD-Migration (2018) und ML-getriebene
+adaptive Migration (LeCaR 2018). Die \emph{Pufferungs-Achsen} (T17/T18) schließlich umfassen je rund ein
+Dutzend Bausteine: Operations-Puffer von der FIFO-/LIFO-Schlange über den Disruptor-Ringpuffer (2011),
+die Delta-Kette (Bw-Tree 2013), den Copy-on-Write-Puffer (Driscoll 1989), den Epoch-Puffer (P29), die
+Skip-Liste (Pugh 1990) und den Tombstone-Puffer (LSM, O'Neil 1996) bis zu lock-freien SPSC- (Lamport 1983)
+und MPMC-Queues (Michael/Scott 1996); sowie Schreib-Rückführung (Flush) von eager über lazy,
+schwellwert- und zeitfenster-basiert (Kafka) bis adaptiv (RocksDB-LSM).
 
-\section{Prefetching (Cluster D und E)}\label{sec:cluster-de}
+\subsection{Index-Organisation und Filter}\label{ssec:sota-ax-idx}
+Die \emph{Index-Organisations-Achse} (T13) unterscheidet die geclusterte Anordnung (Speicher- gleich
+Indexordnung; Bayer/McCreight~\cite{bayer1972btree}), die ungeordnete Heap-Ablage, die index-organisierte
+Tabelle (Oracle, VLDB 2000) und den nicht-geclusterten Sekundärindex (Comer~\cite{comer1979btree}). Die
+\emph{Filter-Achse} (T16, FT1--FT3) trägt den Bloom-Filter (1970), den Cuckoo-Filter (CoNEXT 2014), den
+succinct-Bereichsfilter SuRF (P10) und den Xor-Filter (2020).
 
-P20 ``B-Trees Are Back'' (Mueller/Benson/Leis 2025) demonstriert modernes B-Baum-Engineering.
-P21 Chen/Gibbons/Mowry (2001) führt Prefetching-B\textsuperscript{+}-Bäume ein; P22 Chen et
-al.\ (2002) entwickelt fraktales Prefetching. P23 Khan (2010) macht Cache-Prefetching
-dynamisch adaptiv; P24 Naderan-Tahan/Sarbazi-Azad (2016) ergänzt einen adaptiven Filter auf
-dem Cache-Prefetcher. P25 Mahling/Weisgut/Rabl (2025) kombiniert Bereichs-Scans mit
-Hot-Path-Caching. P26 Zhang (FGCS 2024) und P27 Zhang (ASPLOS 2025, hierarchisches
-Prefetching) sind die jüngsten Schemata, und P28 Kuehn (DaMoN 2023) motiviert datengetriebene
-Cache-Optimierung.
+Diese Sezierung zeigt zugleich die Schieflage der Vorarbeiten: Wenige Achsen sind dicht und vielfach
+besetzt (Such-, Knotentyp-, Allokator-, Prefetch-Achse), andere ausschließlich mit Baseline-/Lehrbuch-Varianten
+(Mapping, Cache-Memory-Traversierung) oder als reine Mess-Ziele (dTLB) --- kein einziges Verfahren belegt
+alle Achsen gemeinsam. Genau diese Unvollständigkeit motiviert die Forschungslücke
+(Abschnitt~\ref{sec:gap}).
 
-\section{Synchronisation (Cluster F)}\label{sec:cluster-f}
-
-P08 ``ART of Practical Synchronization'' (Leis 2016) führt das optimistische Lock-Coupling
-(OLC) für ART ein. P29 RCU (McKenney, OLS 2001) und P30 Hazard Pointers (Michael 2004) sind
-die kanonischen Reklamations-Schemata. P31 Ungethüm/Habich (2017) und P32 Schmidt/Habich
-(2025) sind TU-Dresden-spezifische Hardware-Optimierungs-Überblicke; P33 (VAMPIR-Poster,
-Berthold/Habich 2023) liefert die OTF2-Profiler-Integration.
-
-\section{Allokator-Forschung (A01--A23)}\label{sec:allocators}
-
-Die 21 Allokations-Paper sind systematisch in der Allokator-Matrix (Anhang~\ref{app:blocks})
-katalogisiert. Rang-1-Repräsentanten sind Hoard (A01, ASPLOS 2000), Slab (A02, USENIX 1994),
-Michael Lock-Free (A03, PLDI 2004), mimalloc (A04, MSR-TR-2019-18), jemalloc (A05), TCMalloc
-(A06), snmalloc (A07, ISMM 2019) und NUMAlloc (A09, ISMM 2023). Rang-2/3 ergänzen CAMA (A12,
-RTAS 2011), StarMalloc (A13, OOPSLA 2024), Crystalline-Reklamation (A17, PLDI 2024) und
-PIM-malloc (A16, arXiv 2025).
+% [AP-S1] ===== Ab hier ROHMATERIAL fuer 3.4 (Workloads) / 3.5 (Messen) =====
+% Profil-Schema + SOTA-Workload-Tabelle bleiben erhalten und werden in 3.4 reorganisiert; die HW/Scheduling-
+% Tabelle (tab:hw-sched) + Allokator-Tabelle (tab:allocator-profiles) werden aus 3.3 referenziert und spaeter
+% physisch in 3.3 verschoben. Die Forschungsluecke wird zu 3.7.
 
 \section{Profil-Schema mit dem \texorpdfstring{\texttt{<expected\_workload>}}{expected\_workload}-Tag}\label{sec:profile-schema}
 
@@ -255,7 +334,7 @@ Vollkatalog steht in Anhang~\ref{app:blocks}.
 \begin{table}[h!]
 \centering\small
 \caption{Hardware- und Scheduling-Strategie pro SOTA-Paper (Auswahl)}\label{tab:hw-sched}
-\begin{tabular}{lll}
+\begin{tabular}{@{}l p{4.6cm} p{5.6cm}@{}}
 \toprule
 \textbf{Paper} & \textbf{Hardware-Strategie (Achse 12)} & \textbf{Scheduling-Strategie (Achse 13)} \\
 \midrule
