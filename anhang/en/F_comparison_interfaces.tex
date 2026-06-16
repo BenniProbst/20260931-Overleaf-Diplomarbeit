@@ -32,7 +32,7 @@ C++23. A $\dagger$ marks the core operations that the conformance gate (Section~
 checks before each measurement, so that only comparable things are compared. Complexities refer to
 $n=\texttt{size()}$; for range operations $N$ is the number of input elements.
 
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{6.0cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
 \caption{Complete \texttt{std::map} interface (C++23)}\label{tab:if-map}\\
 \toprule
 \textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
@@ -99,7 +99,7 @@ $n=\texttt{size()}$; for range operations $N$ is the number of input elements.
 \texttt{operator<=>} & lexicographical three-way comparison; synthesizes \texttt{<\,<=\,>\,>=} & $O(n)$ & C++20 \\
 \texttt{std::swap} & specialization; calls \texttt{lhs.swap(rhs)} & $O(1)$ & C++98 \\
 \texttt{std::erase\_if} & removes all elements with \texttt{pred==true}; returns the count & $O(n)$ & C++20 \\
-Deduction guides & CTAD from range/\texttt{initializer\_list}/\texttt{from\_range} & --- (compile time) & C++17 \\
+Deduction guides & CTAD from range/\allowbreak\texttt{initializer\_list}/\allowbreak\texttt{from\_range} & --- (compile time) & C++17 \\
 \bottomrule
 \end{longtable}
 
@@ -114,7 +114,7 @@ Deduction guides & CTAD from range/\texttt{initializer\_list}/\texttt{from\_rang
 Table~\ref{tab:if-vector} lists the complete interface of \texttt{std::vector<T,\,Allocator>} as of C++23
 ($n=\texttt{size()}$). All members are \texttt{constexpr} since C++20.
 
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{6.0cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
 \caption{Complete \texttt{std::vector} interface (C++23)}\label{tab:if-vector}\\
 \toprule
 \textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
@@ -154,7 +154,7 @@ Table~\ref{tab:if-vector} lists the complete interface of \texttt{std::vector<T,
 \multicolumn{4}{@{}l}{\textbf{Modifiers}}\\
 \addlinespace[2pt]
 \texttt{clear} & remove all elements (capacity unchanged) & $O(n)$ & C++98 \\
-\texttt{insert} & before a position: value/$n\times$/range/\texttt{initializer\_list}; shifts the tail & $O(n)$ & C++98 \\
+\texttt{insert} & before a position: value/$n\times$/range/\allowbreak\texttt{initializer\_list}; shifts the tail & $O(n)$ & C++98 \\
 \texttt{insert\_range} & insert an input range before a position & $O(n)$ & C++23 \\
 \texttt{emplace} & construct an element in place before a position & $O(n)$ & C++11 \\
 \texttt{erase} & remove a position/range, shift the tail down & $O(n)$ & C++98 \\
@@ -201,13 +201,13 @@ Table~\ref{tab:if-map}.
 \textbf{Function} & \textbf{Composition} & \textbf{Note} \\
 \midrule
 \endhead
-\texttt{map::operator[]} & \texttt{lower\_bound} + default insertion on absence $\to$ reference & mutates on absence; never throws \\
+\texttt{map::}\allowbreak\texttt{operator[]} & \texttt{lower\_bound} + default insertion on absence $\to$ reference & mutates on absence; never throws \\
 \texttt{map::at} & \texttt{find} + throw \texttt{std::out\_of\_range} on absence & the only throwing access; never mutates \\
 \texttt{map::insert} / \texttt{emplace} & ordered search + link a node only if the key is absent & no overwrite; \texttt{emplace} may still consume arguments on a hit \\
 \texttt{map::try\_\allowbreak emplace} & like \texttt{emplace}, but arguments untouched on a hit & preserves move-only arguments \\
 \texttt{map::insert\_\allowbreak or\_\allowbreak assign} & ordered search + insert or assign & overwrites (unlike \texttt{insert}) \\
 \texttt{map::count} / \texttt{contains} / \texttt{equal\_range} & reduce to \texttt{find} resp.\ \texttt{lower\_bound}+\texttt{upper\_bound} & always 0 or 1 for a unique-key map \\
-\texttt{vector::push\_back} / \texttt{emplace\_back} & possible growth (realloc + relocation) + construction at the end & hidden cost + invalidation on realloc \\
+\texttt{vector::}\allowbreak\texttt{push\_back} / \texttt{emplace\_back} & possible growth (realloc + relocation) + construction at the end & hidden cost + invalidation on realloc \\
 \texttt{vector::insert} / \texttt{emplace} & possible growth + tail shift + insertion & extra $O(n)$ shift \\
 \texttt{vector::resize} & append (default/value) or truncate the tail & bidirectional; does not shrink capacity \\
 \texttt{vector::assign} & \texttt{clear} + insert range/$n\times$ & capacity reused where possible \\

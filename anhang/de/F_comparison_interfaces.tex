@@ -34,7 +34,7 @@ nach C++23. Ein $\dagger$ markiert die Kern-Operationen, die das Konformitäts-G
 (Abschnitt~\ref{ssec:measurement-patterns}) vor jeder Messung prüft, damit nur Vergleichbares verglichen wird.
 Komplexitäten beziehen sich auf $n=\texttt{size()}$; bei Bereichs-Operationen ist $N$ die Zahl der Eingabe-Elemente.
 
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{6.0cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
 \caption{Vollständige \texttt{std::map}-Schnittstelle (C++23)}\label{tab:if-map}\\
 \toprule
 \textbf{Funktion} & \textbf{Offizielle Semantik} & \textbf{Komplexität} & \textbf{seit} \\
@@ -101,7 +101,7 @@ Komplexitäten beziehen sich auf $n=\texttt{size()}$; bei Bereichs-Operationen i
 \texttt{operator<=>} & lexikografischer Drei-Wege-Vergleich; synthetisiert \texttt{<\,<=\,>\,>=} & $O(n)$ & C++20 \\
 \texttt{std::swap} & Spezialisierung; ruft \texttt{lhs.swap(rhs)} & $O(1)$ & C++98 \\
 \texttt{std::erase\_if} & entfernt alle Elemente mit \texttt{pred==true}; gibt die Anzahl zurück & $O(n)$ & C++20 \\
-Deduktions-Leitfäden & CTAD aus Bereich/\texttt{initializer\_list}/\texttt{from\_range} & --- (Compile-Zeit) & C++17 \\
+Deduktions-Leitfäden & CTAD aus Bereich/\allowbreak\texttt{initializer\_list}/\allowbreak\texttt{from\_range} & --- (Compile-Zeit) & C++17 \\
 \bottomrule
 \end{longtable}
 
@@ -116,7 +116,7 @@ der \texttt{from\_range}-Konstruktor, \texttt{insert\_range} und die transparent
 Tabelle~\ref{tab:if-vector} listet die vollständige Schnittstelle von \texttt{std::vector<T,\,Allocator>} nach
 C++23 ($n=\texttt{size()}$). Sämtliche Member sind seit C++20 \texttt{constexpr}.
 
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{6.0cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
 \caption{Vollständige \texttt{std::vector}-Schnittstelle (C++23)}\label{tab:if-vector}\\
 \toprule
 \textbf{Funktion} & \textbf{Offizielle Semantik} & \textbf{Komplexität} & \textbf{seit} \\
@@ -156,7 +156,7 @@ C++23 ($n=\texttt{size()}$). Sämtliche Member sind seit C++20 \texttt{constexpr
 \multicolumn{4}{@{}l}{\textbf{Modifikatoren}}\\
 \addlinespace[2pt]
 \texttt{clear} & alle Elemente entfernen (Kapazität bleibt) & $O(n)$ & C++98 \\
-\texttt{insert} & vor Position: Wert/$n\times$/Bereich/\texttt{initializer\_list}; verschiebt den Schwanz & $O(n)$ & C++98 \\
+\texttt{insert} & vor Position: Wert/$n\times$/Bereich/\allowbreak\texttt{initializer\_list}; verschiebt den Schwanz & $O(n)$ & C++98 \\
 \texttt{insert\_range} & Eingabe-Bereich vor Position einfügen & $O(n)$ & C++23 \\
 \texttt{emplace} & Element in-place vor Position konstruieren & $O(n)$ & C++11 \\
 \texttt{erase} & Position/Bereich entfernen, Schwanz nachrücken & $O(n)$ & C++98 \\
@@ -203,13 +203,13 @@ $\dagger$ markierte Kern-Teilmenge.
 \textbf{Funktion} & \textbf{Zusammensetzung} & \textbf{Anmerkung} \\
 \midrule
 \endhead
-\texttt{map::operator[]} & \texttt{lower\_bound} + Default-Einfügen bei Fehlen $\to$ Referenz & mutiert bei Fehlen; wirft nie \\
+\texttt{map::}\allowbreak\texttt{operator[]} & \texttt{lower\_bound} + Default-Einfügen bei Fehlen $\to$ Referenz & mutiert bei Fehlen; wirft nie \\
 \texttt{map::at} & \texttt{find} + Wurf \texttt{std::out\_of\_range} bei Fehlen & einziger werfender Zugriff; mutiert nie \\
 \texttt{map::insert} / \texttt{emplace} & Ordnungs-Suche + Knoten verlinken nur bei fehlendem Schlüssel & kein Überschreiben; \texttt{emplace} kann Argumente bei Treffer dennoch konsumieren \\
 \texttt{map::try\_\allowbreak emplace} & wie \texttt{emplace}, aber Argumente bei Treffer unangetastet & bewahrt move-only-Argumente \\
 \texttt{map::insert\_\allowbreak or\_\allowbreak assign} & Ordnungs-Suche + Einfügen oder Zuweisen & überschreibt (anders als \texttt{insert}) \\
 \texttt{map::count} / \texttt{contains} / \texttt{equal\_range} & reduzieren auf \texttt{find} bzw.\ \texttt{lower\_bound}+\texttt{upper\_bound} & bei Unikat-Map stets 0 oder 1 \\
-\texttt{vector::push\_back} / \texttt{emplace\_back} & ggf.\ Wachstum (Realloc + Umzug) + Konstruktion am Ende & versteckte Kosten + Invalidierung beim Realloc \\
+\texttt{vector::}\allowbreak\texttt{push\_back} / \texttt{emplace\_back} & ggf.\ Wachstum (Realloc + Umzug) + Konstruktion am Ende & versteckte Kosten + Invalidierung beim Realloc \\
 \texttt{vector::insert} / \texttt{emplace} & ggf.\ Wachstum + Schwanz verschieben + Einsetzen & zusätzlicher $O(n)$-Shift \\
 \texttt{vector::resize} & anhängen (Default/Wert) oder Schwanz kürzen & bidirektional; verkleinert die Kapazität nicht \\
 \texttt{vector::assign} & \texttt{clear} + Bereich/$n\times$ einfügen & Kapazität wird ggf.\ wiederverwendet \\
