@@ -234,15 +234,43 @@ vertieft.
 \section{Lasten und Workloads}\label{sec:workloads}
 % Simples Feedback: Was ist eine Last? Was ist ein Workload? Was ist das Ziel der Variation? Welche Workloads konnten über ALLE Paper recherchiert werden, die derzeit in der Diplomarbeit gelistet sind? Welche Messdaten stecken per Diplomarbeit Dokumentation genau hinter den verwendeten Workloads, woraus bestehen sie? Gibt es Lastprofil-playbooks die mit multiplen Interface Anfragen durchgeführt werden oder handelt es sich bezüglich des Inerfaces um isolierte und unrealistische Einzelzugriffe? Bezüglich der Workloads erwarte ich auch zuerst ein verallgemeinertes Hauptkapitel und dann die Frameworks, welche diese Workloads bereitstellen können, denn durch die große Verteilung verschiedener Workloads und nicht vergleichbarer Lasten über multiple Paper und Suchalgorithmen, sind wir gezwungen ALL DIESE gegen alle Lebewesen-Binaries also Suchalgorithmen (und zusätzlich Container) angepasst laufen zu lassen, um die absolute Vergleichbarkeit aus den Messwerten zu ermitteln.
 \subsection{Begriff: Last, Workload und Ziel der Variation}\label{ssec:load-terms}
-% [AP-G6] folgt: Definitionen; Begruendung "alle Workloads gegen alle Lebewesen-Binaries"
+Eine \emph{Last} (Operation) ist ein einzelner Aufruf der Such-Schnittstelle --- eine Punktanfrage,
+ein Einfügen, ein Löschen oder ein Bereichs-Scan. Ein \emph{Workload} ist ein strukturiertes Profil
+solcher Operationen: ein Operations-Mix (etwa 50\,\% Lesen / 50\,\% Aktualisieren) über einer
+Schlüssel-Zugriffsverteilung (gleichverteilt, Zipf-verteilt, jüngste Werte) auf einem Datensatz
+definierter Größe und Schlüssel-Charakteristik. Realistische Workloads sind dabei \emph{Playbooks}
+aus vielen aufeinanderfolgenden Interface-Aufrufen --- nicht isolierte, unrealistische
+Einzelzugriffe.
 
-\subsection{Workload-Frameworks: YCSB}\label{sec:ycsb}
-Der Yahoo!\ Cloud Serving Benchmark (YCSB) definiert eine Familie von Schlüssel-Wert-Workloads,
-die hier als gemeinsames Lastprofil dienen: YCSB-A (50/50 Lesen/Aktualisieren, Zipf-verteilt),
-YCSB-B (95/5 Lesen/Aktualisieren), YCSB-C (nur Lesen), YCSB-D (jüngste Werte), YCSB-E (kurze
-Bereichs-Scans) und YCSB-F (Read-Modify-Write). Jedes Algorithmus-Profil deklariert einen
-erwarteten Workload (Kapitel~\ref{ch:sota}), den der Mess-Treiber für das profilbewusste
-Routing nutzt (Kapitel~\ref{ch:methodology}).
+Das \emph{Ziel der Variation} ist der Bruch eines methodischen Bias: jede Veröffentlichung wählt
+typischerweise das Lastprofil, unter dem ihr eigener Algorithmus am besten abschneidet (ein
+read-only-Trie meidet Aktualisierungen, ein komprimierter Filter sucht negative Anfragen, ein
+cache-bewusstes Layout bevorzugt Zipf-Hotspots). Erst wenn \emph{alle} Lastprofile gegen
+\emph{alle} Lebewesen-Binaries (und zusätzlich die Container-Hüllen) laufen, lässt sich absolute,
+bias-freie Vergleichbarkeit gewinnen. Die konkrete „alle gegen alle"-Matrix gehört in die
+Evaluationsmethodik (Kapitel~\ref{ch:methodology}); hier wird nur der konzeptionelle Rahmen gelegt.
+
+\subsection{Workload-Frameworks}\label{sec:ycsb}
+Die in der Literatur verwendeten Workloads entstammen \emph{mehreren} Benchmark-Frameworks, die
+diese Arbeit gemeinsam berücksichtigt; das prominenteste ist der Yahoo!\ Cloud Serving Benchmark
+(YCSB)~\cite{cooper2010ycsb}. Er definiert eine Familie von Schlüssel-Wert-Workloads, die hier als
+gemeinsames Lastprofil dienen: YCSB-A (50/50 Lesen/Aktualisieren, Zipf-verteilt), YCSB-B (95/5
+Lesen/Aktualisieren), YCSB-C (nur Lesen), YCSB-D (jüngste Werte), YCSB-E (kurze Bereichs-Scans) und
+YCSB-F (Read-Modify-Write). Jedes Algorithmus-Profil deklariert einen erwarteten Workload
+(Kapitel~\ref{ch:sota}), den der Mess-Treiber für das profilbewusste Routing nutzt
+(Kapitel~\ref{ch:methodology}).
+
+Daneben stützen sich die analysierten Veröffentlichungen auf weitere Frameworks: den
+Index-Benchmark \emph{SOSD}~\cite{kipf2019sosd}, die Transaktions-Benchmarks der
+\emph{TPC}-Familie (TPC-C, TPC-DS), die Integration in reale Systeme (etwa SuRF als
+Bloom-Filter-Ersatz in RocksDB), reale String-Korpora (URLs, DNA, Wörterbuch-Terme) sowie --- bei
+den hardware-nahen Arbeiten --- \emph{SPEC~CPU} und \emph{CloudSuite}; der Allokator-Korpus wird
+mit allokator-spezifischen Suiten vermessen (\texttt{mimalloc-bench}, Larson, threadtest, shbench).
+% [Beleg-TODO 2.4.2] Framework-Primaerquellen (SOSD Kipf 2019; TPC; SPEC; CloudSuite; mimalloc-bench) via AP-Z1/Z2 verifizieren/nachtragen
+Da diese Frameworks unterschiedliche, untereinander nicht vergleichbare Lasten erzeugen, abstrahiert
+die Arbeit sie zu einem gemeinsamen Satz von Lastprofilen und fährt diese als \emph{dynamische
+Workload-Achse} über alle Lebewesen-Binaries (Kapitel~\ref{ch:methodology}); die Anbindung der
+nicht-YCSB-Frameworks erfolgt über einen Datensatz-Lader.
 
 \section{Wissenschaftliches Messen}\label{sec:measurement-basics}
 % [AP-G8] NEU (verifiziert fehlend). Vgl. Kapitel-Schluss-Kommentar (Mess-Thema + Grundlagen/SoTA-Verzahnung).
