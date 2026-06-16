@@ -73,3 +73,44 @@ Agenten lieferten reichhaltig, aber unzuverlässig (Beispiel: „consteval-SHA25
 unsicher). **Vor jeder Persistierung in Kap. 3:** die konkrete Paper-Achsen-Zuordnung gegen
 `bausteine/03_cross_paper_konzeptmatrix.md` + `bausteine/01_bausteine_matrix.md` + Doc 18 selbst gegenprüfen;
 neue Web-Werke nur nach Autor-Freigabe aufnehmen (Provenienz).
+
+## §G — KORREKTUR nach gründlichem Code-#include-Read (Doc 18 + `libs/cache_engine/topics/`), 2026-06-16
+**Anlass (Autor-Direktive):** „bezüglich jedes der Themen den GESAMTEN Code + ALLE Entstehungs-Docs lesen".
+**Befund:** Der Agenten-Survey (§A–§E) stützte sich NUR auf die **P01–P33-Cross-Paper-Matrix** → seine
+„Lücken"-Flags (io/migration/filter/queuing/concurrency = 0–1/spärlich) sind **FALSCH**. Der echte Code
+(`libs/cache_engine/topics/`, je Achse `*_registry.hpp` + Wrapper) + die web-verifizierte Map **Doc 18**
+(`docs/architecture/18_achsen_algorithmus_paper_code_map.md`, 110 Algorithmen × 21 Achsen → Paper) zeigen:
+diese Achsen sind **reich mit gut belegten Papern außerhalb P01–P33** besetzt.
+
+> **Doc 18 ist die maßgebliche #include-Quelle für Kapitel 3** (nicht die P01–P33-Matrix allein). Jede
+> Kap.-3-Instanz wird aus Doc 18 gezogen + dort gegen den realen Wrapper geprüft.
+
+**Korrigierte reale Achsen-Besetzung (Auszug, alle code-verifiziert):**
+- **axis_filter (4):** Bloom (CACM 1970), Cuckoo (CoNEXT 2014), RangeSurf/SuRF (P10), Xor (ACM JEA 2020).
+- **axis_io (3+Baseline):** BufferedIo (Stonebraker CACM 1981), DirectIo, MmapIo (Crotty CIDR 2022), InMemoryOnly.
+- **axis_migration (3+Baseline):** HotCold (Anti-Caching PVLDB 2013), TierBased (NVM SIGMOD 2018), Adaptive (LeCaR HotStorage 2018), None.
+- **axis_q1_queuing (15):** Disruptor (LMAX 2011), DeltaChain (Bw-Tree ICDE 2013), CopyOnWrite (Driscoll JCSS 1989), Epoch (RCU P29), Skiplist (Pugh CACM 1990), Tombstone (LSM O'Neil 1996), LockFreeSPSC (Lamport 1983), LockFreeMPMC (Michael/Scott PODC 1996 + Vyukov), moodycamel + ADT-Baselines.
+- **axis_q2_queuing (5):** Eager/Lazy/Watermark/Timed (Kafka NetDB 2011 / Spark)/AdaptiveLsm (RocksDB + O'Neil 1996).
+- **axis_08_concurrency (8):** Blocking (Dijkstra CACM 1965), ReaderWriter (Courtois CACM 1971), OLC (P08), LockFree (Michael/Scott PODC 1996), WaitFree (Herlihy TOPLAS 1991), RCU (P29), Hazard (P30), None.
+- **axis_03a_search_algo:** zusätzlich zu P01/P02/P05/P07/P10 auch **k-ary (Schlegel/Gemulla/Lehner DaMoN 2009 — TU-Dresden Lehner-Gruppe!)**, Interpolation (Perl/Itai/Avni CACM 1978), Eytzinger (Khuong/Morin JEA 2017), SkipList (Pugh 1990), Hash (Knuth TAOCP3), BST/BTree (Bayer/McCreight Acta Inf. 1972).
+- **axis_05_memory_layout:** AoSStrict, CacheLineAligned, SoA (Abadi SIGMOD 2008), PackedBitmap/LOUDS (Jacobson FOCS 1989, P09), AoSoA.
+- **axis_14_value_handle:** Inline (P01), ExternalPool (P07), ImmutableSharedRef (RCU P29), VersionedPointer (Masstree P03).
+- **axis_01_index_organization:** Clustered/Heap/IOT (Oracle VLDB 2000)/NonClustered (Comer CSUR 1979 / Bayer-McCreight 1972).
+- **axis_10_serialization:** RawBinary, Compressed (Ziv/Lempel 1977; LZ4/Snappy), Succinct (LOUDS/SuRF P09/P10), VarLen (P01).
+
+**ECHTE „dünne" Achsen (nur Baselines/Lehrbuch/Hersteller-Spec, KEIN Algorithmus-Paper):** axis_09/09b/12
+(ISA/SIMD/HW = Vendor-Specs), axis_03m_mapping (DirectPlacement/PoolRelative = CE-Baselines, lose Lineage),
+axis_03b_cache_traversal (LinearFanout/HashLookup/BinarySearch = Lehrbuch). → **DAS** sind die wahren
+„nur-Baseline"-Achsen — NICHT io/migration/filter/queuing. §E ist entsprechend überholt.
+
+**Konsequenz Bib (AP-Z2):** weit über die Design-Space-Ergänzung hinaus ~40+ Primärquellen nötig — u. a.
+Bloom 1970, Cuckoo 2014, Xor 2020, Disruptor 2011, Bw-Tree (Levandoski ICDE 2013), Driscoll 1989, Lamport 1983,
+Michael/Scott PODC 1996, Dijkstra 1965, Courtois 1971, Herlihy TOPLAS 1991, Schlegel DaMoN 2009, Perl 1978,
+Khuong/Morin JEA 2017, Stonebraker 1981, Crotty CIDR 2022, DeBrabant Anti-Caching 2013, van Renen NVM 2018,
+Vietri LeCaR 2018, Pugh 1990, O'Neil LSM 1996, Bayer/McCreight 1972, Comer 1979, Oracle IOT 2000, Ziv/Lempel 1977.
+
+**Doc-18-§4-Attributions-Korrekturen für den TEXT beachten (im Code stehen z. T. falsche Kommentare):**
+LeafOnlyCounter NICHT von Kuehn (Kuehn-Paper hat keinen Leaf-Counter); VersionedPointer = Masstree (NICHT Hazard);
+InlineValueHandle = ART P01 (NICHT CSS-Tree); HardwarePrefetch = Wormhole **EuroSys 2019, GPL-3.0**;
+PathOrientedPrefetch verwandt Chen/Gibbons/Mowry SIGMOD 2001 (NICHT Tan/Knoll); START = Fent et al. **ICDEW 2020**
+(NICHT „Mertens ICDE 2024"). Im Thesis-Text immer die KORRIGIERTE Attribution verwenden.
