@@ -114,3 +114,39 @@ LeafOnlyCounter NICHT von Kuehn (Kuehn-Paper hat keinen Leaf-Counter); Versioned
 InlineValueHandle = ART P01 (NICHT CSS-Tree); HardwarePrefetch = Wormhole **EuroSys 2019, GPL-3.0**;
 PathOrientedPrefetch verwandt Chen/Gibbons/Mowry SIGMOD 2001 (NICHT Tan/Knoll); START = Fent et al. **ICDEW 2020**
 (NICHT „Mertens ICDE 2024"). Im Thesis-Text immer die KORRIGIERTE Attribution verwenden.
+
+## §H — #include-Vertiefung 2.1 / 2.3 / 2.5 / 2.6 am echten Code (2026-06-16, Autor-Direktive)
+Gegen Code + Doc 34 (Master, §5/§8/§9) selbst gelesen — bestätigt/präzisiert die Definitions-Klassen:
+
+- **2.1 Cache** (`include/cache_engine/platform/i_platform_probe.hpp`): generischer `IPlatformProbe` (REV3 K3.2,
+  KEINE plattformspezifischen Klassen) → `PlatformPropertySet{has_asymmetric_l3, has_hybrid_cores, has_hbm_tier,
+  has_software_prefetch, has_hardware_transactional, cpu_core_atom_perf_separation, usable_simd_width_bytes,
+  measured_metrics}` via Discover(CPUID/sysfs/proc)+Measure(Mikrobench)+Classify+Publish+Bind. → 2.1.1–2.1.5 sind
+  **real genutzt** (asym. L3 = 9950X3D, hybrid = 14900KS, HBM = ZIH, SW-Prefetch = MSR-gated). dTLB ist echte
+  Mess-Kategorie (s. 2.5), nicht nur Lehrbuch.
+- **2.5 Messen** (`measurement/measurement_category.hpp` + `axis_11_telemetry_latency_histogram.hpp` + Doc 34 §5/§8):
+  - **Definitions-Klassen-Satz = `MeasurementCategory`-Enum:** CLU, CACHE_MISS_L1/L2/L3, DTLB_MISS, MEMORY_FOOTPRINT,
+    BRANCH_MISS, IPC_CPI, LATENCY_MEAN/P50/P95/P99/P999, THROUGHPUT, ENERGY_J, FILL_BUFFER_OCCUPANCY.
+  - **AKTUELL aufgelöst (eigene Apparatur):** Wall-Clock (std::chrono → LATENCY_*/THROUGHPUT) + **HdrHistogram
+    (Gil Tene, p50/p95/p99)** + Per-Achsen-Observer-POD (`axis_stats[19][8]`) + `seg_ns[19]`-Timing.
+  - **🔴 PMC-Kategorien (cache-miss/dTLB/branch/IPC/energy/fill-buffer) sind DEFINIERT, aber Erhebung = R5.D
+    extern-gated (Zukunft, NICHT im Code).** → 2.5/Kap.6 ehrlich: PMC-Metriken vorgesehen, HW-Counter-gated.
+  - **Statistik-Triade (f15_compare, Doc 22/34 §8):** Median-p50-Ranking + Mann-Whitney-U (robust, Holm-FWER) +
+    Cliff's δ (Effektmaß). + Zwei-Phasen-Op-Schleife (warmup/measure) + Konformitäts-Gate gegen std::map.
+  - **Mess-Limits (Doc 34 §8, ehrlich für Kap.6):** Wall-Clock NICHT bit-reproduzierbar (Seed steuert Keys, nicht
+    CPU-Timing); allocator ~2–3× auflösbar; memory_layout SUB-NOISE → braucht PMC (extern-gated).
+  - **Attributions-Korrektur:** HdrHistogram = **Gil Tene** (NICHT Wormhole — `family_name`-Code-Kommentar falsch,
+    Doc 18 §4). FILL_BUFFER_OCCUPANCY ↔ P25 (Mahling).
+  - **Kap.-3-Instanzen (Fremd-Technologien, NICHT im CE-Code):** PMC/perf (SOTA-universal), **VAMPIR (P33 TU-Dresden)**,
+    gem5 (P25/P27), HdrHistogram (Gil Tene) — als Instanzen der Güte-Kriterien. OTF2/VAMPIR/gem5 gehören in Kap.3
+    (was es wissenschaftlich gibt), NICHT in die Beschreibung der EIGENEN Apparatur.
+- **2.3 Interfaces** (Doc 34 §5): Konformitäts-Gate = Runtime-Oracle gegen `std::map` (`conformance_gate.hpp`);
+  variadische Hülle (1 Param = vector-API, 2 = map-API, N>2 = `map<K,tuple>`). Bestätigt 2.3.
+- **2.6 Pattern** (Doc 34 §9.1 K10): kanonische Pattern-Semantik PFLICHT (Adapter↔Adaptee, Observer = one-to-many,
+  Visitor = Double-Dispatch, „B+-Baum"-Benennung präzise). Bestätigt die AP-G7-GoF-Liste (Strategy/Visitor/Adapter/
+  AbstractFactory/Composite/Iterator/Observer/Decorator/Memento/CRTP/TemplateMethod; NICHT Singleton/Command/Flyweight/Bridge).
+
+**Fazit der #include-Vertiefung:** Kapitel 2 ist durchgängig code-belegt (alle Definitions-Klassen am realen Code/
+Doc 34 verifiziert). Kapitel 3 zieht seine Instanzen aus **Doc 18** (Achsen-Paper, §G) + **`MeasurementCategory`/
+Statistik-Triade** (Mess-Technologien anderer Paper: PMC/VAMPIR/gem5/HdrHistogram) + den **HW/ISA-Vendor-Specs**.
+Damit ist die #include-Basis für AP-S1 vollständig und code-geerdet.
