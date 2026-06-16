@@ -105,7 +105,7 @@ TU-Dresden-Hardware P31--P33) erscheinen dabei \emph{aufgelöst} in ihren Organ-
 \begin{table}[!htbp]
 \caption{Achsen-Sezierung (Teil 1: Kompositions-Achsen T0--T9)}\label{tab:axes-overview-1}
 \centering\footnotesize
-\begin{tabular}{@{}l l p{8.2cm}@{}}
+\begin{tabular}{@{}l l p{6.8cm}@{}}
 \toprule
 \textbf{Achse (T)} & \textbf{Sub-Achsen} & \textbf{Beitragende Quellen} \\
 \midrule
@@ -126,7 +126,7 @@ T9 serialization & --- & P01,P09,P10; LZ77 \\
 \begin{table}[!htbp]
 \caption{Achsen-Sezierung (Teil 2: T10--T18 + Build-Achsen)}\label{tab:axes-overview-2}
 \centering\footnotesize
-\begin{tabular}{@{}l l p{8.2cm}@{}}
+\begin{tabular}{@{}l l p{6.8cm}@{}}
 \toprule
 \textbf{Achse} & \textbf{Sub-Achsen} & \textbf{Beitragende Quellen} \\
 \midrule
@@ -227,15 +227,84 @@ besetzt (Such-, Knotentyp-, Allokator-, Prefetch-Achse), andere ausschließlich 
 alle Achsen gemeinsam. Genau diese Unvollständigkeit motiviert die Forschungslücke
 (Abschnitt~\ref{sec:gap}).
 
-% [AP-S1] ===== Ab hier ROHMATERIAL fuer 3.4 (Workloads) / 3.5 (Messen) =====
-% Profil-Schema + SOTA-Workload-Tabelle bleiben erhalten und werden in 3.4 reorganisiert; die HW/Scheduling-
-% Tabelle (tab:hw-sched) + Allokator-Tabelle (tab:allocator-profiles) werden aus 3.3 referenziert und spaeter
-% physisch in 3.3 verschoben. Die Forschungsluecke wird zu 3.7.
+% [AP-S1] 3.4 ausformuliert. Verbleibendes ROHMATERIAL: nur noch die HW/Scheduling-Sektion (Tabelle von 3.3.3
+% referenziert, Prosa teils dort dupliziert -> spaeter nach 3.3.3 mergen). Die Forschungsluecke wird zu 3.7.
 
-\section{Profil-Schema mit dem \texorpdfstring{\texttt{<expected\_workload>}}{expected\_workload}-Tag}\label{sec:profile-schema}
+\section{Workload-Frameworks als Instanzen}\label{sec:sota-workloads}
+Die in Abschnitt~\ref{sec:workloads} eingeführten Begriffe --- Last, Workload, Workload-Framework und das
+\emph{Ziel der Variation} --- erhalten hier ihre wissenschaftlichen Instanzen.
+
+\subsection{Benchmark-Frameworks}\label{ssec:sota-wl-frameworks}
+Die in der Literatur verwendeten Lasten entstammen \emph{mehreren}, untereinander nicht vergleichbaren
+Benchmark-Frameworks; Tabelle~\ref{tab:wl-frameworks} ordnet sie den nutzenden Veröffentlichungen zu. Am
+verbreitetsten ist der Yahoo!\ Cloud Serving Benchmark (YCSB)~\cite{cooper2010ycsb}; daneben treten der
+Index-Benchmark SOSD~\cite{kipf2019sosd}, die Transaktions-Benchmarks der TPC-Familie~\cite{tpc_benchmarks},
+reale System-Integrationen (RocksDB), reale String-Korpora, die CPU-Suite SPEC~CPU~\cite{spec_cpu2017}, die
+Scale-out-Suite CloudSuite~\cite{ferdman2012cloudsuite}, der Architektur-Simulator gem5~\cite{binkert2011gem5}
+sowie --- für den Allokator-Korpus --- mimalloc-bench~\cite{mimalloc_bench} und die Klassiker Larson,
+threadtest, shbench und LADDIS auf. Da diese Frameworks unvergleichbare Lasten erzeugen, abstrahiert die
+Arbeit sie zu einem gemeinsamen Satz von Lastprofilen (Abschnitt~\ref{ssec:sota-wl-profiles}); die noch nicht
+im eigenen Mess-Apparat realisierten Frameworks (TPC, SOSD, SPEC, CloudSuite, gem5, Allokator-Suiten) werden
+über einen Datensatz-Lader angebunden.
+
+\begin{table}[!htbp]
+\caption{Benchmark-Frameworks und nutzende Veröffentlichungen}\label{tab:wl-frameworks}
+\centering\footnotesize
+\begin{tabular}{@{}p{3.2cm} p{2.8cm} p{6cm}@{}}
+\toprule
+\textbf{Framework} & \textbf{Typ} & \textbf{Nutzende Veröffentlichungen} \\
+\midrule
+YCSB~\cite{cooper2010ycsb} & KV-Workload & P02, P03, P07, P20, P26 \\
+SOSD~\cite{kipf2019sosd} & Index-Benchmark & P05 \\
+TPC-C / TPC-DS~\cite{tpc_benchmarks} & OLTP / analytisch & P19 \\
+Real-String-Korpora & String-Datensätze & P04, P06, P10 \\
+RocksDB-Integration & Real-System & P10 (SuRF) \\
+SPEC CPU~\cite{spec_cpu2017} & CPU-Suite & P23, P24, P27, A18 \\
+CloudSuite~\cite{ferdman2012cloudsuite} & Scale-out-Server & P24, P27 \\
+gem5~\cite{binkert2011gem5} & Architektur-Simulator & P27 \\
+IBM DB2 & Produktions-DBMS & P22 \\
+mimalloc-bench~\cite{mimalloc_bench} & Allokator-Suite & A04, A07, A09, A10, A18 \\
+Larson / threadtest / shbench & Allokator-Klassiker & A01, A03, P08, P30 \\
+LADDIS & Kernel-Allokator & A02 \\
+AggSum / Memory-Stream & Bandbreite & P32 \\
+Custom-Microbenchmarks & per Paper (Zipf/Uniform) & P01, P04, P06, P11--P14, P21, P28 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Lastprofile und Workload-Affinität der Verfahren}\label{ssec:sota-wl-profiles}
+Aus der Analyse der genannten Frameworks destilliert diese Arbeit \emph{vierzehn} distinkte Lastprofile
+(LP01--LP14, Tabelle~\ref{tab:lp-catalog}): Sie geben den heterogenen Lasten ein gemeinsames, uint64-basiertes
+Operations-Modell --- der Op-Mix nennt die Anteile von Einfügen, Lookup, Löschen, Scan und Read-Modify-Write
+(RMW) --- über definierten Schlüssel-Verteilungen, und sind je aus konkreten Veröffentlichungen abgeleitet.
+
+\begin{table}[!htbp]
+\caption{Lastprofil-Katalog (14 Profile, aus der 33-Paper-Analyse abgeleitet)}\label{tab:lp-catalog}
+\centering\footnotesize
+\begin{tabular}{@{}l p{3.3cm} l l c p{2.4cm}@{}}
+\toprule
+\textbf{LP} & \textbf{Kennung} & \textbf{Op-Mix} & \textbf{Verteilung} & \textbf{neg\%} & \textbf{Abgeleitet aus} \\
+\midrule
+LP01 & bulk-insert-dense & 100/0/0/0/0 & uniform-seq & 0 & P01,P02,P03,P05,P12 \\
+LP02 & bulk-insert-sparse & 100/0/0/0/0 & uniform-rand & 0 & P01,P02,P08 \\
+LP03 & insert-value-length-sweep & 100/0/0/0/0 & uniform-seq & 0 & P01,P08 \\
+LP04 & static-read-positive & 0/100/0/0/0 & uniform & 0 & P02,P05,P11,P12,P16,P25 \\
+LP05 & static-read-zipfian & 0/100/0/0/0 & zipfian(.99) & 0 & P10,P20,P25,P28 \\
+LP06 & static-read-negsweep & 0/100/0/0/0 & uniform & 0--100 & P04,P06,P22 \\
+LP07 & static-read-string-corpus & 0/100/0/0/0 & real-corpus & 50 & P04,P06,P10 \\
+LP08 & range-scan-heavy & 0/0/0/100/0 & uniform-seq & 0 & P01,P10,P12,P32 \\
+LP09 & insert-lookup-5050 & 50/50/0/0/0 & uniform & 0 & P03,P29 \\
+LP10 & delete-heavy-post-build & 50/0/50/0/0 & uniform-rand & 0 & P01,P08 \\
+LP11 & mixed-ycsb-oltp & 25/50/0/0/25 & zipfian(.99) & 0 & P10,P19,P20 \\
+LP12 & concurrent-rmw-stress & 25/9/36/9/9 & uniform & 0 & P07,P29 \\
+LP13 & concurrent-read-scaling & 0/100/0/0/0 & uniform & 0 & P07,P08,P25,P28 \\
+LP14 & dynamic-realistic-trace & 9/91/0/0/0 & tpcc-nonuniform & 0 & P19,P20 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 Für jeden SOTA-Algorithmus und jeden Allokator hält ein Profil-XML in
-\texttt{cache\_engine/algorithm\_profiles/} Metadaten fest, die Achsen-Belegung (page, node,
+\texttt{cache\_engine/}\allowbreak\texttt{algorithm\_profiles/} Metadaten fest, die Achsen-Belegung (page, node,
 traversal, value\_handle, concurrency, allocator, prefetch, telemetry, isa, layout,
 reclamation), eine Schlüssel-Wert-Signatur und einen optionalen
 \texttt{<expected\_workload>}-Tag, der die \texttt{ExperimentDriver}-Heuristik
@@ -309,6 +378,22 @@ dlmalloc & A20 & CC0 & YCSB\_C \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{Bias und Vergleichbarkeit}\label{ssec:sota-wl-bias}
+Der Kern-Befund der Lastprofil-Analyse ist ein systematischer \emph{Bias}: Jede Veröffentlichung wählt das
+Lastprofil, unter dem ihr eigener Entwurf am besten abschneidet. Statische, read-only-orientierte Tries und
+Filter (HOT, CoCo, B\textsuperscript{2}-Baum, SuRF, CSS) rahmen „build-once, 100\,\% positive Lookups" und
+meiden Aktualisierungen; komprimierte Tries und Filter (CoCo, B\textsuperscript{2}-Baum, SuRF) machen den
+Negativ-Anfrage-Anteil zur Primärachse, weil sie bei Misses früh abbrechen; zipfian-zentrierte Arbeiten
+(LeanStore, Mahling, Kuehn) begünstigen cache-bewusste Reordering-Layouts; schreib- und
+nebenläufigkeits-lastige Arbeiten (ART, Masstree, Wormhole, OLC-ART, RCU) treten umgekehrt nur dort an, wo
+statische Strukturen versagen; und prefetch- bzw.\ hardware-nahe Arbeiten (CSB\textsuperscript{+}, Chen,
+Schmidt) vermessen über Knotengröße und Prefetch eher Cache und TLB als die Algorithmus-Logik. Vierzehn der
+Veröffentlichungen liefern überhaupt kein eigenes Index-Lastprofil (Survey-, Theorie- und Hardware-Arbeiten).
+Erst wenn \emph{alle} Lastprofile gegen \emph{alle} Lebewesen-Binaries (und die Container-Hüllen) laufen ---
+der Workload als dynamische Achse (Kapitel~\ref{ch:methodology}) ---, lässt sich der „Sieger nur im
+selbstgewählten Heimprofil" entlarven und bias-freie Vergleichbarkeit gewinnen. Diese Unvollständigkeit der
+Vorarbeiten ist Teil der Forschungslücke (Abschnitt~\ref{sec:gap}).
 
 \section{Hardware- und Scheduling-Strategie pro Paper}\label{sec:hw-sched}
 
