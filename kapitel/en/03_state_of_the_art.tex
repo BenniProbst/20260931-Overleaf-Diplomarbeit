@@ -1,83 +1,346 @@
 \chapter{State of the Art}\label{ch:sota}
 
-The state of the art in cache-aware trie index structures falls into six thematic
-search clusters (A--F) and a parallel allocator corpus (A01--A23). In total, 33
-search-algorithm papers and 21 allocation papers were studied in depth; the results are
-available as persisted XML configurations under \texttt{algorithm\_profiles/} in the
-\texttt{comdare-cache-engine}. The complete building-block and allocator matrices are
-given in Appendix~\ref{app:blocks}. As a non-tree-like counterprobe within the same
-search-algorithm genus, a plain hash table (\texttt{absl::flat\_hash\_map}/SwissTable) is also
-included: it realizes the same \texttt{std::map} interface over a \emph{limited axis subset}
---- the tree-/trie-specific axes (path compression, node type, range index) collapse to
-pass-through variants, while allocation, prefetch, concurrency, memory layout, and ISA SIMD
-(for the SwissTable group lookup) remain shared. It thereby demonstrates that the axis
-framework also carries non-tree-like search methods without requiring a genus of its own.
+Where Chapter~\ref{ch:fundamentals} provides the conceptual \emph{definitional classes}, this state of
+the art presents their scientifically substantiated \emph{instances}: for each fundamentals class, the
+concrete publications, algorithms, and technologies that realize it. The two chapters thereby mesh
+directly (Section~\ref{ssec:measurement-patterns}).
 
-\section{Trie Family (Cluster A)}\label{sec:cluster-a}
+\section{Overview and Dissection Principle}\label{sec:sota-overview}
+The analysis rests on 33 in-depth-analysed search-algorithm publications (P01--P33) and a parallel
+allocator corpus of 23 works (A01--A23); the axis assignment of each work is persisted as an XML
+profile in the \texttt{comdare-cache-engine} (\texttt{algorithm\_profiles/}), and the complete
+building-block and allocator matrices are given in Appendix~\ref{app:blocks}. The publications stem from
+six thematic \emph{origin clusters} --- the trie family, the hybrid and B\textsuperscript{+} family,
+layout theory, prefetching, synchronization, and the hardware-near TU-Dresden works ---; these clusters
+serve here only for origin placement, not as a structuring axis.
 
-\textbf{P01 ART}~\cite{leis2013art} introduces the Adaptive Radix Tree with adaptive node
-sizes Node4/16/48/256. \textbf{P02 HOT}~\cite{binna2018hot} optimizes trie height via
-multi-byte prefixes and bit-vector indexes. \textbf{P03 Masstree}~\cite{mao2012masstree}
-combines a trie with B-trees and a per-internal-node permutation index. \textbf{P04
-CoCo-Trie}~\cite{boffa2024coco} uses succinct-encoded compact pages. \textbf{P05
-START}~\cite{fent2020start} extends ART with self-tuning of the node representation. P09
-LOUDS (Jacobson 1989) is the succinct-trie foundation, and \textbf{P10
-SuRF}~\cite{zhang2018surf} uses LOUDS for range filtering.
+The core contribution of this thesis is the \emph{dissection} (Section~\ref{ssec:own-framework}): each
+overall algorithm (a ``living being'') is decomposed into its orthogonal organs --- the axes --- and the
+organ algorithms thus obtained are sorted in \emph{per axis}, with a brief reference to the origin living
+being. This axis-wise dissection forms the core of the chapter; the assignment
+axis\,$\leftrightarrow$\,algorithm\,$\leftrightarrow$\,publication follows a web-verified provenance map
+over roughly 110 organ algorithms.
 
-\section{Hybrid and B\texorpdfstring{\textsuperscript{+}}{+} Family (Cluster B)}\label{sec:cluster-b}
+That the axis scaffold also carries \emph{non-tree-like} methods is demonstrated by a plain hash table
+(\texttt{absl::flat\_hash\_map}/SwissTable~\cite{abseil_swisstable}) as a counter-check within the
+SearchAlgorithm genus: it satisfies the same \texttt{std::map} interface over a \emph{limited axis
+subset} --- the trie-specific axes (path compression, node type, range index) collapse to pass-through
+variants, while allocation, prefetch, concurrency, memory layout, and ISA SIMD (for the SwissTable group
+lookup) remain shared --- and thus requires no genus of its own.
 
-\textbf{P06 B\textsuperscript{2}-tree}~\cite{schmeisser2022b2tree} employs a two-level
-fanout for combined L1+L2 cache awareness. \textbf{P07 Wormhole}~\cite{wu2019wormhole}
-combines a hash table with a linear prefix view. P11 CSS-tree (Rao/Ross 1999) is the first
-cache-sensitive search tree; P12 CSB\textsuperscript{+}-tree (Rao/Ross 2000) develops it
-into a B\textsuperscript{+}-tree; P13 Hankins/Patel (2003) studies the effect of node size
-on cache performance.
+\subsection{The Corpus by Origin Clusters}\label{ssec:sota-corpus}
+Complementing the axis-wise dissection (Section~\ref{sec:sota-axes}), this overview assigns the
+publications to their six origin clusters --- the holistic view of each living being before it is
+decomposed into its organs. The \emph{trie family} (cluster~A) comprises ART (P01), HOT (P02), Masstree
+(P03), CoCo-Trie (P04), START (P05), and the succinct tries LOUDS (P09) and SuRF (P10). The \emph{hybrid
+and B\textsuperscript{+} family} (cluster~B) unites the B\textsuperscript{2}-tree (P06), Wormhole (P07),
+and the cache-sensitive CSS, CSB\textsuperscript{+}, and Hankins trees (P11--P13). \emph{Layout theory}
+(cluster~C) ranges from Samuel (P14) and Graefe/Larson (P15) through the cache-oblivious designs of
+Bender et al.\ (P16/P17) to the layout-invariant trees of Saikkonen/Soisalon-Soininen (P18/P19).
+\emph{Prefetching} (clusters~D/E) comprises \emph{B-Trees Are Back} (Mueller 2025, P20), the prefetching
+B\textsuperscript{+}-trees of Chen et al.\ (P21/P22), Khan (P23), Naderan-Tahan (P24), Mahling (P25), as
+well as Zhang (P26/P27) and Kuehn (P28). \emph{Synchronization} (cluster~F) carries the optimistic lock
+coupling of ART (P08), RCU (P29), and hazard pointers (P30); the hardware-near \emph{TU-Dresden line},
+finally, Ungethuem (P31), Schmidt (P32), and VAMPIR (P33). In parallel stands the \emph{allocator corpus}
+(A01--A23) --- from Hoard and Slab through mimalloc, jemalloc, TCMalloc, and snmalloc to NUMAlloc,
+StarMalloc, and PIM-malloc.
 
-\section{Layout Theory (Cluster C)}\label{sec:cluster-c}
+\section{Cache Concepts as Instances}\label{sec:sota-cache}
+The cache-hierarchy concepts from Section~\ref{sec:cache-basics} appear in the state of the art as
+concrete designs and mechanisms; each of the following subsections mirrors a fundamentals definition from
+Section~\ref{sec:cache-basics}.
 
-P14 Samuel/Pedersen/Bonnet (2005) makes the CSB\textsuperscript{+}-tree
-processor-conscious. P15 Graefe/Larson (2001) studies B-tree indexes versus CPU caches.
-P16 Bender/Demaine/Farach-Colton (2002) introduces cache-oblivious tree layout (van Emde
-Boas); P17 Bender et al.\ (2005) extends it to cache-oblivious B-trees. P18
-Saikkonen/Soisalon-Soininen (2008) and P19 (2016) develop multi-level and
-layout-invariant B-trees.
+\subsection{Memory and Cache Levels}\label{ssec:sota-levels}
+The multi-level hierarchy (Section~\ref{ssec:cache-levels}) is the subject of fundamental measurements:
+Graefe and Larson (P15, 2001) study B-tree indexes explicitly against the CPU cache levels, Bender,
+Demaine, and Farach-Colton (P16, 2002; P17, 2005) model a multi-level memory model with a block-transfer
+parameter, and Zhang (P27, ASPLOS 2025) bundles prefetches hierarchically across L1/L2/L3.
 
-\section{Prefetching (Clusters D and E)}\label{sec:cluster-de}
+\subsection{Cache-Line-Aware Layout}\label{ssec:sota-cacheline}
+Cache-line-oriented layout (Section~\ref{ssec:cache-line-sizes}) is the dominant guiding idea of layout
+theory: the CSS-tree (P11, Rao/Ross 1999) introduces the cache-line node, the CSB\textsuperscript{+}-tree
+(P12, Rao/Ross 2000) the contiguous sibling cluster; Hankins and Patel (P13, 2003) measure the effect of
+node size, and Samuel et al.\ (P14, 2005) make the node processor-aware. The Adaptive Radix Tree
+(P01~\cite{leis2013art}) graduates the node size cache-line-orientedly with Node4/16/48/256, and Schmidt
+et al.\ (P32, 2025) optimize for HBM bandwidth. On the memory-layout axis there are thus, concretely:
+dense array-of-structs, cache-line-aligned AoS, column-oriented struct-of-arrays, bit-packed LOUDS (P09,
+Jacobson 1989), and the SIMD-tiled AoSoA.
 
-P20 ``B-Trees Are Back'' (Mueller/Benson/Leis 2025) demonstrates modern B-tree
-engineering. P21 Chen/Gibbons/Mowry (2001) introduces prefetching B\textsuperscript{+}-trees;
-P22 Chen et al.\ (2002) develops fractal prefetching. P23 Khan (2010) makes cache
-prefetching dynamically adaptive; P24 Naderan-Tahan/Sarbazi-Azad (2016) adds an adaptive
-filter on the cache prefetcher. P25 Mahling/Weisgut/Rabl (2025) combines range scans with
-hot-path caching. P26 Zhang (FGCS 2024) and P27 Zhang (ASPLOS 2025, hierarchical
-prefetching) are the most recent schemes, and P28 Kuehn (DaMoN 2023) motivates
-data-driven cache optimization.
+\subsection{Address Translation: TLB and dTLB}\label{ssec:sota-tlb}
+The dTLB (Section~\ref{ssec:tlb}) appears in the state of the art mainly as a \emph{measurement target}
+--- the measurement architecture maintains a dedicated dTLB-miss category
+(Section~\ref{sec:measurement-basics}). On the algorithm side it is addressed by huge pages, which
+several allocators (mimalloc, jemalloc, TCMalloc, snmalloc) support, and empirically by Schmidt et al.\
+(P32, 2025) with 2-MiB pages. A \emph{dedicated} dTLB-optimization axis, however, remains underpopulated
+in the search-algorithm papers --- an observation to which the research gap (Section~\ref{sec:gap})
+returns.
 
-\section{Synchronization (Cluster F)}\label{sec:cluster-f}
+\subsection{Write Protocols, Update Heuristics, and Inclusion Policy}\label{ssec:sota-update}
+The cache-update behaviour introduced in Section~\ref{ssec:coherence} is concretely fixed per ISA and per
+cache level. \emph{Write protocols:} ARMv8 chooses write-through, write-back, or non-cacheable, as well
+as read- or read-write-allocate, through page attributes~\cite{arm_arm}, while x86 uses write-back with
+write-allocate as the normal case~\cite{intel_sdm}. \emph{Heuristic replacement/update strategies:} from
+LRU and pseudo-LRU to \emph{Re-Reference Interval Prediction} (RRIP/DRRIP), which achieves scan- and
+thrash-resistant eviction with two bits per line~\cite{jaleel2010rrip} and builds on the adaptive
+insertion policy~\cite{qureshi2007adaptive}. \emph{Inclusion policy:} Intel client processors maintain an
+inclusive L3, Intel servers since Skylake-X a non-inclusive one, while AMD Zen operates the L3 as a
+predominantly exclusive victim cache~\cite{intel_optimization,amd_sog}. Together these three aspects
+determine which levels a write updates; since they are microarchitecturally fixed and not selectable at
+run time, they enter the system-optimized binary as \emph{measured} platform
+properties (Section~\ref{ssec:aware-oblivious}).
 
-P08 ``ART of Practical Synchronization'' (Leis 2016) introduces optimistic lock coupling
-(OLC) for ART. P29 RCU (McKenney, OLS 2001) and P30 Hazard Pointers (Michael 2004) are the
-canonical reclamation schemes. P31 Ungethuem/Habich (2017) and P32 Schmidt/Habich (2025)
-are TU-Dresden-specific hardware-optimization surveys; P33 (VAMPIR poster,
-Berthold/Habich 2023) provides the OTF2 profiler integration.
+\subsection{Cache-Aware and Cache-Oblivious Designs}\label{ssec:sota-aware}
+Both philosophies from Section~\ref{ssec:aware-oblivious} are instantiated in the state of the art:
+Bender et al.\ (P17, 2005) found the cache-oblivious B-tree on the van Emde Boas layout, P16 (2002)
+extends the multi-level layout model, and Saikkonen/Soisalon-Soininen (P18, 2008; P19, 2016) maintain a
+cache-sensitive layout invariant even under updates; Graefe/Larson (P15, 2001) compare both approaches.
+All practical trie and B\textsuperscript{+} indexes (P01--P14, P20), by contrast, are designed
+\emph{cache-aware}. The present thesis positions itself as a third way
+(Section~\ref{ssec:aware-oblivious}): measured locality knowledge instead of hard-wired or fully ignored
+cache parameters.
 
-\section{Allocator Research (A01--A23)}\label{sec:allocators}
+\section{Axis Dissection of the Search Methods}\label{sec:sota-axes}
+The core of this chapter is the axis-wise \emph{dissection}: each overall algorithm is decomposed into
+its organs, and per axis the contributing organ algorithms are listed --- with a brief reference to the
+origin living being. The proposed framework maintains \emph{nineteen composition axes} (T0--T18) as well
+as three \emph{build axes} (page type, SIMD extension, hardware profile); many axes are refined into
+sub-axes. Tables~\ref{tab:axes-overview-1} and~\ref{tab:axes-overview-2} give the overview of which
+publications contribute an organ per axis; the following subsections elaborate them grouped thematically.
+The thematic origin clusters of the prior works (trie family P01--P10, hybrid/B\textsuperscript{+} family
+P03/P06/P07/P11--P13, layout theory P14--P19, prefetching P20--P28, synchronization P08/P29--P30,
+TU-Dresden hardware P31--P33) thereby appear \emph{dissolved} into their organ contributions.
 
-The 21 allocation papers are catalogued systematically in the allocator matrix
-(Appendix~\ref{app:blocks}). Rank-1 representatives are Hoard (A01, ASPLOS 2000), Slab
-(A02, USENIX 1994), Michael lock-free (A03, PLDI 2004), mimalloc (A04, MSR-TR-2019-18),
-jemalloc (A05), TCMalloc (A06), snmalloc (A07, ISMM 2019), and NUMAlloc (A09, ISMM 2023).
-Rank-2/3 add CAMA (A12, RTAS 2011), StarMalloc (A13, OOPSLA 2024), Crystalline reclamation
-(A17, PLDI 2024), and PIM-malloc (A16, arXiv 2025).
+\begin{table}[!htbp]
+\caption{Axis dissection (part 1: composition axes T0--T9)}\label{tab:axes-overview-1}
+\centering\footnotesize
+\begin{tabular}{@{}l l p{6.8cm}@{}}
+\toprule
+\textbf{Axis (T)} & \textbf{Sub-axes} & \textbf{Contributing sources} \\
+\midrule
+T0 search\_algo & SA1--SA3 & P01,P02,P05,P07,P10; k-ary (TUD 2009), interpol., Eytzinger, skip list, B-tree, hash \\
+T1 cache\_traversal & 3.B & cache-line default; P17,P21,P27,P32 \\
+T2 mapping & 3.M & P03,P07,P27; CE baseline \\
+T3 path\_compression & --- & P01,P02,P04,P05,P09 \\
+T4 node\_type & NT1--NT3 & P01,P02,P03,P04,P05,P06,P11,P12,P13 \\
+T5 memory\_layout & HM1--HM4 & P06,P09,P11,P12,P32; default \\
+T6 allocator & 6.1--6.5 & A01--A23; P29,P30 \\
+T7 prefetch & PF1--PF3 & P07,P21,P23,P25,P26,P27 \\
+T8 concurrency & 8.1,8.2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
+T9 serialization & --- & P01,P09,P10; LZ77 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\section{Profile Schema with the \texorpdfstring{\texttt{<expected\_workload>}}{expected\_workload} Tag}\label{sec:profile-schema}
+\begin{table}[!htbp]
+\caption{Axis dissection (part 2: T10--T18 + build axes)}\label{tab:axes-overview-2}
+\centering\footnotesize
+\begin{tabular}{@{}l l p{6.8cm}@{}}
+\toprule
+\textbf{Axis} & \textbf{Sub-axes} & \textbf{Contributing sources} \\
+\midrule
+T10 telemetry & 11.X1--X4 & P01,P02,P16,P26,P28; HdrHistogram (Gil Tene) \\
+T11 value\_handle & --- & P01,P03,P07,P29 \\
+T12 isa & --- & x86-64/AArch64/Power/RISC-V (vendor spec) \\
+T13 index\_organization & --- & Bayer/McCreight,Comer,Oracle \\
+T14 io\_dispatch & IO1--IO3 & Stonebraker,Crotty; baselines \\
+T15 migration\_policy & MG1--MG3 & anti-caching,NVM tiering,LeCaR; none \\
+T16 filter & FT1--FT3 & Bloom,Cuckoo,P10,Xor \\
+T17 queuing\_q1 & --- & Disruptor,Bw-Tree,Driscoll,P29,Pugh,LSM,Lamport,Michael/Scott \\
+T18 queuing\_q2 & --- & eager/lazy/watermark/Kafka/RocksDB \\
+Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (26) \\
+Build simd (09b) & --- & SSE2/AVX2/AVX-512/NEON/SVE2/RVV/CUDA \\
+Build hardware (12) & 12.1--12.5 & HW strategy per paper (Tab.~\ref{tab:hw-sched}) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-For each SOTA algorithm and each allocator, a profile XML in
-\texttt{cache\_engine/algorithm\_profiles/} records metadata, the axis assignment (page,
-node, traversal, value\_handle, concurrency, allocator, prefetch, telemetry, isa, layout,
-reclamation), a key--value signature, and an optional \texttt{<expected\_workload>} tag
-that overrides the \texttt{ExperimentDriver} heuristic (Chapter~\ref{ch:methodology}). All
-30 SOTA profiles and all 10 allocator profiles are tagged.
+\subsection{Search and Navigation Organs}\label{ssec:sota-ax-nav}
+The \emph{search axis} (T0, sub-axes SA1--SA3) carries the most organs: as original bindings ART
+(P01~\cite{leis2013art}), HOT (P02~\cite{binna2018hot}), START (P05~\cite{fent2020start}), SuRF
+(P10~\cite{zhang2018surf}), and Wormhole (P07~\cite{wu2019wormhole}); in addition generic search
+\emph{methods}: k-ary search (Schlegel/Gemulla/Lehner, DaMoN 2009 --- TU Dresden), interpolation search
+(Perl/Itai/Avni 1978), Eytzinger-layout search (Khuong/Morin 2017), skip list (Pugh 1990), binary search
+tree and B-tree (Bayer/McCreight~\cite{bayer1972btree}), and open-addressing hashing
+(Knuth~\cite{knuth1998taocp3}). The \emph{traversal axes} separate the algorithm and cache views: T1
+(cache-memory traversal) ranges from cache-line walking through stride prefetch (P21 Chen) and HBM
+proximity (P32 Schmidt) to cache-oblivious recursion (P17 Bender~\cite{frigo1999cache}) and the L1/L2/L3
+bundle (P27 Zhang); T2 (mapping) connects the two via linear 1:1 mapping, hash redirect (P07), or
+permutation index (P03 Masstree) --- an axis sparsely populated in the state of the art, predominantly by
+a baseline. \emph{Path compression} (T3) instantiates the byte-wise variant (P01), the single-bit
+PATRICIA split (Morrison 1968~\cite{morrison1968patricia}; P02), the collapsed macro node (P04 CoCo), and
+multi-byte rewiring (P05). The \emph{node-type axis} (T4, NT1--NT3, 13 building blocks) and the build axis
+\emph{page type} (PG1--PG3, 26 building blocks) bundle the adaptive layouts: Node4/16/48/256 (P01),
+HOT compound (P02), internal/border (P03), decision/span (P06 B\textsuperscript{2}-tree~\cite{schmeisser2022b2tree}),
+LOUDS dense/sparse (P10), CSS node/CSB\textsuperscript{+} node group/Hankins wide (P11/P12/P13), as well
+as the PRT-ART family.
+
+\subsection{Memory, Allocation, and Value Organs}\label{ssec:sota-ax-mem}
+The \emph{memory-layout axis} (T5, HM1--HM4, 8 building blocks) ranges from cache-line-aligned AoS through
+pointer-free contiguous arrangement (P11 CSS) and sibling cluster (P12 CSB\textsuperscript{+}) to the
+embedded tree (P06), bit-packed LOUDS (P09 Jacobson), and the huge-page variants (P32). The
+\emph{allocator axis} (T6) is the most densely populated, with the corpus A01--A23, and is refined into
+five sub-axes: 6.1 allocation strategy (slab, buddy, region, pool, object cache), 6.2 reclamation (epoch,
+RCU P29, hazard pointers P30, QSBR), 6.3 NUMA affinity (P31 Ungethuem), 6.4 huge-page policy, and 6.5
+free-list organization (size-class, best-/first-fit, segregated). Table~\ref{tab:allocator-profiles}
+lists the ten runnable allocator profiles with license and workload affinity. The \emph{value axis} (T11,
+5 building blocks) distinguishes inline value (P01), pointer, redirect-to-node or external pool (P07
+Wormhole), versioned pointer (P03 Masstree), and immutable shared-ref (P29 RCU). The
+\emph{serialization axis} (T9) carries raw binary, block compression (LZ77, Ziv/Lempel 1977; LZ4/Snappy),
+succinct LOUDS/FST (P09/P10), and varint (P01).
+
+\subsection{Hardware-Near Organs}\label{ssec:sota-ax-hw}
+The \emph{prefetch axis} (T7, PF1--PF3, 6 building blocks) ranges from no prefetch through
+software-fixed (P21 Chen) and adaptively distanced (P23 Khan) to fill-buffer-aware (P25 Mahling),
+hot-path-oriented (P26 Zhang), and hierarchical bundle prefetch (P27 Zhang); the explicit hardware
+prefetch instruction stems from Wormhole (P07). The \emph{ISA axis} (T12) and the build axis \emph{SIMD
+extension} (09b) carry the vendor specifications: x86-64, AArch64, Power, and RISC-V with
+SSE2/AVX2/AVX-512, NEON/SVE2, RVV, and CUDA. Two overarching strategy axes record what an algorithm
+actively \emph{uses} and how it \emph{distributes} work: the \emph{hardware strategy} (axis 12; sub 12.1
+SIMD family, 12.2 cache-level targeting, 12.3 NUMA, 12.4 prefetch hardware, 12.5 atomic family) and the
+\emph{scheduling strategy} (axis 13; sub 13.1 worker-pool layout, 13.2 SIMD-worker limit --- typically two
+of $N$ cores, due to hardware ---, 13.3 heterogeneous P-/E-core dispatch, 13.4 co-routine, 13.5 batch
+granularity). Table~\ref{tab:hw-sched} assigns both per paper. The \emph{telemetry axis} (T10, sub
+11.X1--X4, 6 building blocks) instantiates the density tracker (P01), the insert counter (P02), the
+HdrHistogram (Gil Tene) for p50/p95/p99, the path-read counter (P26), and the probability hints (P16/P17
+Bender). The coherence-friendly counter variants --- leaf-only, sampling, and offline recompute --- go
+back to Kuehn (P28, personal communication 2023, beyond the published DaMoN-2023 state on the cache-/
+distribution-aware B\textsuperscript{+} layout), while the counter in all (including inner) nodes counts
+as an \emph{anti-pattern} (cache-line ping-pong).
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Hardware and scheduling strategy per SOTA paper (selection); the full catalogue is in Appendix~\ref{app:blocks}.}\label{tab:hw-sched}
+\begin{tabular}{@{}l p{4.6cm} p{5.6cm}@{}}
+\toprule
+\textbf{Paper} & \textbf{Hardware strategy (axis 12)} & \textbf{Scheduling strategy (axis 13)} \\
+\midrule
+P01 ART & AVX2, L1-aware, none, CAS & thread-per-core \\
+P02 HOT & AVX2 (bit-vector), L1-aware, CAS & thread-per-core \\
+P03 Masstree & scalar, L1-aware, CAS & thread-per-core + work-stealing \\
+P05 START & AVX2 (multi-byte span), L1-aware, CAS & thread-per-core \\
+P20 B-Trees Are Back & AVX2, HBM-aware, NUMA-aware, CAS & work-stealing + hybrid \\
+P27 hp-soft & PREFETCH (L1/L2/L3 bundle), all-cache, CAS & thread-per-core + co-routine \\
+P28 Kuehn & PREFETCH (scalar counter), L1-aware, CAS & thread-per-core + sampling \\
+P31 Ungethuem & AVX-512 (HBM), HBM-aware, NUMA-aware, CAS & hybrid (P-/E-cores) \\
+P32 Schmidt & AVX-512 (SIMD stride), HBM-aware, NUMA-aware, CAS & hybrid \\
+\midrule
+\textbf{PRT-ART} & \textbf{AVX2, L1-aware (TLB-aligned), local NUMA, PREFETCH, CAS (OLC)} & \textbf{thread-per-core + 2-SIMD-worker limit + hybrid + co-routine + micro-batch} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Concurrency, I/O, Migration, and Buffering}\label{ssec:sota-ax-conc}
+The \emph{concurrency axis} (T8) divides into 8.1 patterns and 8.2 lock mode. The patterns range from the
+serial zero point through coarse locking (Dijkstra 1965) and reader/writer locks (Courtois 1971) to
+optimistic lock coupling (P08), lock-free (Michael/Scott 1996) and wait-free methods (Herlihy 1991), as
+well as RCU (P29) and hazard pointers (P30); the lock mode distinguishes read-only, read-write,
+upgradeable, and optimistic validation. The \emph{I/O axis} (T14, IO1--IO3) instantiates buffered
+(Stonebraker 1981), direct, and memory-mapped I/O (Crotty, CIDR 2022) alongside the in-memory zero point.
+The \emph{migration axis} (T15, MG1--MG3) carries static placement, hot/cold separation (anti-caching
+2013), multi-level RAM$\to$NVM$\to$SSD migration (2018), and ML-driven adaptive migration (LeCaR 2018).
+The \emph{buffering axes} (T17/T18), finally, comprise about a dozen building blocks each: operation
+buffers from the FIFO/LIFO queue through the Disruptor ring buffer (2011), the delta chain (Bw-Tree
+2013), the copy-on-write buffer (Driscoll 1989), the epoch buffer (P29), the skip list (Pugh 1990), and
+the tombstone buffer (LSM, O'Neil 1996) to lock-free SPSC (Lamport 1983) and MPMC queues (Michael/Scott
+1996); as well as write-back (flush) from eager through lazy, threshold- and time-window-based (Kafka) to
+adaptive (RocksDB LSM).
+
+\subsection{Index Organization and Filters}\label{ssec:sota-ax-idx}
+The \emph{index-organization axis} (T13) distinguishes the clustered arrangement (storage order equals
+index order; Bayer/McCreight~\cite{bayer1972btree}), the unordered heap storage, the index-organized
+table (Oracle, VLDB 2000), and the non-clustered secondary index (Comer~\cite{comer1979btree}). The
+\emph{filter axis} (T16, FT1--FT3) carries the Bloom filter (1970), the cuckoo filter (CoNEXT 2014), the
+succinct range filter SuRF (P10), and the Xor filter (2020).
+
+This dissection also reveals the imbalance of the prior works: a few axes are densely and repeatedly
+populated (search, node-type, allocator, prefetch axis), others exclusively with baseline/textbook
+variants (mapping, cache-memory traversal) or as pure measurement targets (dTLB) --- not a single method
+populates all axes jointly. Precisely this incompleteness motivates the research gap
+(Section~\ref{sec:gap}).
+
+\section{Workload Frameworks as Instances}\label{sec:sota-workloads}
+The terms introduced in Section~\ref{sec:workloads} --- load, workload, workload framework, and the
+\emph{goal of variation} --- receive their scientific instances here.
+
+\subsection{Benchmark Frameworks}\label{ssec:sota-wl-frameworks}
+The loads used in the literature stem from \emph{several}, mutually incomparable benchmark frameworks;
+Table~\ref{tab:wl-frameworks} assigns them to the using publications. The most widespread is the Yahoo!\
+Cloud Serving Benchmark (YCSB)~\cite{cooper2010ycsb}; alongside it appear the index benchmark
+SOSD~\cite{kipf2019sosd}, the transaction benchmarks of the TPC family~\cite{tpc_benchmarks}, real system
+integrations (RocksDB), real string corpora, the CPU suite SPEC~CPU~\cite{spec_cpu2017}, the scale-out
+suite CloudSuite~\cite{ferdman2012cloudsuite}, the architecture simulator gem5~\cite{binkert2011gem5}, and
+--- for the allocator corpus --- mimalloc-bench~\cite{mimalloc_bench} and the classics Larson, threadtest,
+shbench, and LADDIS. Because these frameworks produce incomparable loads, the thesis abstracts them into a
+common set of load profiles (Section~\ref{ssec:sota-wl-profiles}); the frameworks not yet realized in the
+proposed measurement apparatus (TPC, SOSD, SPEC, CloudSuite, gem5, allocator suites) are connected via a
+dataset loader.
+
+\begin{table}[!htbp]
+\caption{Benchmark frameworks and using publications}\label{tab:wl-frameworks}
+\centering\footnotesize
+\begin{tabular}{@{}p{3.2cm} p{2.8cm} p{6cm}@{}}
+\toprule
+\textbf{Framework} & \textbf{Type} & \textbf{Using publications} \\
+\midrule
+YCSB~\cite{cooper2010ycsb} & KV workload & P02, P03, P07, P20, P26 \\
+SOSD~\cite{kipf2019sosd} & index benchmark & P05 \\
+TPC-C / TPC-DS~\cite{tpc_benchmarks} & OLTP / analytical & P19 \\
+real string corpora & string datasets & P04, P06, P10 \\
+RocksDB integration & real system & P10 (SuRF) \\
+SPEC CPU~\cite{spec_cpu2017} & CPU suite & P23, P24, P27, A18 \\
+CloudSuite~\cite{ferdman2012cloudsuite} & scale-out server & P24, P27 \\
+gem5~\cite{binkert2011gem5} & architecture simulator & P27 \\
+IBM DB2 & production DBMS & P22 \\
+mimalloc-bench~\cite{mimalloc_bench} & allocator suite & A04, A07, A09, A10, A18 \\
+Larson / threadtest / shbench & allocator classics & A01, A03, P08, P30 \\
+LADDIS & kernel allocator & A02 \\
+AggSum / memory-stream & bandwidth & P32 \\
+custom microbenchmarks & per paper (Zipf/uniform) & P01, P04, P06, P11--P14, P21, P28 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Load Profiles and Workload Affinity of the Methods}\label{ssec:sota-wl-profiles}
+From the analysis of the named frameworks, this thesis distills \emph{fourteen} distinct load profiles
+(LP01--LP14, Table~\ref{tab:lp-catalog}): they give the heterogeneous loads a common, uint64-based
+operation model --- the op-mix names the shares of insert, lookup, delete, scan, and read-modify-write
+(RMW) --- over defined key distributions, and each is derived from concrete publications.
+
+\begin{table}[!htbp]
+\caption{Load-profile catalogue (14 profiles, derived from the 33-paper analysis)}\label{tab:lp-catalog}
+\centering\footnotesize
+\begin{tabular}{@{}l p{3.3cm} l l c p{2.4cm}@{}}
+\toprule
+\textbf{LP} & \textbf{Identifier} & \textbf{Op-mix} & \textbf{Distribution} & \textbf{neg\%} & \textbf{Derived from} \\
+\midrule
+LP01 & bulk-insert-dense & 100/0/0/0/0 & uniform-seq & 0 & P01,P02,P03,P05,P12 \\
+LP02 & bulk-insert-sparse & 100/0/0/0/0 & uniform-rand & 0 & P01,P02,P08 \\
+LP03 & insert-value-length-sweep & 100/0/0/0/0 & uniform-seq & 0 & P01,P08 \\
+LP04 & static-read-positive & 0/100/0/0/0 & uniform & 0 & P02,P05,P11,P12,P16,P25 \\
+LP05 & static-read-zipfian & 0/100/0/0/0 & zipfian(.99) & 0 & P10,P20,P25,P28 \\
+LP06 & static-read-negsweep & 0/100/0/0/0 & uniform & 0--100 & P04,P06,P22 \\
+LP07 & static-read-string-corpus & 0/100/0/0/0 & real-corpus & 50 & P04,P06,P10 \\
+LP08 & range-scan-heavy & 0/0/0/100/0 & uniform-seq & 0 & P01,P10,P12,P32 \\
+LP09 & insert-lookup-5050 & 50/50/0/0/0 & uniform & 0 & P03,P29 \\
+LP10 & delete-heavy-post-build & 50/0/50/0/0 & uniform-rand & 0 & P01,P08 \\
+LP11 & mixed-ycsb-oltp & 25/50/0/0/25 & zipfian(.99) & 0 & P10,P19,P20 \\
+LP12 & concurrent-rmw-stress & 25/9/36/9/9 & uniform & 0 & P07,P29 \\
+LP13 & concurrent-read-scaling & 0/100/0/0/0 & uniform & 0 & P07,P08,P25,P28 \\
+LP14 & dynamic-realistic-trace & 9/91/0/0/0 & tpcc-nonuniform & 0 & P19,P20 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For each SOTA algorithm and each allocator, a profile XML in \texttt{algorithm\_profiles/} records
+metadata, the axis assignment (page, node, traversal, value\_handle, concurrency, allocator, prefetch,
+telemetry, isa, layout, reclamation), a key-value signature, and an optional
+\texttt{<expected\_workload>} tag that overrides the \texttt{ExperimentDriver} heuristic
+(Chapter~\ref{ch:methodology}). All 30 SOTA profiles and all 10 allocator profiles are tagged. Three of
+the 33 corpus works deliberately have no standalone profile but enter only dissected: the optimistic lock
+coupling of ART (P08) as a concurrency organ of the \texttt{art} profile, the succinct LOUDS
+representation (P09, Jacobson 1989) as a memory-layout organ (e.g.\ in SuRF, P10), and the profiling tool
+VAMPIR (P33) as a measurement technology (Section~\ref{ssec:sota-meas-tech}); the remaining 30 algorithms
+each carry their own profile XML.
 
 \begin{table}[!htbp]
 \caption{SOTA algorithm profiles with workload affinity}\label{tab:sota-profiles}
@@ -120,10 +383,10 @@ to\_stride & P32 (Schmidt 2025) & YCSB\_C \\
 \end{tabular}
 \end{table}
 
-The workload distribution is 13$\times$ YCSB\_C (read-heavy), 9$\times$ YCSB\_A (Zipfian
-read+update), 6$\times$ YCSB\_E (range scans), and 2$\times$ YCSB\_B (95/5 read/update).
-PRT-ART itself is tagged YCSB\_F (read--modify--write, for density-tracker updates).
-Table~\ref{tab:allocator-profiles} lists the ten implemented allocator profiles.
+The workloads distribute across 13$\times$ YCSB\_C (read-heavy), 9$\times$ YCSB\_A (Zipf-distributed
+read+update), 6$\times$ YCSB\_E (range scans), and 2$\times$ YCSB\_B (95/5 read/update). PRT-ART itself
+is tagged YCSB\_F (read-modify-write, for density-tracker updates). Table~\ref{tab:allocator-profiles}
+lists the ten implemented allocator profiles.
 
 \begin{table}[!htbp]
 \caption{Allocator profiles with license and workload affinity}\label{tab:allocator-profiles}
@@ -146,53 +409,124 @@ dlmalloc & A20 & CC0 & YCSB\_C \\
 \end{tabular}
 \end{table}
 
-\section{Hardware and Scheduling Strategy per Paper}\label{sec:hw-sched}
+\subsection{Bias and Comparability}\label{ssec:sota-wl-bias}
+The core finding of the load-profile analysis is a systematic \emph{bias}: each publication chooses the
+load profile under which its own design performs best. Static, read-only-oriented tries and filters (HOT,
+CoCo, B\textsuperscript{2}-tree, SuRF, CSS) frame ``build-once, 100\,\% positive lookups'' and avoid
+updates; compressed tries and filters (CoCo, B\textsuperscript{2}-tree, SuRF) make the negative-query
+share the primary axis, because they abort early on misses; Zipf-centred works (B-Trees Are Back,
+Mahling, Kuehn) favour cache-aware reordering layouts; write- and concurrency-heavy works (ART, Masstree,
+Wormhole, OLC-ART, RCU), conversely, compete only where static structures fail; and prefetch- and
+hardware-near works (CSB\textsuperscript{+}, Chen, Schmidt) measure cache and TLB rather than algorithm
+logic, via node size and prefetch. Fourteen of the publications provide no index load profile at all
+(survey, theory, and hardware works). Only when \emph{all} load profiles run against \emph{all}
+living-being binaries (and the container shells) --- the workload as a dynamic axis
+(Chapter~\ref{ch:methodology}) --- can the ``winner only in its self-chosen home profile'' be unmasked
+and bias-free comparability be gained. This incompleteness of the prior works is part of the research gap
+(Section~\ref{sec:gap}).
 
-After the N-phase extension of the building-block matrix (Section~\ref{sec:axes}), two
-additional algorithm permutation axes are anchored:
+\section{Measurement Technologies as Instances}\label{sec:sota-measurement}
+The quality criteria and measurement patterns introduced in Section~\ref{sec:measurement-basics} receive
+their scientifically substantiated instances here --- the technologies that realize them.
 
-\begin{itemize}
-  \item \textbf{Axis~12 Hardware-Strategy}: which hardware features the algorithm actively
-        uses --- sub-axes 12.1 SIMD family (AVX2/AVX-512/NEON/SVE2/scalar), 12.2
-        cache-level targeting (L1/L2/L3/HBM-aware), 12.3 NUMA strategy, 12.4 prefetch
-        hardware (PREFETCH/PREFETCHNTA/PREFETCHW), 12.5 atomic-instruction family
-        (CAS/LL-SC/RMW-extended).
-  \item \textbf{Axis~13 Scheduling-Strategy}: how work is distributed --- sub-axes 13.1
-        worker-pool layout (thread-per-core / work-stealing / CPU-pinning), 13.2
-        SIMD-worker-count limit (hardware-limited to typically 2 of $N$ cores), 13.3
-        heterogeneous-core dispatch (Intel hybrid P-/E-cores), 13.4 co-routine strategy,
-        13.5 batch granularity.
-\end{itemize}
+\subsection{Collection Technologies}\label{ssec:sota-meas-tech}
+\emph{Hardware performance counters} (PMC, via \texttt{perf}) are nearly universal in the state of the
+art and deliver cache-miss rates (L1/L2/L3), dTLB misses, branch misses, and IPC/CPI --- the majority of
+the works P01--P28 report such counters. \emph{Profilers} such as OTF2/VAMPIR (P33, TU Dresden) and VTune
+collect trace-based runtime profiles, \emph{simulators} such as gem5~\cite{binkert2011gem5} provide
+hardware-accurate estimates where real counters are missing (P25 Mahling, P27 Zhang), and the
+\emph{HdrHistogram} (Gil Tene) collects the latency percentiles (p50/p95/p99), thereby instantiating the
+dispersion criterion.
 
-Table~\ref{tab:hw-sched} shows a selection of these two axes per SOTA paper; the full
-catalogue is in Appendix~\ref{app:blocks}.
+\subsection{Statistical Methodology}\label{ssec:sota-meas-stats}
+On the collection the evaluation builds (Section~\ref{ssec:measurement-criteria}, dispersion): instead of
+arithmetic means, median and percentiles are reported, differences are tested for significance with the
+distribution-free \emph{Mann-Whitney U test} (with Holm correction of the family-wise error rate), and
+their strength is quantified via the effect measure \emph{Cliff's~$\delta$}. This methodology follows the
+recommendations for scientific benchmarking by Hoefler and Belli~\cite{hoefler2015benchmarking}.
 
-\begin{table}[h!]
-\centering\small
-\caption{Hardware and scheduling strategy per SOTA paper (selection)}\label{tab:hw-sched}
-\begin{tabular}{lll}
-\toprule
-\textbf{Paper} & \textbf{Hardware strategy (axis 12)} & \textbf{Scheduling strategy (axis 13)} \\
-\midrule
-P01 ART & AVX2, L1-aware, none, CAS & thread-per-core \\
-P02 HOT & AVX2 (bit-vector), L1-aware, CAS & thread-per-core \\
-P03 Masstree & scalar, L1-aware, CAS & thread-per-core + work-stealing \\
-P05 START & AVX2 (multi-byte span), L1-aware, CAS & thread-per-core \\
-P20 LeanStore & AVX2, HBM-aware, NUMA-aware, CAS & work-stealing + hybrid \\
-P27 hp-soft & PREFETCH (L1/L2/L3 bundle), all-cache, CAS & thread-per-core + co-routine \\
-P28 Kuehn & PREFETCH (scalar counter), L1-aware, CAS & thread-per-core + sampling \\
-P31 Ungethuem & AVX-512 (HBM), HBM-aware, NUMA-aware, CAS & hybrid (P-/E-cores) \\
-P32 Schmidt & AVX-512 (SIMD stride), HBM-aware, NUMA-aware, CAS & hybrid \\
-\midrule
-\textbf{PRT-ART} & \textbf{AVX2, L1-aware (TLB-aligned), local NUMA, PREFETCH, CAS (OLC)} & \textbf{thread-per-core + 2-SIMD-worker limit + hybrid + co-routine + micro-batch} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{TU-Dresden Hardware Measurement Methodology}\label{ssec:sota-meas-tud}
+A methodological line of its own is the hardware-near measurement methodology of TU Dresden (Habich
+group): Ungethuem et al.\ (P31) systematize the hardware optimizations for database machines, Schmidt et
+al.\ (P32) measure stride versus sequential accesses on HBM with dTLB and L2/L3 counters, and the VAMPIR
+tool (P33) profiles non-functional properties of heterogeneous memory. This line connects the present
+thesis directly to the database and software-engineering environment of its university.
+
+\subsection{Measurement Categories and Bridge to the Proposed Apparatus}\label{ssec:sota-meas-bridge}
+From these technologies follows the set of measurement categories that the proposed apparatus maintains:
+cache-line utilization, cache misses (L1/L2/L3), dTLB misses, memory footprint, branch misses, IPC/CPI,
+latency (mean and percentiles p50--p999), throughput, energy, and fill-buffer occupancy. Of these, the
+apparatus currently realizes the time- and observer-based categories (wall-clock, HdrHistogram, per-axis
+observer, the statistics triad, a two-phase operation loop, and a conformance gate against
+\texttt{std::map}); the counter-based PMC categories are foreseen but their collection is tied to
+hardware-counter access --- the complete measurement architecture is developed in
+Chapter~\ref{ch:methodology}. \emph{Which} of these instances the proposed framework adopts and which it
+replaces as obsolete is analysed dialectically (thesis--antithesis--synthesis) in Chapter~\ref{ch:concept}:
+each prior work (thesis) meets its limits in the bias-free cross-comparison (antithesis), from which the
+deeper results of the proposed apparatus emerge as synthesis. Thus the state of the art connects directly
+to the research gap (Section~\ref{sec:gap}).
+
+\section{Architectural Design and Software Engineering of Search Structures}\label{sec:sota-design}
+Beyond the technical mechanisms, the framework proposed in this thesis is primarily an
+\emph{architectural-design} invention. This section places it into the non-technical design and
+software-engineering space --- the definitional classes from Section~\ref{sec:cpp23} (design patterns,
+metaprogramming) receive their scientific instances here.
+
+\subsection{Data Structures as a Design Space}\label{ssec:sota-design-space}
+The idea of regarding data structures not individually but as a \emph{design space} characterizes Idreos'
+\emph{Periodic Table of Data Structures}~\cite{idreos2018periodic} and the \emph{Data
+Calculator}~\cite{idreos2018datacalculator}: structures arise from the combination of a few design
+primitives whose costs can be synthesized. This coincides directly with the axis dissection of this thesis
+(Section~\ref{sec:sota-axes}) --- the classical families are mere reading groupings of orthogonal axis
+assignments, a concrete method a point in the Cartesian product of the axes.
+
+\subsection{Self-Designing and Learned Indexes}\label{ssec:sota-design-selftuning}
+A second line moves the design into run time: \emph{database cracking}~\cite{idreos2007cracking} and its
+robust variant~\cite{halim2012stochastic} build the index adaptively as a by-product of query processing,
+while \emph{learned indexes}~\cite{kraska2018learned} replace the structure with a model of the key
+distribution; more recent works (VEGA, SIGMOD~2025; AirIndex) continue this in an actively tuning manner.
+These approaches show the same trend --- away from the hard-wired single structure, towards configurable,
+self-adapting designs --- to which the present thesis gives a systematic, measurement-driven form with the
+permutable axis composition.
+
+\subsection{Design-Pattern-Driven Architecture as a Contribution}\label{ssec:sota-design-contribution}
+The actual contribution thus lies less in a single structure than in a \emph{tool}: instead of solving the
+comparison problem directly, this thesis first constructs the ``shovel'' --- the permutation and
+measurement apparatus --- with which arbitrary axis combinations can be generated and measured fairly. In
+software terms this apparatus is a composition of named design patterns
+(Section~\ref{ssec:classic-patterns}) and two new metaprogramming patterns
+(Section~\ref{ssec:new-patterns}). Scientifically it situates itself in the software engineering of
+\emph{composition}: invasive software composition from gray-box components~\cite{assmann2003invasive}
+(TU Dresden), generative programming~\cite{czarnecki2000generative}, and feature-oriented software product
+lines~\cite{apel2013feature,batory1992hierarchical} --- an axis thereby corresponds to a feature, a living
+being to a feature composition.
+
+\emph{Provenance of the axis concept.} The concept of the axis architecture itself is not a new
+development of this thesis but adopted from prior work by the author within the brand Comdare, held by
+him, respectively the BEP~Venture~UG, where it originally served --- in the context of the UltiHash
+database --- the optimization of deduplication procedures. The contribution of the present thesis is the
+transfer and shaping of this concept onto cache-aware search structures, as well as its
+design-pattern-driven, measurement-oriented realization. \emph{Which} foreign instances the framework
+adopts and which it replaces as obsolete is developed dialectically in Chapter~\ref{ch:concept} (cf.\
+Section~\ref{ssec:sota-meas-bridge}).
 
 \section{Research Gap}\label{sec:gap}
 
-Each of the surveyed works optimizes one or a few axes of the cache hierarchy in
-isolation, and the results are reported in incomparable settings. What is missing --- and
-what this thesis contributes --- is a systematic, orthogonal \emph{axis decomposition} of
-these designs together with a permuted measurement architecture that reconstructs them as
-explicit configurations and measures them on one common basis.
+The dissection in Section~\ref{sec:sota-axes} exposes the central gap: each of the surveyed works
+optimizes only a few axes in isolation, and \emph{not a single method populates all nineteen axes
+jointly}. Some axes are populated in the state of the art exclusively with baseline or textbook variants
+(the mapping between algorithm and cache traversal), others appear only as a \emph{measurement target}
+(the dTLB), and the spatial search class is missing entirely; axes such as I/O, migration, filter, and
+buffering are each populated individually, but never together with the search axes in one design.
+
+Added to this is the methodological gap: the results are reported in incomparable settings, and the paper
+bias --- each publication chooses its home-field load profile (Section~\ref{ssec:sota-wl-bias}) ---
+prevents a fair cross-comparison. What is missing is a bias-free measurement of \emph{all} load profiles
+against \emph{all} methods on a common basis.
+
+What is missing --- and what this thesis contributes --- is therefore the systematic, orthogonal
+\emph{axis decomposition} of these designs together with a \emph{permuted measurement architecture} that
+reconstructs them as explicit configurations and measures them on a common basis. Which of the instances
+catalogued here the proposed framework adopts and which it replaces as obsolete is developed dialectically
+(thesis--antithesis--synthesis, Section~\ref{ssec:sota-design-contribution}) by the following chapter;
+from this the deeper results of the proposed apparatus emerge.
