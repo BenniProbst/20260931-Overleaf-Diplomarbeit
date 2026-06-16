@@ -1,82 +1,330 @@
 \chapter{Fundamentals}\label{ch:fundamentals}
 
-This chapter establishes the background needed for the remainder of the thesis: the
-cache hierarchy and the notion of cache awareness, trie-based index structures with
-the Adaptive Radix Tree as the running reference, the unified \texttt{std::map}
-comparison interface, the YCSB workloads, and the C++23 metaprogramming facilities on
-which the cache engine is built.
+This chapter establishes the fundamentals required for the rest of the thesis: the cache hierarchy
+and the notion of cache awareness, trie-based index structures with the Adaptive Radix Tree as a
+recurring reference, the unified \texttt{std::map} comparison interface as a search-algorithm shell
+with standard interfaces, the unified \texttt{std::vector} comparison interface as a container shell,
+the different measurement dimensions and methods, the YCSB workload types, and the C++23
+metaprogramming facilities on which the cache engine builds.
 
 \section{Cache Hierarchy and Cache Awareness}\label{sec:cache-basics}
+\subsection{Memory and Cache Levels}\label{ssec:cache-levels}
+Modern processors interpose several cache levels (L1, L2, and --- not on every platform --- L3)
+between the registers and main memory~\cite{hennessy2019architecture}. The transfer unit between
+levels is the \emph{cache line}; its size, however, is not a universal constant but a property fixed
+per microarchitecture (Section~\ref{ssec:cache-line-sizes}). Nor does transfer occur strictly
+``block-wise in one piece'': techniques such as \emph{critical-word-first} deliver the requested word
+first; DDR5 splits the memory channel into two independent 32-bit sub-channels; and non-temporal or
+write-combining stores bypass the regular line granularity~\cite{intel_sdm}. An access that finds its
+datum in a cache level is cheap; a miss is forwarded to the next, slower level, and a miss in the
+last-level cache reaches main memory at a cost of several hundred
+cycles~\cite{hennessy2019architecture,drepper2007memory}. On multi-socket and chiplet systems,
+non-uniform memory access (NUMA) additionally makes the latency of a reference depend on which node
+owns the page.
 
-Modern processors interpose several levels of cache (L1, L2, L3) between the registers
-and main memory. Data is transferred between these levels in fixed units called
-\emph{cache lines}, typically 64\,bytes. An access that finds its datum in a cache
-level is cheap; a miss propagates to the next, slower level, and a miss in the last-level
-cache reaches main memory at a cost of hundreds of cycles. Address translation adds a
-second hierarchy: the \emph{translation lookaside buffer} (TLB) caches virtual-to-physical
-mappings, and a dTLB miss is itself expensive. On multi-socket systems, non-uniform memory
-access (NUMA) makes the latency of a reference depend on which node owns the page.
+\subsection{Cache-Line Sizes: Static and Dynamic}\label{ssec:cache-line-sizes}
+The cache-line size is hard-wired per microarchitecture but differs between architectures. On x86-64
+(AMD as well as Intel) and on common ARM cores (e.g.\ Cortex-A76 or Neoverse~V2) it is 64~bytes;
+individual designs use wider lines at the SoC level --- Apple Silicon, for instance, 128~bytes on L2
+and the system-level cache. Programs can \emph{read} the actual size at run time --- via
+\texttt{CPUID} on x86, the \texttt{CTR\_EL0} register on ARM, and the \texttt{riscv\_hwprobe}
+interface on RISC-V~\cite{arm_arm,intel_sdm} --- but cannot change it. The depth of the hierarchy
+likewise varies: not every platform has an L3 cache (simple RISC-V cores such as the SiFive~U74 stop
+at a shared L2), while others bring a large or even asymmetrically distributed L3 (e.g.\ the stacked
+3D V-Cache of some AMD processors). For a cache-line-aware layout, the line size and cache depth
+determined per target platform are therefore an \emph{input parameter of compilation} rather than a
+fixed assumption; Section~\ref{ssec:aware-oblivious} takes this up again for the delimitation of the
+thesis.
 
-A data structure is \emph{cache-aware} when its layout is tuned to concrete cache
-parameters (line size, level capacities), and \emph{cache-oblivious} when it achieves good
-locality across all levels without knowing them. Both philosophies recur throughout the
-state of the art (Chapter~\ref{ch:sota}) and motivate the layout, prefetch, and hardware
-axes of the proposed engine.
+\subsection{Address Translation: TLB and dTLB}\label{ssec:tlb}
+Besides the data-cache hierarchy there exists a second one, for address translation: the
+\emph{Translation Lookaside Buffer} (TLB) caches virtual-to-physical mappings, and a TLB miss
+triggers an expensive page walk~\cite{hennessy2019architecture}. For locality reasons, processors
+separate the \emph{instruction TLB} (iTLB) from the \emph{data TLB} (dTLB) --- since instruction
+accesses are markedly more local than data accesses ---; a multi-level arrangement (L1 dTLB plus a
+shared L2 STLB) is also common~\cite{intel_sdm,drepper2007memory}. For search structures, the dTLB is
+the second, independent locality boundary alongside the cache line: large or widely scattered nodes
+raise dTLB pressure independently of cache utilization, which is why huge pages (2~MiB/1~GiB) enlarge
+the TLB reach.
+
+\subsection{Cache Coherence, Write and Update Behaviour per ISA}\label{ssec:coherence}
+Caches handle writes according to two basic strategies: \emph{write-through} writes immediately
+through to the next level, whereas \emph{write-back} initially records the change only in the cache
+line (\emph{dirty}) and writes it back only on eviction --- saving bus traffic and lowering write
+latency~\cite{hennessy2019architecture}. Orthogonally, the \emph{allocation policy} determines how a
+write miss is handled: \emph{write-allocate} first loads the target line into the cache (typical with
+write-back), \emph{no-write-allocate} writes straight through to the next level (typical with
+write-through). ARMv8 makes this choice explicit through page attributes --- write-through,
+write-back, or non-cacheable, as well as read- or read-write-allocate~\cite{arm_arm}, while x86 uses
+write-back with write-allocate as the normal case~\cite{intel_sdm}.
+
+Which line is \emph{evicted} and thereby replaced on a miss is decided by a \emph{heuristic
+replacement strategy}. Besides the exact and approximate classics (LRU, pseudo-LRU), scan- and
+thrash-resistant methods are common: \emph{Re-Reference Interval Prediction} (RRIP, dynamic DRRIP)
+makes do with two bits per line~\cite{jaleel2010rrip} and builds on the adaptive insertion
+policy~\cite{qureshi2007adaptive}. How many levels may hold a line at once is governed, finally, by
+the \emph{inclusion policy}: an \emph{inclusive} cache keeps every line of the higher levels
+redundantly, an \emph{exclusive} (victim) cache excludes them, and a \emph{non-inclusive} one allows
+both~\cite{hennessy2019architecture}.
+
+In multi-core systems a \emph{coherence protocol} ensures the consistency of shared lines; the
+widespread, invalidation-based \emph{MESI} protocol keeps each line in one of the states
+\emph{Modified}, \emph{Exclusive}, \emph{Shared}, or \emph{Invalid}, extended by vendors into
+variants such as MOESI (AMD) or MESIF (Intel)~\cite{hennessy2019architecture}. Which write,
+allocation, replacement, inclusion, and coherence strategy applies concretely is part of the
+microarchitecture definition per ISA and per cache level and not selectable at run time; their
+concrete manifestations are presented by the state of the art (Section~\ref{sec:sota-cache}), and
+their effect --- in particular \emph{cache-line ping-pong} under contending writes to the same line
+--- motivates the telemetry and concurrency axes of the engine (Chapters~\ref{ch:concept}
+and~\ref{ch:impl}).
+
+\subsection{Cache-Aware and Cache-Oblivious}\label{ssec:aware-oblivious}
+A data structure is \emph{cache-aware} if its layout is tuned to concrete cache parameters (line
+size, level capacities), and \emph{cache-oblivious} if it achieves good locality across all levels
+without knowing them~\cite{frigo1999cache}. Both philosophies recur throughout the state of the art
+(Chapter~\ref{ch:sota}) and motivate the layout, prefetch, and hardware axes of the proposed engine.
+
+The present thesis pursues a third, intermediate path. \emph{First}, the actual cache properties
+(line size, hierarchy depth, topology) are \emph{determined} per target platform and enter a
+\emph{system-optimized binary} as fixed quantities --- the line size itself is a compilation input,
+since it is not changeable at run time on any platform (Section~\ref{ssec:cache-line-sizes}).
+\emph{Second}, the \emph{configurable} cache-near settings --- prefetch distance, batch and inline
+thresholds, pool budgets, and, where architecture and operating system permit, the hardware
+prefetcher --- are carried as axis parameters that are permuted at run time against an
+already-loaded binary (Section~\ref{ssec:dynamics-levels} and Chapter~\ref{ch:concept}).
+\emph{Third}, this latitude is delimited depending on hardware and operating system: from fully
+run-time-configurable (mutable Linux with MSR access) through boot- or compile-time static (immutable
+operating systems) to fixed (read-only cache registers on ARM and RISC-V). Thus cache-oblivious
+behaviour is complemented by \emph{measured} locality knowledge that enables a heuristic, measurement-
+oriented selection of the settings per load pattern; the \emph{why} of this construction is developed
+in Chapter~\ref{ch:concept}.
 
 \section{Classes of Search Structures}\label{sec:search-classes}
+\subsection{Established Subdivision of Search Algorithms}\label{ssec:genera}
+Search structures can be classified by the mechanism with which they map a key to a
+record~\cite{knuth1998taocp3}. \emph{Comparison-based} structures locate the key via order
+comparisons and presuppose a total order; these include the balanced search trees from AVL and
+red-black trees to the block-oriented B-/B\textsuperscript{+} trees. \emph{Digital} structures branch
+by the bytes of the key rather than by comparison (tries, radix trees, ART). \emph{Hashing} maps keys
+directly via a hash function and has no inherent order. \emph{Spatial} structures, finally, partition
+a multi-dimensional space (k-d tree, quadtree, R-tree). This thesis concentrates on the
+\emph{tree-like} structures of the comparison- and the digital-based class --- the common denominator
+of modern in-memory indexes ---, while hashing appears only as a comparison baseline and spatial
+structures lie outside the scope. The principle developed in Chapter~\ref{ch:concept} is, however,
+not bound to trees: through a higher-level abstraction, further structure classes can be attached
+without rebuilding the measurement and permutation apparatus (Section~\ref{sec:outlook}).
 
-Search structures can be classified by the mechanism with which they map a key onto a
-record~\cite{knuth1998taocp3}. \emph{Comparison-based} structures locate the key through order
-comparisons and presuppose a total order; these range from the balanced search trees of AVL
-and red-black trees to the block-oriented B-/B\textsuperscript{+}-trees. \emph{Digital}
-structures branch on the bytes of the key rather than by comparison (tries, radix trees, ART).
-\emph{Hashing} maps keys directly through a hash function and has no inherent ordering.
-\emph{Spatial} structures, finally, partition a multidimensional space (k-d-tree, quadtree,
-R-tree). This thesis focuses on the \emph{tree-like} structures of the comparison- and
-digital-based classes --- the common denominator of modern main-memory indexes ---, while
-hashing appears only as a point of comparison and spatial structures are out of scope. The
-principle developed in Chapter~\ref{ch:concept} is not tied to trees, however: through a
-higher-level abstraction further structure classes can be attached without rebuilding the
-measurement and permutation apparatus (Section~\ref{sec:outlook}).
+Within these mechanism classes, research has produced concrete structure \emph{classes}; they are
+named and substantiated here at the class level, while their internal dissection into axes ---
+including concrete internal manifestations such as ART's node types --- occurs only in the state of
+the art (Chapter~\ref{ch:sota}) as \emph{instances}.
 
-\section{Trie-Based Index Structures}\label{sec:trie-basics}
+\subsubsection{Comparison-Based Search Trees}
+Comparison-based trees locate keys via order comparisons. From the unbalanced binary search tree
+arise the self-balancing \emph{AVL trees}~\cite{adelsonvelsky1962avl} and \emph{red-black
+trees}~\cite{bayer1972symmetric,guibas1978redblack}; for block- and external-memory-oriented indexes,
+\emph{B-} and \emph{B\textsuperscript{+} trees}~\cite{bayer1972btree,comer1979btree} became
+established. Directly pertinent to main memory is the \emph{T-tree}~\cite{lehman1986ttree}.
 
-A \emph{trie} (digital/radix tree) indexes keys by their byte sequence rather than by
-comparison: each level discriminates on one or more key bytes, so the search-path length
-depends on key length, not on the number of stored keys. The \emph{fanout} (branching
-factor) and the \emph{node representation} dominate both space and cache behaviour. The
-Adaptive Radix Tree (ART)~\cite{leis2013art} adapts the node representation to the actual
-fanout, using four node types (Node4, Node16, Node48, Node256), and applies path
-compression (lazy expansion, prefix folding) to keep the tree shallow. ART serves as the
-running reference design throughout this thesis.
+\subsubsection{Digital and Prefix-Based Structures}
+Digital structures branch by the bytes of the key rather than by comparison, so that the search-path
+length depends on the key length and not on the number of keys. The
+\emph{trie}~\cite{delabriandais1959trie,fredkin1960trie} is the basic form; \emph{radix} and
+\emph{PATRICIA} trees~\cite{morrison1968patricia} collapse sparsely populated single-child chains
+through path compression. The \emph{Adaptive Radix Tree} (ART)~\cite{leis2013art} adapts the node
+representation to the actual branching degree and serves this thesis throughout as a reference design;
+\emph{fanout} and \emph{node representation} thereby determine both space requirement and cache
+behaviour.
 
-\section{The Unified Comparison Interface (\texorpdfstring{\texttt{std::map}}{std::map})}\label{sec:stdmap-interface}
+\subsubsection{Hashing}
+Hashing maps keys directly via a hash function and has no inherent order, which is why range queries
+are expensive~\cite{knuth1998taocp3}. Besides open and chained addressing,
+\emph{cuckoo hashing}~\cite{pagh2004cuckoo} achieves constant worst-case lookups, and modern,
+SIMD-accelerated tables such as SwissTable~\cite{abseil_swisstable} attain high practical density.
+Hashing appears in this thesis only as a non-tree-like comparison baseline.
 
-To compare structurally different search algorithms fairly, they are all mapped onto a
-single, well-understood interface: the C++ ordered-map contract
-\texttt{std::map<Key,\,Value>} (\texttt{find}/\texttt{insert}/\texttt{erase}/range
-iteration). The axes introduced in Chapter~\ref{ch:concept} describe the \emph{internal}
-behaviour behind this interface, while the interface itself stays fixed --- comparing two
-conforming \texttt{std::map} implementations is therefore the central measurement act. A
-variadic specialization keeps the interface ergonomic: one template parameter exposes a
-\texttt{std::vector}-like API, two parameters the \texttt{std::map} API, and $N>2$ a
-\texttt{std::map<K,\,std::tuple<\ldots>>}.
+\subsubsection{Spatial Structures}
+Spatial structures partition a multi-dimensional key space --- e.g.\ the
+\emph{k-d tree}~\cite{bentley1975kdtree}, the \emph{quadtree}~\cite{finkel1974quadtree}, and the
+\emph{R-tree}~\cite{guttman1984rtree}. With their multi-dimensional keys they lie outside the scope of
+this thesis and are mentioned only for completeness.
 
-\section{YCSB Workloads}\label{sec:ycsb}
+\subsubsection{Flat Methods and Theoretical Exotics}
+As a limiting case stands the \emph{flat} method: a sorted array with binary or interpolation
+search~\cite{knuth1998taocp3} is, strictly speaking, the single leaf of a tree. Theoretical
+``exotics'' shift the complexity bounds --- the \emph{van Emde Boas tree}~\cite{vanemdeboas1975} and
+the \emph{y-fast trie}~\cite{willard1983yfast} achieve $O(\log\log u)$ over a key universe of size
+$u$, and the \emph{fusion tree}~\cite{fredman1993fusion} undercuts the information-theoretic
+comparison bound. They are theoretically significant but, for the cache-line-aware in-memory index of
+this thesis, only a marginal consideration.
 
-The Yahoo!\ Cloud Serving Benchmark (YCSB) defines a family of key--value workloads used
-here as the common load profile: YCSB-A (50/50 read/update, Zipfian), YCSB-B (95/5
-read/update), YCSB-C (read-only), YCSB-D (read-latest), YCSB-E (short range scans), and
-YCSB-F (read--modify--write). Each algorithm profile declares an expected workload
-(Chapter~\ref{ch:sota}), which the measurement driver uses for profile-aware routing
-(Chapter~\ref{ch:methodology}).
+\subsection{Subdivision of Containers}\label{ssec:container-taxonomy}
+Orthogonal to the search-algorithm view stands the established subdivision of the \emph{containers} of
+the C++ standard library~\cite{iso_cpp}: \emph{sequence containers} (e.g.\ \texttt{std::vector})
+order elements by insertion position, \emph{ordered associative} containers (\texttt{std::map},
+\texttt{std::set}) by key order, and \emph{unordered} variants (\texttt{std::unordered\_map}) map via
+a hash function. These containers provide standardized interface contracts against which structurally
+different methods can be measured uniformly (Section~\ref{sec:compare-interfaces}): the ordered map is
+the common denominator for comparison- and digital-based search structures, a \texttt{std::vector}
+provides the sequence view, and a hash table (e.g.\ \texttt{absl::flat\_hash\_map}/SwissTable) the
+unordered counter-check.
 
-\section{C++23 Metaprogramming}\label{sec:cpp23}
+\subsection{Conceptual Placement in the Present Framework}\label{ssec:own-framework}
+The present thesis places these external methods into a framework of its own that
+Chapter~\ref{ch:concept} develops in detail and that is only introduced here. At the topmost level
+stands the \emph{genus} as an externally visible interface --- SearchAlgorithm, Container, and Graph;
+beneath it lie \emph{living-being subclasses} with a fixed axis set (the SearchAlgorithm subclass with
+its nineteen axes, as well as Set, Sequence, Adapter, and View under the Container interface). An
+\emph{axis} is an orthogonal partial decision --- an ``organ'' --- of an overall algorithm; a concrete
+method is thus a point in the Cartesian product of the axes, and the classical families of
+Section~\ref{ssec:genera} turn out to be mere reading groupings of orthogonal axis
+assignments~\cite{idreos2018periodic,idreos2018datacalculator}. As its own probe this thesis
+contributes PRT-ART (a Probst Redirect Tree / ART hybrid), whose axis contributions are likewise
+dissected only in Chapters~\ref{ch:concept} and~\ref{ch:impl}. Thus the external classification
+(Sections~\ref{ssec:genera} and~\ref{ssec:container-taxonomy}) and the axis-oriented dissection view
+used in this thesis remain cleanly separated.
 
+\section{Unified Comparison Interfaces}\label{sec:compare-interfaces}
+\subsection{The \texttt{std::map} Interface}\label{sec:stdmap-interface}
+To compare structurally different search algorithms fairly, they are all mapped onto a single,
+well-understood interface: the C++ contract of the ordered map \texttt{std::map<Key,\,Value>}
+(\texttt{find}/\texttt{insert}/\texttt{erase}/range iteration). The axes introduced in
+Chapter~\ref{ch:concept} describe the \emph{inner} behaviour behind this interface, while the
+interface itself stays fixed --- the comparison of two conformant \texttt{std::map} implementations is
+thus the central measurement act. A variadic specialization keeps the interface ergonomic: one
+template parameter provides a \texttt{std::vector}-like API, two parameters the \texttt{std::map} API,
+and $N>2$ a \texttt{std::map<K,\,std::tuple<\ldots>>}. The core contract of the ordered map comprises
+the point query (\texttt{find}, \texttt{at}, \texttt{operator[]}), insertion and update
+(\texttt{insert}, \texttt{insert\_or\_assign}, \texttt{emplace}), deletion (\texttt{erase}), and
+order-based navigation (\texttt{lower\_bound}, \texttt{upper\_bound}, range
+iteration)~\cite{iso_cpp}; the complete listing of \emph{all} standard functions with expected
+semantics and corresponding conformance tests is given in the appendix.
+
+\subsection{The \texttt{std::vector} Interface}\label{ssec:stdvector-interface}
+Parallel to the map shell, the sequence shell \texttt{std::vector} serves as the container comparison
+case~\cite{iso_cpp}. Its one-parameter contract offers indexed access (\texttt{operator[]},
+\texttt{at}), resizing (\texttt{push\_back}, \texttt{emplace\_back}, \texttt{insert}, \texttt{erase},
+\texttt{resize}), and contiguous storage (\texttt{data}); shared with the map are iteration and
+\texttt{size}/\texttt{empty}/\texttt{clear}, while the addressing differs (position rather than key
+order). This makes it possible to check whether an axis composite also carries container semantics and
+not only search semantics; the complete function table of both shells is in the appendix.
+
+\subsection{Levels of Dynamics}\label{ssec:dynamics-levels}
+Behind the fixed external interface the system distinguishes several \emph{levels of dynamics} that
+determine \emph{when} an axis decision is made:
+\begin{itemize}
+  \item \textbf{Compile time vs.\ run time} as the topmost distinction;
+  \item the \textbf{living-being type}, which occupies only a certain subset of the available axes;
+  \item the \textbf{axis algorithms}, which are compiled into a living-being binary at compile time
+        (static recombination);
+  \item the \textbf{dynamic sub-axes}, whose run-time parameters (prefetch distance, batch size,
+        inline threshold, pool budget) are varied against an already-loaded binary without
+        recompilation;
+  \item the \textbf{static sub-axes} as a compile-time selection among static partial algorithms of
+        differing complexity.
+\end{itemize}
+This separation is anchored in the permutation tree of the cache engine (Chapter~\ref{ch:concept}):
+static axis levels each produce their own binary per path, dynamic sub-axes are virtual run-time loops
+over the same binary. Only thereby does it become explainable, per interface function, how it is
+internally wired --- an aspect that a dedicated cache-engine developer document deepens.
+
+\section{Loads and Workloads}\label{sec:workloads-basics}
+\subsection{Term: Load, Workload, and Goal of Variation}\label{ssec:load-terms}
+A \emph{load} (operation) is a single call of the search interface --- a point query, an insertion, a
+deletion, or a range scan. A \emph{workload} is a structured profile of such operations: an operation
+mix (e.g.\ 50\,\% read / 50\,\% update) over a key access distribution (uniform, Zipf-distributed,
+latest values) on a dataset of defined size and key characteristic. Realistic workloads are thereby
+\emph{playbooks} of many consecutive interface calls --- not isolated, unrealistic single accesses.
+
+The \emph{goal of variation} is to break a methodological bias: each publication typically chooses the
+load profile under which its own algorithm performs best (a read-only trie avoids updates, a
+compressed filter seeks negative queries, a cache-aware layout favours Zipf hotspots). Only when
+\emph{all} load profiles run against \emph{all} living-being binaries (and additionally the container
+shells) can absolute, bias-free comparability be gained. The concrete ``all-against-all'' matrix
+belongs in the evaluation methodology (Chapter~\ref{ch:methodology}); here only the conceptual
+framework is laid.
+
+\subsection{Workload Frameworks}\label{sec:ycsb}
+The workloads used in the literature stem from \emph{several} benchmark frameworks that this thesis
+considers jointly; the most prominent is the Yahoo!\ Cloud Serving Benchmark
+(YCSB)~\cite{cooper2010ycsb}. It defines a family of key-value workloads that serve here as a common
+load profile: YCSB-A (50/50 read/update, Zipf-distributed), YCSB-B (95/5 read/update), YCSB-C (read
+only), YCSB-D (latest values), YCSB-E (short range scans), and YCSB-F (read-modify-write). Each
+algorithm profile declares an expected workload (Chapter~\ref{ch:sota}) that the measurement driver
+uses for profile-aware routing (Chapter~\ref{ch:methodology}).
+
+Alongside this, the analysed publications rely on further frameworks: the index benchmark
+\emph{SOSD}~\cite{kipf2019sosd}, the transaction benchmarks of the \emph{TPC} family (TPC-C, TPC-DS),
+integration into real systems (e.g.\ SuRF as a Bloom-filter replacement in RocksDB), real string
+corpora (URLs, DNA, dictionary terms), and --- for the hardware-near works --- \emph{SPEC~CPU} and
+\emph{CloudSuite}; the allocator corpus is measured with allocator-specific suites
+(\texttt{mimalloc-bench}, Larson, threadtest, shbench). Because these frameworks produce different,
+mutually incomparable loads, the thesis abstracts them into a common set of load profiles and runs
+these as a \emph{dynamic workload axis} over all living-being binaries (Chapter~\ref{ch:methodology});
+the connection of the non-YCSB frameworks occurs via a dataset loader.
+
+\section{Scientific Measurement}\label{sec:measurement-basics}
+
+\subsection{Quality Criteria of Scientific Measurement}\label{ssec:measurement-criteria}
+Scientific measurement is subject to established quality criteria~\cite{hoefler2015benchmarking}.
+\emph{Reproducibility} requires fixed random seeds, a deterministic execution order, and fully
+documented measurement configurations, so that a run is bit-exactly repeatable. \emph{Validity} breaks
+down into internal (causally cleanly isolated effects), construct (the metric actually measures the
+intended concept), and external validity (transferability to other platforms and loads).
+\emph{Fairness} demands identical inputs --- the same keys, workloads, and warmup --- for all
+comparison candidates; missing capabilities of a baseline are reported as \emph{N/A} rather than
+covertly emulated through auxiliary constructs. Finally, \emph{dispersion} is part of the statement:
+instead of arithmetic means, percentiles over HDR histograms are reported and the statistical
+significance of differences is tested~\cite{hoefler2015benchmarking}.
+
+\subsection{Measurement Patterns and Concepts Used}\label{ssec:measurement-patterns}
+On these criteria several measurement patterns build, whose \emph{why} only Chapter~\ref{ch:concept}
+develops. A \emph{two-phase operation loop} separates a discarded warmup run from the actual
+measurement and thus decouples latency from the accumulated state. Collection occurs \emph{hybrid} via
+two paths: isolated axis algorithms are measured directly against one another, while a composite
+living being is collected centrally via an ABI-stable observer interface (per-axis observer). A
+\emph{conformance gate} checks before each measurement that an implementation satisfies the
+\texttt{std::map} contract, so that only comparable things are compared; each configuration is
+collected in several separate runs with reported dispersion.
+
+These concepts form the \emph{definitional classes} of measurement; the state of the art
+(Chapter~\ref{ch:sota}) presents the \emph{instances} that technically realize them --- e.g.\ hardware
+performance counters (PMC), the OTF2/VAMPIR profiling tools, or the TU-Dresden hardware measurement
+methodology. Thus fundamentals and state of the art mesh directly.
+
+\section{C++23 Metaprogramming and Design Patterns}\label{sec:cpp23}
+\subsection{Classical Design Patterns}\label{ssec:classic-patterns}
+The system uses named design patterns (GoF)~\cite{gamma1994patterns} throughout; only those actually
+used in the code are introduced here. \emph{Strategy} encapsulates each of the nineteen axes as an
+interchangeable algorithm; \emph{Abstract Factory} creates the static and dynamic nodes of the
+permutation tree, \emph{Composite} forms that tree, and an \emph{Iterator} traverses it lazily.
+\emph{Adapter} binds foreign code behind the stable engine interface (Habich directive).
+\emph{Observer} (pull model) and \emph{Decorator} (non-intrusive measurement shells around the axes)
+collect the measurements, and a \emph{Memento} (copy-on-write) saves and discards the state between
+warmup and measurement. Static polymorphism arises through the \emph{Curiously Recurring Template
+Pattern} (CRTP) together with \emph{Template Method} concept checks. Not used, by contrast, are
+Singleton, Command, Flyweight, and Bridge.
+
+\subsection{Metaprogramming Facilities}\label{ssec:metaprog-facilities}
 The engine relies on compile-time composition to avoid run-time dispatch in the hot path.
-\emph{Concepts} constrain the building-block interfaces; the \emph{curiously recurring
-template pattern} (CRTP) provides static polymorphism; \texttt{if~constexpr} and
-\texttt{std::conditional\_t} select between a probe implementation and a cache-engine
-default per axis; and C++23 \emph{modules} provide an ABI-stable boundary between the
-permutation binaries and the builder. Together these facilities realize the
-zero-cost abstraction on which the permutation matrix depends.
+\emph{Concepts} constrain the building-block interfaces; the \emph{Curiously Recurring Template
+Pattern} (CRTP) provides static polymorphism; \texttt{if~constexpr} and \texttt{std::conditional\_t}
+choose per axis between a probe implementation and a cache-engine default; and C++23 \emph{modules}
+form an ABI-stable boundary between the permutation binaries and the builder. Together these facilities
+realize the \emph{zero-cost abstraction} on which the permutation matrix rests. Added to this are
+\emph{policy-based design} (the composition as a tuple of nineteen axis policies), \emph{tag dispatch}
+for the probe-versus-default resolution, and \emph{type-list computation} (Boost.MP11), which
+describes the axis product space without fully materializing it~\cite{alexandrescu2001modern}.
+
+\subsection{New and Unnamed Metaprogramming Patterns}\label{ssec:new-patterns}
+Beyond the established patterns, two constructions occur for which a web search found no established
+naming and which are therefore named as a contribution of this thesis. First, the \emph{lazy-sparse
+Cartesian materialization}: the product space of all axis variants is only counted arithmetically at
+compile time --- over $10^{14}$ configurations --- and materialized \emph{individually} per path,
+mixed-radix and on demand, instead of instantiating the full type tree (which overwhelmed the
+compiler). Second, \emph{type-driven source emission}: from a compile-time axis composition the
+fully qualified type names are extracted, rendered to C++ source, compiled per permutation as a
+standalone module, and loaded across the ABI boundary --- so the downloaded probe (PRT-ART) is
+compiled via metaprogramming into permutation/matrix layers against the core constituents of the cache
+engine. Both patterns combine known idioms (concepts, CRTP, type lists) into an architecture-specific
+novelty; their full realization is developed in Chapters~\ref{ch:concept} and~\ref{ch:impl}.
