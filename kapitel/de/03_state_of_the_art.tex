@@ -34,6 +34,22 @@ Achsen-Subset} --- die trie-spezifischen Achsen (Pfadkompression, Knotentyp, Ber
 als Durchreich-Variante, während Allokation, Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD
 (für das SwissTable-Gruppen-Lookup) geteilt bleiben --- und erfordert so keine eigene Gattung.
 
+\subsection{Der Korpus nach Herkunfts-Clustern}\label{ssec:sota-corpus}
+Ergänzend zur achsenweisen Sezierung (Abschnitt~\ref{sec:sota-axes}) ordnet dieser Überblick die
+Veröffentlichungen ihren sechs Herkunfts-Clustern zu --- die ganzheitliche Sicht auf jedes Lebewesen, bevor
+es in seine Organe zerlegt wird. Die \emph{Trie-Familie} (Cluster~A) umfasst ART (P01), HOT (P02), Masstree
+(P03), CoCo-Trie (P04), START (P05) sowie die succinct-Tries LOUDS (P09) und SuRF (P10). Die \emph{Hybrid-
+und B\textsuperscript{+}-Familie} (Cluster~B) vereint den B\textsuperscript{2}-Baum (P06), Wormhole (P07) und
+die cache-sensitiven CSS-, CSB\textsuperscript{+}- und Hankins-Bäume (P11--P13). Die \emph{Layout-Theorie}
+(Cluster~C) reicht von Samuel (P14) und Graefe/Larson (P15) über die cache-oblivious Entwürfe von Bender
+et al.\ (P16/P17) bis zu den layout-invarianten Bäumen von Saikkonen/Soisalon-Soininen (P18/P19). Das
+\emph{Prefetching} (Cluster~D/E) umfasst LeanStore (P20), die Prefetching-B\textsuperscript{+}-Bäume von Chen
+et al.\ (P21/P22), Khan (P23), Naderan-Tahan (P24), Mahling (P25) sowie Zhang (P26/P27) und Kuehn (P28). Die
+\emph{Synchronisation} (Cluster~F) trägt das optimistische Lock-Coupling von ART (P08), RCU (P29) und
+Hazard-Pointer (P30); die hardware-nahe \emph{TU-Dresden-Linie} schließlich Ungethüm (P31), Schmidt (P32) und
+VAMPIR (P33). Parallel steht der \emph{Allokator-Korpus} (A01--A23) --- von Hoard und Slab über mimalloc,
+jemalloc, TCMalloc und snmalloc bis zu NUMAlloc, StarMalloc und PIM-malloc.
+
 \section{Cache-Konzepte als Instanzen}\label{sec:sota-cache}
 Die Cache-Hierarchie-Konzepte aus Abschnitt~\ref{sec:cache-basics} treten im Stand der Technik als
 konkrete Entwürfe und Mechanismen auf; jeder der folgenden Unterabschnitte spiegelt eine
@@ -249,8 +265,9 @@ besetzt (Such-, Knotentyp-, Allokator-, Prefetch-Achse), andere ausschließlich 
 alle Achsen gemeinsam. Genau diese Unvollständigkeit motiviert die Forschungslücke
 (Abschnitt~\ref{sec:gap}).
 
-% [AP-S1] 3.1-3.5 ausformuliert; Cluster-Rohmaterial vollstaendig aufgeloest (HW-Tabelle jetzt in 3.3.3).
-% Offen: 3.6 Architektur-Design/SE (AP-S2) zwischen 3.5 und Forschungsluecke; danach Forschungsluecke = 3.7.
+% [AP-S1+S2] 3.1-3.6 ausformuliert; Cluster-Prosa als Korpus-Ueberblick (3.1.x) recycelt; HW-Tabelle in 3.3.3;
+% 3.6 Architektur-Design/SE (Design-Space + Self-Designing + Pattern/SE-Einordnung + Comdare/BEP-Provenienz).
+% Forschungsluecke = 3.7. Offen: Bib-Fill restliche Paper (AP-Z1/Z2), EN-Nachzug (AP-EN).
 
 \section{Workload-Frameworks als Instanzen}\label{sec:sota-workloads}
 Die in Abschnitt~\ref{sec:workloads} eingeführten Begriffe --- Last, Workload, Workload-Framework und das
@@ -456,6 +473,50 @@ analysiert Kapitel~\ref{ch:concept} dialektisch (These--Antithese--Synthese): je
 bias-freien Quervergleich auf ihre Grenzen (Antithese), woraus die tieferen Ergebnisse der eigenen Apparatur
 als Synthese hervorgehen. Damit schließt der Stand der Technik unmittelbar an die Forschungslücke an
 (Abschnitt~\ref{sec:gap}).
+
+\section{Architektur-Design und Software-Engineering von Suchstrukturen}\label{sec:sota-design}
+Über die technischen Mechanismen hinaus ist das in dieser Arbeit vorgeschlagene Framework primär eine
+\emph{Architektur-Design}-Erfindung. Dieser Abschnitt ordnet es in den nicht-technischen Entwurfs- und
+Software-Engineering-Raum ein --- die Definitions-Klassen aus Abschnitt~\ref{sec:cpp23} (Design-Pattern,
+Metaprogrammierung) erhalten hier ihre wissenschaftlichen Instanzen.
+
+\subsection{Datenstrukturen als Entwurfsraum}\label{ssec:sota-design-space}
+Die Idee, Datenstrukturen nicht einzeln, sondern als \emph{Entwurfsraum} zu betrachten, prägt Idreos'
+\emph{Periodic Table of Data Structures}~\cite{idreos2018periodic} und den \emph{Data
+Calculator}~\cite{idreos2018datacalculator}: Strukturen entstehen aus der Kombination weniger
+Entwurfs-Primitive, deren Kosten sich synthetisieren lassen. Das deckt sich unmittelbar mit der
+Achsen-Sezierung dieser Arbeit (Abschnitt~\ref{sec:sota-axes}) --- die klassischen Familien sind bloße
+Lese-Gruppierungen orthogonaler Achsen-Belegungen, ein konkretes Verfahren ein Punkt im kartesischen Produkt
+der Achsen.
+
+\subsection{Selbst-designende und gelernte Indizes}\label{ssec:sota-design-selftuning}
+Eine zweite Linie verlagert den Entwurf in die Laufzeit: \emph{Database Cracking}~\cite{idreos2007cracking}
+und seine robuste Variante~\cite{halim2012stochastic} bauen den Index als Nebenprodukt der
+Anfrageverarbeitung adaptiv auf, während \emph{gelernte Indizes}~\cite{kraska2018learned} die Struktur durch
+ein Modell der Schlüsselverteilung ersetzen; jüngere Arbeiten (VEGA, SIGMOD~2025; AirIndex) führen dies
+aktiv-tunend fort. Diese Ansätze zeigen denselben Trend --- weg von der fest verdrahteten Einzelstruktur, hin
+zu konfigurierbaren, sich anpassenden Entwürfen ---, dem die vorliegende Arbeit mit der permutierbaren
+Achsen-Komposition eine systematische, mess-getriebene Form gibt.
+
+\subsection{Design-Pattern-getriebene Architektur als Beitrag}\label{ssec:sota-design-contribution}
+Der eigentliche Beitrag liegt damit weniger in einer einzelnen Struktur als in einem \emph{Werkzeug}: Statt
+das Vergleichsproblem direkt zu lösen, konstruiert diese Arbeit zuerst die „Schaufel" --- den Permutations-
+und Mess-Apparat ---, mit der sich beliebige Achsen-Kombinationen erzeugen und fair vermessen lassen.
+Software-technisch ist dieser Apparat eine Komposition benannter Entwurfsmuster
+(Abschnitt~\ref{ssec:classic-patterns}) und zweier neuer Metaprogrammier-Muster
+(Abschnitt~\ref{ssec:new-patterns}). Wissenschaftlich ordnet er sich in das Software-Engineering der
+\emph{Komposition} ein: die invasive Software-Komposition aus Gray-Box-Komponenten~\cite{assmann2003invasive}
+(TU Dresden), die generative Programmierung~\cite{czarnecki2000generative} und die feature-orientierten
+Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical} --- eine Achse entspricht dabei einem
+Feature, ein Lebewesen einer Feature-Komposition.
+
+\emph{Provenienz des Achsen-Konzepts.} Das Konzept der Achsen-Architektur selbst ist keine Neuentwicklung
+dieser Arbeit, sondern aus einer Vorarbeit des Autors im Rahmen der von ihm gehaltenen Marke Comdare bzw.\ der
+BEP~Venture~UG übernommen, wo es ursprünglich --- im Kontext der UltiHash-Datenbank --- der Optimierung von
+Deduplikations-Verfahren diente. Der Beitrag der vorliegenden Arbeit ist die Übertragung und Ausformung dieses
+Konzepts auf cache-bewusste Suchstrukturen sowie seine design-pattern-getriebene, mess-orientierte
+Realisierung. \emph{Welche} fremden Instanzen das Framework übernimmt und welche es als überholt ersetzt,
+entwickelt Kapitel~\ref{ch:concept} dialektisch (vgl.\ Abschnitt~\ref{ssec:sota-meas-bridge}).
 
 \section{Forschungslücke}\label{sec:gap}
 
