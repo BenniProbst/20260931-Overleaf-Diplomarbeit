@@ -16,14 +16,23 @@ noch die Ausformulierung der Forschungsfragen (AP-E3).**
   Achsen-Sezierung 19+3 Achsen · 3.4 Workloads LP01–LP14 · 3.5 Messen · 3.6 Architektur-Design/SE · 3.7
   Forschungslücke-Capstone). Commits `f301508` (3.3), `45fd0b0` (3.5), `1a3b45b` (3.6), `f078b6e`
   (Querschnitt-Korrekturen + 3.7).
-- **Kap. 1 Einleitung:** AP-E4 (Zielsetzung/Schichten) + AP-E5 (Aufbau) = `b504ad9`; AP-E2 (Glossar Anhang C +
-  Ränge-Fußnote) = `228f822`. **AP-E3 (Forschungsfragen) = OFFEN (nächste Aufgabe).**
+- **Kap. 1 Einleitung = FERTIG:** AP-E4 (Zielsetzung/Schichten) + AP-E5 (Aufbau) = `b504ad9`; AP-E2 (Glossar
+  Anhang C + Ränge-Fußnote) = `228f822`; **AP-E3 (Forschungsfragen) ✅ ERLEDIGT 2026-06-16** (5 Haupt-FF +
+  3 Teilfragen, Einleitung + Fazit synchron — s. §2).
 - **Querschnitt-Verifikation** (16-Agenten-Workflow) durchgeführt + bestätigte Abweichungen korrigiert
   (`f078b6e`), dauerhaft dokumentiert in `sessions/2026-06-16-kap3-instanz-mapping-survey.md` §I.
 - Alle DE-Builds sauber: 76 S., **0 undefined, 0 multiply-defined, 0 Overfull > 50 pt** (`build.ps1 -Lang de`,
   MiKTeX). microtype + `\emergencystretch=3em` in `diplomarbeit.tex`.
 
-## §2 — NÄCHSTE AUFGABE: AP-E3 Forschungsfragen ausformulieren (Struktur REVIDIERT, Texte fertig)
+## §2 — ✅ ERLEDIGT (2026-06-16): AP-E3 Forschungsfragen ausformuliert
+> Umgesetzt: `sec:rqs` in `kapitel/de/01_introduction.tex` = 5 Haupt-FF **lückenlos FF0--FF4** (FF4 =
+> Compile-Time/Laufzeit, vormals Kandidat „FF5" — auf User-Wunsch kontiguierend umnummeriert). Die 3
+> ergänzenden Kandidaten sind als unnummerierte \emph{Teilfragen} eingebettet: FF4-ISA→unter FF1, FF6-Knotengröße
+> →unter FF2, FF7-Seitendarstellung→unter FF3. Ränge-Fußnote übernommen; C01-1/2/3 entfernt. Fazit
+> `kapitel/de/08_conclusion.tex` strukturgleich nachgezogen (FF0 + FF4 ergänzt + Teilfrage-Klauseln). DE-Build
+> sauber (76 S., 0 undefined/multiply, 0 Overfull > 50 pt). **Kapitel 1 ist damit fertig.** Original-Plan unten belassen.
+
+### (Original-Plan) AP-E3 Forschungsfragen ausformulieren (Struktur REVIDIERT, Texte fertig)
 **User-Entscheidung (2026-06-16):** Die gekürzten **5 Haupt-FF verwenden** (FF0 + FF1/2/3 + FF5); die
 zusätzlichen Kandidaten **FF4/FF6/FF7 als Teilpunkte** den bestehenden FF zuordnen (NICHT als eigenständige FF
 — Web-Norm 3–5, Habich warnt vor „zu breit"). Quelle aller Texte = Recherche-Workflow `wd6rmji01` (Termine +

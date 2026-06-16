@@ -39,26 +39,49 @@ publizierte Algorithmen als explizite Konfigurationen rekonstruiert und (iii) so
 einzelne Achsen als auch ganze Algorithmen auf einer einheitlichen, fairen Basis vermessen kann.
 
 \section{Forschungsfragen}\label{sec:rqs}
-% Begriffsdefinition von SOTA und anderen Abkürzungen gehören in ein Glossar, sowie die Erklärung der Ränge in den Text
-% Bezüglich der Forschungsfragen finden sich weitere Fragen in den Dokumenten der vorangegangenen Termine, wir müssen diese übernehmen
-% In allen gesammelten Papern, die wir vollständig bezüglich ihrer Forschungsfragen ausnehmen müssen, finden wir hinweise, welche Aspekte im Fokus der cache-line Optimierung über verschiedene Suchalgorithmus-Bausteine hinweg, wir noch vergessen haben. Ich denke 3 Forschungsfragen sind zu wenig und wir sollten im Web nach Diplomarbeiten aus der Informatik suchen, um den Umfang besser abzuschätzen
+Aus der Aufgabenstellung und den Betreuungs-Terminen ergeben sich eine mit dem Betreuer eingefrorene
+Hauptfrage (FF0) und vier messbare Teilfragen (FF1--FF4); ergänzende Aspekte sind als \emph{Teilfragen}
+zugeordnet.
 \begin{description}
-  \item[FF1 (Komposition)] Welche Algorithmus-Achsen eines cache-line-bewussten und damit cache-bewussten
-        Trie-Index lassen sich kanonisch in einer Permutationsmatrix systematisieren, sodass
-        Stand-der-Technik-Implementierungen als Profil-Konfigurationen rekonstruiert werden
-        können? Lassen sich cache-line bewusste Messungen über multiple Aspekte von Suchalgorithmen mithilfe
-        dieses Messsystems isolieren und leichter betrachten?
-  \item[FF2 (Mess-Methodik)] Wie lässt sich pro Permutation ein fairer, reproduzierbarer
-        YCSB-Workload-Lauf durchführen, der eine profilspezifische Workload-Auswahl (z.\,B.\
-        ein Range-Scan-Profil $\to$ YCSB-E) erlaubt und dabei den Mess-Overhead über einen
-        opt-in-Experiment-Modus minimiert? Welche Workloads gehören gerade für Suchalgorithmen zum Stand der Technik?
-  \item[FF3 (Prüfling-Vergleich)] Wie schneiden die angebotenen Permutationen des PRT-ART als Prüfling und Testintegration             gegen die acht Rang-1-SOTA-Entwürfe (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum,
-        Wormhole, SuRF)\footnote{Die \emph{Ränge} ordnen die Stand-der-Technik-Veröffentlichungen nach Zentralität
-        für diese Arbeit: Rang-1 umfasst die zehn wichtigsten Kern-Arbeiten --- darunter die acht
-        eigenständigen Suchentwürfe sowie ARTSync (P08) und LOUDS (P09), die als Organe eingehen ---, Rang-2
-        die cache-bewussten Layout- und B\textsuperscript{+}-Vorarbeiten und Rang-3 die Prefetching-,
-        Synchronisations- und TU-Dresden-Hardware-Arbeiten.} und die Rang-2/3-SOTA unter den drei Pflicht-Messreihen A (Prüfling
-        vs.\ SOTA), B (systematische Variation der Entwurfsentscheidungen) und C (Merge/Regression alt gegen neu) ab?
+  \item[FF0 (Hauptfrage)] Wie stark verbessern \emph{aktive, messgetriebene} cache-bewusste Entscheidungen
+        --- Seitentyp, Speicher-Layout, Value-Ablage und Prefetching --- die Leistung trie-basierter
+        Suchstrukturen gegenüber \emph{passiven, statisch ausgelegten} Varianten auf unterschiedlichen
+        CPU-Plattformen (Hybrid-CPUs, Sapphire Rapids)?
+  \item[FF1 (Komposition)] Wie lässt sich ein Suchalgorithmus-Entwurf kanonisch in orthogonale Achsen
+        zerlegen und in einer Permutationsmatrix systematisieren, sodass die Stand-der-Technik-Verfahren
+        möglichst aus ihrem Originalcode bias-frei als Profil-Konfigurationen rekonstruierbar und beliebig
+        permutierbar werden? \emph{Teilfrage:} Welche Achsen-Kopplungen (Knotentyp $\times$ SIMD $\times$
+        Pfadkompression) begrenzen die Isolation einzelner Achsen, und wie verhält sich dieselbe
+        achsen-konstante Struktur im Cache-Update- und Cache-Line-Füllverhalten, wenn allein die
+        ISA-/SIMD-Achse (SSE2/AVX2/AVX-512, NEON/SVE2, RVV) variiert wird?
+  \item[FF2 (Mess-Methodik)] Wie muss eine reproduzierbare Mess-Pipeline mit Hardware-Zähler-Erhebung
+        gestaltet sein, damit jede Achsen-Permutation fair (ceteris paribus, gleiche Compiler- und
+        Flag-Basis) in drei Messreihen (A--C) über drei Granularitäten (Micro-, Makro- und
+        Gesamt-Benchmarking) gemessen wird, und unter welchen plattform-kalibrierten Kriterien gilt eine
+        Plattform als erfolgreich verifiziert? \emph{Teilfrage:} Wie lassen sich widersprüchliche
+        Literaturbefunde zur optimalen Knoten-/Cache-Line-Größe (eine Cache-Line bei CSS/CSB\textsuperscript{+}
+        gegenüber bis zu sechzehn bei Hankins/Patel) durch achsen-isolierte, ceteris-paribus permutierte
+        Messung bias-frei nachmessen, statt sie aus inkompatiblen Original-Setups zu übernehmen?
+  \item[FF3 (Prüfling-Vergleich)] Gewinnt der Prüfling PRT-ART gegenüber den acht Rang-1-SOTA-Entwürfen
+        (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum, Wormhole, SuRF)\footnote{Die
+        \emph{Ränge} ordnen die Stand-der-Technik-Veröffentlichungen nach Zentralität für diese Arbeit:
+        Rang-1 umfasst die zehn wichtigsten Kern-Arbeiten --- darunter die acht eigenständigen Suchentwürfe
+        sowie ARTSync (P08) und LOUDS (P09), die als Organe eingehen ---, Rang-2 die cache-bewussten Layout-
+        und B\textsuperscript{+}-Vorarbeiten und Rang-3 die Prefetching-, Synchronisations- und
+        TU-Dresden-Hardware-Arbeiten.} und der Rang-2/3-SOTA \emph{nicht} durch asymptotische Neuheit, sondern
+        durch bessere Mikroarchitektur-Eigenschaften (höhere Cache-Line-Auslastung, weniger LLC- und
+        dTLB-Misses, geringere Branch-Kosten, kleinere heiße Suchpfade) bei Exact-Lookup, Prefix-Lookup und
+        Prefix-Enumeration --- gemessen unter den drei Pflicht-Messreihen A (Prüfling vs.\ Stand der Technik),
+        B (systematische Variation der Entwurfsentscheidungen) und C (Merge/Regression alt gegen neu)?
+        \emph{Teilfrage:} Welche lokale Seitendarstellung (8-/16-Bit-Punktseite gegenüber -Kompaktseite) ist
+        je Verzweigungspunkt am günstigsten, und nach welchen plattform-kalibrierten Umschaltregeln
+        --- einschließlich der Reihenfolge Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
+        je Füllstand und Suchtyp --- soll adaptiv gewechselt werden?
+  \item[FF4 (Compile-Time vs.\ Laufzeit)] Welche Achsen-Eigenschaften müssen zur Übersetzungszeit fixiert
+        werden, um plattform-optimierte, provenienz-nachweisbare Binaries je Permutation zu erzeugen, und
+        welche können bzw.\ müssen zur Laufzeit gewählt werden (bit-codierter Permutations-Identifier,
+        adaptive Layout-Selection), ohne die wissenschaftliche Vergleichbarkeit (gleiche Compiler- und
+        Flag-Basis) zu verletzen?
 \end{description}
 
 \section{Zielsetzung und Beiträge}\label{sec:contributions}
