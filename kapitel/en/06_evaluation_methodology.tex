@@ -108,6 +108,17 @@ Barnard --- an AVX-512 build are prepared; on hybrid CPUs, P- and E-cores are me
 separately (distinct counter domains \texttt{cpu\_core}/\texttt{cpu\_atom}) rather than
 aggregated together.
 
+\smallskip\noindent\emph{Experiment operating systems.} On the production target machines, every measurement
+is collected under two operating-system regimes, to separate \emph{production fidelity} from \emph{measurement
+depth}. An \emph{immutable} operating system (Talos) mirrors the production deployment and enforces boot- or
+compile-time-static cache settings (Section~\ref{ssec:aware-oblivious}); a \emph{root Linux with full
+hardware-counter access} (\texttt{perf}/MSR), by contrast, makes the counter-based measurement categories ---
+cache, dTLB, and branch misses as well as IPC/CPI (Section~\ref{ssec:sota-meas-bridge}) --- and the
+run-time-configurable cache-near axis parameters (prefetch distance, hardware prefetcher) accessible in the
+first place. The time- and observer-based categories (wall-clock, HdrHistogram, per-axis observer) run
+identically under both regimes and secure comparability; the PMC categories are collected only under the
+privileged regime and logged per platform with operating system, kernel, and counter domain.
+
 \section{Fairness and Reproducibility}\label{sec:fairness}
 
 Fair comparability is ensured by fixed rules. Every comparison separates a common minimal
