@@ -2,6 +2,13 @@
 
 \section{Beantwortung der Forschungsfragen}\label{sec:answers}
 
+\paragraph{FF0 (Hauptfrage).} Wie stark aktive, messgetriebene cache-bewusste Entscheidungen ihre
+passiven, statisch ausgelegten Gegenstücke übertreffen, lässt sich abschließend erst nach den
+End-to-End-Läufen je Plattform beziffern (Abschnitt~\ref{sec:outlook}). Vorbereitet ist die Apparatur, die
+genau diese Differenz isoliert: dieselbe achsen-konstante Struktur wird einmal aktiv (messgetriebene
+Layout-, Prefetch- und Value-Ablage-Entscheidung) und einmal passiv (statisch ausgelegt) permutiert und
+unter identischer Compiler- und Flag-Basis auf Hybrid-CPUs und Sapphire-Rapids gegenübergestellt.
+
 \paragraph{FF1 (Komposition).} Die neunzehn Permutations-Achsen (Search-Algorithm,
 Cache-Traversal, Mapping, Path-Compression, Node-Type, Memory-Layout, Allocator, Prefetch,
 Concurrency, Serialization, Telemetry, Value-Handle, ISA, Index-Organization, I/O-Dispatch,
@@ -10,7 +17,9 @@ mehr als $10^{11}$ Permutationen auf. Stand-der-Technik-Entwürfe werden über
 Algorithmus-Profil-XMLs eindeutig rekonstruiert: 30 SOTA-Profile (8 Rang-1 + 22 Rang-2/3)
 zeigen, dass die Achsen-Zerlegung P01--P32 trägt. Die variadische API-Spezialisierung
 (1/2/$N$ Parameter auf \texttt{std::vector}/\texttt{std::map}/Tuple) macht sowohl
-algorithmus- als auch container-orientierte Muster auf einer Engine ausdrückbar.
+algorithmus- als auch container-orientierte Muster auf einer Engine ausdrückbar. Die nicht
+voll-orthogonalen Achsen-Kopplungen (Knotentyp $\times$ SIMD $\times$ Pfadkompression) werden dabei als
+solche markiert und bei der Permutation explizit eingeschränkt.
 
 \paragraph{FF2 (Mess-Methodik).} Die Messung ist in einen Produktiv-Modus
 (\texttt{COMDARE\_EXPERIMENT\_MODE=OFF}, kein Overhead) und einen Experiment-Modus (der
@@ -18,13 +27,24 @@ ResultAggregator ist integraler ExecutionEngine-Member) geteilt. Profil-bewusste
 Workload-Routing wählt den Workload je Permutation aus dem Traversal-Tag und sichert so faire
 Vergleiche zwischen bereichsabfrage- und punktzugriffsorientierten Entwürfen. Jede Messreihe
 wird in drei Granularitäten erhoben --- Micro-, Makro- und Gesamt-Benchmarking ---, sodass
-sowohl einzelne Entwurfsbestandteile als auch ganze Algorithmen vergleichbar werden.
+sowohl einzelne Entwurfsbestandteile als auch ganze Algorithmen vergleichbar werden. Widersprüchliche
+Literaturbefunde zur optimalen Knoten-/Cache-Line-Größe (eine gegenüber bis zu sechzehn Cache-Lines) werden
+so nicht aus inkompatiblen Original-Setups übernommen, sondern achsen-isoliert ceteris paribus nachgemessen.
 
 \paragraph{FF3 (Prüfling-Vergleich).} Der konkrete Vergleich von PRT-ART gegen die 30
 SOTA-Profile steht nach den ersten Mess-Läufen aus (Abschnitt~\ref{sec:outlook}). Die
 Architektur ist vollständig vorbereitet: das PRT-ART-Profil, die drei
 Pflicht-Messreihen-Templates, der \texttt{ExperimentDriver} mit Auto-Pickup der SOTA-Profile
-und der ABI-konforme Adapter mit allen \texttt{std::map}-Operationen und Notify-Hooks.
+und der ABI-konforme Adapter mit allen \texttt{std::map}-Operationen und Notify-Hooks. Auch die günstigste
+lokale Seitendarstellung je Verzweigungspunkt (Punkt- gegenüber Kompaktseite) und ihre plattform-kalibrierten
+Umschaltregeln sind Teil des PRT-ART-Profils.
+
+\paragraph{FF4 (Compile-Time vs.\ Laufzeit).} Die Trennung ist im Build-System verankert:
+plattform-spezifische Achsen (ISA, Hardware-Konstanten) werden zur Übersetzungszeit fixiert und erzeugen
+provenienz-nachweisbare Binaries je Permutation (SHA256-validierte Original-Bodies,
+\texttt{experiment\_compiler()}-Kennung), während Layout- und Seiten-Selektion über einen bit-codierten
+Permutations-Identifier zur Laufzeit wählbar bleiben, ohne die gemeinsame Compiler- und Flag-Basis zu
+verletzen.
 
 \section{Limitierungen}\label{sec:limitations}
 
