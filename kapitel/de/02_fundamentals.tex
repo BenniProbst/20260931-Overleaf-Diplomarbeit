@@ -308,7 +308,17 @@ ineinander.
 \section{C++23-Metaprogrammierung und Design-Pattern}\label{sec:cpp23}
 % Korrekt aber zu grob. In der heutigen Zeit sind klassische Software-Design Pattern bekannt, die wir möglicherweise nur ganz kurz als Grundlage über die verwendeten darlegen sollten, aber durch das Aufkommen von Metaprogrammierung in C++ entstehen auch hier neue und teils noch unbekannte/unbenannte Designpattern, denen wir Namen und Bedeutung geben sollten, dazu gehört auch eine Webrecherche, ob jemand diese schon definiert hat. Denn einen PRT-ART als Prüfling gegen ein bestehendes Konstrukt in Matrix-Schichten zu kompilieren ist ein neuartiges komplexes Konzept und in der Welt der Software-Architektur möglicherweise unbekannt.
 \subsection{Klassische Design-Pattern}\label{ssec:classic-patterns}
-% [AP-G7] folgt: kurz, verwendete GoF-Pattern als Grundlage
+Das System verwendet durchgängig benannte Entwurfsmuster (GoF)~\cite{gamma1994patterns}; eingeführt
+werden hier nur die im Code tatsächlich verwendeten. \emph{Strategy} kapselt jede der neunzehn
+Achsen als austauschbaren Algorithmus; \emph{Abstract Factory} erzeugt die statischen und
+dynamischen Knoten des Permutations-Baums, \emph{Composite} bildet diesen Baum und ein
+\emph{Iterator} durchläuft ihn lazy. \emph{Adapter} bindet Fremd-Code hinter der stabilen
+Engine-Schnittstelle an (Habich-Direktive). \emph{Observer} (Pull-Modell) und \emph{Decorator}
+(nicht-intrusive Mess-Hüllen um die Achsen) erheben die Messwerte, ein \emph{Memento}
+(Copy-on-Write) sichert und verwirft den Zustand zwischen Warmlauf und Messung. Statischer
+Polymorphismus entsteht durch das \emph{Curiously Recurring Template Pattern} (CRTP) samt
+\emph{Template-Method}-Concept-Prüfungen. Nicht verwendet werden hingegen Singleton, Command,
+Flyweight und Bridge.
 
 \subsection{Metaprogrammier-Mittel}\label{ssec:metaprog-facilities}
 Die Engine stützt sich auf Komposition zur Übersetzungszeit, um Laufzeit-Dispatch im
@@ -317,9 +327,24 @@ Hot-Path zu vermeiden. \emph{Concepts} schränken die Bausteine-Schnittstellen e
 \texttt{if~constexpr} und \texttt{std::conditional\_t} wählen pro Achse zwischen einer
 Prüfling-Implementierung und einem Cache-Engine-Standard; und C++23-\emph{Module} bilden eine
 ABI-stabile Grenze zwischen den Permutations-Binaries und dem Builder. Zusammen realisieren
-diese Mittel die \emph{zero-cost abstraction}, auf der die Permutationsmatrix beruht.
+diese Mittel die \emph{zero-cost abstraction}, auf der die Permutationsmatrix beruht. Hinzu kommen
+\emph{Policy-based Design} (die Komposition als Tupel von neunzehn Achsen-Policies),
+\emph{Tag-Dispatch} für die Prüfling-gegen-Standard-Auflösung sowie \emph{Type-List-Computation}
+(Boost.MP11), die den Achsen-Produktraum beschreibt, ohne ihn vollständig zu
+materialisieren~\cite{alexandrescu2001modern}.
 
 \subsection{Neue und unbenannte Metaprogrammier-Pattern}\label{ssec:new-patterns}
-% [AP-G7] folgt: benennen + Web-Recherche, ob bereits in der Literatur definiert
+Über die etablierten Muster hinaus treten zwei Konstruktionen auf, für die eine Web-Recherche keine
+etablierte Benennung fand und die daher als Beitrag dieser Arbeit benannt werden. Erstens die
+\emph{lazy-spärliche kartesische Materialisierung}: der Produktraum aller Achsen-Varianten wird zur
+Übersetzungszeit nur arithmetisch gezählt --- über $10^{14}$ Konfigurationen --- und je Pfad
+mixed-radix \emph{einzeln} on-demand materialisiert, statt den vollen Typ-Baum zu instanziieren
+(der den Compiler sprengte). Zweitens das \emph{typgetriebene Quelltext-Emittieren}: aus einer
+compile-zeitlichen Achsen-Komposition werden die voll-qualifizierten Typnamen extrahiert, zu
+C++-Quelltext gerendert, je Permutation als eigenständiges Modul übersetzt und über die ABI-Grenze
+geladen --- so wird der heruntergeladene Prüfling (PRT-ART) per Metaprogrammierung in
+Permutations-/Matrix-Schichten gegen die Kernbestandteile der Cache-Engine kompiliert. Beide Muster
+verbinden bekannte Idiome (Concepts, CRTP, Type-Lists) zu einer architektur-spezifischen Neuheit;
+ihre vollständige Realisierung entwickeln die Kapitel~\ref{ch:concept} und~\ref{ch:impl}.
 
 % Hier gibt es viel Raum für Ergänzungen - Das Thema Messungen fehlt komplett und muss recherchiert und mit wissenschaftlichen Quellen hinterlegt werden, welche wissenschaftliches Messen definieren und welche Muster und Konzepte wir hier verwendet haben. Das WARUM wir sie verwendet haben kommt erst in Kapitel "Konzept und Architektur". Das Kapitel "Grundlagen" beschäftigt sich mit dem was KONZEPTIONELL existiert als "Bibliothek" für folgende Kapitel, das nächste Kapitel "Stand der Technik" bietet an, was es WISSENSCHAFTLICH nachweisbar schon gibt und was verwendet wird, um die nachfolgende Arbeit zu stützen. Für alle Bestandteile der Grundlagen und des Standes der Technik folgen in der Regel aus den Grundlagen wissenschaftliche Standards, sodass beide Kapitel strukturell ineinandergreifen müssen, was sie derzeit nicht tun. Wenn wir in den Grundlagen die Basis-Konzepte für wissenschaftliches Messen erklären, dann müssen wir im Stand der Technik auch Technologien anführen, welche dies Implementieren. Daher ist der Stand der Technik immer mindestens eine Instanz der konzeptionellen Grundlagen als Definitions-Klasse - fast so wie in der Software-Architektur.
