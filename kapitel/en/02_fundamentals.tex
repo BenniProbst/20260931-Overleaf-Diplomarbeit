@@ -81,7 +81,11 @@ and~\ref{ch:impl}).
 \subsection{Cache-Aware and Cache-Oblivious}\label{ssec:aware-oblivious}
 A data structure is \emph{cache-aware} if its layout is tuned to concrete cache parameters (line
 size, level capacities), and \emph{cache-oblivious} if it achieves good locality across all levels
-without knowing them~\cite{frigo1999cache}. Both philosophies recur throughout the state of the art
+without knowing them~\cite{frigo1999cache}. For tree-shaped structures the cache-oblivious arrangement
+is theoretically grounded: Bender, Demaine, and Farach-Colton minimise the expected number of block
+transfers when laying out a tree of fixed topology to within an additive constant of
+optimal~\cite{bender2002treelayout} and maintain dynamic ordered sets with locality-preserving
+$O(k/B)$ traversal~\cite{bender2002scanning}. Both philosophies recur throughout the state of the art
 (Chapter~\ref{ch:sota}) and motivate the layout, prefetch, and hardware axes of the proposed engine.
 
 The present thesis pursues a third, intermediate path. \emph{First}, the actual cache properties
@@ -151,7 +155,9 @@ this thesis and are mentioned only for completeness.
 
 \subsubsection{Flat Methods and Theoretical Exotics}
 As a limiting case stands the \emph{flat} method: a sorted array with binary or interpolation
-search~\cite{knuth1998taocp3} is, strictly speaking, the single leaf of a tree. Theoretical
+search~\cite{knuth1998taocp3} is, strictly speaking, the single leaf of a tree. On string keys the
+\emph{suffix array} generalises this flat, sorted layout into a space-efficient full-text index whose
+lightweight, memory-budgeted construction is a model example of algorithm engineering~\cite{manzini2002suffixarray}. Theoretical
 ``exotics'' shift the complexity bounds --- the \emph{van Emde Boas tree}~\cite{vanemdeboas1975} and
 the \emph{y-fast trie}~\cite{willard1983yfast} achieve $O(\log\log u)$ over a key universe of size
 $u$, and the \emph{fusion tree}~\cite{fredman1993fusion} undercuts the information-theoretic
