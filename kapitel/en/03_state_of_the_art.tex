@@ -39,8 +39,10 @@ B\textsuperscript{2}-tree (P06)~\cite{schmeisser2022b2tree}, Wormhole (P07)~\cit
 cache-sensitive CSS, CSB\textsuperscript{+}, and Hankins trees
 (P11--P13)~\cite{rao1999css,rao2000csb,hankins2003nodesize}. \emph{Layout theory} (cluster~C) ranges from
 Samuel (P14)~\cite{samuel2005procaware} and Graefe/Larson (P15)~\cite{graefe2001btree} through the
-cache-oblivious designs of Bender et al.\ (P16/P17)~\cite{bender2000cobtree,bender2005coboblivious} to the
-layout-invariant trees of Saikkonen/Soisalon-Soininen
+cache-oblivious designs of Bender et al.\ (P16/P17)~\cite{bender2000cobtree,bender2005coboblivious} ---
+theoretically grounded by their ESA-2002 work on tree layout in the memory hierarchy~\cite{bender2002treelayout},
+on cache-oblivious traversal~\cite{bender2002scanning}, and on the order-maintenance / packed-memory
+primitive~\cite{bender2002orderlist} --- to the layout-invariant trees of Saikkonen/Soisalon-Soininen
 (P18/P19)~\cite{saikkonen2008multilevel,saikkonen2016layout}. \emph{Prefetching} (clusters~D/E) comprises
 \emph{B-Trees Are Back} (Mueller 2025, P20)~\cite{mueller2025btreesback}, the prefetching
 B\textsuperscript{+}-trees of Chen et al.\ (P21/P22)~\cite{chen2001prefetch,chen2002fractal},
@@ -64,7 +66,8 @@ Section~\ref{sec:cache-basics}.
 The multi-level hierarchy (Section~\ref{ssec:cache-levels}) is the subject of fundamental measurements:
 Graefe and Larson (P15, 2001) study B-tree indexes explicitly against the CPU cache levels, Bender,
 Demaine, and Farach-Colton (P16, 2002; P17, 2005) model a multi-level memory model with a block-transfer
-parameter, and Zhang (P27, ASPLOS 2025) bundles prefetches hierarchically across L1/L2/L3.
+parameter and solve the tree-layout problem within it near-optimally even for an unknown block
+size~\cite{bender2002treelayout}, and Zhang (P27, ASPLOS 2025) bundles prefetches hierarchically across L1/L2/L3.
 
 \subsection{Cache-Line-Aware Layout}\label{ssec:sota-cacheline}
 Cache-line-oriented layout (Section~\ref{ssec:cache-line-sizes}) is the dominant guiding idea of layout
@@ -101,7 +104,9 @@ properties (Section~\ref{ssec:aware-oblivious}).
 
 \subsection{Cache-Aware and Cache-Oblivious Designs}\label{ssec:sota-aware}
 Both philosophies from Section~\ref{ssec:aware-oblivious} are instantiated in the state of the art:
-Bender et al.\ (P17, 2005) found the cache-oblivious B-tree on the van Emde Boas layout, P16 (2002)
+Bender et al.\ (P17, 2005) found the cache-oblivious B-tree on the van Emde Boas layout --- building on
+the order-maintenance / packed-memory primitive~\cite{bender2002orderlist} and the cache-oblivious
+traversal of ordered sets~\cite{bender2002scanning} ---, P16 (2002)
 extends the multi-level layout model, and Saikkonen/Soisalon-Soininen (P18, 2008; P19, 2016) maintain a
 cache-sensitive layout invariant even under updates; Graefe/Larson (P15, 2001) compare both approaches.
 All practical trie and B\textsuperscript{+} indexes (P01--P14, P20), by contrast, are designed
