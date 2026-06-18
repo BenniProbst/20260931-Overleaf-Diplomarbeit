@@ -1,0 +1,32 @@
+% AUTO-GENERATED durch csv_to_latex::write_limitations_longtable (L-e ehrliche Limitierung; lang=en)
+% EINE longtable, je Zeile EIN nicht-gefixter Vorbehalt. Zeile 1 = Cache-Misses/PMC (Kernmetrik).
+\begin{scriptsize}
+\begin{longtable}{@{}r >{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{8.0cm}@{}}
+\caption{Honest limitations: unresolved caveats (no finding silently lapses)}\label{tab:le:limitierung}\\
+\toprule
+\# & Caveat & Status / consequence \\
+\midrule
+\endfirsthead
+\multicolumn{3}{c}{\tablename\ \thetable{} -- continued}\\
+\toprule
+\# & Caveat & Status / consequence \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+1 & \textbf{Cache misses (core metric):} L1/L2/L3 + dTLB + coherence + energy = 0 / not collected & NullPmcSource, available=false; Intel PCM Windows driver + Linux PAPI pending (\#26/P4); cache behaviour only indirect via wall-clock proxy (seg\_memory\_layout\_ns/ns\_per\_op). \\
+2 & 15 pinned axes = 0 exchangeability evidence & Only 4 axes vary (search\_algo, node\_type, memory\_layout, prefetch). Pinned (1 value each): cache\_traversal, mapping, path\_compression, allocator, concurrency, serialization, telemetry, value\_handle, isa, index\_organization, io\_dispatch, migration\_policy, filter, queuing\_q1, queuing\_q2. \\
+3 & Observer probe counters ($\ast$\_find/$\ast$\_probe/$\ast$\_get) by design $\approx 1$ & Expected behaviour, no phantom: one probe per lookup. Says nothing about internal iterations. \\
+4 & Honest-0 of inactive sub-features of pinned strategies & concurrency/migration/io/value\_handle report 0 (feature inactive), not a measurement error. \\
+5 & Wall-clock not bit-reproducible & Seed drives keys (deterministic), NOT CPU timing; wall-clock varies run-to-run. \\
+6 & RC dimension only nominal & K1: $\times 18 \to \times 3$ degenerated; RC axis does not provide full value breadth. \\
+7 & 2/21 scan profiles = no-op (excluded) & ycsb\_e and lp\_range\_scan perform no real scan; excluded for scan diffs (19 valid workloads). \\
+8 & Insert profiles measure upserts; stat\_$\ast$ columns include load phase & The insert path is effectively an upsert; the stat\_$\ast$ counters also accumulate the load phase. \\
+9 & prefetch measures key values as pseudo-addresses (K9) & The prefetch axis interprets key values as addresses; no real memory prefetch. \\
+10 & node\_type + memory\_layout: Q2 step-4 shadowing & Apparatus artefact possible (search\_organ\_ shadowing); search\_algo + prefetch are the least confounded. \\
+11 & memory\_layout effect partly sub-noise & Part of the layout differences lies below the measurement noise $\to$ PMC externally gated (\#26). \\
+\end{longtable}
+\end{scriptsize}
