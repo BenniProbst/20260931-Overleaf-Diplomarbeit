@@ -22,7 +22,7 @@ Module über die wichtigsten Paper des Standes der Technik hinweg.
 Diese Arbeit schließt diese Lücke mit einem Rahmenwerk, dessen Bausteine als austauschbare
 Entwurfsdimensionen eines großen Entwurfsraums (\emph{design space}) aufgefasst
 werden~\cite{idreos2018periodic, idreos2018datacalculator}. Strukturell verschiedene
-Suchverfahren --- von baumartigen Indizes bis zu nicht-baumartigen Hash-Tabellen, sowie 
+Suchverfahren --- von baumartigen Indizes bis zu nicht-baumartigen Hash-Tabellen, sowie
 Spezialeigenschaften wie cache-lines --- werden so
 als Punkte desselben Entwurfsraums vergleichbar; nicht-baumartige Verfahren belegen dabei ein
 eingeschränktes Subset der Dimensionen über demselben Suchalgorithmus-Interface.
@@ -43,44 +43,44 @@ Aus der Aufgabenstellung und dem Ziel der Cache-line Optimierung ergeben sich au
 zugeordnet.
 \begin{description}
   \item[FF0 (Hauptfrage)] Wie stark verbessern \emph{aktive, messgetriebene} cache-bewusste Entscheidungen
-        --- Seitentyp, Speicher-Layout, Value-Ablage und Prefetching --- die Leistung trie-basierter
-        Suchstrukturen gegenüber \emph{passiven, statisch ausgelegten} Varianten auf unterschiedlichen
-        CPU-Plattformen (Hybrid-CPUs, Sapphire Rapids)?
+  --- Seitentyp, Speicher-Layout, Value-Ablage und Prefetching --- die Leistung trie-basierter
+  Suchstrukturen gegenüber \emph{passiven, statisch ausgelegten} Varianten auf unterschiedlichen
+  CPU-Plattformen (Hybrid-CPUs, Sapphire Rapids)?
   \item[FF1 (Komposition)] Wie lässt sich ein Suchalgorithmus-Entwurf kanonisch in orthogonale Achsen
-        zerlegen und in einer Permutationsmatrix systematisieren, sodass die Stand-der-Technik-Verfahren
-        möglichst aus ihrem Originalcode bias-frei als Profil-Konfigurationen rekonstruierbar und beliebig
-        permutierbar werden? \emph{Teilfrage:} Welche Achsen-Kopplungen (Knotentyp $\times$ SIMD $\times$
-        Pfadkompression) begrenzen die Isolation einzelner Achsen, und wie verhält sich dieselbe
-        achsen-konstante Struktur im Cache-Update- und Cache-Line-Füllverhalten, wenn allein die
-        ISA-/SIMD-Achse (SSE2/AVX2/AVX-512, NEON/SVE2, RVV) variiert wird?
+  zerlegen und in einer Permutationsmatrix systematisieren, sodass die Stand-der-Technik-Verfahren
+  möglichst aus ihrem Originalcode bias-frei als Profil-Konfigurationen rekonstruierbar und beliebig
+  permutierbar werden? \emph{Teilfrage:} Welche Achsen-Kopplungen (Knotentyp $\times$ SIMD $\times$
+  Pfadkompression) begrenzen die Isolation einzelner Achsen, und wie verhält sich dieselbe
+  achsen-konstante Struktur im Cache-Update- und Cache-Line-Füllverhalten, wenn allein die
+  ISA-/SIMD-Achse (SSE2/AVX2/AVX-512, NEON/SVE2, RVV) variiert wird?
   \item[FF2 (Mess-Methodik)] Wie muss eine reproduzierbare Mess-Pipeline mit Hardware-Zähler-Erhebung
-        gestaltet sein, damit jede Achsen-Permutation fair (ceteris paribus, gleiche Compiler- und
-        Flag-Basis) in drei Messreihen (A--C) über drei Granularitäten (Micro-, Makro- und
-        Gesamt-Benchmarking) gemessen wird, und unter welchen plattform-kalibrierten Kriterien gilt eine
-        Plattform als erfolgreich verifiziert? \emph{Teilfrage:} Wie lassen sich widersprüchliche
-        Literaturbefunde zur optimalen Knoten-/Cache-Line-Größe (eine Cache-Line bei CSS/CSB\textsuperscript{+}
-        gegenüber bis zu sechzehn bei Hankins/Patel) durch achsen-isolierte, ceteris-paribus permutierte
-        Messung bias-frei nachmessen, statt sie aus inkompatiblen Original-Setups zu übernehmen?
+  gestaltet sein, damit jede Achsen-Permutation fair (ceteris paribus, gleiche Compiler- und
+  Flag-Basis) in drei Messreihen (A--C) über drei Granularitäten (Micro-, Makro- und
+  Gesamt-Benchmarking) gemessen wird, und unter welchen plattform-kalibrierten Kriterien gilt eine
+  Plattform als erfolgreich verifiziert? \emph{Teilfrage:} Wie lassen sich widersprüchliche
+  Literaturbefunde zur optimalen Knoten-/Cache-Line-Größe (eine Cache-Line bei CSS/CSB\textsuperscript{+}
+  gegenüber bis zu sechzehn bei Hankins/Patel) durch achsen-isolierte, ceteris-paribus permutierte
+  Messung bias-frei nachmessen, statt sie aus inkompatiblen Original-Setups zu übernehmen?
   \item[FF3 (Prüfling-Vergleich)] Gewinnt der Prüfling PRT-ART gegenüber den acht Rang-1-SOTA-Entwürfen
-        (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum, Wormhole, SuRF)\footnote{Die
-        \emph{Ränge} ordnen die Stand-der-Technik-Veröffentlichungen nach Zentralität für diese Arbeit:
-        Rang-1 umfasst die zehn wichtigsten Kern-Arbeiten --- darunter die acht eigenständigen Suchentwürfe
-        sowie ARTSync (P08) und LOUDS (P09), die als Organe eingehen ---, Rang-2 die cache-bewussten Layout-
-        und B\textsuperscript{+}-Vorarbeiten und Rang-3 die Prefetching-, Synchronisations- und
-        TU-Dresden-Hardware-Arbeiten.} und der Rang-2/3-SOTA \emph{nicht} durch asymptotische Neuheit, sondern
-        durch bessere Mikroarchitektur-Eigenschaften (höhere Cache-Line-Auslastung, weniger LLC- und
-        dTLB-Misses, geringere Branch-Kosten, kleinere heiße Suchpfade) bei Exact-Lookup, Prefix-Lookup und
-        Prefix-Enumeration --- gemessen unter den drei Pflicht-Messreihen A (Prüfling vs.\ Stand der Technik),
-        B (systematische Variation der Entwurfsentscheidungen) und C (Merge/Regression alt gegen neu)?
-        \emph{Teilfrage:} Welche lokale Seitendarstellung (8-/16-Bit-Punktseite gegenüber -Kompaktseite) ist
-        je Verzweigungspunkt am günstigsten, und nach welchen plattform-kalibrierten Umschaltregeln
-        --- einschließlich der Reihenfolge Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
-        je Füllstand und Suchtyp --- soll adaptiv gewechselt werden?
+  (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum, Wormhole, SuRF)\footnote{Die
+  \emph{Ränge} ordnen die Stand-der-Technik-Veröffentlichungen nach Zentralität für diese Arbeit:
+  Rang-1 umfasst die zehn wichtigsten Kern-Arbeiten --- darunter die acht eigenständigen Suchentwürfe
+  sowie ARTSync (P08) und LOUDS (P09), die als Organe eingehen ---, Rang-2 die cache-bewussten Layout-
+  und B\textsuperscript{+}-Vorarbeiten und Rang-3 die Prefetching-, Synchronisations- und
+  TU-Dresden-Hardware-Arbeiten.} und der Rang-2/3-SOTA \emph{nicht} durch asymptotische Neuheit, sondern
+  durch bessere Mikroarchitektur-Eigenschaften (höhere Cache-Line-Auslastung, weniger LLC- und
+  dTLB-Misses, geringere Branch-Kosten, kleinere heiße Suchpfade) bei Exact-Lookup, Prefix-Lookup und
+  Prefix-Enumeration --- gemessen unter den drei Pflicht-Messreihen A (Prüfling vs.\ Stand der Technik),
+  B (systematische Variation der Entwurfsentscheidungen) und C (Merge/Regression alt gegen neu)?
+  \emph{Teilfrage:} Welche lokale Seitendarstellung (8-/16-Bit-Punktseite gegenüber -Kompaktseite) ist
+  je Verzweigungspunkt am günstigsten, und nach welchen plattform-kalibrierten Umschaltregeln
+  --- einschließlich der Reihenfolge Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
+  je Füllstand und Suchtyp --- soll adaptiv gewechselt werden?
   \item[FF4 (Compile-Time vs.\ Laufzeit)] Welche Achsen-Eigenschaften müssen zur Übersetzungszeit fixiert
-        werden, um plattform-optimierte, provenienz-nachweisbare Binaries je Permutation zu erzeugen, und
-        welche können bzw.\ müssen zur Laufzeit gewählt werden (bit-codierter Permutations-Identifier,
-        adaptive Layout-Selection), ohne die wissenschaftliche Vergleichbarkeit (gleiche Compiler- und
-        Flag-Basis) zu verletzen?
+  werden, um plattform-optimierte, provenienz-nachweisbare Binaries je Permutation zu erzeugen, und
+  welche können bzw.\ müssen zur Laufzeit gewählt werden (bit-codierter Permutations-Identifier,
+  adaptive Layout-Selection), ohne die wissenschaftliche Vergleichbarkeit (gleiche Compiler- und
+  Flag-Basis) zu verletzen?
 \end{description}
 
 \section{Zielsetzung und Beiträge}\label{sec:contributions}
@@ -101,31 +101,31 @@ von Deduplikations-Verfahren in der UltiHash-Datenbank); der Beitrag dieser Arbe
 cache-bewusste Suchstrukturen und seine mess-orientierte Realisierung. Die zentralen Beiträge sind:
 \begin{itemize}
   \item Eine dreischichtige Architektur (CacheEngine $\to$ ExecutionEngine $\to$
-        SearchEngine) mit ABI-stabilen C++23-Modul-Schnittstellen und variadisch
-        templatierten Hybrid-API-Spezialisierungen (1~Parameter $\Rightarrow$
-        \texttt{std::vector}-API; 2~Parameter $\Rightarrow$ \texttt{std::map}-API; $N>2
-        \Rightarrow$ \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
+  SearchEngine) mit ABI-stabilen C++23-Modul-Schnittstellen und variadisch
+  templatierten Hybrid-API-Spezialisierungen (1~Parameter $\Rightarrow$
+  \texttt{std::vector}-API; 2~Parameter $\Rightarrow$ \texttt{std::map}-API; $N>2
+  \Rightarrow$ \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
   \item Eine neunzehn-Achsen-Permutationsmatrix mit \texttt{std::variant}-Bausteinen und
-        Compile-Time-Fallback zwischen Prüfling-Stack und Stand-der-Technik-Stack.
+  Compile-Time-Fallback zwischen Prüfling-Stack und Stand-der-Technik-Stack.
   \item Dreißig SOTA-Algorithmus-Profile als persistierte XML-Konfigurationen (8~Rang-1 +
-        22~Rang-2/3), die der \texttt{ExperimentDriver} automatisch in vorkompilierte
-        C++23-Module überführt.
+  22~Rang-2/3), die der \texttt{ExperimentDriver} automatisch in vorkompilierte
+  C++23-Module überführt.
   \item PRT-ART als Prüfling mit acht eigenen Bausteinschichten (4+2-Pool-Allokator,
-        optimistisches Lock-Coupling mit reservierten Blöcken, MultiLevel-Layout,
-        pfadorientiertes Prefetch, DensityTracker, Hypothesen-Metriken H1/H2/H3,
-        Inline/External/ChainRef-ValueHandles, Signaling-Bit-Serialisierung).
+  optimistisches Lock-Coupling mit reservierten Blöcken, MultiLevel-Layout,
+  pfadorientiertes Prefetch, DensityTracker, Hypothesen-Metriken H1/H2/H3,
+  Inline/External/ChainRef-ValueHandles, Signaling-Bit-Serialisierung).
   \item Ein Mess-Treiber mit Defined-/Full-Modus-Unterscheidung, profilbewusstem
-        Workload-Routing und drei Granularitäten --- Micro-, Makro- und Gesamt-Benchmarking (einzelne
-        Bestandteile, Interface-Operationen, ganze Algorithmen).
+  Workload-Routing und drei Granularitäten --- Micro-, Makro- und Gesamt-Benchmarking (einzelne
+  Bestandteile, Interface-Operationen, ganze Algorithmen).
   \item Die Auslieferung des besten Gesamtalgorithmus --- ausgewählt aus den feingliedrigen
-        Messergebnissen --- als eigenständige, ABI-stabile Binary hinter dem einheitlichen
-        Suchalgorithmus-Interface.
+  Messergebnissen --- als eigenständige, ABI-stabile Binary hinter dem einheitlichen
+  Suchalgorithmus-Interface.
   \item Eine generische Plattform-Probe, die Cache-Eigenschaften (Line-Größe, Hierarchie-Tiefe, Topologie) je
-        Zielplattform ermittelt und als feste Größen in eine systemoptimierte Binary einfließen lässt; die
-        beiden Produktionsmaschinen werden dafür unter zwei Betriebssystemen (immutables Talos und root-Linux
-        mit vollem Hardware-Zähler-Zugriff) vermessen.
+  Zielplattform ermittelt und als feste Größen in eine systemoptimierte Binary einfließen lässt; die
+  beiden Produktionsmaschinen werden dafür unter zwei Betriebssystemen (immutables Talos und root-Linux
+  mit vollem Hardware-Zähler-Zugriff) vermessen.
   \item Eine bias-freie Vergleichs-Matrix, die \emph{alle} Lastprofile gegen \emph{alle} rekonstruierten
-        Lebewesen fährt und so dem methodischen Heimspiel-Bias der Einzelveröffentlichungen begegnet.
+  Lebewesen fährt und so dem methodischen Heimspiel-Bias der Einzelveröffentlichungen begegnet.
 \end{itemize}
 
 \section{Aufbau der Arbeit}\label{sec:structure}
