@@ -1,47 +1,49 @@
 \chapter{Comparison Interfaces: \texttt{std::map} and \texttt{std::vector}}\label{app:interfaces}
 
 % [AP-G5-Anhang / AP-EN] Mirror of anhang/de/F_comparison_interfaces.tex. Full standard interface tables (C++23).
-This appendix presents --- complementing Section~\ref{sec:compare-interfaces} --- the complete listing of all
-standard interface functions of the two comparison shells \texttt{std::map} (ordered associative) and
-\texttt{std::vector} (sequence) as of C++23, with their officially expected semantics and complexity
-guarantee per the ISO C++ standard~\cite{iso_cpp}. It also serves as a central reference for the further
-development of the cache engine: because the search-algorithm shell replaces its internals with dynamically
-interchangeable axis algorithms (Section~\ref{ssec:dynamics-levels}), it becomes explanation-worthy, per
-standard function, what behaviour the external contract guarantees.
+This appendix presents --- complementing Section~\ref{sec:compare-interfaces} --- the complete
+listing of all standard interface functions of the two comparison shells \texttt{std::map} (ordered
+associative) and \texttt{std::vector} (sequence) as of C++23, with their officially expected
+semantics and complexity guarantee per the ISO C++ standard~\cite{iso_cpp}. It also serves as a
+central reference for the further development of the cache engine: because the search-algorithm
+shell replaces its internals with dynamically interchangeable axis algorithms
+(Section~\ref{ssec:dynamics-levels}), it becomes explanation-worthy, per standard function, what
+behaviour the external contract guarantees.
 
-\emph{Variadic mapping.} One template parameter provides the \texttt{std::vector} API, two parameters the
-\texttt{std::map} API, and $N>2$ a \texttt{std::map<K,\,std::tuple<\ldots>>}
+\emph{Variadic mapping.} One template parameter provides the \texttt{std::vector} API, two
+parameters the \texttt{std::map} API, and $N>2$ a \texttt{std::map<K,\,std::tuple<\ldots>>}
 (Section~\ref{sec:stdmap-interface}); the shared functions (iteration,
-\texttt{size}/\texttt{empty}/\texttt{clear}, \texttt{swap}, \texttt{get\_allocator}) carry the same semantics
-in both shells.
+\texttt{size}/\texttt{empty}/\texttt{clear}, \texttt{swap}, \texttt{get\_allocator}) carry the same
+semantics in both shells.
 
-\emph{Composite functions.} Some functions arise ``under the hood'' as a composition of more primitive
-operations --- e.g.\ \texttt{operator[]} as \texttt{lower\_bound} followed by default insertion on a missing
-key, or \texttt{at} as \texttt{find} with a thrown \texttt{std::out\_of\_range} exception on absence ---; such
-cases are marked in the ``Note'' column. The ``Since'' column names the introducing standard version. The
-exact cache-engine-internal function-handle hops are documented in a dedicated cache-engine developer
-document.
+\emph{Composite functions.} Some functions arise ``under the hood'' as a composition of more
+primitive operations --- e.g.\ \texttt{operator[]} as \texttt{lower\_bound} followed by default
+insertion on a missing key, or \texttt{at} as \texttt{find} with a thrown
+\texttt{std::out\_of\_range} exception on absence ---; such cases are marked in the ``Note'' column.
+The ``Since'' column names the introducing standard version. The exact cache-engine-internal
+function-handle hops are documented in a dedicated cache-engine developer document.
 
-\emph{Conformance subset.} The conformance gate (Section~\ref{ssec:measurement-patterns}) checks a core
-subset of the \texttt{std::map} operations before each measurement, so that only comparable things are
-compared; it is marked as such in the \texttt{std::map} table.
+\emph{Conformance subset.} The conformance gate (Section~\ref{ssec:measurement-patterns}) checks a
+core subset of the \texttt{std::map} operations before each measurement, so that only comparable
+things are compared; it is marked as such in the \texttt{std::map} table.
 
 \section{\texttt{std::map} (ordered associative)}\label{asec:if-map}
-Table~\ref{tab:if-map} lists the complete interface of \texttt{std::map<Key,\,T,\,Compare,\,Allocator>} as of
-C++23. A $\dagger$ marks the core operations that the conformance gate (Section~\ref{ssec:measurement-patterns})
-checks before each measurement, so that only comparable things are compared. Complexities refer to
-$n=\texttt{size()}$; for range operations $N$ is the number of input elements.
+Table~\ref{tab:if-map} lists the complete interface of
+\texttt{std::map<Key,\,T,\,Compare,\,Allocator>} as of C++23. A $\dagger$ marks the core operations
+that the conformance gate (Section~\ref{ssec:measurement-patterns}) checks before each measurement,
+so that only comparable things are compared. Complexities refer to $n=\texttt{size()}$; for range
+operations $N$ is the number of input elements.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
   \caption{Complete \texttt{std::map} interface (C++23)}\label{tab:if-map}\\
   \toprule
   \textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
   \midrule
-  \endfirsthead
+\endfirsthead
   \toprule
   \textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
   \midrule
-  \endhead
+\endhead
   \multicolumn{4}{@{}l}{\textbf{Construction, assignment, allocator}}\\
   \addlinespace[2pt]
   \texttt{(constructor)} & empty; from \texttt{Compare}/\texttt{Allocator}; range; copy/move (incl.\ allocator-extended); \texttt{initializer\_list}; C++23 \texttt{from\_range} & $O(1)$ to $O(N\log N)$ & C++98 \\
@@ -104,26 +106,26 @@ $n=\texttt{size()}$; for range operations $N$ is the number of input elements.
 \end{longtable}
 
 \noindent The pre-C++20 standalone relational operators \texttt{<\,<=\,>\,>=} are synthesized from
-\texttt{operator<=>} since C++20, and \texttt{!=} is rewritten from \texttt{operator==}. The heterogeneous
-(transparent-key) overloads of \texttt{operator[]}, \texttt{at}, \texttt{try\_emplace}, and
-\texttt{insert\_or\_assign} belong to C++26 and are excluded here; the C++23 additions are exactly the
-\texttt{from\_range} constructor, \texttt{insert\_range}, and the transparent-key overloads of
-\texttt{erase}/\texttt{extract}.
+\texttt{operator<=>} since C++20, and \texttt{!=} is rewritten from \texttt{operator==}. The
+heterogeneous (transparent-key) overloads of \texttt{operator[]}, \texttt{at},
+\texttt{try\_emplace}, and \texttt{insert\_or\_assign} belong to C++26 and are excluded here; the
+C++23 additions are exactly the \texttt{from\_range} constructor, \texttt{insert\_range}, and the
+transparent-key overloads of \texttt{erase}/\texttt{extract}.
 
 \section{\texttt{std::vector} (sequence)}\label{asec:if-vector}
-Table~\ref{tab:if-vector} lists the complete interface of \texttt{std::vector<T,\,Allocator>} as of C++23
-($n=\texttt{size()}$). All members are \texttt{constexpr} since C++20.
+Table~\ref{tab:if-vector} lists the complete interface of \texttt{std::vector<T,\,Allocator>} as of
+C++23 ($n=\texttt{size()}$). All members are \texttt{constexpr} since C++20.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
   \caption{Complete \texttt{std::vector} interface (C++23)}\label{tab:if-vector}\\
   \toprule
   \textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
   \midrule
-  \endfirsthead
+\endfirsthead
   \toprule
   \textbf{Function} & \textbf{Official semantics} & \textbf{Complexity} & \textbf{Since} \\
   \midrule
-  \endhead
+\endhead
   \multicolumn{4}{@{}l}{\textbf{Construction, assignment, allocator}}\\
   \addlinespace[2pt]
   \texttt{(constructor)} & empty/\texttt{Allocator}; $n\times$ default/value; range; copy/move (incl.\ allocator-extended); \texttt{initializer\_list}; C++23 \texttt{from\_range} & $O(1)$ or $O(n)$ & C++98 \\
@@ -180,27 +182,28 @@ Table~\ref{tab:if-vector} lists the complete interface of \texttt{std::vector<T,
 \texttt{data()} and no contiguity guarantee, returns a proxy type \texttt{reference} instead of
 \texttt{bool\&} via \texttt{operator[]}/\allowbreak\texttt{at}/\allowbreak\texttt{front}/\allowbreak\texttt{back}, and additionally offers
 \texttt{flip()} (at the vector and the \texttt{reference} level), a static
-\texttt{swap(reference,\allowbreak\ reference)}, and a \texttt{std::hash} specialization. The comparison operators behave as for \texttt{std::map}.
+\texttt{swap(reference,\allowbreak\ reference)}, and a \texttt{std::hash} specialization. The
+comparison operators behave as for \texttt{std::map}.
 
 \section{Composite Functions and the Conformance Subset}\label{asec:if-decomp}
 Several interface functions are ``under the hood'' compositions of more primitive operations
-(Table~\ref{tab:if-decomp}). For this thesis that is the central observation: all map accessors and modifiers
-rest on a single ordered-search primitive (\texttt{lower\_bound}/\texttt{find}); an axis implementation
-therefore only needs to provide a correct ordered search plus node linking, and the rest follows as a fixed
-composition --- exactly the substitutability whose comparison is the central measurement act
-(Section~\ref{sec:stdmap-interface}). The conformance gate checks the core subset marked with $\dagger$ in
-Table~\ref{tab:if-map}.
+(Table~\ref{tab:if-decomp}). For this thesis that is the central observation: all map accessors and
+modifiers rest on a single ordered-search primitive (\texttt{lower\_bound}/\texttt{find}); an axis
+implementation therefore only needs to provide a correct ordered search plus node linking, and the
+rest follows as a fixed composition --- exactly the substitutability whose comparison is the central
+measurement act (Section~\ref{sec:stdmap-interface}). The conformance gate checks the core subset
+marked with $\dagger$ in Table~\ref{tab:if-map}.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{3.1cm}@{}}
   \caption{Composite functions (``under the hood'')}\label{tab:if-decomp}\\
   \toprule
   \textbf{Function} & \textbf{Composition} & \textbf{Note} \\
   \midrule
-  \endfirsthead
+\endfirsthead
   \toprule
   \textbf{Function} & \textbf{Composition} & \textbf{Note} \\
   \midrule
-  \endhead
+\endhead
   \texttt{map::}\allowbreak\texttt{operator[]} & \texttt{lower\_bound} + default insertion on absence $\to$ reference & mutates on absence; never throws \\
   \texttt{map::at} & \texttt{find} + throw \texttt{std::out\_of\_range} on absence & the only throwing access; never mutates \\
   \texttt{map::insert} / \texttt{emplace} & ordered search + link a node only if the key is absent & no overwrite; \texttt{emplace} may still consume arguments on a hit \\
@@ -217,6 +220,6 @@ Table~\ref{tab:if-map}.
 \noindent Functions that both shells \emph{share} by name --- \texttt{size}, \texttt{empty}, \texttt{clear},
 the iterator families, \texttt{swap}, \texttt{get\_allocator}, and \texttt{insert}/\texttt{emplace}/%
 \texttt{erase} --- carry key semantics in the map and position/index semantics in the vector;
-\texttt{operator[]}, for instance, inserts in the map but is an unchecked index access in the vector. The exact
-cache-engine-internal function-handle hops behind these contracts are documented in a dedicated cache-engine
-developer document.
+\texttt{operator[]}, for instance, inserts in the map but is an unchecked index access in the
+vector. The exact cache-engine-internal function-handle hops behind these contracts are documented
+in a dedicated cache-engine developer document.

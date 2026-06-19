@@ -4,146 +4,150 @@
 
 Suchalgorithmen und Indexstrukturen sind das Rückgrat moderner Hauptspeicher-Datenbanken;
 trie-basierte Indizes und cache-line optimierte Verarbeitung stehen im Zentrum dieser Arbeit. Seit
-dem Adaptive Radix Tree (ART) von Leis et al.~\cite{leis2013art} im Jahr 2013 hat sich die
-Forschung in mehrere Richtungen ausdifferenziert: Trie-Höhen-Optimierung
-(HOT~\cite{binna2018hot}), hybride B\textsuperscript{+}-Strukturen
-(Masstree~\cite{mao2012masstree}, B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}),
-succinct-Repräsentationen (CoCo-Trie~\cite{boffa2024coco}, SuRF~\cite{zhang2018surf}) und
-selbstoptimierende Ansätze (START~\cite{fent2020start}).
+dem Adaptive Radix Tree (ART) von Leis et al.~\cite{leis2013art} im Jahr 2013 hat sich die Forschung
+in mehrere Richtungen ausdifferenziert: Trie-Höhen-Optimierung (HOT~\cite{binna2018hot}), hybride
+B\textsuperscript{+}-Strukturen (Masstree~\cite{mao2012masstree},
+B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}), succinct-Repräsentationen
+(CoCo-Trie~\cite{boffa2024coco}, SuRF~\cite{zhang2018surf}) und selbstoptimierende Ansätze
+(START~\cite{fent2020start}).
 
 Parallel dazu hat sich ein eigener Forschungskorpus zu Cache-Bewusstheit, Prefetching und
-Allokationsstrategien entwickelt. Heuristiken wie Cache-Sensitive Search Trees,
-cache-oblivious Layouts und hierarchisches Prefetching adressieren jeweils eine separat betrachteter Aspekt
-der Suchalgorithmus-Architektur. Aufgrund der fundamentalen Vorkommnisse auf cache-line optimierem
-Verhalten basierender Code, ist eine Segmentierung der Suchalgorithmus-Hüllen-Bestandteile in Achsen sinnvoll.
-Dies entspricht der rückwärts Abstraktion von bekannten Suchalgorithmus-Bestandteilen in wiederverwendbare
-Module über die wichtigsten Paper des Standes der Technik hinweg.
+Allokationsstrategien entwickelt. Heuristiken wie Cache-Sensitive Search Trees, cache-oblivious
+Layouts und hierarchisches Prefetching adressieren jeweils eine separat betrachteter Aspekt der
+Suchalgorithmus-Architektur. Aufgrund der fundamentalen Vorkommnisse auf cache-line optimierem
+Verhalten basierender Code, ist eine Segmentierung der Suchalgorithmus-Hüllen-Bestandteile in Achsen
+sinnvoll. Dies entspricht der rückwärts Abstraktion von bekannten Suchalgorithmus-Bestandteilen in
+wiederverwendbare Module über die wichtigsten Paper des Standes der Technik hinweg.
 
 Diese Arbeit schließt diese Lücke mit einem Rahmenwerk, dessen Bausteine als austauschbare
 Entwurfsdimensionen eines großen Entwurfsraums (\emph{design space}) aufgefasst
-werden~\cite{idreos2018periodic, idreos2018datacalculator}. Strukturell verschiedene
-Suchverfahren --- von baumartigen Indizes bis zu nicht-baumartigen Hash-Tabellen, sowie
-Spezialeigenschaften wie cache-lines --- werden so
-als Punkte desselben Entwurfsraums vergleichbar; nicht-baumartige Verfahren belegen dabei ein
-eingeschränktes Subset der Dimensionen über demselben Suchalgorithmus-Interface.
-Als Prüfling für die Stand-der-Technik-Zugehörigkeit dient PRT-ART (ein Probst-Redirect-Tree-/ART-Hybrid)
-als eine abstrakte unvollständige Ansammlung neuartiger Suchalgorithmus-Bestandteile.
+werden~\cite{idreos2018periodic, idreos2018datacalculator}. Strukturell verschiedene Suchverfahren
+--- von baumartigen Indizes bis zu nicht-baumartigen Hash-Tabellen, sowie Spezialeigenschaften wie
+cache-lines --- werden so als Punkte desselben Entwurfsraums vergleichbar; nicht-baumartige
+Verfahren belegen dabei ein eingeschränktes Subset der Dimensionen über demselben
+Suchalgorithmus-Interface. Als Prüfling für die Stand-der-Technik-Zugehörigkeit dient PRT-ART (ein
+Probst-Redirect-Tree-/ART-Hybrid) als eine abstrakte unvollständige Ansammlung neuartiger
+Suchalgorithmus-Bestandteile.
 
 \section{Problemstellung}\label{sec:problem}
 
-Bestehende cache-bewusste Index-Entwürfe optimieren ein oder wenige Aspekte isoliert und
-berichten Ergebnisse, die sich über Veröffentlichungen hinweg schwer vergleichen lassen, da
-jede Arbeit eigene Datenstrukturen, Workloads und Mess-Methodiken verwendet. Es fehlt ein
-gemeinsamer Rahmen, der (i) solche Entwürfe in austauschbare Achsen zerlegt, (ii)
-publizierte Algorithmen als explizite Konfigurationen rekonstruiert und (iii) sowohl
-einzelne Achsen als auch ganze Algorithmen auf einer einheitlichen, fairen Basis vermessen kann.
+Bestehende cache-bewusste Index-Entwürfe optimieren ein oder wenige Aspekte isoliert und berichten
+Ergebnisse, die sich über Veröffentlichungen hinweg schwer vergleichen lassen, da jede Arbeit eigene
+Datenstrukturen, Workloads und Mess-Methodiken verwendet. Es fehlt ein gemeinsamer Rahmen, der (i)
+solche Entwürfe in austauschbare Achsen zerlegt, (ii) publizierte Algorithmen als explizite
+Konfigurationen rekonstruiert und (iii) sowohl einzelne Achsen als auch ganze Algorithmen auf einer
+einheitlichen, fairen Basis vermessen kann.
 
 \section{Forschungsfragen}\label{sec:rqs}
-Aus der Aufgabenstellung und dem Ziel der Cache-line Optimierung ergeben sich aufgrund der Allgegenwärtigkeit des Einflusses der Cache-Line Einstellungen die folgenden Forschungsfragen: Eine Hauptfrage (FF0) und vier messbare Teilfragen (FF1--FF4); ergänzende Aspekte sind als \emph{Teilfragen}
-zugeordnet.
+Aus der Aufgabenstellung und dem Ziel der Cache-line Optimierung ergeben sich aufgrund der
+Allgegenwärtigkeit des Einflusses der Cache-Line Einstellungen die folgenden Forschungsfragen: Eine
+Hauptfrage (FF0) und vier messbare Teilfragen (FF1--FF4); ergänzende Aspekte sind als
+\emph{Teilfragen} zugeordnet.
 \begin{description}
-  \item[FF0 (Hauptfrage)] Wie stark verbessern \emph{aktive, messgetriebene} cache-bewusste Entscheidungen
-  --- Seitentyp, Speicher-Layout, Value-Ablage und Prefetching --- die Leistung trie-basierter
-  Suchstrukturen gegenüber \emph{passiven, statisch ausgelegten} Varianten auf unterschiedlichen
-  CPU-Plattformen (Hybrid-CPUs, Sapphire Rapids)?
-  \item[FF1 (Komposition)] Wie lässt sich ein Suchalgorithmus-Entwurf kanonisch in orthogonale Achsen
-  zerlegen und in einer Permutationsmatrix systematisieren, sodass die Stand-der-Technik-Verfahren
-  möglichst aus ihrem Originalcode bias-frei als Profil-Konfigurationen rekonstruierbar und beliebig
-  permutierbar werden? \emph{Teilfrage:} Welche Achsen-Kopplungen (Knotentyp $\times$ SIMD $\times$
-  Pfadkompression) begrenzen die Isolation einzelner Achsen, und wie verhält sich dieselbe
-  achsen-konstante Struktur im Cache-Update- und Cache-Line-Füllverhalten, wenn allein die
-  ISA-/SIMD-Achse (SSE2/AVX2/AVX-512, NEON/SVE2, RVV) variiert wird?
-  \item[FF2 (Mess-Methodik)] Wie muss eine reproduzierbare Mess-Pipeline mit Hardware-Zähler-Erhebung
-  gestaltet sein, damit jede Achsen-Permutation fair (ceteris paribus, gleiche Compiler- und
-  Flag-Basis) in drei Messreihen (A--C) über drei Granularitäten (Micro-, Makro- und
-  Gesamt-Benchmarking) gemessen wird, und unter welchen plattform-kalibrierten Kriterien gilt eine
-  Plattform als erfolgreich verifiziert? \emph{Teilfrage:} Wie lassen sich widersprüchliche
-  Literaturbefunde zur optimalen Knoten-/Cache-Line-Größe (eine Cache-Line bei CSS/CSB\textsuperscript{+}
-  gegenüber bis zu sechzehn bei Hankins/Patel) durch achsen-isolierte, ceteris-paribus permutierte
-  Messung bias-frei nachmessen, statt sie aus inkompatiblen Original-Setups zu übernehmen?
-  \item[FF3 (Prüfling-Vergleich)] Gewinnt der Prüfling PRT-ART gegenüber den acht Rang-1-SOTA-Entwürfen
-  (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum, Wormhole, SuRF)\footnote{Die
-  \emph{Ränge} ordnen die Stand-der-Technik-Veröffentlichungen nach Zentralität für diese Arbeit:
-  Rang-1 umfasst die zehn wichtigsten Kern-Arbeiten --- darunter die acht eigenständigen Suchentwürfe
-  sowie ARTSync (P08) und LOUDS (P09), die als Organe eingehen ---, Rang-2 die cache-bewussten Layout-
-  und B\textsuperscript{+}-Vorarbeiten und Rang-3 die Prefetching-, Synchronisations- und
-  TU-Dresden-Hardware-Arbeiten.} und der Rang-2/3-SOTA \emph{nicht} durch asymptotische Neuheit, sondern
-  durch bessere Mikroarchitektur-Eigenschaften (höhere Cache-Line-Auslastung, weniger LLC- und
-  dTLB-Misses, geringere Branch-Kosten, kleinere heiße Suchpfade) bei Exact-Lookup, Prefix-Lookup und
-  Prefix-Enumeration --- gemessen unter den drei Pflicht-Messreihen A (Prüfling vs.\ Stand der Technik),
-  B (systematische Variation der Entwurfsentscheidungen) und C (Merge/Regression alt gegen neu)?
-  \emph{Teilfrage:} Welche lokale Seitendarstellung (8-/16-Bit-Punktseite gegenüber -Kompaktseite) ist
-  je Verzweigungspunkt am günstigsten, und nach welchen plattform-kalibrierten Umschaltregeln
-  --- einschließlich der Reihenfolge Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
+  \item[FF0 (Hauptfrage)] Wie stark verbessern \emph{aktive, messgetriebene} cache-bewusste
+  Entscheidungen --- Seitentyp, Speicher-Layout, Value-Ablage und Prefetching --- die Leistung
+  trie-basierter Suchstrukturen gegenüber \emph{passiven, statisch ausgelegten} Varianten auf
+  unterschiedlichen CPU-Plattformen (Hybrid-CPUs, Sapphire Rapids)?
+  \item[FF1 (Komposition)] Wie lässt sich ein Suchalgorithmus-Entwurf kanonisch in orthogonale
+  Achsen zerlegen und in einer Permutationsmatrix systematisieren, sodass die
+  Stand-der-Technik-Verfahren möglichst aus ihrem Originalcode bias-frei als Profil-Konfigurationen
+  rekonstruierbar und beliebig permutierbar werden? \emph{Teilfrage:} Welche Achsen-Kopplungen
+  (Knotentyp $\times$ SIMD $\times$ Pfadkompression) begrenzen die Isolation einzelner Achsen, und
+  wie verhält sich dieselbe achsen-konstante Struktur im Cache-Update- und Cache-Line-Füllverhalten,
+  wenn allein die ISA-/SIMD-Achse (SSE2/AVX2/AVX-512, NEON/SVE2, RVV) variiert wird?
+  \item[FF2 (Mess-Methodik)] Wie muss eine reproduzierbare Mess-Pipeline mit
+  Hardware-Zähler-Erhebung gestaltet sein, damit jede Achsen-Permutation fair (ceteris paribus,
+  gleiche Compiler- und Flag-Basis) in drei Messreihen (A--C) über drei Granularitäten (Micro-,
+  Makro- und Gesamt-Benchmarking) gemessen wird, und unter welchen plattform-kalibrierten Kriterien
+  gilt eine Plattform als erfolgreich verifiziert? \emph{Teilfrage:} Wie lassen sich
+  widersprüchliche Literaturbefunde zur optimalen Knoten-/Cache-Line-Größe (eine Cache-Line bei
+  CSS/CSB\textsuperscript{+} gegenüber bis zu sechzehn bei Hankins/Patel) durch achsen-isolierte,
+  ceteris-paribus permutierte Messung bias-frei nachmessen, statt sie aus inkompatiblen
+  Original-Setups zu übernehmen?
+  \item[FF3 (Prüfling-Vergleich)] Gewinnt der Prüfling PRT-ART gegenüber den acht
+  Rang-1-SOTA-Entwürfen (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum, Wormhole,
+  SuRF)\footnote{Die \emph{Ränge} ordnen die Stand-der-Technik-Veröffentlichungen nach Zentralität für diese Arbeit: Rang-1 umfasst die zehn wichtigsten Kern-Arbeiten --- darunter die acht eigenständigen Suchentwürfe sowie ARTSync (P08) und LOUDS (P09), die als Organe eingehen ---, Rang-2 die cache-bewussten Layout- und B\textsuperscript{+}-Vorarbeiten und Rang-3 die Prefetching-, Synchronisations- und TU-Dresden-Hardware-Arbeiten.}
+  und der Rang-2/3-SOTA \emph{nicht} durch asymptotische Neuheit, sondern durch bessere
+  Mikroarchitektur-Eigenschaften (höhere Cache-Line-Auslastung, weniger LLC- und dTLB-Misses,
+  geringere Branch-Kosten, kleinere heiße Suchpfade) bei Exact-Lookup, Prefix-Lookup und
+  Prefix-Enumeration --- gemessen unter den drei Pflicht-Messreihen A (Prüfling vs.\ Stand der
+  Technik), B (systematische Variation der Entwurfsentscheidungen) und C (Merge/Regression alt gegen
+  neu)? \emph{Teilfrage:} Welche lokale Seitendarstellung (8-/16-Bit-Punktseite gegenüber
+  -Kompaktseite) ist je Verzweigungspunkt am günstigsten, und nach welchen plattform-kalibrierten
+  Umschaltregeln --- einschließlich der Reihenfolge
+  Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
   je Füllstand und Suchtyp --- soll adaptiv gewechselt werden?
-  \item[FF4 (Compile-Time vs.\ Laufzeit)] Welche Achsen-Eigenschaften müssen zur Übersetzungszeit fixiert
-  werden, um plattform-optimierte, provenienz-nachweisbare Binaries je Permutation zu erzeugen, und
-  welche können bzw.\ müssen zur Laufzeit gewählt werden (bit-codierter Permutations-Identifier,
-  adaptive Layout-Selection), ohne die wissenschaftliche Vergleichbarkeit (gleiche Compiler- und
-  Flag-Basis) zu verletzen?
+  \item[FF4 (Compile-Time vs.\ Laufzeit)] Welche Achsen-Eigenschaften müssen zur Übersetzungszeit
+  fixiert werden, um plattform-optimierte, provenienz-nachweisbare Binaries je Permutation zu
+  erzeugen, und welche können bzw.\ müssen zur Laufzeit gewählt werden (bit-codierter
+  Permutations-Identifier, adaptive Layout-Selection), ohne die wissenschaftliche Vergleichbarkeit
+  (gleiche Compiler- und Flag-Basis) zu verletzen?
 \end{description}
 
 \section{Zielsetzung und Beiträge}\label{sec:contributions}
 
-Die Zielsetzung folgt der Aufgabenstellung in vier Schritten: cache-bewusste Suchalgorithmen in austauschbare
-Entwurfsbestandteile zerlegen, Stand-der-Technik-Entwürfe als explizite Konfigurationen rekonstruieren,
-cache-line-bewusstes Verhalten sowohl je Bestandteil als auch für den ganzen Algorithmus auf gemeinsamer
-CPU-Basis messen und den besten Gesamtalgorithmus als eigenständige Binary ausliefern. Der Code der
-Diplomarbeit ist dabei der \emph{formale Bediener} der Cache-Engine: Er lädt den Prüfling PRT-ART, kompiliert
-ihn per Metaprogrammierung gegen die Kernbestandteile der Cache-Engine, liefert ABI-stabile \emph{Lebewesen}
-(Suchalgorithmus-Instanzen) aus und treibt sie über das Prüf-Dock zur Messung. Architektonisch trennt das
-Modell drei Ebenen --- ein Gattungs-Interface (SearchAlgorithm, Container, Graph), darunter
-Lebewesen-Unterklassen mit festem Achsensatz, darunter die neunzehn Achsen als Organe --- und vier Subsysteme
-(Mess-Treiber, CacheEngineBuilder, CacheEngine, Prüfling); in früheren Entwürfen wurde diese Schichtung als
-Kette ExecutionEngine\,$\to$\,SearchEngine\,$\to$\,SearchEngineType gelesen. Das Konzept der Achsen-Architektur
-selbst ist aus einer Vorarbeit des Autors übernommen (Comdare\,/\,BEP~Venture~UG, ursprünglich zur Optimierung
-von Deduplikations-Verfahren in der UltiHash-Datenbank); der Beitrag dieser Arbeit ist seine Übertragung auf
-cache-bewusste Suchstrukturen und seine mess-orientierte Realisierung. Die zentralen Beiträge sind:
+Die Zielsetzung folgt der Aufgabenstellung in vier Schritten: cache-bewusste Suchalgorithmen in
+austauschbare Entwurfsbestandteile zerlegen, Stand-der-Technik-Entwürfe als explizite
+Konfigurationen rekonstruieren, cache-line-bewusstes Verhalten sowohl je Bestandteil als auch für
+den ganzen Algorithmus auf gemeinsamer CPU-Basis messen und den besten Gesamtalgorithmus als
+eigenständige Binary ausliefern. Der Code der Diplomarbeit ist dabei der \emph{formale Bediener} der
+Cache-Engine: Er lädt den Prüfling PRT-ART, kompiliert ihn per Metaprogrammierung gegen die
+Kernbestandteile der Cache-Engine, liefert ABI-stabile \emph{Lebewesen} (Suchalgorithmus-Instanzen)
+aus und treibt sie über das Prüf-Dock zur Messung. Architektonisch trennt das Modell drei Ebenen ---
+ein Gattungs-Interface (SearchAlgorithm, Container, Graph), darunter Lebewesen-Unterklassen mit
+festem Achsensatz, darunter die neunzehn Achsen als Organe --- und vier Subsysteme (Mess-Treiber,
+CacheEngineBuilder, CacheEngine, Prüfling); in früheren Entwürfen wurde diese Schichtung als Kette
+ExecutionEngine\,$\to$\,SearchEngine\,$\to$\,SearchEngineType gelesen. Das Konzept der
+Achsen-Architektur selbst ist aus einer Vorarbeit des Autors übernommen (Comdare\,/\,BEP~Venture~UG,
+ursprünglich zur Optimierung von Deduplikations-Verfahren in der UltiHash-Datenbank); der Beitrag
+dieser Arbeit ist seine Übertragung auf cache-bewusste Suchstrukturen und seine mess-orientierte
+Realisierung. Die zentralen Beiträge sind:
 \begin{itemize}
-  \item Eine dreischichtige Architektur (CacheEngine $\to$ ExecutionEngine $\to$
-  SearchEngine) mit ABI-stabilen C++23-Modul-Schnittstellen und variadisch
-  templatierten Hybrid-API-Spezialisierungen (1~Parameter $\Rightarrow$
-  \texttt{std::vector}-API; 2~Parameter $\Rightarrow$ \texttt{std::map}-API; $N>2
-  \Rightarrow$ \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
+  \item Eine dreischichtige Architektur (CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine) mit
+  ABI-stabilen C++23-Modul-Schnittstellen und variadisch templatierten Hybrid-API-Spezialisierungen
+  (1~Parameter $\Rightarrow$ \texttt{std::vector}-API; 2~Parameter $\Rightarrow$
+  \texttt{std::map}-API; $N>2 \Rightarrow$ \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
   \item Eine neunzehn-Achsen-Permutationsmatrix mit \texttt{std::variant}-Bausteinen und
   Compile-Time-Fallback zwischen Prüfling-Stack und Stand-der-Technik-Stack.
   \item Dreißig SOTA-Algorithmus-Profile als persistierte XML-Konfigurationen (8~Rang-1 +
-  22~Rang-2/3), die der \texttt{ExperimentDriver} automatisch in vorkompilierte
-  C++23-Module überführt; perspektivisch soll der Profilsatz jede analysierte
-  Veröffentlichung mit mindestens einem Algorithmus-Profil abdecken.
-  \item PRT-ART als Prüfling mit acht eigenen Bausteinschichten (4+2-Pool-Allokator,
-  optimistisches Lock-Coupling mit reservierten Blöcken, MultiLevel-Layout,
-  pfadorientiertes Prefetch, DensityTracker, Hypothesen-Metriken H1/H2/H3,
-  Inline/External/ChainRef-ValueHandles, Signaling-Bit-Serialisierung).
-  \item Ein Mess-Treiber mit Defined-/Full-Modus-Unterscheidung, profilbewusstem
-  Workload-Routing und drei Granularitäten --- Micro-, Makro- und Gesamt-Benchmarking (einzelne
-  Bestandteile, Interface-Operationen, ganze Algorithmen).
+  22~Rang-2/3), die der \texttt{ExperimentDriver} automatisch in vorkompilierte C++23-Module
+  überführt; perspektivisch soll der Profilsatz jede analysierte Veröffentlichung mit mindestens
+  einem Algorithmus-Profil abdecken.
+  \item PRT-ART als Prüfling mit acht eigenen Bausteinschichten (4+2-Pool-Allokator, optimistisches
+  Lock-Coupling mit reservierten Blöcken, MultiLevel-Layout, pfadorientiertes Prefetch,
+  DensityTracker, Hypothesen-Metriken H1/H2/H3, Inline/External/ChainRef-ValueHandles,
+  Signaling-Bit-Serialisierung).
+  \item Ein Mess-Treiber mit Defined-/Full-Modus-Unterscheidung, profilbewusstem Workload-Routing
+  und drei Granularitäten --- Micro-, Makro- und Gesamt-Benchmarking (einzelne Bestandteile,
+  Interface-Operationen, ganze Algorithmen).
   \item \emph{Als Zielsetzung und Ausblick:} die Auslieferung des besten Gesamtalgorithmus ---
-  automatisch ausgewählt aus den feingliedrigen Messergebnissen --- als eigenständige,
-  ABI-stabile Binary hinter dem einheitlichen Suchalgorithmus-Interface; die Mess-Pipeline
-  liefert die dafür nötige Rangbildung bereits, die automatische Auswahl und der Binary-Versand
-  sind als Erweiterung vorgesehen.
-  \item Eine generische Plattform-Probe, die Cache-Eigenschaften (Line-Größe, Hierarchie-Tiefe, Topologie) je
-  Zielplattform ermittelt und als feste Größen in eine systemoptimierte Binary einfließen lässt; die
-  beiden Produktionsmaschinen werden dafür unter zwei Betriebssystemen (immutables Talos und root-Linux
-  mit vollem Hardware-Zähler-Zugriff) vermessen.
-  \item Eine bias-freie Vergleichs-Matrix, die \emph{alle} Lastprofile gegen \emph{alle} rekonstruierten
-  Lebewesen fährt und so dem methodischen Heimspiel-Bias der Einzelveröffentlichungen begegnet.
+  automatisch ausgewählt aus den feingliedrigen Messergebnissen --- als eigenständige, ABI-stabile
+  Binary hinter dem einheitlichen Suchalgorithmus-Interface; die Mess-Pipeline liefert die dafür
+  nötige Rangbildung bereits, die automatische Auswahl und der Binary-Versand sind als Erweiterung
+  vorgesehen.
+  \item Eine generische Plattform-Probe, die Cache-Eigenschaften (Line-Größe, Hierarchie-Tiefe,
+  Topologie) je Zielplattform ermittelt und als feste Größen in eine systemoptimierte Binary
+  einfließen lässt; die beiden Produktionsmaschinen werden dafür unter zwei Betriebssystemen
+  (immutables Talos und root-Linux mit vollem Hardware-Zähler-Zugriff) vermessen.
+  \item Eine bias-freie Vergleichs-Matrix, die \emph{alle} Lastprofile gegen \emph{alle}
+  rekonstruierten Lebewesen fährt und so dem methodischen Heimspiel-Bias der
+  Einzelveröffentlichungen begegnet.
 \end{itemize}
 
 \section{Aufbau der Arbeit}\label{sec:structure}
 % Es sind nicht nur Such- und Allokator-Cluster. Es gibt mehrere Achsen Repositories, die thematisch mehrere Achsen abbilden und die Sub-Achsen sollten wir auch nicht vergessen, die derzeit dokumentiert sind. Da die Diplomarbeit durchaus eine Arbeit mit 60 bis 80 Seiten eigenem Volltext sein darf, ist genug Platz für Details der mehrstufigen Untergliederung der Architektur. Derzeit fehlt aber hauptsächlich im Stand der Technik ein eigenes Unterkapitel, was sich mit dem nicht-technischen Bereich des Suchalgorithmus Architektur-Designs beschäftigt, weil unser Framework eine Architektur-Design-Erfindung mithilfe von fortgeschrittenen Design-Pattern zur Lösung eines technischen Problems darstellt, welches bisher immer mit "bloßen Händen" gelöst wurde, wir konstruieren aber vor der Arbeit erst eine Schaufel -> lösen das Problem also indierekt auf einem nicht sofort ersichtlichen Weg. Der Stand der Technik ist komplett richtig, muss aber durch Konteption und Voraussetzungen von Suchalgorithmen beginnen, was eine Webrecherche erfordert und natürlich professionelle wissenschaftliche Zitate. Wir bewegen uns also parallel zur Forschungsfeld der Datenbanken im Bereich des Software-Engineerings an der TU Dresden und deren Zielen (Webrecherche bitte).
 Kapitel~\ref{ch:fundamentals} führt die nötigen Grundlagen als Definitions-Klassen ein.
 Kapitel~\ref{ch:sota} spiegelt diese im Stand der Technik als Instanzen: einen Überblick mit
-Korpus-Clustern, die Cache-Konzepte, die achsenweise Sezierung der Verfahren, die Workload-Frameworks,
-die Mess-Technologien und das Architektur-Design --- abschließend die Forschungslücke.
-Kapitel~\ref{ch:concept} stellt das Achsen-Bibliotheks-Framework, die geschichtete Architektur, die
-ABI-Schnittstelle und die neunzehn-Achsen-Permutationsmatrix vor, einschließlich der thematischen
-Achsen-Repositorien und ihrer Sub-Achsen. Kapitel~\ref{ch:impl} dokumentiert die Implementierung über die
-drei Repositorien. Kapitel~\ref{ch:methodology} beschreibt die Mess-Methodik mit den drei Pflicht-Messreihen
-(A--C), den drei Granularitäten (Micro-/Makro-/Gesamt-Benchmarking), den realen Datensätzen und den
-Fairness-Regeln. Kapitel~\ref{ch:results} präsentiert und diskutiert die Ergebnisse einschließlich der
-Hypothesen H1--H3. Kapitel~\ref{ch:conclusion} schließt mit Zusammenfassung und Ausblick. Der eigene Volltext
+Korpus-Clustern, die Cache-Konzepte, die achsenweise Sezierung der Verfahren, die
+Workload-Frameworks, die Mess-Technologien und das Architektur-Design --- abschließend die
+Forschungslücke. Kapitel~\ref{ch:concept} stellt das Achsen-Bibliotheks-Framework, die geschichtete
+Architektur, die ABI-Schnittstelle und die neunzehn-Achsen-Permutationsmatrix vor, einschließlich
+der thematischen Achsen-Repositorien und ihrer Sub-Achsen. Kapitel~\ref{ch:impl} dokumentiert die
+Implementierung über die drei Repositorien. Kapitel~\ref{ch:methodology} beschreibt die
+Mess-Methodik mit den drei Pflicht-Messreihen (A--C), den drei Granularitäten
+(Micro-/Makro-/Gesamt-Benchmarking), den realen Datensätzen und den Fairness-Regeln.
+Kapitel~\ref{ch:results} präsentiert und diskutiert die Ergebnisse einschließlich der Hypothesen
+H1--H3. Kapitel~\ref{ch:conclusion} schließt mit Zusammenfassung und Ausblick. Der eigene Volltext
 ist auf einen Umfang von rund 60 bis 80 Seiten ausgelegt.
 
 % Allgemeiner Kommentar zu Verbesserungsvorschlägen: Der Große Beleg liegt in der Diplomarbeit und liefert möglicherweise noch Anregungen zur strukturellen Erweiterung der Diplomarbeit, bitte lies ihn, indem du die Struktur nicht nur über die Sektionen, sondern auch alle Strukturierungseigenschaften der subsections und subsubsections liest und verstehst.

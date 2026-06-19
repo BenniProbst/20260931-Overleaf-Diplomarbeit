@@ -5,62 +5,58 @@ Chapter~\ref{ch:results}.
 
 \section{Three Measurement Series}\label{sec:series}
 
-The architecture prescribes three measurement series, all executed by the
-\texttt{messung\_driver} through the \texttt{ExperimentDriver} library, configured either
-as three fixed series or via an external \texttt{messreihen.xml}.
+The architecture prescribes three measurement series, all executed by the \texttt{messung\_driver}
+through the \texttt{ExperimentDriver} library, configured either as three fixed series or via an
+external \texttt{messreihen.xml}.
 
 \begin{description}
-  \item[Series A --- PRT-ART vs.\ the state of the art.] Compares the probe against the
-  documented SOTA algorithms. Two modes: \emph{A\_defined} (quick verification
-  against the 8 Rank-1 profiles) and \emph{A\_full} (all 30 SOTA profiles; the
-  default, per the directive to measure as completely as possible).
-  \item[Series B --- cache-engine permutations.] The pure ``state of the art'' baseline:
-  all SOTA profiles without the PRT-ART probe.
-  \item[Series C --- merge of old and new.] Concrete merge points between PRT-ART building
-  blocks and cache-engine permutations, e.g.\ PRT-ART OLC + tcmalloc + ART page;
-  PRT-ART 4+2 pool + HOT page; PRT-ART path prefetch + B\textsuperscript{2}-tree
-  page; PRT-ART multi-level layout + Wormhole page.
+  \item[Series A --- PRT-ART vs.\ the state of the art.] Compares the probe against the documented
+  SOTA algorithms. Two modes: \emph{A\_defined} (quick verification against the 8 Rank-1 profiles)
+  and \emph{A\_full} (all 30 SOTA profiles; the default, per the directive to measure as completely
+  as possible).
+  \item[Series B --- cache-engine permutations.] The pure ``state of the art'' baseline: all SOTA
+  profiles without the PRT-ART probe.
+  \item[Series C --- merge of old and new.] Concrete merge points between PRT-ART building blocks
+  and cache-engine permutations, e.g.\ PRT-ART OLC + tcmalloc + ART page; PRT-ART 4+2 pool + HOT
+  page; PRT-ART path prefetch + B\textsuperscript{2}-tree page; PRT-ART multi-level layout +
+  Wormhole page.
 \end{description}
 
 Each of these three series is collected at three granularities (per the thesis assignment):
-\emph{micro-benchmarking} compares each individual design component (axis) in isolation,
-through the common interface of its category, against load profiles;
-\emph{macro-benchmarking} measures the individual \texttt{std::map} interface operations
-(insert, point and range lookup, update, delete) against sample loads; and
-\emph{whole-system benchmarking} runs the established YCSB load profiles over every
-recombination of the building blocks. The ranking across these three granularities yields
+\emph{micro-benchmarking} compares each individual design component (axis) in isolation, through the
+common interface of its category, against load profiles; \emph{macro-benchmarking} measures the
+individual \texttt{std::map} interface operations (insert, point and range lookup, update, delete)
+against sample loads; and \emph{whole-system benchmarking} runs the established YCSB load profiles
+over every recombination of the building blocks. The ranking across these three granularities yields
 which decision at which place is beneficial for which load pattern.
 
 \section{ExperimentDriver Phases}\label{sec:experimentdriver}
 
-The \texttt{ExperimentDriver} runs seven phases per series: (1)~\textbf{enumerate} (parse
-the XML configs and build the permutation list); (2)~\textbf{codegen} (one
-\texttt{comdare\_perm\_<fp>.cpp} per permutation, plus
-\texttt{generate\_module\_from\_profile} for the SOTA profiles); (3)~\textbf{compile};
-(4)~\textbf{load} (LoadLibrary/dlopen of all modules); (5)~\textbf{execute}
-(\texttt{create\_instance} + profile-aware \texttt{run\_workload}); (6)~\textbf{measure}
-(aggregate the binary measurement records); (7)~\textbf{persist}
-(\texttt{measurements.csv} + \texttt{.json}). Two opt-in phases hot-compile missing modules
-and verify the ABI contract per module.
+The \texttt{ExperimentDriver} runs seven phases per series: (1)~\textbf{enumerate} (parse the XML
+configs and build the permutation list); (2)~\textbf{codegen} (one \texttt{comdare\_perm\_<fp>.cpp}
+per permutation, plus \texttt{generate\_module\_from\_profile} for the SOTA profiles);
+(3)~\textbf{compile}; (4)~\textbf{load} (LoadLibrary/dlopen of all modules); (5)~\textbf{execute}
+(\texttt{create\_instance} + profile-aware \texttt{run\_workload}); (6)~\textbf{measure} (aggregate
+the binary measurement records); (7)~\textbf{persist} (\texttt{measurements.csv} + \texttt{.json}).
+Two opt-in phases hot-compile missing modules and verify the ABI contract per module.
 
 \section{Hypotheses}\label{sec:hypotheses}
 
 \begin{description}
-  \item[H1 (page-type cost)] The mean access cost per page-type variant differs
-  systematically by workload: dense page types are expected to win under Zipfian
-  (YCSB-A) and range-optimized pages under range scans (YCSB-E).
-  \item[H2 (code quality per source)] The code-quality score inherited from the original
-  source repository correlates measurably with achieved throughput.
-  \item[H3 (inline vs.\ external vs.\ chain distribution)] The observed distribution of the
-  three value-handle variants correlates with page density: dense pages favour
-  inline, sparse pages external, and PRT-ART heuristics chain-ref.
+  \item[H1 (page-type cost)] The mean access cost per page-type variant differs systematically by
+  workload: dense page types are expected to win under Zipfian (YCSB-A) and range-optimized pages
+  under range scans (YCSB-E).
+  \item[H2 (code quality per source)] The code-quality score inherited from the original source
+  repository correlates measurably with achieved throughput.
+  \item[H3 (inline vs.\ external vs.\ chain distribution)] The observed distribution of the three
+  value-handle variants correlates with page density: dense pages favour inline, sparse pages
+  external, and PRT-ART heuristics chain-ref.
 \end{description}
 
 \section{Workloads and Datasets}\label{sec:workloads}
 
 Phase~5 routes the YCSB workload per permutation from the profile's traversal tag
-(Table~\ref{tab:workload-routing}); modules without a profile use the global default
-workload.
+(Table~\ref{tab:workload-routing}); modules without a profile use the global default workload.
 
 \begin{table}[h]
   \centering
@@ -77,8 +73,8 @@ workload.
 \end{table}
 
 The data basis consists of real string datasets of differing characteristics
-(Table~\ref{tab:datasets}); each carries a reproducibility record of source, checksum, line
-count, preprocessing, and the seed rule for the synthetic miss, update, and delete keys.
+(Table~\ref{tab:datasets}); each carries a reproducibility record of source, checksum, line count,
+preprocessing, and the seed rule for the synthetic miss, update, and delete keys.
 
 \begin{table}[h]
   \centering
@@ -99,45 +95,45 @@ count, preprocessing, and the seed rule for the synthetic miss, update, and dele
 
 \section{Experimental Platforms}\label{sec:platforms}
 
-Measurements target a local workstation for development verification and the TU~Dresden
-ZIH cluster (Barnard CPU, Capella GPU) for the full sweeps, plus the Rank-3 platforms
-(Ryzen~9~9950X3D, Intel~i9~14900KS, and an HBM platform). An \texttt{IPlatformProbe}
-(phase~1) reports, per platform, the runnable subset of axes (e.g.\ AVX-512 only where
-available, HBM-aware only on HBM hardware). Per platform, a scalar, an AVX2, and --- on
-Barnard --- an AVX-512 build are prepared; on hybrid CPUs, P- and E-cores are measured
-separately (distinct counter domains \texttt{cpu\_core}/\texttt{cpu\_atom}) rather than
-aggregated together.
+Measurements target a local workstation for development verification and the TU~Dresden ZIH cluster
+(Barnard CPU, Capella GPU) for the full sweeps, plus the Rank-3 platforms (Ryzen~9~9950X3D,
+Intel~i9~14900KS, and an HBM platform). An \texttt{IPlatformProbe} (phase~1) reports, per platform,
+the runnable subset of axes (e.g.\ AVX-512 only where available, HBM-aware only on HBM hardware).
+Per platform, a scalar, an AVX2, and --- on Barnard --- an AVX-512 build are prepared; on hybrid
+CPUs, P- and E-cores are measured separately (distinct counter domains
+\texttt{cpu\_core}/\texttt{cpu\_atom}) rather than aggregated together.
 
 \smallskip\noindent\emph{Experiment operating systems.} On the production target machines, every measurement
-is collected under two operating-system regimes, to separate \emph{production fidelity} from \emph{measurement
-depth}. An \emph{immutable} operating system (Talos) mirrors the production deployment and enforces boot- or
-compile-time-static cache settings (Section~\ref{ssec:aware-oblivious}); a \emph{root Linux with full
-hardware-counter access} (\texttt{perf}/MSR), by contrast, makes the counter-based measurement categories ---
-cache, dTLB, and branch misses as well as IPC/CPI (Section~\ref{ssec:sota-meas-bridge}) --- and the
-run-time-configurable cache-near axis parameters (prefetch distance, hardware prefetcher) accessible in the
-first place. The time- and observer-based categories (wall-clock, HdrHistogram, per-axis observer) run
-identically under both regimes and secure comparability; the PMC categories are collected only under the
-privileged regime and logged per platform with operating system, kernel, and counter domain.
+is collected under two operating-system regimes, to separate \emph{production fidelity} from
+\emph{measurement depth}. An \emph{immutable} operating system (Talos) mirrors the production
+deployment and enforces boot- or compile-time-static cache settings
+(Section~\ref{ssec:aware-oblivious}); a \emph{root Linux with full hardware-counter access}
+(\texttt{perf}/MSR), by contrast, makes the counter-based measurement categories --- cache, dTLB,
+and branch misses as well as IPC/CPI (Section~\ref{ssec:sota-meas-bridge}) --- and the
+run-time-configurable cache-near axis parameters (prefetch distance, hardware prefetcher) accessible
+in the first place. The time- and observer-based categories (wall-clock, HdrHistogram, per-axis
+observer) run identically under both regimes and secure comparability; the PMC categories are
+collected only under the privileged regime and logged per platform with operating system, kernel,
+and counter domain.
 
 \section{Fairness and Reproducibility}\label{sec:fairness}
 
-Fair comparability is ensured by fixed rules. Every comparison separates a common minimal
-mode (common-denominator: external value handles, no PRT-ART special paths) from the PRT-ART
-native mode (inline switching, cache engine, page-type scheduler). All methods receive
-identical, normalized byte keys and identical miss, update, and delete sets; warmup,
-randomization, and thread pinning are logged per platform and workload. Missing capabilities
-of a baseline --- e.g.\ range scans of a hash table --- are reported as N/A rather than
-covertly emulated through auxiliary structures; for each third-party library, compiler,
-flags, ISA path, allocator, and commit hash are logged. For reproducibility, every
-configuration is measured in several separate runs whose spread remains part of the
-statement: percentiles are determined via HDR histograms rather than averaged.
+Fair comparability is ensured by fixed rules. Every comparison separates a common minimal mode
+(common-denominator: external value handles, no PRT-ART special paths) from the PRT-ART native mode
+(inline switching, cache engine, page-type scheduler). All methods receive identical, normalized
+byte keys and identical miss, update, and delete sets; warmup, randomization, and thread pinning are
+logged per platform and workload. Missing capabilities of a baseline --- e.g.\ range scans of a hash
+table --- are reported as N/A rather than covertly emulated through auxiliary structures; for each
+third-party library, compiler, flags, ISA path, allocator, and commit hash are logged. For
+reproducibility, every configuration is measured in several separate runs whose spread remains part
+of the statement: percentiles are determined via HDR histograms rather than averaged.
 
 \section{Permutation Explosion and Reduction}\label{sec:explosion}
 
-With the N-phase extension from 11 to 19 axes plus $\sim$57 sub-axes, the space grows from
-$\sim$5.5 billion to far more than $10^{11}$ permutations. Three mechanisms tame the
-explosion: (1)~the \texttt{<expected\_workload>} profile filter routes only compatible
-workloads; (2)~\texttt{MessreihenMode::Defined} runs only the declared tuples
-($\sim$100--1000 per series) that feed the manuscript; (3)~\texttt{Full} (and the more
-realistic \texttt{Full-Sampled}, e.g.\ every 1000th permutation) runs only on the ZIH
-cluster, respecting axis compatibility reported by the platform probe.
+With the N-phase extension from 11 to 19 axes plus $\sim$57 sub-axes, the space grows from $\sim$5.5
+billion to far more than $10^{11}$ permutations. Three mechanisms tame the explosion: (1)~the
+\texttt{<expected\_workload>} profile filter routes only compatible workloads;
+(2)~\texttt{MessreihenMode::Defined} runs only the declared tuples ($\sim$100--1000 per series) that
+feed the manuscript; (3)~\texttt{Full} (and the more realistic \texttt{Full-Sampled}, e.g.\ every
+1000th permutation) runs only on the ZIH cluster, respecting axis compatibility reported by the
+platform probe.
