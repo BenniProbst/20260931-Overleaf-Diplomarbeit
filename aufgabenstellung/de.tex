@@ -18,30 +18,33 @@ Algorithmenfamilien vorgeschlagen --- von Knoten-Layout über Prefetching und
 Succinct-Repräsentationen bis zur Allokation ---, doch nutzt fast jede Veröffentlichung
 eigene Datenstrukturen, verschiedene Lastprofile und inkonsistente Messmethodik.
 Ergebnisse sind dadurch über Veröffentlichungen hinweg schwer vergleichbar.
+Zuletzt sind die Gewichtungen über Verbesserungen einzelner Algorithmus-Bestandteile
+derzeit nicht trennbar.
 
 \minisec{Problemstellung}
 Suchverfahren --- von ausgewogenen Suchbäumen (B-/B\textsuperscript{+}-Bäume)
 über Tries und Radix-Bäume bis zu spezialisierten, eigenentwickelten Konstrukten
---- spannen einen großen \emph{Entwurfsraum} (\emph{design space}) auf:
+--- spannen einen großen, aber konzeptionell einheitlichen, \emph{Entwurfsraum} (\emph{design space}) auf:
 Bereits eine zwei- bzw.\ dreikomponentige Datenstruktur erlaubt astronomisch
 viele Entwürfe, und ein konkreter Algorithmus ist ein einzelner Punkt in diesem
-Raum, beschrieben durch viele einzelne Entwurfsentscheidungen --- wie Knoten
-repräsentiert, durchlaufen, im Speicher angeordnet und alloziert werden
+Raum, beschrieben durch viele einzelne Entwurfsentscheidungen --- wie Knoten, Verweise und Daten
+repräsentiert, durchlaufen, im Speicher angeordnet, und alloziert werden
 \cite{idreos2018periodic, idreos2018datacalculator}. Cache-line-bewusstes
 Verhalten entsteht dabei nicht an einer einzelnen dieser Stellen, sondern an
-\emph{vielen verschiedenen strukturellen Stellen} eines Algorithmus und aus deren
-Zusammenspiel. Der Stand der Technik umfasst zahlreiche ausgereifte Verfahren, doch
+\emph{vielen verschiedenen strukturellen Stellen} eines Algorithmus bzw. dessen Speicherverwaltung und aus dem
+Zusammenspiel multipler konzeptioneller Schichten eines Algorithmus. Der Stand der Technik 
+umfasst zahlreiche ausgereifte Verfahren, doch
 optimiert jedes nur einzelne dieser Stellen und belegt seinen Nutzen in einer eigenen
 Messumgebung, was den Fortschritt über die Verfahren hinweg schwer vergleichbar macht.
 Es fehlt ein gemeinsames, generisches Konzept und \textbf{Prinzip}, das
-cache-line-bewusstes Verhalten an den verschiedenen Stellen eines Suchalgorithmus ---
+cache-line-bewusstes Verhalten, neben anderen Messschwerpunkten, an den verschiedenen Stellen eines Suchalgorithmus ---
 austauschbar, systematisch und fair --- messen und auswerten kann.
 
 \minisec{Zielsetzung}
 Ziel der Arbeit ist es, ein solches Prinzip (ein Rahmenwerk) zu finden, zu entwerfen
-und prototypisch als Experimentier-Framework umzusetzen, das
+und prototypisch als Experimentier-Framework umzusetzen, der mit Konzentrationspunkt auf eine dynamische Zusammensetzung der verteilten Algorithmus Konzepte:
 (i) cache-bewusste Suchalgorithmen in austauschbare Entwurfsbestandteile zerlegt,
-(ii) Algorithmen des Stands der Technik als explizite Konfigurationen (Punkte im
+(ii) Algorithmen des Standes der Technik als explizite Konfigurationen (Punkte im
 Entwurfsraum) rekonstruiert,
 (iii) cache-line-bewusstes Verhalten sowohl an den einzelnen direkt und indirekt
 betroffenen Stellen als auch für den gesamten Algorithmus auf gemeinsamer
@@ -50,24 +53,25 @@ CPU-only-Basis misst und auswertet und
 eigenständige Binary hinter einem einheitlichen Suchalgorithmus-Interface ausliefert.
 Als Prüfling für die testweise Eingliederung einer neuen Technologie in den Stand der
 Technik trägt die Arbeit \mbox{PRT-ART} bei (einen Probst-Redirect-Tree-/ART-Hybriden),
-der als konzeptionell neuartiger Suchalgorithmus untersucht wird.
+der als konzeptionell neuartiger Suchalgorithmus untersucht wird, allerdings nur einige
+neue Aspekte innerhalb der Klassifizierung von Suchalgorithmen liefert und keinen vollständigen Algorithmus.
 
 \minisec{Teilaufgaben}
 \begin{enumerate}
   \item Systematische Erfassung der allgemeinen Entwurfsbestandteile von
         Suchalgorithmen --- insbesondere der cache-bewussten --- und Identifikation
         der Stellen, an denen cache-line-bewusste und suchalgorithmus-spezifische
-        Entscheidungen wirksam werden.
+        Entscheidungen wirksam werden. Dazu zählt die systematische Untergliederung
+        der Entwufsbestandteile in Entwurfsebenen einer verallgemeinerten Algorithmus-Kategorisierung
   \item Rekonstruktion von Entwürfen des Stands der Technik --- möglichst aus dem
-        Originalcode der jeweiligen Veröffentlichung --- (ART, HOT, Masstree,
+        Originalcode der jeweiligen Veröffentlichung und Original Compiler Binary linking --- (ART, HOT, Masstree,
         CoCo-trie, START, B\textsuperscript{2}-Tree, Wormhole, SuRF sowie weitere
         Verfahren) als explizite, vergleichbare Konfigurationen.
   \item Entwurf und Implementierung von PRT-ART als Prüfling mit mehreren eigenen
         Entwurfsbestandteilen, der gegen den erfassten Stand der Technik antritt.
   \item Aufbau einer reproduzierbaren Mess-Pipeline
         (Binary~$\to$~CSV~$\to$~LaTeX~$\to$~Diagramm) mit profilbewusstem
-        YCSB-Workload-Routing über \emph{alle} verfügbaren Workloads und
-        Hardware-Counter-Erfassung.
+        Workload-Routing aller im Stand der Technik gefundenen Workload-Frameworks über \emph{alle} verfügbaren Workloads und Hardware-Counter-Erfassung.
   \item Systematische, möglichst vollständige Messung über die Konfigurationen in drei
         verpflichtenden Messreihen --- (A)~Prüfling gegen den Stand der Technik,
         (B)~systematische Variation der Entwurfsentscheidungen, (C)~Merge/Regression
@@ -75,14 +79,15 @@ der als konzeptionell neuartiger Suchalgorithmus untersucht wird.
         wird: \emph{Micro-Benchmarking} (jeder einzelne Entwurfsbestandteil innerhalb
         der Suchalgorithmus-Hülle wird über das gemeinsame Interface seiner Kategorie
         isoliert gegen Lastprofile gemessen), \emph{Makro-Benchmarking} (die einzelnen
-        Interface-Operationen des Suchalgorithmus gegen Beispiel-Lasten, z.\,B.\
+        Interface-Operationen des Suchalgorithmus gegen Beispiel-Lasten bzw. Test-Teilbereiche der Algorithmus-Bestandteile, z.\,B.\
         Einfügen, Punktsuche, Löschen) und \emph{Gesamt-Benchmarking} (etablierte
-        YCSB-Lastprofile über jede Rekombination der Entwurfsbestandteile).
+        YCSB-ähnliche Lastprofile und vergleichbare Frameworks über jede Rekombination der Entwurfsbestandteile).
   \item Auswertung, an welchen Stellen und in welchen Kombinationen
         cache-line-bewusste Entscheidungen für welche datentyp-spezifischen Lastmuster
         vorteilhaft oder nachteilig sind --- ermittelt aus der Rangbildung über die
         drei Benchmarking-Granularitäten und aufbereitet als auswertbare Diagramme und
         Tabellen.
+  \item Automatisierung der Systemerkennung und Binary-Auswahl des optimalsten cache-line       aware Algorithmus, anhand von empirisch belegten Messwerten, zusammen mit einer         anhand der Messwerte dynamisch gesteuerten cache-line aware Anpassung des               Algorithmus-Verhaltens als statische heuristische System-Richtlinie für das             Algorithmusverhalten unter verschiedenen Lasten und Operationen. Diese sogenannte       Extraktion soll als XML-Lastprofil-Ergebnis für die testende Umgebung für einen         Gesamtalgorithmus unter Referenz verschiedener angewendeter Lastprofile abgelegt        werden, sie ist für jeden Architekturfokus wiederverwendbar, um automatisch             Heuristiken zu erstellen.
 \end{enumerate}
 
 \minisec{Methodik und Evaluation}
@@ -93,7 +98,7 @@ Als Datengrundlage dienen reale String-Datensätze unterschiedlicher Charakteris
 etwa \texttt{url}, \texttt{dna}, \texttt{protein}, \texttt{xml}, \texttt{tpcds-id} und
 \texttt{trec-terms} --- unter variierten Datenvolumina, Keylängen, Präfixüberlappungen,
 lokaler Dichte, Skew, Treffer-/Fehlerquoten und Value-Größen. Gemessen werden
-Exact-/Prefix-Lookup, Prefix-Enumeration, Einfügen/Aktualisieren/Löschen,
+Exact-/Prefix-Lookup, Prefix-Enumeration, Einfügen/Aktualisieren/Löschen unter allen Varianten der C++ standard-Interfaces bekannter std::map und std::vector Container-Hüllen,
 p50/p95/p99-Latenz, Durchsatz, Bytes pro Key sowie Hardwarezähler (Cycles,
 Instructions, L1/L2/LLC- und dTLB-Misses, Branch-Mispredictions). Zunächst wird das
 Single-Thread-Verhalten untersucht, danach folgen leseparallele
@@ -103,14 +108,14 @@ Faire Vergleichbarkeit wird durch feste Regeln gesichert: ein gemeinsamer Minima
 (Common-Denominator) wird vom PRT-ART-Native-Modus getrennt, alle Verfahren erhalten
 identische Schlüsselräume und Seeds, fehlende Fähigkeiten werden als N/A ausgewiesen
 statt verdeckt emuliert, und Compiler, Flags, ISA-Pfad, Allokator sowie Commit-Hash
-jeder Baseline werden protokolliert. Für die Reproduzierbarkeit wird jede Konfiguration
+jeder Baseline werden protokolliert. Für die Reproduzierbarkeit wird jede Gesamt-Algorithmus-Konfiguration
 in mehreren getrennten Läufen vermessen, deren Streuung Teil der Aussage bleibt
 (Perzentile über HDR-Histogramme statt Mittelung); jeder Datensatz trägt eine Akte aus
-Quelle, Prüfsumme und Seed-Regel.
+Quelle, Prüfsumme und Seed-Regel, um den Originalcode zweifelsfrei nachzuweisen.
 
 \minisec{Umfangsabgrenzung}
 Der Kernbeitrag ist CPU-fokussiert mit SIMD-Erweiterungen und Multi-Threading,
 beschränkt sich dabei aber auf leseparallele Verfahren mit serialisiertem Schreiben
 (multi-read, single-write). Die GPU liegt vorerst außerhalb des Umfangs (zukünftig
 erweiterbar); volle Schreibparallelität und eine Engine-/Optimierer-Integration sind
-optionale Erweiterungen.
+optionale Erweiterungen. Alle Erweiterungen der Architekturen sind ihrerseits dynamische Erweiterungen gegen den CPU-Standard-Lauf und führen zu tieferen Mess-Permutationen mit multipler Laufzeit.
