@@ -5,63 +5,60 @@ Kapitel~\ref{ch:results}.
 
 \section{Drei Messreihen}\label{sec:series}
 
-Die Architektur sieht drei Messreihen vor, die alle vom \texttt{messung\_\allowbreak driver} über die
-\texttt{Experiment\allowbreak Driver}-Bibliothek ausgeführt werden, konfiguriert entweder als drei feste
-Reihen oder über eine externe \texttt{messreihen.xml}.
+Die Architektur sieht drei Messreihen vor, die alle vom \texttt{messung\_\allowbreak driver} über
+die \texttt{Experiment\allowbreak Driver}-Bibliothek ausgeführt werden, konfiguriert entweder als
+drei feste Reihen oder über eine externe \texttt{messreihen.xml}.
 
 \begin{description}
   \item[Reihe A --- PRT-ART vs.\ Stand der Technik.] Vergleicht den Prüfling gegen die
-  dokumentierten SOTA-Algorithmen. Zwei Modi: \emph{A\_defined} (schnelle Verifikation
-  gegen die 8 Rang-1-Profile) und \emph{A\_full} (alle 30 SOTA-Profile; der Standard,
-  gemäß der Direktive, so vollständig wie möglich zu messen).
+  dokumentierten SOTA-Algorithmen. Zwei Modi: \emph{A\_defined} (schnelle Verifikation gegen die 8
+  Rang-1-Profile) und \emph{A\_full} (alle 30 SOTA-Profile; der Standard, gemäß der Direktive, so
+  vollständig wie möglich zu messen).
   \item[Reihe B --- Cache-Engine-Permutationen.] Die reine ``Stand der Technik''-Vergleichsbasis:
   alle SOTA-Profile ohne den PRT-ART-Prüfling.
   \item[Reihe C --- Merge alt/neu.] Konkrete Merge-Punkte zwischen PRT-ART-Bausteinen und
-  Cache-Engine-Permutationen, z.\,B.\ PRT-ART OLC + tcmalloc + ART-Page; PRT-ART
-  4+2-Pool + HOT-Page; PRT-ART Path-Prefetch + B\textsuperscript{2}-Baum-Page; PRT-ART
-  MultiLevel-Layout + Wormhole-Page.
+  Cache-Engine-Permutationen, z.\,B.\ PRT-ART OLC + tcmalloc + ART-Page; PRT-ART 4+2-Pool +
+  HOT-Page; PRT-ART Path-Prefetch + B\textsuperscript{2}-Baum-Page; PRT-ART MultiLevel-Layout +
+  Wormhole-Page.
 \end{description}
 
 Jede dieser drei Reihen wird in drei Granularitäten erhoben (Aufgabenstellung-Methodik): Das
-\emph{Micro-Benchmarking} vergleicht jeden einzelnen Entwurfsbestandteil (Achse) isoliert
-über das gemeinsame Interface seiner Kategorie gegen Lastprofile; das \emph{Makro-Benchmarking}
-misst die einzelnen \texttt{std::map}-Interface-Operationen (Einfügen, Punkt- und
-Bereichssuche, Aktualisieren, Löschen) gegen Beispiel-Lasten; und das \emph{Gesamt-Benchmarking}
-fährt die etablierten YCSB-Lastprofile über jede Rekombination der Bausteine. Aus dem Ranking
-über diese drei Granularitäten ergibt sich, welche Entscheidung an welcher Stelle für welches
-Lastmuster vorteilhaft ist.
+\emph{Micro-Benchmarking} vergleicht jeden einzelnen Entwurfsbestandteil (Achse) isoliert über das
+gemeinsame Interface seiner Kategorie gegen Lastprofile; das \emph{Makro-Benchmarking} misst die
+einzelnen \texttt{std::map}-Interface-Operationen (Einfügen, Punkt- und Bereichssuche,
+Aktualisieren, Löschen) gegen Beispiel-Lasten; und das \emph{Gesamt-Benchmarking} fährt die
+etablierten YCSB-Lastprofile über jede Rekombination der Bausteine. Aus dem Ranking über diese drei
+Granularitäten ergibt sich, welche Entscheidung an welcher Stelle für welches Lastmuster vorteilhaft
+ist.
 
 \section{ExperimentDriver-Phasen}\label{sec:experimentdriver}
 
-Der \texttt{ExperimentDriver} durchläuft sieben Phasen je Reihe: (1)~\textbf{Enumerate}
-(XML-Configs parsen und die Permutationsliste aufbauen); (2)~\textbf{Codegen} (ein
-\texttt{comdare\_perm\_<fp>.cpp} je Permutation, plus
-\texttt{generate\_module\_from\_profile} für die SOTA-Profile); (3)~\textbf{Compile};
-(4)~\textbf{Load} (LoadLibrary/dlopen aller Module); (5)~\textbf{Execute}
-(\texttt{create\_instance} + profilbewusstes \texttt{run\_workload}); (6)~\textbf{Measure}
-(die binären Mess-Records aggregieren); (7)~\textbf{Persist} (\texttt{measurements.csv} +
-\texttt{.json}). Zwei opt-in-Phasen kompilieren fehlende Module hot und verifizieren den
-ABI-Vertrag je Modul.
+Der \texttt{ExperimentDriver} durchläuft sieben Phasen je Reihe: (1)~\textbf{Enumerate} (XML-Configs
+parsen und die Permutationsliste aufbauen); (2)~\textbf{Codegen} (ein
+\texttt{comdare\_perm\_<fp>.cpp} je Permutation, plus \texttt{generate\_module\_from\_profile} für
+die SOTA-Profile); (3)~\textbf{Compile}; (4)~\textbf{Load} (LoadLibrary/dlopen aller Module);
+(5)~\textbf{Execute} (\texttt{create\_instance} + profilbewusstes \texttt{run\_workload});
+(6)~\textbf{Measure} (die binären Mess-Records aggregieren); (7)~\textbf{Persist}
+(\texttt{measurements.csv} + \texttt{.json}). Zwei opt-in-Phasen kompilieren fehlende Module hot und
+verifizieren den ABI-Vertrag je Modul.
 
 \section{Hypothesen}\label{sec:hypotheses}
 
 \begin{description}
-  \item[H1 (Page-Type-Kosten)] Die mittleren Zugriffskosten je Page-Type-Variante
-  unterscheiden sich systematisch nach Workload: dichte Page-Typen gewinnen
-  erwartungsgemäß unter Zipf-Verteilung (YCSB-A), bereichsoptimierte Pages unter
-  Bereichs-Scans (YCSB-E).
+  \item[H1 (Page-Type-Kosten)] Die mittleren Zugriffskosten je Page-Type-Variante unterscheiden sich
+  systematisch nach Workload: dichte Page-Typen gewinnen erwartungsgemäß unter Zipf-Verteilung
+  (YCSB-A), bereichsoptimierte Pages unter Bereichs-Scans (YCSB-E).
   \item[H2 (Code-Qualität pro Quelle)] Der vom Original-Quell-Repository geerbte
   Code-Qualitäts-Score korreliert messbar mit dem erreichten Durchsatz.
   \item[H3 (Inline- vs.\ External- vs.\ Chain-Verteilung)] Die beobachtete Verteilung der drei
-  ValueHandle-Varianten korreliert mit der Page-Dichte: dichte Pages bevorzugen Inline,
-  spärliche Pages External und PRT-ART-Heuristiken ChainRef.
+  ValueHandle-Varianten korreliert mit der Page-Dichte: dichte Pages bevorzugen Inline, spärliche
+  Pages External und PRT-ART-Heuristiken ChainRef.
 \end{description}
 
 \section{Workloads und Datensätze}\label{sec:workloads}
 
 Phase~5 leitet den YCSB-Workload je Permutation aus dem Traversal-Tag des Profils ab
-(Tabelle~\ref{tab:workload-routing}); Module ohne Profil verwenden den globalen
-Default-Workload.
+(Tabelle~\ref{tab:workload-routing}); Module ohne Profil verwenden den globalen Default-Workload.
 
 \begin{table}[h]
   \centering
@@ -105,42 +102,43 @@ Die Messungen zielen auf eine lokale Workstation zur Entwicklungs-Verifikation u
 TU-Dresden-ZIH-Cluster (Barnard CPU, Capella GPU) für die vollständigen Sweeps, plus die
 Rang-3-Plattformen (Ryzen~9~9950X3D, Intel~i9~14900KS und eine HBM-Plattform). Ein
 \texttt{IPlatformProbe} (Phase~1) meldet je Plattform die lauffähige Teilmenge der Achsen
-(z.\,B.\ AVX-512 nur dort, wo verfügbar, HBM-aware nur auf HBM-Hardware). Je Plattform werden
-ein Scalar-, ein AVX2- und --- auf Barnard --- ein AVX-512-Build vorbereitet; auf Hybrid-CPUs
-werden P- und E-Cores getrennt vermessen (eigene Zähler-Domänen
-\texttt{cpu\_core}/\texttt{cpu\_atom}) statt zusammenaggregiert.
+(z.\,B.\ AVX-512 nur dort, wo verfügbar, HBM-aware nur auf HBM-Hardware). Je Plattform werden ein
+Scalar-, ein AVX2- und --- auf Barnard --- ein AVX-512-Build vorbereitet; auf Hybrid-CPUs werden P-
+und E-Cores getrennt vermessen (eigene Zähler-Domänen \texttt{cpu\_core}/\texttt{cpu\_atom}) statt
+zusammenaggregiert.
 
 \smallskip\noindent\emph{Experiment-Betriebssysteme.} Auf den Produktions-Zielmaschinen wird jede Messung
-unter zwei Betriebssystem-Regimes erhoben, um \emph{Produktions-Treue} von \emph{Mess-Tiefe} zu trennen. Ein
-\emph{immutables} Betriebssystem (Talos) spiegelt den Produktiv-Einsatz und erzwingt boot- bzw.\
-übersetzungsstatische Cache-Einstellungen (Abschnitt~\ref{ssec:aware-oblivious}); ein \emph{root-Linux mit
-vollem Hardware-Zähler-Zugriff} (\texttt{perf}/MSR) macht hingegen die zählerbasierten Mess-Kategorien ---
-Cache-, dTLB- und Branch-Misses sowie IPC/CPI (Abschnitt~\ref{ssec:sota-meas-bridge}) --- und die
-laufzeit-konfigurierbaren cache-nahen Achsen-Parameter (Prefetch-Distanz, Hardware-Prefetcher) überhaupt erst
-zugänglich. Die zeit- und observer-basierten Kategorien (Wall-Clock, HdrHistogramm, Per-Achsen-Observer)
-laufen unter beiden Regimes identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
-privilegierten Regime erhoben und je Plattform mit Betriebssystem, Kernel und Zähler-Domäne protokolliert.
+unter zwei Betriebssystem-Regimes erhoben, um \emph{Produktions-Treue} von \emph{Mess-Tiefe} zu
+trennen. Ein \emph{immutables} Betriebssystem (Talos) spiegelt den Produktiv-Einsatz und erzwingt
+boot- bzw.\ übersetzungsstatische Cache-Einstellungen (Abschnitt~\ref{ssec:aware-oblivious}); ein
+\emph{root-Linux mit vollem Hardware-Zähler-Zugriff} (\texttt{perf}/MSR) macht hingegen die
+zählerbasierten Mess-Kategorien --- Cache-, dTLB- und Branch-Misses sowie IPC/CPI
+(Abschnitt~\ref{ssec:sota-meas-bridge}) --- und die laufzeit-konfigurierbaren cache-nahen
+Achsen-Parameter (Prefetch-Distanz, Hardware-Prefetcher) überhaupt erst zugänglich. Die zeit- und
+observer-basierten Kategorien (Wall-Clock, HdrHistogramm, Per-Achsen-Observer) laufen unter beiden
+Regimes identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
+privilegierten Regime erhoben und je Plattform mit Betriebssystem, Kernel und Zähler-Domäne
+protokolliert.
 
 \section{Fairness und Reproduzierbarkeit}\label{sec:fairness}
 
-Faire Vergleichbarkeit ist über feste Regeln gesichert. Jeder Vergleich trennt einen
-gemeinsamen Minimalmodus (Common-Denominator: externe Werte-Handles, keine
-PRT-ART-Spezialpfade) vom PRT-ART-Native-Modus (Inline-Umschaltung, Cache-Engine,
-Seitentyp-Scheduler). Alle Verfahren erhalten identische, normalisierte Byte-Schlüssel sowie
-identische Miss-, Update- und Delete-Mengen; Warmup, Randomisierung und Thread-Pinning werden
-je Plattform und Workload protokolliert. Fehlende Fähigkeiten einer Baseline --- etwa
-Bereichs-Scans einer Hash-Tabelle --- werden als N/A ausgewiesen statt über Hilfsstrukturen
-verdeckt emuliert; für jede Fremdbibliothek werden Compiler, Flags, ISA-Pfad, Allokator und
-Commit-Hash mitgeloggt. Für die Reproduzierbarkeit wird jede Konfiguration in mehreren
-getrennten Läufen vermessen, deren Streuung Teil der Aussage bleibt: Perzentile werden über
-HDR-Histogramme bestimmt statt gemittelt.
+Faire Vergleichbarkeit ist über feste Regeln gesichert. Jeder Vergleich trennt einen gemeinsamen
+Minimalmodus (Common-Denominator: externe Werte-Handles, keine PRT-ART-Spezialpfade) vom
+PRT-ART-Native-Modus (Inline-Umschaltung, Cache-Engine, Seitentyp-Scheduler). Alle Verfahren
+erhalten identische, normalisierte Byte-Schlüssel sowie identische Miss-, Update- und Delete-Mengen;
+Warmup, Randomisierung und Thread-Pinning werden je Plattform und Workload protokolliert. Fehlende
+Fähigkeiten einer Baseline --- etwa Bereichs-Scans einer Hash-Tabelle --- werden als N/A ausgewiesen
+statt über Hilfsstrukturen verdeckt emuliert; für jede Fremdbibliothek werden Compiler, Flags,
+ISA-Pfad, Allokator und Commit-Hash mitgeloggt. Für die Reproduzierbarkeit wird jede Konfiguration
+in mehreren getrennten Läufen vermessen, deren Streuung Teil der Aussage bleibt: Perzentile werden
+über HDR-Histogramme bestimmt statt gemittelt.
 
 \section{Permutations-Explosion und Reduktion}\label{sec:explosion}
 
 Mit der N-Phasen-Erweiterung von 11 auf 19 Achsen plus $\sim$57 Sub-Achsen wächst der Raum von
 $\sim$5,5 Milliarden auf weit mehr als $10^{11}$ Permutationen. Drei Mechanismen dämpfen die
-Explosion: (1)~der \texttt{<expected\_workload>}-Profil-Filter routet nur kompatible
-Workloads; (2)~\texttt{MessreihenMode::Defined} führt nur die deklarierten Tupel aus
-($\sim$100--1000 je Reihe), die in das Manuskript einfließen; (3)~\texttt{Full} (und das
-realistischere \texttt{Full-Sampled}, z.\,B.\ jede 1000.\ Permutation) läuft nur auf dem
-ZIH-Cluster, unter Beachtung der vom Plattform-Probe gemeldeten Achsen-Kompatibilität.
+Explosion: (1)~der \texttt{<expected\_workload>}-Profil-Filter routet nur kompatible Workloads;
+(2)~\texttt{MessreihenMode::Defined} führt nur die deklarierten Tupel aus ($\sim$100--1000 je
+Reihe), die in das Manuskript einfließen; (3)~\texttt{Full} (und das realistischere
+\texttt{Full-Sampled}, z.\,B.\ jede 1000.\ Permutation) läuft nur auf dem ZIH-Cluster, unter
+Beachtung der vom Plattform-Probe gemeldeten Achsen-Kompatibilität.
