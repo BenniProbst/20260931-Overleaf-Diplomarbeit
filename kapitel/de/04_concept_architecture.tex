@@ -50,21 +50,21 @@ Bibliothek.
 
 \begin{enumerate}
   \item \textbf{\texttt{messung\_driver}} (Diplomarbeit/Code) --- der Auswertungs-Orchestrator
-        (äußere Schleife): liest die drei Messreihen-XML-Konfigurationen (A/B/C), triggert pro
-        Reihe den Builder und sammelt die Ergebnisse für den Anhang.
+  (äußere Schleife): liest die drei Messreihen-XML-Konfigurationen (A/B/C), triggert pro
+  Reihe den Builder und sammelt die Ergebnisse für den Anhang.
   \item \textbf{CacheEngineBuilder} (\texttt{cache-engine/apps}) --- ein autonomes
-        Plattform-Ausmess-System, das die Sieben-Phasen-Pipeline implementiert (discover,
-        measure, classify, publish, bind, execute, compare) und je registrierter Engine den
-        Permutationsraum enumeriert.
+  Plattform-Ausmess-System, das die Sieben-Phasen-Pipeline implementiert (discover,
+  measure, classify, publish, bind, execute, compare) und je registrierter Engine den
+  Permutationsraum enumeriert.
   \item \textbf{CacheEngine} (\texttt{cache-engine/libs}) --- die Werkzeug-Bibliothek: sie stellt für
-        jede der neunzehn Bausteine-Achsen (Abschnitt~\ref{sec:axes}) die
-        Standard-Implementierungen und die zugehörigen Cache-Strategie-Familien als
-        C++23-Concept-API bereit, aus denen der Builder die Permutations-Konfigurationen
-        zusammensetzt.
+  jede der neunzehn Bausteine-Achsen (Abschnitt~\ref{sec:axes}) die
+  Standard-Implementierungen und die zugehörigen Cache-Strategie-Familien als
+  C++23-Concept-API bereit, aus denen der Builder die Permutations-Konfigurationen
+  zusammensetzt.
   \item \textbf{Prüfling (PRT-ART)} (\texttt{prt-art}) --- eine bei der Cache-Engine als
-        \texttt{IExecutingEngine} registrierte Algorithmus-Implementierung; sie implementiert
-        die Such-Engine-Schicht für jede Achse und konsumiert Cache-Engine-Dienste während
-        ihrer eigenen Lookup-/Insert-/Scan-Operationen.
+  \texttt{IExecutingEngine} registrierte Algorithmus-Implementierung; sie implementiert
+  die Such-Engine-Schicht für jede Achse und konsumiert Cache-Engine-Dienste während
+  ihrer eigenen Lookup-/Insert-/Scan-Operationen.
 \end{enumerate}
 
 Die definierende Eigenschaft des M-Modells ist die \emph{bidirektionale}
@@ -87,59 +87,59 @@ einer einzigen Builder-Pipeline.
         ^  spezialisiert
     PrtArtSearchEngineAdapter             (Prüfling-Anbindung)
 \end{verbatim}
-\normalsize
+  \normalsize
 
-\textbf{Schicht~1 (CacheEngine)} stellt die Standard-Bausteine der neunzehn Achsen
---- etwa Memory-Layout, Allokator-Familien, Prefetch und Telemetrie --- als Bibliothek bereit. \textbf{Schicht~2
-(ExecutionEngine)} kapselt diese zu höheren OS-Primitiven (cache-line-aligned Allokation,
-NUMA-konformes Read-Pin, coherence-aware Write). \textbf{Schicht~3 (SearchEngine)} bietet
-such-spezifische Muster (Trie-Walk, B\textsuperscript{+}-Bereichs-Scan, Hot-Path-Lookup) auf
-den Execution-Primitiven.
+  \textbf{Schicht~1 (CacheEngine)} stellt die Standard-Bausteine der neunzehn Achsen
+  --- etwa Memory-Layout, Allokator-Familien, Prefetch und Telemetrie --- als Bibliothek bereit. \textbf{Schicht~2
+  (ExecutionEngine)} kapselt diese zu höheren OS-Primitiven (cache-line-aligned Allokation,
+  NUMA-konformes Read-Pin, coherence-aware Write). \textbf{Schicht~3 (SearchEngine)} bietet
+  such-spezifische Muster (Trie-Walk, B\textsuperscript{+}-Bereichs-Scan, Hot-Path-Lookup) auf
+  den Execution-Primitiven.
 
-\section{ABI-stabiles C++23-Modul-Interface}\label{sec:abi}
+  \section{ABI-stabiles C++23-Modul-Interface}\label{sec:abi}
 
-Das ABI folgt dem Prinzip variadischer Template-Parameter: ein Parameter $\Rightarrow$
-\texttt{std::vector}-API, zwei Parameter $\Rightarrow$ \texttt{std::map}-API, $N>2 \Rightarrow$
-\texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}. Komplexe Schlüssel werden von einer
-Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert. Die Modulgrenze ist
-binär-stabil, sodass der Builder vorkompilierte Permutations-Module laden
-(LoadLibrary/dlopen) und den ABI-Vertrag je Modul verifizieren kann.
+  Das ABI folgt dem Prinzip variadischer Template-Parameter: ein Parameter $\Rightarrow$
+  \texttt{std::vector}-API, zwei Parameter $\Rightarrow$ \texttt{std::map}-API, $N>2 \Rightarrow$
+  \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}. Komplexe Schlüssel werden von einer
+  Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert. Die Modulgrenze ist
+  binär-stabil, sodass der Builder vorkompilierte Permutations-Module laden
+  (LoadLibrary/dlopen) und den ABI-Vertrag je Modul verifizieren kann.
 
-\section{Die Bausteine-Achsen}\label{sec:axes}
+  \section{Die Bausteine-Achsen}\label{sec:axes}
 
-Nach der N-Phasen-Erweiterung und der Konsolidierung zur Suchalgorithmus-Anatomie umfasst
-die Matrix \textbf{neunzehn Hauptachsen plus etwa siebenundfünfzig Sub-Achsen}:
-(1)~Search-Algorithm, (2)~Cache-Traversal, (3)~Mapping, (4)~Path-Compression, (5)~Node-Type,
-(6)~Memory-Layout, (7)~Allocator (Allocation, Reclamation, NUMA, Huge-Page, Free-List),
-(8)~Prefetch, (9)~Concurrency (Pattern, Locking-Mode), (10)~Serialization, (11)~Telemetry,
-(12)~Value-Handle, (13)~ISA, (14)~Index-Organization, (15)~I/O-Dispatch, (16)~Migration,
-(17)~Filter, (18)~Queuing-Buffer und (19)~Flush-Policy --- die siebzehn Such-Achsen plus die
-beiden Queuing-Achsen, genau die neunzehn Organe, die das \texttt{IsComposition}-Concept je
-Algorithmus erzwingt. Je Achse enumeriert ein \texttt{std::variant} alle Konkretisierungen
-(allein die Allocator-Achse bietet rund zwei Dutzend); das kartesische Produkt ergibt weit
-mehr als $10^{11}$ Konfigurationen (Abschnitt~\ref{sec:explosion}).
+  Nach der N-Phasen-Erweiterung und der Konsolidierung zur Suchalgorithmus-Anatomie umfasst
+  die Matrix \textbf{neunzehn Hauptachsen plus etwa siebenundfünfzig Sub-Achsen}:
+  (1)~Search-Algorithm, (2)~Cache-Traversal, (3)~Mapping, (4)~Path-Compression, (5)~Node-Type,
+  (6)~Memory-Layout, (7)~Allocator (Allocation, Reclamation, NUMA, Huge-Page, Free-List),
+  (8)~Prefetch, (9)~Concurrency (Pattern, Locking-Mode), (10)~Serialization, (11)~Telemetry,
+  (12)~Value-Handle, (13)~ISA, (14)~Index-Organization, (15)~I/O-Dispatch, (16)~Migration,
+  (17)~Filter, (18)~Queuing-Buffer und (19)~Flush-Policy --- die siebzehn Such-Achsen plus die
+  beiden Queuing-Achsen, genau die neunzehn Organe, die das \texttt{IsComposition}-Concept je
+  Algorithmus erzwingt. Je Achse enumeriert ein \texttt{std::variant} alle Konkretisierungen
+  (allein die Allocator-Achse bietet rund zwei Dutzend); das kartesische Produkt ergibt weit
+  mehr als $10^{11}$ Konfigurationen (Abschnitt~\ref{sec:explosion}).
 
-\section{PRT-ART als Prüfling}\label{sec:prt-art}
+  \section{PRT-ART als Prüfling}\label{sec:prt-art}
 
-Der \texttt{PrtArtSearchEngineAdapter} implementiert das \texttt{SearchEngine}-ABI durch
-\emph{Komposition} statt direkter Vererbung, sodass die hybride
-\texttt{PrtArtSearchEngine<Ts\ldots>}-API unberührt bleibt; das Adapter-Muster ermöglicht
-einen Compile-Time-Fallback auf Cache-Engine-Bausteine (\texttt{resolve\_baustein.hpp}) dort,
-wo der Prüfling eine Achse nicht überschreibt. PRT-ART steuert eigene Implementierungen in den
-Achsen Page, Layout, Free-List, Prefetch, Concurrency-Pattern und Measurement bei
-(4+2-Pool-Allokator, Distance-Estimator-Prefetch, OLC mit reservierten Wert-Blöcken sowie die
-H1/H2/H3-Metriken); für die übrigen Achsen verwendet er bestehende SOTA-Bausteine über die
-Permutations-Konfiguration wieder.
+  Der \texttt{PrtArtSearchEngineAdapter} implementiert das \texttt{SearchEngine}-ABI durch
+  \emph{Komposition} statt direkter Vererbung, sodass die hybride
+  \texttt{PrtArtSearchEngine<Ts\ldots>}-API unberührt bleibt; das Adapter-Muster ermöglicht
+  einen Compile-Time-Fallback auf Cache-Engine-Bausteine (\texttt{resolve\_baustein.hpp}) dort,
+  wo der Prüfling eine Achse nicht überschreibt. PRT-ART steuert eigene Implementierungen in den
+  Achsen Page, Layout, Free-List, Prefetch, Concurrency-Pattern und Measurement bei
+  (4+2-Pool-Allokator, Distance-Estimator-Prefetch, OLC mit reservierten Wert-Blöcken sowie die
+  H1/H2/H3-Metriken); für die übrigen Achsen verwendet er bestehende SOTA-Bausteine über die
+  Permutations-Konfiguration wieder.
 
-\section{CacheEngineBuilder und Drei-Stufen-Prüfung}\label{sec:builder}
+  \section{CacheEngineBuilder und Drei-Stufen-Prüfung}\label{sec:builder}
 
-Der Builder orchestriert eine Drei-Stufen-Prüfung: \textbf{Stufe~1} (nur Cache-Engine) nutzt
-die Standard-Variante je Achse; \textbf{Stufe~2} (nur Prüfling) ersetzt die überschriebenen
-Achsen durch die Prüfling-Varianten und behält sonst die Cache-Engine-Standards;
-\textbf{Stufe~3} (Full Join, nicht-redundant) kombiniert die Standard- und alle
-Prüfling-Varianten. Jede Stufe erzeugt tausende nicht-redundante Permutations-Binaries, die
-zur Laufzeit jeweils als ABI-stabiles C++23-Modul geladen werden. Die Stufen bilden direkt
-die drei Pflicht-Messreihen aus Kapitel~\ref{ch:methodology} ab. Nach Auswertung der
-feingliedrigen Messergebnisse wählt der Builder den besten Gesamtalgorithmus aus und liefert
-ihn als eigenständige, ABI-stabile Binary hinter dem einheitlichen Suchalgorithmus-Interface
-aus.
+  Der Builder orchestriert eine Drei-Stufen-Prüfung: \textbf{Stufe~1} (nur Cache-Engine) nutzt
+  die Standard-Variante je Achse; \textbf{Stufe~2} (nur Prüfling) ersetzt die überschriebenen
+  Achsen durch die Prüfling-Varianten und behält sonst die Cache-Engine-Standards;
+  \textbf{Stufe~3} (Full Join, nicht-redundant) kombiniert die Standard- und alle
+  Prüfling-Varianten. Jede Stufe erzeugt tausende nicht-redundante Permutations-Binaries, die
+  zur Laufzeit jeweils als ABI-stabiles C++23-Modul geladen werden. Die Stufen bilden direkt
+  die drei Pflicht-Messreihen aus Kapitel~\ref{ch:methodology} ab. Nach Auswertung der
+  feingliedrigen Messergebnisse wählt der Builder den besten Gesamtalgorithmus aus und liefert
+  ihn als eigenständige, ABI-stabile Binary hinter dem einheitlichen Suchalgorithmus-Interface
+  aus.
