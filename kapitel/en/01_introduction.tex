@@ -90,17 +90,21 @@ ABI-stable \emph{living beings} (search-algorithm instances), and drives them th
 for measurement. Architecturally the model separates three layers --- a genus interface
 (SearchAlgorithm, Container, Graph), beneath it living-being subclasses with a fixed axis set,
 beneath that the nineteen axes as organs --- and four subsystems (measurement driver,
-CacheEngineBuilder, CacheEngine, probe); in earlier designs this layering was read as the chain
-ExecutionEngine\,$\to$\,SearchEngine\,$\to$\,SearchEngineType. The concept of the axis architecture
-itself is adopted from prior work by the author (Comdare\,/\,BEP~Venture~UG, originally for
-optimizing deduplication procedures in the UltiHash database); the contribution of this thesis is
-its transfer to cache-aware search structures and its measurement-oriented realization. The central
-contributions are:
+CacheEngineBuilder, CacheEngine, probe). This \emph{anatomy} view (genus $\to$ living being $\to$
+axes) runs \emph{parallel} to the ABI/runtime layering CacheEngine $\to$ ExecutionEngine $\to$
+SearchEngine --- it is not nested with it: the ABI layering provides the ABI-stable module
+interfaces, while the nineteen axes live in the anatomy; both views share the same root (the
+execution engine) and are joined only at run time. The concept of the axis architecture itself is
+adopted from prior work by the author (Comdare\,/\,BEP~Venture~UG, originally for optimizing
+deduplication procedures in the UltiHash database); the contribution of this thesis is its transfer
+to cache-aware search structures and its measurement-oriented realization. The central contributions
+are:
 \begin{itemize}
-  \item A three-layer architecture (CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine) with
-  ABI-stable C++23 module interfaces and variadically templated hybrid-API specializations
-  (1~parameter $\Rightarrow$ \texttt{std::vector} API; 2~parameters $\Rightarrow$ \texttt{std::map}
-  API; $N>2 \Rightarrow$ \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
+  \item A three-layer ABI/runtime layering (CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine)
+  --- parallel to the axis anatomy --- with ABI-stable C++23 module interfaces and variadically
+  templated hybrid-API specializations (1~parameter $\Rightarrow$ \texttt{std::vector} API;
+  2~parameters $\Rightarrow$ \texttt{std::map} API; $N>2 \Rightarrow$
+  \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
   \item A nineteen-axis permutation matrix with \texttt{std::variant} building blocks and
   compile-time fallback between the probe stack and the state-of-the-art stack.
   \item Thirty SOTA algorithm profiles as persisted XML configurations (8~Rank-1 + 22~Rank-2/3) that
