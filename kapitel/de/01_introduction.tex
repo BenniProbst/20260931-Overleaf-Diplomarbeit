@@ -96,21 +96,25 @@ Kernbestandteile der Cache-Engine, liefert ABI-stabile \emph{Lebewesen} (Suchalg
 aus und treibt sie über das Prüf-Dock zur Messung. Architektonisch trennt das Modell drei Ebenen ---
 ein Gattungs-Interface (SearchAlgorithm, Container, Graph), darunter Lebewesen-Unterklassen mit
 festem Achsensatz, darunter die neunzehn Achsen als Organe --- und vier Subsysteme (Mess-Treiber,
-CacheEngineBuilder, CacheEngine, Prüfling). Diese \emph{Anatomie}-Sicht (Gattung $\to$ Lebewesen
-$\to$ Achsen) läuft \emph{parallel} zur ABI-/Laufzeit-Schichtung CacheEngine $\to$ ExecutionEngine
-$\to$ SearchEngine --- nicht mit ihr verschachtelt: Die ABI-Schichtung stellt die ABI-stabilen
-Modul-Schnittstellen bereit, während die neunzehn Achsen in der Anatomie leben; beide Sichten teilen
-dieselbe Wurzel (die Ausführungs-Engine) und werden erst zur Laufzeit zusammengeführt. Das Konzept
+CacheEngineBuilder, CacheEngine, Prüfling). Dies ist \emph{eine} Architektur, kein Nebeneinander:
+\emph{Lebewesen} und \texttt{SearchAlgorithm} benennen denselben Gegenstand (Metapher und
+technischer Begriff), und die Anatomie ist nicht ein zweites Modell, sondern der \emph{Körper}
+dieses Lebewesens --- die feste Komposition seiner neunzehn Achsen-Organe. Die Wurzel
+\texttt{ExecutionEngine} trägt Lebewesen wie auch achsenlose \emph{Viren} (reine
+Graphen-Algorithmen) als Geschwister; die Schichtung
+CacheEngine\,$\to$\,ExecutionEngine\,$\to$\,SearchEngine ist lediglich die ABI-Laufzeit-\emph{Sicht}
+desselben Lebewesens über die Modulgrenze, kein paralleles Konstrukt. Eine scheinbare Dopplung in
+der Implementierung ist eine zu vereinheitlichende Stelle, kein gewolltes Nebeneinander. Das Konzept
 der Achsen-Architektur selbst ist aus einer Vorarbeit des Autors übernommen
 (Comdare\,/\,BEP~Venture~UG, ursprünglich zur Optimierung von Deduplikations-Verfahren in der
 UltiHash-Datenbank); der Beitrag dieser Arbeit ist seine Übertragung auf cache-bewusste
 Suchstrukturen und seine mess-orientierte Realisierung. Die zentralen Beiträge sind:
 \begin{itemize}
-  \item Eine dreischichtige ABI-/Laufzeit-Schichtung (CacheEngine $\to$ ExecutionEngine $\to$
-  SearchEngine) --- parallel zur Achsen-Anatomie --- mit ABI-stabilen C++23-Modul-Schnittstellen und
-  variadisch templatierten Hybrid-API-Spezialisierungen (1~Parameter $\Rightarrow$
-  \texttt{std::vector}-API; 2~Parameter $\Rightarrow$ \texttt{std::map}-API; $N>2 \Rightarrow$
-  \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
+  \item Eine dreischichtige Modul-Schnittstelle (CacheEngine $\to$ ExecutionEngine $\to$
+  SearchEngine) --- die ABI-Laufzeit-Sicht desselben Lebewesens --- mit ABI-stabilen
+  C++23-Modul-Schnittstellen und variadisch templatierten Hybrid-API-Spezialisierungen (1~Parameter
+  $\Rightarrow$ \texttt{std::vector}-API; 2~Parameter $\Rightarrow$ \texttt{std::map}-API; $N>2
+  \Rightarrow$ \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
   \item Eine neunzehn-Achsen-Permutationsmatrix mit \texttt{std::variant}-Bausteinen und
   Compile-Time-Fallback zwischen Prüfling-Stack und Stand-der-Technik-Stack.
   \item Dreißig SOTA-Algorithmus-Profile als persistierte XML-Konfigurationen (8~Rang-1 +
