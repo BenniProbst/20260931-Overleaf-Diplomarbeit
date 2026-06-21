@@ -59,8 +59,8 @@ selben Repository, sind dort aber eine ausführbare Datei bzw.\ eine Bibliothek.
   und die zugehörigen Cache-Strategie-Familien als C++23-Concept-API bereit, aus denen der Builder
   die Permutations-Konfigurationen zusammensetzt.
   \item \textbf{Prüfling (PRT-ART)} (\texttt{prt-art}) --- eine bei der Cache-Engine als
-  \texttt{IExecutingEngine} registrierte Algorithmus-Implementierung; sie implementiert die
-  Such-Engine-Schicht für jede Achse und konsumiert Cache-Engine-Dienste während ihrer eigenen
+  \texttt{IExecutionEngine} registrierte Algorithmus-Implementierung; sie stellt ihre eigenen
+  Achsen-Organe bereit und konsumiert Cache-Engine-Dienste während ihrer eigenen
   Lookup-/Insert-/Scan-Operationen.
 \end{enumerate}
 
@@ -71,26 +71,47 @@ Cache-Engine-Dienste (Telemetry, Prefetch, Heuristik) während seiner eigenen Lo
 \textsc{execute}). Diese Symmetrie ermöglicht die \emph{Multi-Prüfling}-Fähigkeit: Messreihe~A
 vergleicht PRT-ART gegen viele SOTA-Adapter in einer einzigen Builder-Pipeline.
 
-\section{Drei-Schichten-Hierarchie}\label{sec:three-layer}
+\section{Die eine Architektur}\label{sec:three-layer}
+
+Das Modell kennt \emph{eine} Architektur --- eine einzige, in sich geschlossene Hierarchie ohne
+Parallel-Bäume. An ihrer Wurzel steht die \texttt{ExecutionEngine} als gemeinsame, ausmessbare
+Abstraktion über allem Messbaren; unter ihr verzweigen sich lediglich \emph{Lebewesen} (Anatomien
+mit Achsen-Organen) und achsenlose \emph{Viren} (etwa reine Graphen-Algorithmen) als Geschwister
+derselben Wurzel.
 
 \footnotesize
 \begin{verbatim}
-    CacheEngine          (Schicht 1: Stand der Technik, Werkzeug-Bibliothek)
-        ^  erbt
-    ExecutionEngine<ProcessingStrategy>   (Schicht 2: OS-Primitive)
-        ^  erbt
-    SearchEngine<Collection, Config>      (Schicht 3: Such-Muster)
-        ^  spezialisiert
-    PrtArtSearchEngineAdapter             (Prüfling-Anbindung)
+    IExecutionEngine                               Wurzel: alles Ausmessbare
+      |
+      +-- IAnatomyBase : IExecutionEngine          Lebewesen
+      |     |
+      |     +-- SearchAlgorithm-Unterklasse        = "Lebewesen" (Saeugetier)
+      |           |
+      |           +-- SearchAlgorithmAnatomy<C>     = sein KOERPER (19 Organe)
+      |           +-- SearchAlgorithmAbiAdapter<A>  = ABI-Laufzeit-SICHT ("SearchEngine")
+      |
+      +-- IVirusExecutionEngine : IExecutionEngine  Virus (achsenlos, Graph)
 \end{verbatim}
   \normalsize
 
-  \textbf{Schicht~1 (CacheEngine)} stellt die Standard-Bausteine der neunzehn Achsen --- etwa
-  Memory-Layout, Allokator-Familien, Prefetch und Telemetrie --- als Bibliothek bereit.
-  \textbf{Schicht~2 (ExecutionEngine)} kapselt diese zu höheren OS-Primitiven (cache-line-aligned
-  Allokation, NUMA-konformes Read-Pin, coherence-aware Write). \textbf{Schicht~3 (SearchEngine)}
-  bietet such-spezifische Muster (Trie-Walk, B\textsuperscript{+}-Bereichs-Scan, Hot-Path-Lookup)
-  auf den Execution-Primitiven.
+  Ein Suchalgorithmus ist in diesem Modell ein \emph{Lebewesen}, und „Lebewesen" und
+  \texttt{SearchAlgorithm} bezeichnen denselben Gegenstand --- Metapher und technischer Begriff sind
+  zwei Namen für eine Sache. Nach außen wird das Lebewesen über sein Gattungs-Interface (das
+  Prüf-Dock, ein \texttt{std::map}-artiges Interface) angesprochen; sein Inneres ist seine
+  \emph{Anatomie}. Die Anatomie ist nicht ein zweites Modell neben dem Suchalgorithmus, sondern sein
+  \emph{Körper}: die feste Komposition seiner neunzehn Achsen, von denen jede einem Organ
+  entspricht. Über die Modulgrenze hinweg wird dasselbe Lebewesen als ABI-Sicht sichtbar gemacht ---
+  die ABI-/Laufzeit-Schichtung
+  \texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} ist genau
+  diese Sicht desselben Lebewesens über die Modulgrenze, kein paralleles Konstrukt:
+  \texttt{CacheEngine} stellt die Standard-Bausteine der Achsen als Bibliothek,
+  \texttt{ExecutionEngine} die OS-Primitiven (cache-line-aligned Allokation, NUMA-konformes
+  Read-Pin, coherence-aware Write), und „SearchEngine" ist die Such-API-Sicht desselben Lebewesens,
+  gemessen über genau eine Beobachter-Schnittstelle über alle neunzehn Organe. Es gibt somit eine
+  einzige Kette --- Wurzel (\texttt{ExecutionEngine}) über das Gattungs-Prüf-Dock zu dem Lebewesen,
+  das gleichbedeutend mit \texttt{SearchAlgorithm} ist und dessen Körper die Anatomie mit neunzehn
+  Achsen ist; jede scheinbare Dopplung in der Implementierung ist eine zu vereinheitlichende Stelle,
+  kein gewolltes Nebeneinander.
 
   \section{ABI-stabiles C++23-Modul-Interface}\label{sec:abi}
 
@@ -108,8 +129,8 @@ vergleicht PRT-ART gegen viele SOTA-Adapter in einer einzigen Builder-Pipeline.
   (2)~Cache-Traversal, (3)~Mapping, (4)~Path-Compression, (5)~Node-Type, (6)~Memory-Layout,
   (7)~Allocator (Allocation, Reclamation, NUMA, Huge-Page, Free-List), (8)~Prefetch, (9)~Concurrency
   (Pattern, Locking-Mode), (10)~Serialization, (11)~Telemetry, (12)~Value-Handle, (13)~ISA,
-  (14)~Index-Organization, (15)~I/O-Dispatch, (16)~Migration, (17)~Filter, (18)~Queuing-Buffer und
-  (19)~Flush-Policy --- die siebzehn Such-Achsen plus die beiden Queuing-Achsen, genau die neunzehn
+  (14)~Index-Organization, (15)~I/O-Dispatch, (16)~Migration, (17)~Filter, (18)~Queuing-q1 und
+  (19)~Queuing-q2 --- die siebzehn Such-Achsen plus die beiden Queuing-Achsen, genau die neunzehn
   Organe, die das \texttt{IsComposition}-Concept je Algorithmus erzwingt. Je Achse enumeriert ein
   \texttt{std::variant} alle Konkretisierungen (allein die Allocator-Achse bietet rund zwei
   Dutzend); das kartesische Produkt ergibt weit mehr als $10^{11}$ Konfigurationen
@@ -117,15 +138,15 @@ vergleicht PRT-ART gegen viele SOTA-Adapter in einer einzigen Builder-Pipeline.
 
   \section{PRT-ART als Prüfling}\label{sec:prt-art}
 
-  Der \texttt{PrtArtSearchEngineAdapter} implementiert das \texttt{SearchEngine}-ABI durch
-  \emph{Komposition} statt direkter Vererbung, sodass die hybride
-  \texttt{PrtArtSearchEngine<Ts\ldots>}-API unberührt bleibt; das Adapter-Muster ermöglicht einen
-  Compile-Time-Fallback auf Cache-Engine-Bausteine (\texttt{resolve\_baustein.hpp}) dort, wo der
-  Prüfling eine Achse nicht überschreibt. PRT-ART steuert eigene Implementierungen in den Achsen
-  Page, Layout, Free-List, Prefetch, Concurrency-Pattern und Measurement bei (4+2-Pool-Allokator,
-  Distance-Estimator-Prefetch, OLC mit reservierten Wert-Blöcken sowie die H1/H2/H3-Metriken); für
-  die übrigen Achsen verwendet er bestehende SOTA-Bausteine über die Permutations-Konfiguration
-  wieder.
+  PRT-ART ist ein \emph{Prüfling}: ein abstraktes Lebewesen, das einige Achsen-Organe selbst stellt
+  und für die übrigen über einen Compile-Time-Fallback (\texttt{resolve\_baustein.hpp}) auf die
+  Cache-Engine-Standardbausteine zurückgreift, wo es eine Achse nicht überschreibt; die hybride
+  \texttt{PrtArtSearchEngine<Ts\ldots>}-API bleibt davon unberührt. Die Laufzeit-Anbindung erfolgt
+  über den Execution-Engine-Adapter, nicht über eine eigene Such-Engine-Schicht. PRT-ART steuert
+  eigene Implementierungen in den Achsen Page, Layout, Free-List, Prefetch, Concurrency-Pattern und
+  Measurement bei (4+2-Pool-Allokator, Distance-Estimator-Prefetch, OLC mit reservierten
+  Wert-Blöcken sowie die H1/H2/H3-Metriken); für die übrigen Achsen verwendet er bestehende
+  SOTA-Bausteine über die Permutations-Konfiguration wieder.
 
   \section{CacheEngineBuilder und Drei-Stufen-Prüfung}\label{sec:builder}
 
@@ -135,6 +156,7 @@ vergleicht PRT-ART gegen viele SOTA-Adapter in einer einzigen Builder-Pipeline.
   Join, nicht-redundant) kombiniert die Standard- und alle Prüfling-Varianten. Jede Stufe erzeugt
   tausende nicht-redundante Permutations-Binaries, die zur Laufzeit jeweils als ABI-stabiles
   C++23-Modul geladen werden. Die Stufen bilden direkt die drei Pflicht-Messreihen aus
-  Kapitel~\ref{ch:methodology} ab. Nach Auswertung der feingliedrigen Messergebnisse wählt der
-  Builder den besten Gesamtalgorithmus aus und liefert ihn als eigenständige, ABI-stabile Binary
-  hinter dem einheitlichen Suchalgorithmus-Interface aus.
+  Kapitel~\ref{ch:methodology} ab. Aus den feingliedrigen Messergebnissen liefert die Pipeline
+  bereits die nötige Rangbildung; die automatische Auswahl des besten Gesamtalgorithmus und seine
+  Auslieferung als eigenständige, ABI-stabile Binary hinter dem einheitlichen
+  Suchalgorithmus-Interface sind als Erweiterung vorgesehen (Zielsetzung, Ausblick).
