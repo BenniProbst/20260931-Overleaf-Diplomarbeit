@@ -69,7 +69,11 @@ Hauptfrage (FF0) und vier messbare Teilfragen (FF1--FF4); ergänzende Aspekte si
   Original-Setups zu übernehmen?
   \item[FF3 (Prüfling-Vergleich)] Gewinnt der Prüfling PRT-ART gegenüber den acht
   Rang-1-SOTA-Entwürfen (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-Baum, Wormhole,
-  SuRF)\footnote{Die \emph{Ränge} ordnen die Stand-der-Technik-Veröffentlichungen nach Zentralität für diese Arbeit: Rang-1 umfasst die zehn wichtigsten Kern-Arbeiten --- darunter die acht eigenständigen Suchentwürfe sowie ARTSync (P08) und LOUDS (P09), die als Organe eingehen ---, Rang-2 die cache-bewussten Layout- und B\textsuperscript{+}-Vorarbeiten und Rang-3 die Prefetching-, Synchronisations- und TU-Dresden-Hardware-Arbeiten.}
+  SuRF)\footnote{Die \emph{Ränge} ordnen die Stand-der-Technik-Veröffentlichungen nach Zentralität
+  für diese Arbeit: Rang-1 umfasst die zehn wichtigsten Kern-Arbeiten --- darunter die acht
+  eigenständigen Suchentwürfe sowie ARTSync (P08) und LOUDS (P09), die als Organe eingehen ---, Rang-2
+  die cache-bewussten Layout- und B\textsuperscript{+}-Vorarbeiten und Rang-3 die Prefetching-,
+  Synchronisations- und TU-Dresden-Hardware-Arbeiten.}
   und der Rang-2/3-SOTA \emph{nicht} durch asymptotische Neuheit, sondern durch bessere
   Mikroarchitektur-Eigenschaften (höhere Cache-Line-Auslastung, weniger LLC- und dTLB-Misses,
   geringere Branch-Kosten, kleinere heiße Suchpfade) bei Exact-Lookup, Prefix-Lookup und
@@ -84,7 +88,9 @@ Hauptfrage (FF0) und vier messbare Teilfragen (FF1--FF4); ergänzende Aspekte si
   fixiert werden, um plattform-optimierte, provenienz-nachweisbare Binaries je Permutation zu
   erzeugen, und welche können bzw.\ müssen zur Laufzeit gewählt werden (bit-codierter
   Permutations-Identifier, adaptive Layout-Selection), ohne die wissenschaftliche Vergleichbarkeit
-  (gleiche Compiler- und Flag-Basis) zu verletzen?
+  (gleiche Compiler- und Flag-Basis) zu verletzen? Wird es durch die Messung möglich, ISA+OS
+  optimierte Binaries für eine Suchalgorithmus-Rekombination zu erzeugen, deren heuristische
+  Optimierung perfekt auf ihre Laufzeitumgebung zugeschnitten ist?
 \end{description}
 
 \section{Zielsetzung und Beiträge}\label{sec:contributions}
@@ -92,25 +98,29 @@ Hauptfrage (FF0) und vier messbare Teilfragen (FF1--FF4); ergänzende Aspekte si
 Die Zielsetzung folgt der Aufgabenstellung in vier Schritten: cache-bewusste Suchalgorithmen in
 austauschbare Entwurfsbestandteile zerlegen, Stand-der-Technik-Entwürfe als explizite
 Konfigurationen rekonstruieren, cache-line-bewusstes Verhalten sowohl je Bestandteil als auch für
-den ganzen Algorithmus auf gemeinsamer CPU-Basis messen und den besten Gesamtalgorithmus als
+den ganzen Algorithmus auf gemeinsamer CPU-Basis finden/zerlegen/messen und den besten Gesamtalgorithmus
+nach einer autonomen Heuristik-Profil-Auswertung und Heuristik-Funktions-Modellierung als
 eigenständige Binary ausliefern. Der Code der Diplomarbeit ist dabei der \emph{formale Bediener} der
-Cache-Engine: Er lädt den Prüfling PRT-ART, kompiliert ihn per Metaprogrammierung gegen die
+Cache-Engine: Er lädt als Forschener den Prüfling PRT-ART, kompiliert ihn per Metaprogrammierung gegen die
 Kernbestandteile der Cache-Engine, liefert ABI-stabile \emph{Lebewesen} (Suchalgorithmus-Instanzen)
-aus und treibt sie über das Prüf-Dock zur Messung. Architektonisch trennt das Modell drei Ebenen ---
+aus und treibt sie über das Prüf-Dock zur Messung. Auf die Analogie des architektonischen Aufbaus als
+Analogie zur menschlichen Anatomie gehen wir hier ein: Architektonisch trennt das Modell drei Ebenen ---
 ein Gattungs-Interface (SearchAlgorithm, Container, Graph), darunter Lebewesen-Unterklassen mit
 festem Achsensatz, darunter die neunzehn Achsen als Organe --- und vier Subsysteme (Mess-Treiber,
 CacheEngineBuilder, CacheEngine, Prüfling). Dies ist \emph{eine} Architektur, kein Nebeneinander:
 \emph{Lebewesen} und \texttt{SearchAlgorithm} benennen denselben Gegenstand (Metapher und
 technischer Begriff), und die Anatomie ist nicht ein zweites Modell, sondern der \emph{Körper}
-dieses Lebewesens --- die feste Komposition seiner neunzehn Achsen-Organe. Die Wurzel
-\texttt{ExecutionEngine} trägt Lebewesen wie auch achsenlose \emph{Viren} (reine
-Graphen-Algorithmen) als Geschwister; die Schichtung
+dieses \"Lebewesens\" --- die feste Komposition seiner neunzehn Achsen-Organe als eigenständige
+Binary mit einem ABI-Stabilen Interface eines Suchalgorithmus --- wahlweise mit oder ohne Mess-Observer
+für Debug, Messung oder Release. Die Wurzel \texttt{ExecutionEngine} trägt Lebewesen wie auch
+achsenlose \emph{Viren} (reine Graphen-Algorithmen) als Geschwister; die Schichtung
 CacheEngine\,$\to$\,ExecutionEngine\,$\to$\,SearchEngine ist lediglich die ABI-Laufzeit-\emph{Sicht}
-desselben Lebewesens über die Modulgrenze, kein paralleles Konstrukt. Eine scheinbare Dopplung in
-der Implementierung ist eine zu vereinheitlichende Stelle, kein gewolltes Nebeneinander. Das Konzept
-der Achsen-Architektur selbst ist aus einer Vorarbeit des Autors übernommen
+desselben Lebewesens über die Modulgrenze, kein paralleles Konstrukt. Die ExecutionEngine liefert für
+alle Gattungen, die Mess-Heuristik-Optimierung unterstützen sollen, die notwendigen Werkzeuge.
+Eine scheinbare Dopplung in der Implementierung ist eine zu vereinheitlichende Stelle, kein gewolltes Nebeneinander. Das Konzept der Achsen-Architektur selbst ist aus einer Vorarbeit des Autors übernommen
 (Comdare\,/\,BEP~Venture~UG, ursprünglich zur Optimierung von Deduplikations-Verfahren in der
-UltiHash-Datenbank); der Beitrag dieser Arbeit ist seine Übertragung auf cache-bewusste
+UltiHash-Datenbank 2021 zur Graphen-Optimierung in Hash-basierten Nachschlageverzeichnissen);
+der Beitrag dieser Arbeit ist seine Übertragung auf cache-bewusste
 Suchstrukturen und seine mess-orientierte Realisierung. Die zentralen Beiträge sind:
 \begin{itemize}
   \item Eine dreischichtige Modul-Schnittstelle (CacheEngine $\to$ ExecutionEngine $\to$
