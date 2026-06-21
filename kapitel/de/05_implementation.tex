@@ -29,6 +29,28 @@ Verantwortlichkeiten:
   Manuskript.
 \end{itemize}
 
+\subsection{Terminologie: \texorpdfstring{\texttt{CacheEngine}}{CacheEngine} versus \texorpdfstring{\texttt{ExecutionEngine}}{ExecutionEngine}}\label{sec:terminologie-engines}
+
+Die beiden Engine-Begriffe bezeichnen klar getrennte Zuständigkeiten und dürfen nicht
+kurzgeschlossen werden. Die \texttt{CacheEngine} (\texttt{cache-engine/libs}) ist die
+\emph{Werkzeug-Bibliothek der Achsen-Bausteine}: Sie stellt je Achse die austauschbaren
+Entwurfsbestandteile (Knoten-Layout, Pfadkompression, Allokator, Prefetch, Telemetrie und die
+übrigen neunzehn Achsen) als Concept-/CRTP-Komponenten bereit, aus denen der Builder ein Lebewesen
+komponiert. Sie enthält \emph{keine} Mess-Logik; ihre Verantwortung endet bei den Bausteinen, die
+ein Suchalgorithmus für sein Innen-Verhalten kombiniert.
+
+Die \texttt{ExecutionEngine} hingegen ist die quer zu allen Achsen liegende
+\emph{Ausführungs- und Mess-Infrastruktur}. Als abstrakte messbare Wurzel
+(\texttt{IExecutionEngine}, vgl.\ Abschnitt~\ref{sec:m-model}) ist sie das gemeinsame Interface über
+allem Messbaren; die konkrete \texttt{execution\_engine<Strategy>} liefert die OS-Primitiven
+(cache-line-ausgerichtete Allokation, NUMA-konformes Read-Pinning, kohärenz-bewusstes Schreiben) und
+stellt --- ausschließlich im Experiment-Modus (\texttt{-DCOMDARE\_EXPERIMENT\_MODE=ON}) --- den
+Mess-Aggregator als integralen Member bereit. Kurz: Die \texttt{CacheEngine} liefert die
+\emph{Bausteine}, aus denen ein Algorithmus besteht; die \texttt{ExecutionEngine} liefert die
+\emph{Werkzeuge}, mit denen ein Algorithmus ausgeführt und vermessen wird. Diese Trennung hält den
+Produktiv-Pfad mess-frei und vermeidet jeden Begriffs-Kurzschluss zwischen Bausteine-Bibliothek und
+Mess-Werkzeug.
+
 \section{Adapter für Stand-der-Technik-Algorithmen und Allokatoren}\label{sec:adapters}
 
 Jeder SOTA-Entwurf und jeder Allokator wird über einen dünnen Adapter integriert, der die

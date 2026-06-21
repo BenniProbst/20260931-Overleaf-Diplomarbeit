@@ -37,7 +37,10 @@ Experiment --- der Austausch von Organen zwischen Lebewesen erzeugt neue Komposi
 bisher unbekanntem Cache-Line-Verhalten. Das Forschungsziel ist es, diese gemeinsame Anatomie und im
 resultierenden Entwurfsraum
 (\emph{design space})~\cite{idreos2018periodic, idreos2018datacalculator} das schnellste Komposit
-für ein gegebenes datentyp-spezifisches Lastmuster zu finden.
+für ein gegebenes datentyp-spezifisches Lastmuster zu finden. Genau diese modulare Austauschbarkeit
+löst das Trennbarkeits-Problem der Aufgabenstellung: weil sich jede Achse einzeln gegen ihre
+Alternativen austauschen lässt, während alle übrigen Achsen fixiert bleiben, wird der
+Gewichtungsbeitrag jedes einzelnen Bestandteils zur Gesamtleistung isoliert messbar.
 
 \section{Vier-Subsystem-Trennung (M-Modell)}\label{sec:m-model}
 
@@ -73,6 +76,13 @@ eigenen Lookups auf (ebenfalls Phase 5, \texttt{run\_workload}); die Aggregation
 (\textsc{measure}). Diese Symmetrie ermöglicht die \emph{Multi-Prüfling}-Fähigkeit: Messreihe~A
 vergleicht PRT-ART gegen viele SOTA-Adapter in einer einzigen Builder-Pipeline.
 
+Die \texttt{ExecutionEngine} ist dabei kein fünftes Subsystem, sondern die gemeinsame messbare
+Wurzel beziehungsweise das \texttt{IExecutionEngine}-Interface, über das diese vier Subsysteme
+verbunden sind: die Cache-Engine stellt die Achsen-Bausteine-Bibliothek, während die ExecutionEngine
+die quer dazu liegende Ausführungs- und Mess-Infrastruktur beisteuert --- als abstrakte Wurzel über
+allem Messbaren (Abschnitt~\ref{sec:three-layer}), unter der sich der Prüfling und jede Engine als
+\texttt{IExecutionEngine} registrieren.
+
 \section{Die eine Architektur}\label{sec:three-layer}
 
 Das Modell kennt \emph{eine} Architektur --- eine einzige, in sich geschlossene Hierarchie ohne
@@ -106,10 +116,13 @@ derselben Wurzel.
   die ABI-/Laufzeit-Schichtung
   \texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} ist genau
   diese Sicht desselben Lebewesens über die Modulgrenze, kein paralleles Konstrukt:
-  \texttt{CacheEngine} stellt die Standard-Bausteine der Achsen als Bibliothek,
-  \texttt{ExecutionEngine} die OS-Primitiven (cache-line-aligned Allokation, NUMA-konformes
-  Read-Pin, coherence-aware Write), und „SearchEngine" ist die Such-API-Sicht desselben Lebewesens,
-  gemessen über genau eine Beobachter-Schnittstelle über alle neunzehn Organe. Es gibt somit eine
+  \texttt{CacheEngine} und \texttt{ExecutionEngine} haben dabei klar getrennte Rollen --- die
+  \texttt{CacheEngine} ist die \emph{Achsen-Bausteine-Bibliothek} und stellt die Standard-Bausteine
+  der Achsen bereit, während die \texttt{ExecutionEngine} die \emph{Ausführungs- und Mess-Werkzeuge}
+  liefert: die OS-Primitiven (cache-line-aligned Allokation, NUMA-konformes Read-Pin,
+  coherence-aware Write) und, im Experiment-Modus, den Mess-Aggregator über genau eine
+  Beobachter-Schnittstelle. „SearchEngine" ist die Such-API-Sicht desselben Lebewesens, gemessen
+  über genau diese eine Beobachter-Schnittstelle über alle neunzehn Organe. Es gibt somit eine
   einzige Kette --- Wurzel (\texttt{ExecutionEngine}) über das Gattungs-Prüf-Dock zu dem Lebewesen,
   das gleichbedeutend mit \texttt{SearchAlgorithm} ist und dessen Körper die Anatomie mit neunzehn
   Achsen ist.
@@ -161,3 +174,26 @@ derselben Wurzel.
   bereits die nötige Rangbildung; die automatische Auswahl des besten Gesamtalgorithmus und seine
   Auslieferung als eigenständige, ABI-stabile Binary hinter dem einheitlichen
   Suchalgorithmus-Interface sind als Erweiterung vorgesehen (Zielsetzung, Ausblick).
+
+  \subsection{Heuristik-Profil-Auswertung und Binary-Auswahl}\label{sec:heuristic-profile-selection}
+
+  Über die reine Rangbildung hinaus ist als Zielsetzung ein durchgängiger Auswertungs-Schritt
+  vorgesehen, der die Messergebnisse in eine ausgelieferte Konfiguration überführt. Die folgenden
+  drei Stufen sind \emph{Ausblick und Zielsetzung} und im aktuellen Stand
+  \emph{noch nicht implementiert}.
+
+  \emph{Erstens} wird aus der Rangbildung der drei Messreihen~A/B/C je Lastprofil und Datentyp die
+  beste Konfiguration ermittelt. Da jede Reihe pro Permutations-Binary einen vollständigen
+  Achsen-Messvektor liefert, lässt sich für ein gegebenes Last-/Datentyp-Profil diejenige
+  Achsen-Komposition bestimmen, die unter diesem Profil den vordersten Rang belegt.
+
+  \emph{Zweitens} ist der angestrebte Auswahl-Mechanismus --- der von den Messergebnissen
+  automatisch auf die beste Konfiguration schließt --- eine \emph{ML-Klassifikation}: Aus den
+  Achsen-Merkmalen und den Merkmalen des Lastprofils (Zugriffsverteilung, Schreib-/Lese-Anteil,
+  Schlüssel-/Wert-Datentyp) wird die geeignete Achsen-Konfiguration vorhergesagt. Dieser
+  Heuristik-Auswahl-Mechanismus ist \emph{Future Work} und bislang nicht realisiert.
+
+  \emph{Drittens} wird das Ergebnis dieser Auswertung als wiederverwendbares \emph{XML-Lastprofil}
+  abgelegt, das die ermittelte Beste-Konfiguration an ein benanntes Last-/Datentyp-Profil bindet und
+  so beim nächsten Lauf direkt als Eingabe verwendet werden kann --- symmetrisch zu den
+  Messreihen-XML-Konfigurationen aus Abschnitt~\ref{sec:m-model}.

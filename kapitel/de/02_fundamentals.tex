@@ -112,6 +112,43 @@ Linux mit MSR-Zugriff) über boot- bzw.\ übersetzungsstatisch (immutable Betrie
 Auswahl der Einstellungen je Lastmuster ermöglicht; das \emph{Warum} dieser Konstruktion entwickelt
 Kapitel~\ref{ch:concept}.
 
+\subsection{Heuristiken und ihre Automatisierung}\label{ssec:heuristics}
+Die im vorigen Abschnitt angedeutete „an den Messwerten orientierte Auswahl der Einstellungen"
+beruht auf dem Begriff der \emph{Heuristik}. Im Kontext der Cache-Optimierung ist eine Heuristik
+eine \emph{Entscheidungsregel ohne Optimalitätsgarantie}: Sie bildet beobachtbare Merkmale --- etwa
+die je Zielplattform ermittelten Cache-Eigenschaften (Abschnitt~\ref{ssec:cache-line-sizes}) oder
+das gemessene Lastprofil (Abschnitt~\ref{sec:workloads-basics}) --- auf eine konkrete Konfiguration
+ab, ohne deren Bestmöglichkeit zu beweisen. Sie tritt überall dort an die Stelle einer exakten
+Lösung, wo diese unbekannt oder zu teuer zu bestimmen ist; die heuristischen Ersetzungsstrategien
+des Caches selbst (LRU, RRIP; Abschnitt~\ref{ssec:coherence}) sind das hardwareseitige Vorbild
+dieser Denkweise~\cite{jaleel2010rrip}.
+
+Heuristiken lassen sich danach unterscheiden, \emph{wann} ihre Entscheidung fällt --- dies
+entspricht den in Abschnitt~\ref{ssec:dynamics-levels} entwickelten Ebenen der Dynamik. Eine
+\emph{statische Heuristik} ist zur Übersetzungszeit fixiert: Die gewählte Konfiguration wird fest in
+eine systemoptimierte Binary einkompiliert und ändert sich zur Laufzeit nicht mehr. Eine
+\emph{dynamische Heuristik} wählt die Konfiguration hingegen zur Laufzeit, abhängig vom tatsächlich
+beobachteten Verhalten, und kann sie im Betrieb anpassen. Beide Spielarten setzen dieselbe
+\emph{Heuristik-Funktion} voraus, verschieben aber den Zeitpunkt ihrer Auswertung.
+
+Formal ist diese Heuristik-Funktion ein \emph{Mapping} von einem Messergebnis beziehungsweise
+Lastprofil auf eine Konfiguration: $h: \mathcal{M} \rightarrow \mathcal{K}$, wobei $\mathcal{M}$ den
+Raum der erhobenen Merkmale (Achsen-Messwerte, Lastprofil-Kennzahlen) und $\mathcal{K}$ den Raum der
+zulässigen Achsen-Belegungen bezeichnet. Die vorliegende Arbeit \emph{misst} zunächst diesen
+Zusammenhang systematisch aus (Kapitel~\ref{ch:methodology}); die \emph{automatisierte} Bestimmung
+von $h$ selbst --- also der Mechanismus, der aus den Messergebnissen die jeweils beste Konfiguration
+ableitet, in Richtung einer ML-Klassifikation von Lastprofil- und Achsen-Merkmalen auf
+Konfigurationen --- ist Zielsetzung und Ausblick dieser Arbeit (Abschnitt~\ref{sec:outlook}) und
+noch nicht realisiert.
+
+Schließlich sind die in der Literatur teils synonym gebrauchten Begriffe abzugrenzen. \emph{Adaptiv}
+heißt eine Heuristik, die ihre Entscheidung an veränderliche Bedingungen anpasst; \emph{dynamisch}
+bezieht sich enger auf den Zeitpunkt --- die Auswertung zur Laufzeit statt zur Übersetzungszeit; und
+\emph{messwertgetrieben} (\emph{measurement-driven}) betont die Datenquelle --- die Entscheidung
+gründet auf erhobenen Messwerten und nicht auf festen Modellannahmen. Eine adaptive Heuristik ist
+somit stets dynamisch, eine dynamische nicht notwendig adaptiv, und beide können, müssen aber nicht
+messwertgetrieben sein.
+
 \section{Klassen von Suchstrukturen}\label{sec:search-classes}
 % Die als großes Bild dargelegten SUchbäume und Suchalgorithmen sind korrekt, aber dieses Kapitel muss alle Bestandteile eines Suchalgorithmus und der einzelnen Typen von Suchalgorithmen im Bezug auf die von uns im Code gefundenen Achsen vollständig als Unterkapitel aufgliedern. Unsere Arbeit besteht schließlich im Kern aus deren "Sezierung". Alle bekannten Paper belegten Suchalgorithmen aufzulisten, mit Quellen zu versehen und kurz zu benennen ist die eine Sache, deren Interna in Achsen Algorithmen zu sezieren, sodass eine Basis an gleichen Achsen (mit je veriablen Algorithmen) als Entwurfsraum erkennbar bleibt, ist die andere Sache. Wir listen also alle Algorithmen als Ganzes allgemein für die Typen der "Lebewesen" Gesamtalgorithmen und danach Zerlegen wir erst im Stand der Technik alle "Lebewesen" Gesamtalgorithmen in jede Achse einzeln mit den laut Papern bekannten Algorithmen, ordnen aber die "Organe"-Algorithmen einer Achse zu und verweisen nur ganz kurz zu welchem "Lebewesen" sie angehören. Bezüglich des Kerns der Arbeit sollte sich diese nicht nur ausschließlich auf baumartige Strukturen konzentrieren, sondern auch auf Container, die wir testweise als std::vector Hülle abbilden, weiterhin sind auch flache Suchalgorithmen und "Exoten" wissenschaftlich ausfindig zu machen und ausdrücklich erlaubt, müssen aber noch ergänzt werden. Der Teil über den Anschluss weiterer Strukturklassen/Achsen ohne die Grundorganisation des Messapparates und der Observer Struktur zu stören, ist korrekt.
 \subsection{Etablierte Untergliederung der Suchalgorithmen}\label{ssec:genera}
@@ -128,7 +165,9 @@ gemeinsamen Nenner moderner Hauptspeicher-Indizes ---, während Hashing nur als 
 auftritt und räumliche Strukturen außerhalb des Umfangs liegen. Das in Kapitel~\ref{ch:concept}
 entwickelte Prinzip ist jedoch nicht an Bäume gebunden: über eine höherwertige Abstraktion lassen
 sich weitere Strukturklassen anschließen, ohne den Mess- und Permutationsapparat neu zu bauen
-(Abschnitt~\ref{sec:outlook}).
+(Abschnitt~\ref{sec:outlook}) --- denn so verschieden diese Klassen äußerlich wirken, teilen sie
+doch eine gemeinsame innere \emph{Anatomie} aus orthogonalen Teilentscheidungen, die
+Kapitel~\ref{ch:concept} als Achsensatz freilegt.
 
 % Das ist korrekt aber zu grob. Weiterhin sind unter den baumförmigen alle Kategorien auszuführen, weitere kategorien sind hinzuzufügen, ich denke an sections, subsections und subsubsections. Wissenschaftliche Belege und Zitate für die Korrektheit der Definitionen sind immer Pflicht
 Innerhalb dieser Mechanismus-Klassen hat die Forschung konkrete Struktur-\emph{Klassen}

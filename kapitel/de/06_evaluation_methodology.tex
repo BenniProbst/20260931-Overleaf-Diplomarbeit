@@ -29,7 +29,11 @@ einzelnen \texttt{std::map}-Interface-Operationen (Einfügen, Punkt- und Bereich
 Aktualisieren, Löschen) gegen Beispiel-Lasten; und das \emph{Gesamt-Benchmarking} fährt die
 etablierten YCSB-Lastprofile über jede Rekombination der Bausteine. Aus dem Ranking über diese drei
 Granularitäten ergibt sich, welche Entscheidung an welcher Stelle für welches Lastmuster vorteilhaft
-ist.
+ist. Genau diese drei-granulare Methodik ist die Antwort auf das Trennbarkeits-Problem der
+Aufgabenstellung: Indem jeder einzelne Entwurfsbestandteil zunächst isoliert über das gemeinsame
+Kategorie-Interface vermessen wird (Micro), bevor er im Operations- und Gesamt-Kontext erscheint,
+werden die Beiträge der einzelnen Bestandteile getrennt und damit isoliert messbar, statt im
+Gesamtdurchsatz vermengt zu bleiben.
 
 \section{ExperimentDriver-Phasen}\label{sec:experimentdriver}
 
@@ -142,3 +146,34 @@ Explosion: (1)~der \texttt{<expected\_workload>}-Profil-Filter routet nur kompat
 Reihe), die in das Manuskript einfließen; (3)~\texttt{Full} (und das realistischere
 \texttt{Full-Sampled}, z.\,B.\ jede 1000.\ Permutation) läuft nur auf dem ZIH-Cluster, unter
 Beachtung der vom Plattform-Probe gemeldeten Achsen-Kompatibilität.
+
+\section{Von Messergebnissen zu Heuristiken}\label{sec:measurements-to-heuristics}
+
+\emph{Dieser Abschnitt beschreibt einen Ausblick, keine im Rahmen dieser Arbeit umgesetzte Funktion.}
+Die in Abschnitt~\ref{sec:experimentdriver} beschriebene Mess-Pipeline endet bei der Persist-Phase
+mit den \texttt{measurements.csv}/\texttt{.json}-Artefakten. Die naheliegende Fortsetzung ist eine
+\emph{Heuristik-Extraktion} als Folge-Phase nach \textbf{Persist}, die aus den gesammelten Messungen
+automatisch ableitet, welche Achsen-Konfiguration je Workload und Datensatz die beste ist. Der
+angestrebte Mechanismus ist eine ML-Klassifikation und gliedert sich in drei Schritte.
+
+\begin{enumerate}
+  \item \textbf{Feature-Extraktion.} Aus der Mess-CSV werden je Permutation Merkmale gewonnen ---
+  einerseits die Lastprofil- und Datensatz-Merkmale (z.\,B.\ Workload-Typ, Schlüssel-Verteilung,
+  Alphabet- und Präfix-Charakteristik), andererseits die Achsen-Belegung der Permutation. Zielgröße
+  ist die je Lastmuster gemessene Bestleistung (etwa Durchsatz oder Tail-Latenz).
+  \item \textbf{ML-Klassifikator.} Über diesen Merkmalen wird ein Klassifikator trainiert, der eine
+  Abbildung von Lastprofil-/Achsen-Merkmalen auf die beste Konfiguration lernt --- also: gegeben ein
+  unbekanntes Workload-/Datensatz-Profil, welche Rekombination der Bausteine voraussichtlich
+  gewinnt.
+  \item \textbf{Beste Konfiguration je Workload/Datensatz.} Der Klassifikator liefert je
+  Workload-/Datensatz-Klasse die empfohlene Achsen-Konfiguration, ohne dass der gesamte
+  Permutationsraum erneut gefahren werden muss.
+\end{enumerate}
+
+Das Ergebnis dieser Folge-Phase wird als \emph{XML-Lastprofil} persistiert --- ein
+wiederverwendbares Austauschformat, das die gelernte Zuordnung
+Lastmuster~$\rightarrow$~Konfiguration festhält und so dazu dient, automatisch Heuristiken zu
+erstellen. Dasselbe Format kann anschließend ohne erneute Vollvermessung in den
+\texttt{<expected\_workload>}-Filter (Abschnitt~\ref{sec:explosion}) zurückgespeist werden und
+schließt damit den Kreis zwischen Messung und konfigurationsleitender Heuristik. Die konkrete
+Umsetzung dieses Auswahl-Mechanismus bleibt zukünftiger Arbeit vorbehalten.

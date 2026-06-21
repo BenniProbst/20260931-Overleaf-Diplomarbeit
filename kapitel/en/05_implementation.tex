@@ -27,6 +27,27 @@ responsibilities:
   manuscript.
 \end{itemize}
 
+\subsection{Terminology: \texttt{CacheEngine} versus \texttt{ExecutionEngine}}\label{sec:terminologie-engines}
+
+The two engine terms denote clearly separated responsibilities and must not be short-circuited. The
+\texttt{CacheEngine} (\texttt{cache-engine/libs}) is the
+\emph{tool library of the axis building blocks}: per axis it provides the interchangeable design
+components (node layout, path compression, allocator, prefetch, telemetry, and the remaining
+nineteen axes) as concept/CRTP components, out of which the builder composes a living being. It
+contains \emph{no} measurement logic; its responsibility ends at the building blocks that a search
+algorithm combines for its internal behaviour.
+
+The \texttt{ExecutionEngine}, by contrast, is the execution and measurement infrastructure that cuts
+across all axes. As the abstract measurable root (\texttt{IExecutionEngine},
+cf.\ Section~\ref{sec:m-model}) it is the common interface over everything measurable; the concrete
+\texttt{execution\_engine<Strategy>} supplies the OS primitives (cache-line-aligned allocation,
+NUMA-conforming read-pinning, coherence-aware writing) and provides --- exclusively in experiment
+mode (\texttt{-DCOMDARE\_EXPERIMENT\_MODE=ON}) --- the measurement aggregator as an integral member.
+In short: the \texttt{CacheEngine} supplies the \emph{building blocks} an algorithm is made of; the
+\texttt{ExecutionEngine} supplies the \emph{tools} with which an algorithm is executed and measured.
+This separation keeps the production path measurement-free and avoids any conceptual short-circuit
+between building-block library and measurement tool.
+
 \section{Adapters for State-of-the-Art Algorithms and Allocators}\label{sec:adapters}
 
 Each SOTA design and each allocator is integrated through a thin adapter that exposes the original
