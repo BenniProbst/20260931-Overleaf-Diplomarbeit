@@ -23,17 +23,20 @@ design dimensions of a large design space~\cite{idreos2018periodic, idreos2018da
 Structurally different search methods --- from tree-like indexes to non-tree-like hash tables, as
 well as special properties such as cache lines --- thereby become comparable as points of the same
 design space; non-tree-like methods occupy a restricted subset of the dimensions over the same
-search-algorithm interface. As a probe for state-of-the-art membership, PRT-ART (a Probst Redirect
-Tree / ART hybrid) serves as an abstract, incomplete assembly of novel search-algorithm components.
+search-algorithm interface, as if they were the sole fan of a tree root. As a probe for
+state-of-the-art membership, PRT-ART (a Probst Redirect Tree / ART hybrid) serves as an abstract,
+incomplete assembly of novel search-algorithm components.
 
 \section{Problem Statement}\label{sec:problem}
 
 Existing cache-aware index designs optimize one or a few aspects in isolation and report results
 that are hard to compare across publications, because each work uses its own data structures,
-workloads, and measurement methodology. There is no common framework that (i)~decomposes such
-designs into interchangeable axes, (ii)~reconstructs published algorithms as explicit
-configurations, and (iii)~measures both individual axes and whole algorithms on a single, fair
-basis.
+workloads, and measurement methodology. The weights of improvements from individual components
+remain inseparable: a reported performance gain cannot be unambiguously attributed to a single
+component (node type, layout, value placement, prefetching), because the components stay intertwined
+in the original designs. There is no common framework that (i)~decomposes such designs into
+interchangeable axes, (ii)~reconstructs published algorithms as explicit configurations, and
+(iii)~measures both individual axes and whole algorithms on a single, fair basis.
 
 \section{Research Questions}\label{sec:rqs}
 From the task description and the supervision meetings arise one main research question frozen with
@@ -82,10 +85,11 @@ attached as \emph{sub-questions}.
 
 The objective follows the task description in four steps: decompose cache-aware search algorithms
 into interchangeable design constituents, reconstruct state-of-the-art designs as explicit
-configurations, measure cache-line-aware behaviour both per constituent and for the whole algorithm
-on a common CPU basis, and deliver the best overall algorithm as a standalone binary. The code of
-the thesis acts as the \emph{formal operator} of the cache engine: it loads the probe PRT-ART,
-compiles it via metaprogramming against the core constituents of the cache engine, delivers
+configurations, find/decompose/measure cache-line-aware behaviour both per constituent and for the
+whole algorithm on a common CPU basis, and deliver the best overall algorithm --- following an
+autonomous heuristic-profile evaluation and heuristic-function modelling --- as a standalone binary.
+The code of the thesis acts as the \emph{formal operator} of the cache engine: it loads the probe
+PRT-ART, compiles it via metaprogramming against the core constituents of the cache engine, delivers
 ABI-stable \emph{living beings} (search-algorithm instances), and drives them through the probe dock
 for measurement. Architecturally the model separates three layers --- a genus interface
 (SearchAlgorithm, Container, Graph), beneath it living-being subclasses with a fixed axis set,
@@ -93,14 +97,19 @@ beneath that the nineteen axes as organs --- and four subsystems (measurement dr
 CacheEngineBuilder, CacheEngine, probe). This is \emph{one} architecture, not a coexistence:
 \emph{living being} and \texttt{SearchAlgorithm} name the same entity (metaphor and technical term),
 and the anatomy is not a second model but the \emph{body} of this living being --- the fixed
-composition of its nineteen axis-organs. The root \texttt{ExecutionEngine} carries both living
-beings and axis-less \emph{viruses} (pure graph algorithms) as siblings; the layering
+composition of its nineteen axis-organs as a standalone binary with an ABI-stable interface of a
+search algorithm --- optionally with or without the measurement observer for debug, measurement, or
+release. The root \texttt{ExecutionEngine} carries both living beings and axis-less \emph{viruses}
+(pure graph algorithms) as siblings; the layering
 CacheEngine\,$\to$\,ExecutionEngine\,$\to$\,SearchEngine is merely the ABI-runtime \emph{view} of
-the same living being across the module boundary, not a parallel construct. The concept of the axis
-architecture itself is adopted from prior work by the author (Comdare\,/\,BEP~Venture~UG, originally
-for optimizing deduplication procedures in the UltiHash database); the contribution of this thesis
-is its transfer to cache-aware search structures and its measurement-oriented realization. The
-central contributions are:
+the same living being across the module boundary, not a parallel construct. The
+\texttt{ExecutionEngine} supplies, for all genera, the execution and measurement tooling required to
+support measurement-driven heuristic optimization --- OS primitives (cache-line-aligned allocation,
+NUMA read pinning, coherence-aware writes) and, in experiment mode, the measurement aggregator. The
+concept of the axis architecture itself is adopted from prior work by the author
+(Comdare\,/\,BEP~Venture~UG, originally for optimizing deduplication procedures in the UltiHash
+database); the contribution of this thesis is its transfer to cache-aware search structures and its
+measurement-oriented realization. The central contributions are:
 \begin{itemize}
   \item A three-layer module interface (CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine) ---
   the ABI-runtime view of the same living being --- with ABI-stable C++23 module interfaces and

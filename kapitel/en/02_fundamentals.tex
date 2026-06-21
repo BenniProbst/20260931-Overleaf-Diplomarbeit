@@ -104,6 +104,41 @@ cache-oblivious behaviour is complemented by \emph{measured} locality knowledge 
 heuristic, measurement- oriented selection of the settings per load pattern; the \emph{why} of this
 construction is developed in Chapter~\ref{ch:concept}.
 
+\subsection{Heuristics and Their Automation}\label{ssec:heuristics}
+The ``measurement-oriented selection of the settings'' hinted at in the previous section rests on
+the notion of a \emph{heuristic}. In the context of cache optimization a heuristic is a
+\emph{decision rule without a guarantee of optimality}: it maps observable features --- such as the
+cache properties determined per target platform (Section~\ref{ssec:cache-line-sizes}) or the
+measured load profile (Section~\ref{sec:workloads-basics}) --- to a concrete configuration without
+proving that configuration best. It takes the place of an exact solution wherever the latter is
+unknown or too expensive to determine; the cache's own heuristic replacement strategies (LRU, RRIP;
+Section~\ref{ssec:coherence}) are the hardware-side archetype of this way of
+thinking~\cite{jaleel2010rrip}.
+
+Heuristics can be distinguished by \emph{when} their decision is made --- this corresponds to the
+levels of dynamics developed in Section~\ref{ssec:dynamics-levels}. A \emph{static heuristic} is
+fixed at compile time: the chosen configuration is compiled firmly into a system-optimized binary
+and no longer changes at run time. A \emph{dynamic heuristic}, by contrast, selects the
+configuration at run time, depending on the actually observed behaviour, and may adjust it during
+operation. Both variants presuppose the same \emph{heuristic function} but shift the moment of its
+evaluation.
+
+Formally, this heuristic function is a \emph{mapping} from a measurement result or load profile to a
+configuration: $h: \mathcal{M} \rightarrow \mathcal{K}$, where $\mathcal{M}$ denotes the space of
+collected features (axis measurements, load-profile metrics) and $\mathcal{K}$ the space of
+admissible axis assignments. The present thesis first \emph{measures} this relationship
+systematically (Chapter~\ref{ch:methodology}); the \emph{automated} determination of $h$ itself ---
+that is, the mechanism that derives the respective best configuration from the measurement results,
+towards an ML classification of load-profile and axis features onto configurations --- is an
+objective and outlook of this thesis (Section~\ref{sec:outlook}) and not yet realized.
+
+Finally, the terms used partly synonymously in the literature must be delimited. A heuristic is
+called \emph{adaptive} if it adjusts its decision to changing conditions; \emph{dynamic} refers more
+narrowly to the moment --- evaluation at run time rather than at compile time; and
+\emph{measurement-driven} emphasizes the data source --- the decision rests on collected
+measurements rather than on fixed model assumptions. An adaptive heuristic is thus always dynamic, a
+dynamic one not necessarily adaptive, and both may, but need not, be measurement-driven.
+
 \section{Classes of Search Structures}\label{sec:search-classes}
 \subsection{Established Subdivision of Search Algorithms}\label{ssec:genera}
 Search structures can be classified by the mechanism with which they map a key to a
@@ -117,7 +152,9 @@ on the \emph{tree-like} structures of the comparison- and the digital-based clas
 denominator of modern in-memory indexes ---, while hashing appears only as a comparison baseline and
 spatial structures lie outside the scope. The principle developed in Chapter~\ref{ch:concept} is,
 however, not bound to trees: through a higher-level abstraction, further structure classes can be
-attached without rebuilding the measurement and permutation apparatus (Section~\ref{sec:outlook}).
+attached without rebuilding the measurement and permutation apparatus (Section~\ref{sec:outlook})
+--- for however different these classes appear on the outside, they share a common inner
+\emph{anatomy} of orthogonal partial decisions that Chapter~\ref{ch:concept} exposes as an axis set.
 
 Within these mechanism classes, research has produced concrete structure \emph{classes}; they are
 named and substantiated here at the class level, while their internal dissection into axes ---

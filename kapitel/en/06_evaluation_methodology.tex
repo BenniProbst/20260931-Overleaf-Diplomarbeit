@@ -28,7 +28,12 @@ common interface of its category, against load profiles; \emph{macro-benchmarkin
 individual \texttt{std::map} interface operations (insert, point and range lookup, update, delete)
 against sample loads; and \emph{whole-system benchmarking} runs the established YCSB load profiles
 over every recombination of the building blocks. The ranking across these three granularities yields
-which decision at which place is beneficial for which load pattern.
+which decision at which place is beneficial for which load pattern. It is precisely this three-tier
+granularity that answers the separability problem posed by the thesis assignment: by first measuring
+each individual design component in isolation through the shared category interface (micro), before
+it appears in the operation and whole-system context, the contributions of the individual components
+are separated and thereby become individually measurable, rather than remaining conflated in the
+overall throughput.
 
 \section{ExperimentDriver Phases}\label{sec:experimentdriver}
 
@@ -137,3 +142,33 @@ billion to far more than $10^{11}$ permutations. Three mechanisms tame the explo
 feed the manuscript; (3)~\texttt{Full} (and the more realistic \texttt{Full-Sampled}, e.g.\ every
 1000th permutation) runs only on the ZIH cluster, respecting axis compatibility reported by the
 platform probe.
+
+\section{From Measurements to Heuristics}\label{sec:measurements-to-heuristics}
+
+\emph{This section describes an outlook, not a feature realized within this thesis.} The measurement
+pipeline described in Section~\ref{sec:experimentdriver} ends at the persist phase with the
+\texttt{measurements.csv}/\texttt{.json} artefacts. The natural continuation is a
+\emph{heuristics extraction} as a follow-up phase after \textbf{persist} that derives automatically,
+from the collected measurements, which axis configuration is best per workload and dataset. The
+intended mechanism is an ML classification and breaks down into three steps.
+
+\begin{enumerate}
+  \item \textbf{Feature extraction.} From the measurement CSV, features are obtained per permutation
+  --- on the one hand the load-profile and dataset features (e.g.\ workload type, key distribution,
+  alphabet and prefix characteristics), on the other hand the axis assignment of the permutation.
+  The target quantity is the best performance measured per load pattern (e.g.\ throughput or tail
+  latency).
+  \item \textbf{ML classifier.} Over these features, a classifier is trained that learns a mapping
+  from load-profile/axis features to the best configuration --- that is: given an unknown
+  workload/dataset profile, which recombination of the building blocks is likely to win.
+  \item \textbf{Best configuration per workload/dataset.} The classifier yields, per
+  workload/dataset class, the recommended axis configuration, without having to re-run the entire
+  permutation space.
+\end{enumerate}
+
+The result of this follow-up phase is persisted as an \emph{XML load profile} --- a reusable
+exchange format that records the learned mapping load~pattern~$\rightarrow$~configuration and thus
+serves to create heuristics automatically. The same format can subsequently be fed back, without a
+new full sweep, into the \texttt{<expected\_workload>} filter (Section~\ref{sec:explosion}), thereby
+closing the loop between measurement and configuration-guiding heuristic. The concrete realization
+of this selection mechanism is left to future work.

@@ -32,7 +32,10 @@ expression. Permuting the axes then resembles a genetic experiment --- exchangin
 organisms yields new composite algorithms with previously unknown cache-line behaviour. The research
 goal is to find this shared anatomy and, within the resulting design
 space~\cite{idreos2018periodic, idreos2018datacalculator}, the fastest composite for a given
-data-type-specific load pattern.
+data-type-specific load pattern. It is precisely this modular interchangeability that solves the
+separability problem of the task: because each axis can be swapped against its alternatives in
+isolation while all other axes stay fixed, the weighting contribution of every single constituent to
+the overall performance becomes individually measurable.
 
 \section{Four-Subsystem Separation (M Model)}\label{sec:m-model}
 
@@ -67,6 +70,13 @@ calls cache-engine services (telemetry, prefetch, heuristics) during its own loo
 symmetry enables the \emph{multi-probe} capability: measurement series~A compares PRT-ART against
 many SOTA adapters in a single builder pipeline.
 
+Here the \texttt{ExecutionEngine} is not a fifth subsystem but the common measurable root --- the
+\texttt{IExecutionEngine} interface through which these four subsystems are connected: the cache
+engine provides the axis building-block library, while the ExecutionEngine contributes the
+orthogonal execution and measurement infrastructure --- as the abstract root over everything
+measurable (Section~\ref{sec:three-layer}), under which the probe and every engine register as an
+\texttt{IExecutionEngine}.
+
 \section{The One Architecture}\label{sec:three-layer}
 
 The model has \emph{one} architecture --- a single, self-contained hierarchy with no parallel trees.
@@ -99,12 +109,16 @@ same root.
   view --- the ABI/runtime layering
   \texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} is exactly
   this view of the same organism across the module boundary, not a parallel construct:
-  \texttt{CacheEngine} provides the default axis building blocks as a library,
-  \texttt{ExecutionEngine} the OS primitives (cache-line-aligned allocate, NUMA-conforming read-pin,
-  coherence-aware write), and ``SearchEngine'' is the search-API view of the same organism, measured
-  through exactly one observer interface over all nineteen organs. There is thus a single chain ---
-  root (\texttt{ExecutionEngine}) through the genus test dock down to the organism, which is the
-  same thing as \texttt{SearchAlgorithm} and whose body is the anatomy with its nineteen axes.
+  \texttt{CacheEngine} and \texttt{ExecutionEngine} have clearly separated roles here --- the
+  \texttt{CacheEngine} is the \emph{axis building-block library} and provides the default axis
+  building blocks, whereas the \texttt{ExecutionEngine} supplies the
+  \emph{execution and measurement tools}: the OS primitives (cache-line-aligned allocate,
+  NUMA-conforming read-pin, coherence-aware write) and, in experiment mode, the measurement
+  aggregator over exactly one observer interface. ``SearchEngine'' is the search-API view of the
+  same organism, measured through exactly this one observer interface over all nineteen organs.
+  There is thus a single chain --- root (\texttt{ExecutionEngine}) through the genus test dock down
+  to the organism, which is the same thing as \texttt{SearchAlgorithm} and whose body is the anatomy
+  with its nineteen axes.
 
   \section{ABI-Stable C++23 Module Interface}\label{sec:abi}
 
@@ -152,3 +166,25 @@ same root.
   fine-grained measurement results the pipeline already provides the required ranking; the automatic
   selection of the best overall algorithm and its delivery as a standalone, ABI-stable binary behind
   the unified search-algorithm interface are envisioned as an extension (objective, outlook).
+
+  \subsection{Heuristic Profile Evaluation and Binary Selection}\label{sec:heuristic-profile-selection}
+
+  Beyond the bare ranking, an end-to-end evaluation step is envisioned as an objective that turns
+  the measurement results into a delivered configuration. The following three stages are
+  \emph{outlook and objective} and, in the current state, \emph{not yet implemented}.
+
+  \emph{First}, from the ranking of the three measurement series~A/B/C the best configuration is
+  determined per load profile and data type. Since each series yields a complete axis measurement
+  vector per permutation binary, for a given load/data-type profile one can identify the axis
+  composition that holds the foremost rank under that profile.
+
+  \emph{Second}, the intended selection mechanism --- which infers the best configuration
+  automatically from the measurement results --- is an \emph{ML classification}: from the axis
+  features and the features of the load profile (access distribution, write/read ratio, key/value
+  data type) the suitable axis configuration is predicted. This heuristic selection mechanism is
+  \emph{future work} and not yet realized.
+
+  \emph{Third}, the result of this evaluation is stored as a reusable \emph{XML load profile} that
+  binds the determined best configuration to a named load/data-type profile and can thus be used
+  directly as input on the next run --- symmetric to the measurement-series XML configurations from
+  Section~\ref{sec:m-model}.
