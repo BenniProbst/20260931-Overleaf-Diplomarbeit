@@ -111,6 +111,101 @@ Schreib-Punkte:
 - **Achsennamen (F5):** T17/T18 = queuing_q1/q2 überall identisch.
 - **P-Zahl (F7):** P01–P33 in Kap. 8 FF1.
 
+> **STATUS 2026-06-21:** F1–F5 + F7 **erledigt** (Commit `822f1b5`, DE 138 / EN 130, 0 Fehler/0 undef).
+> Offen: **F6** (7-Phasen Builder vs. ExperimentDriver gegen `experiment_driver.cpp` vereinheitlichen).
+
+---
+
+## TEIL B — Ausgebautes Kap-4-Gerüst (schreibfertiges Detail-Skelett)
+
+> Vollständige Ziel-Gliederung von Kap. 4 „Konzept und Architektur". Jeder Stichpunkt ≈ ein
+> Absatz-Kern; **fett** = Pflicht-Aussage. Reihenfolge an Doc 36 + bestehendem Entwurf orientiert.
+> DE-Lead, EN ≡ DE; technische Identifier im Code-Stil, Metapher nur erklärend; Muster-Benennung Pflicht.
+
+### B.1 Überblick & Kernbeitrag *(vorhanden: §axis-framework)*
+- **Was:** ein \emph{Achsen-Bibliotheks-Framework}; **Warum (Kernwert):** ein Forscher erforscht
+  \emph{eine} Achse und misst sie pro Achse UND ganzheitlich, ohne den Rest neu zu bauen.
+- Algorithmus = Komposition orthogonaler Achsen; konkreter Algo = Punkt im kartesischen Produkt;
+  SOTA-Entwurf = explizite Konfiguration. Baum-Anatomie als universelle Leinwand; Hash = dieselbe
+  Gattung, eingeschränktes Profil.
+- Roter Faden (1 Satz je Folgeabschnitt). Quelle: `reference_thesis_core_contribution_axis_library`.
+
+### B.2 Die EINE Architektur *(vorhanden, korrigiert: §sec:three-layer → „Die eine Architektur")*
+- **Pflicht-Diagramm** (Verbatim-Baum, schon im Text): `IExecutionEngine` → `IAnatomyBase`/Lebewesen
+  → `SearchAlgorithmAnatomy<C>` (Körper, 19 Organe) → `SearchAlgorithmAbiAdapter` (ABI-Sicht); Virus = Geschwister.
+- **Lebewesen ≡ SearchAlgorithm** (Metapher = technischer Begriff). Anatomie = \emph{Körper}, kein
+  zweites Modell. „SearchEngine" = ABI-Laufzeit-\emph{Sicht} (`CacheEngine→ExecutionEngine→SearchEngine`),
+  kein paralleles Konstrukt; gemessen über genau \emph{eine} Beobachter-Schnittstelle (I1).
+- **Term-Mapping-Tabelle** (Metapher ↔ Technik) aus Doc 36 §3 einsetzen. Quelle: **Doc 36** (Primär).
+
+### B.3 Gattungen & Lebewesen-Unterklassen — \emph{NEU}
+- **3 Gattungen** (Außen-Interface = Prüf-Dock): `SearchAlgorithm` \textbar{} `Container` \textbar{} `Graph`.
+- **5 Tier-Unterklassen** (feste Achsen-Sätze) mit Slot-Zahlen (Quelle: `genus_binding_traits.hpp`):
+
+  | Unterklasse | Gattung | Metapher | Achsen-Slots |
+  |---|---|---|---|
+  | SearchAlgorithm | SearchAlgorithm | Säugetier | **19** |
+  | Set | Container | Vogel | 15 |
+  | Sequence | Container | Reptil | 11 |
+  | Adapter | Container | Wirbelloses | 13 |
+  | View | Container | Pflanze | 7 |
+
+- **Diese Arbeit fokussiert die SearchAlgorithm-Unterklasse** (19 Achsen, `std::map`-artig); die übrigen
+  sind das Erweiterungs-Versprechen (Kap. 8 Ausblick). Viren (achsenlos, Graph) = Geschwister, kein Lebewesen.
+- Quelle: Doc 34 §1 / Doc 30 §8.0; `reference_anatomie_gattungen`; `feedback_no_whole_tier_axes_genus_configurator`.
+
+### B.4 Die 19 Achsen ≡ Organe *(vorhanden, F5 erledigt)*
+- Tabelle T0–T18: Achsenname + Teilaufgabe + Beispiel-Varianten (`std::variant`). Kanonisch s. §2/4.4.
+- **Jede Achse Pflicht** (nicht-puffernd = Algo `NoBuffer`, NICHT „keine Achse"); ~57 Sub-Achsen;
+  kartesisches Produkt > 10^11. Quelle: `composition_concept.hpp:20–58`; Doc 35; `reference_axis_gold_standard_checklist`.
+
+### B.5 ABI-stabiles C++23-Modul-Interface *(vorhanden: §abi)*
+- Variadisch: 1 ⇒ `std::vector`-API, 2 ⇒ `std::map`-API, N>2 ⇒ `std::map<K,tuple<…>>`.
+- 16-Byte-Fingerprint (`binary_key_t`); binär-stabile Modulgrenze; `comdare_create_anatomy → IAnatomyBase*`;
+  Loader verifiziert ABI je Modul (`LoadLibrary`/`dlopen`).
+
+### B.6 Permutationsmatrix & kombinatorische Explosion — \emph{ausbauen}
+- Kartesisches Produkt aller Achsen-Varianten; bit-codierter **Permutations-Identifier** (mehrbänkig,
+  Sub-Bank-Bitfelder); **Constraint-Filter** schließt ungültige Kombinationen vor Codegen aus.
+- Reduktion (Verweis Kap. 6 §explosion): `expected_workload`-Routing, `Defined`-Modus, `Full-Sampled`.
+
+### B.7 Entwurfsmuster & Zero-Cost-Metaprogrammierung — \emph{NEU/ausbauen}
+- **CRTP-Basisklasse je Achse** (zweischichtiges Concept: Topic-Concept + Achsen-Concept, `requires`-Klausel).
+- **`resolve_baustein`** (`std::conditional_t` über Tag-Spezialisierungen) = Compile-Time-Auswahl
+  Prüfling↔Standard → **kein `virtual` im Hot-Path** (zero-cost abstraction, Verweis Kap. 2 §C++23).
+- **Abstract Factory** für Knoten static/dynamic (Permutations-B+-Baum; `project_permutations_bplus_tree…`).
+- **Visitor/Extension-Pattern** der Achsen-Erweiterung (`reference_master_architektur_skizze`).
+- \emph{Pflicht:} jede Struktur = benanntes GoF-/erweitertes Muster (`feedback_lehrbuch_design_patterns_only…`);
+  Muster-Namen je Achse \textbf{web-/code-verifizieren}, nicht raten.
+
+### B.8 PRT-ART als Prüfling *(vorhanden, F2 erledigt)*
+- Prüfling = **abstraktes Lebewesen**: eigene Organe (Page, Layout, Free-List, Prefetch,
+  Concurrency-Pattern, Measurement: 4+2-Pool, Distance-Estimator-Prefetch, OLC mit reservierten Blöcken,
+  H1/H2/H3) + **ce-Fallback** (`resolve_baustein`) für die übrigen Achsen.
+- **abstract- vs. full-Prüfling** + „Originalkonfiguration" (mind. einmal NUR eigene Achsen self-contained
+  gemessen, im Profil `abstract`/`full`-gekennzeichnet). Quelle: Übergabe TODO-2; `project_tier_definitionsluecke…`.
+- 8 Bausteinschichten (Bezug Abstract/Intro). Laufzeit-Anbindung = Execution-Engine-Adapter (kein SearchEngine-ABI).
+
+### B.9 Builder & Drei-Stufen-Prüfung *(vorhanden, F4 erledigt)*
+- **3 kompositionale Joins** = Stufe 1 (ce-only) / Stufe 2 (Prüfling-Replace + Fallback) / Stufe 3
+  (Full-Join, nicht-redundant) → bilden direkt Messreihen A/B/C. Quelle: `reference_3_kompositionale_joins_anatomie`.
+- **7-Phasen (F6 offen):** gegen `builder/experiment_driver/experiment_driver.cpp` EINE Liste festlegen;
+  ggf. zwei Ebenen sauber benennen (Builder-Pipeline vs. ExperimentDriver). 
+- best-binary = **Ziel/Ausblick** (nicht erledigt).
+
+### B.10 Mess-Schnittstelle (Observer, I1) — \emph{NEU}
+- **Genau EINE `IObservableTier` + EIN POD** (`observe_all → ObserverAggregate`; `axis_stats[19][8]` +
+  `seg_ns[19]`); ABI-Major versioniert. Quelle: `feedback_one_consistent_observer_interface_pruefdock`; Doc 31.
+- **Hybrid-Messmodell:** Pfad A = isolierte Achsen-Algos auf der DLL (`run_workload`); Pfad B = composite
+  Tier zentral host-seitig (CEB) via ABI-stabilen `observe_all`. Quelle: `feedback_zwei_dimensionen_messmodell`.
+
+### B.11 Schreib-Hinweise
+- DE zuerst, EN strikt äquivalent; Metapher nur in Prosa/Kommentar, Code-Identifier technisch
+  (`feedback_technical_identifiers_over_metaphor`). Outbound-Quellen als Vollangaben. Querverweise auf
+  Kap. 2 (Grundlagen-Definitionsklassen) und Kap. 6 (Messmethodik) setzen.
+
+---
+
 ## 4. Quellen
 - **Doc 36** `…/docs/architecture/36_eine_architektur_lebewesen_ist_searchalgorithm.md` (Primär).
 - Doc 14 `docs/architektur/14_achsen_komposition_organ_metapher.md`; Doc 34 `34_KONSOLIDIERTER…`;
