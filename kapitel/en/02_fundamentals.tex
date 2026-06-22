@@ -21,7 +21,7 @@ access that finds its datum in a cache level is cheap; a miss is forwarded to th
 level, and a miss in the last-level cache reaches main memory at a cost of several hundred
 cycles~\cite{hennessy2019architecture,drepper2007memory}. On multi-socket and chiplet systems,
 non-uniform memory access (NUMA) additionally makes the latency of a reference depend on which node
-owns the page.
+owns the page~\cite{drepper2007memory}.
 
 \subsection{Cache-Line Sizes: Static and Dynamic}\label{ssec:cache-line-sizes}
 The cache-line size is hard-wired per microarchitecture but differs between architectures. On x86-64
@@ -29,11 +29,11 @@ The cache-line size is hard-wired per microarchitecture but differs between arch
 individual designs use wider lines at the SoC level --- Apple Silicon, for instance, 128~bytes on L2
 and the system-level cache~\cite{apple_optimization}. Across architectures, the cache-line sizes in
 use range from narrower 32~bytes on older or embedded cores through the now-common 64-byte line up
-to 128~bytes~\cite{hennessy2019architecture}. Programs can \emph{read} the actual size at run time
---- via \texttt{CPUID} on x86, the \texttt{CTR\_EL0} register on ARM, and the
-\texttt{riscv\_hwprobe} interface on RISC-V~\cite{arm_arm,intel_sdm} --- but cannot change it. The
-depth of the hierarchy likewise varies: not every platform has an L3 cache (simple RISC-V cores such
-as the SiFive~U74 stop at a shared L2), while others bring a large or even asymmetrically
+to 128~bytes~\cite{hennessy2019architecture,intel_optimization,amd_sog}. Programs can \emph{read}
+the actual size at run time --- via \texttt{CPUID} on x86, the \texttt{CTR\_EL0} register on ARM,
+and the \texttt{riscv\_hwprobe} interface on RISC-V~\cite{arm_arm,intel_sdm} --- but cannot change
+it. The depth of the hierarchy likewise varies: not every platform has an L3 cache (simple RISC-V
+cores such as the SiFive~U74 stop at a shared L2), while others bring a large or even asymmetrically
 distributed L3 (e.g.\ the stacked 3D V-Cache of some AMD processors). For a cache-line-aware layout,
 the line size and cache depth determined per target platform are therefore an
 \emph{input parameter of compilation} rather than a fixed assumption;
@@ -177,7 +177,7 @@ same logarithmic height through a node colouring with looser but cheaper-to-main
 For block- and external-memory-oriented indexes, the \emph{B-trees}~\cite{bayer1972btree} and the
 \emph{B\textsuperscript{+} trees}~\cite{comer1979btree} became established; they keep all payload in
 the leaves and reduce inner nodes to signposts, so that one node typically matches a memory or
-cache-block size.
+cache-block size~\cite{graefe2001btree,hankins2003nodesize}.
 
 \subsubsection{T-Tree}
 Directly pertinent to main memory is the \emph{T-tree}~\cite{lehman1986ttree}, which combines the
@@ -330,9 +330,9 @@ uses for profile-aware routing (Chapter~\ref{ch:methodology}).
 
 Alongside this, the analysed publications rely on further frameworks: the index benchmark
 \emph{SOSD}~\cite{kipf2019sosd}, the transaction benchmarks of the \emph{TPC} family (TPC-C,
-TPC-DS)~\cite{tpc_benchmarks}, integration into real systems (e.g.\ SuRF as a Bloom-filter
-replacement in RocksDB), real string corpora (URLs, DNA, dictionary terms), and --- for the
-hardware-near works --- \emph{SPEC~CPU}~\cite{spec_cpu2017},
+TPC-DS)~\cite{tpc_benchmarks}, integration into real systems (e.g.\ SuRF~\cite{zhang2018surf} as a
+Bloom-filter replacement in RocksDB), real string corpora (URLs, DNA, dictionary terms), and --- for
+the hardware-near works --- \emph{SPEC~CPU}~\cite{spec_cpu2017},
 \emph{CloudSuite}~\cite{ferdman2012cloudsuite}, and the architecture simulator
 \emph{gem5}~\cite{binkert2011gem5}; the allocator corpus is measured with allocator-specific suites
 (\texttt{mimalloc-bench}~\cite{mimalloc_bench}, Larson, threadtest, shbench, and LADDIS). Because
@@ -363,7 +363,7 @@ via two paths: isolated axis algorithms are measured directly against one anothe
 living being is collected centrally via an ABI-stable observer interface (per-axis observer). A
 \emph{conformance gate} checks before each measurement that an implementation satisfies the
 \texttt{std::map} contract, so that only comparable things are compared; each configuration is
-collected in several separate runs with reported dispersion.
+collected in several separate runs with reported dispersion~\cite{hoefler2015benchmarking}.
 
 These concepts form the \emph{definitional classes} of measurement; the state of the art
 (Chapter~\ref{ch:sota}) presents the \emph{instances} that technically realize them ---
