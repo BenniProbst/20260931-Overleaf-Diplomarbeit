@@ -85,7 +85,7 @@ attached as \emph{sub-questions}.
 
 The objective follows the task description in four steps: decompose cache-aware search algorithms
 into interchangeable design constituents, reconstruct state-of-the-art designs as explicit
-configurations, find/decompose/measure cache-line-aware behaviour both per constituent and for the
+configurations, measure and evaluate cache-line-aware behaviour both per constituent and for the
 whole algorithm on a common CPU basis, and deliver the best overall algorithm --- following an
 autonomous heuristic-profile evaluation and heuristic-function modelling --- as a standalone binary.
 The code of the thesis acts as the \emph{formal operator} of the cache engine: it loads the probe
@@ -96,19 +96,20 @@ for measurement. Architecturally the model separates three layers --- a genus in
 beneath that the nineteen axes as organs --- and four subsystems (measurement driver,
 CacheEngineBuilder, CacheEngine, probe). This is \emph{one} architecture, not a coexistence:
 \emph{living being} and \texttt{SearchAlgorithm} name the same entity (metaphor and technical term),
-and the anatomy is not a second model but the \emph{body} of this living being --- the fixed
-composition of its nineteen axis-organs as a standalone binary with an ABI-stable interface of a
-search algorithm --- optionally with or without the measurement observer for debug, measurement, or
-release. The root \texttt{ExecutionEngine} carries both living beings and axis-less \emph{viruses}
-(pure graph algorithms) as siblings; the layering
+and the anatomy is not a second model but the \emph{body} of this living being: the fixed
+composition of its nineteen axis-organs. From it a standalone binary with an ABI-stable
+search-algorithm interface is compiled --- optionally with or without the measurement observer for
+debug, measurement, or release. The root \texttt{ExecutionEngine} carries both living beings and
+axis-less \emph{viruses} (pure graph algorithms) as siblings; the layering
 CacheEngine\,$\to$\,ExecutionEngine\,$\to$\,SearchEngine is merely the ABI-runtime \emph{view} of
 the same living being across the module boundary, not a parallel construct. The
 \texttt{ExecutionEngine} supplies, for all genera, the execution and measurement tooling required to
 support measurement-driven heuristic optimization --- OS primitives (cache-line-aligned allocation,
 NUMA read pinning, coherence-aware writes) and, in experiment mode, the measurement aggregator. The
 concept of the axis architecture itself is adopted from prior work by the author
-(Comdare\,/\,BEP~Venture~UG, originally for optimizing deduplication procedures in the UltiHash
-database); the contribution of this thesis is its transfer to cache-aware search structures and its
+(Comdare\,/\,BEP~Venture~UG, originally (2021) for optimizing deduplication procedures in the
+UltiHash database --- specifically graph optimization in hash-based lookup directories); the
+contribution of this thesis is its transfer to cache-aware search structures and its
 measurement-oriented realization. The central contributions are:
 \begin{itemize}
   \item A three-layer module interface (CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine) ---
@@ -118,10 +119,10 @@ measurement-oriented realization. The central contributions are:
   \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
   \item A nineteen-axis permutation matrix with \texttt{std::variant} building blocks and
   compile-time fallback between the probe stack and the state-of-the-art stack.
-  \item Thirty SOTA algorithm profiles as persisted XML configurations (8~Rank-1 + 22~Rank-2/3) that
-  the \texttt{ExperimentDriver} automatically transforms into pre-compiled C++23 modules;
-  prospectively, the profile set is to cover every analysed publication with at least one algorithm
-  profile.
+  \item Thirty SOTA algorithm profiles as persisted XML configurations (8~standalone Rank-1 +
+  22~Rank-2/3) that the \texttt{ExperimentDriver} automatically transforms into pre-compiled C++23
+  modules; prospectively, the profile set is to cover every analysed publication with at least one
+  algorithm profile.
   \item PRT-ART as a probe with eight building-block layers of its own (4+2 pool allocator,
   optimistic lock coupling with reserved blocks, multi-level layout, path-oriented prefetch, density
   tracker, hypothesis metrics H1/H2/H3, inline/external/chain-ref value handles, signaling-bit
