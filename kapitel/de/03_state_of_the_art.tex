@@ -198,12 +198,13 @@ TU-Dresden-Hardware P31--P33) erscheinen dabei \emph{aufgelöst} in ihren Organ-
 Die \emph{Such-Achse} (T0, Sub-Achsen SA1--SA3) trägt die meisten Organe: als Original-Bindungen ART
 (P01~\cite{leis2013art}), HOT (P02~\cite{binna2018hot}), START (P05~\cite{fent2020start}), SuRF
 (P10~\cite{zhang2018surf}) und Wormhole (P07~\cite{wu2019wormhole}); dazu generische
-Such-\emph{Methoden}: k-äre Suche (Schlegel/Gemulla/Lehner, DaMoN 2009 --- TU-Dresden),
-Interpolationssuche (Perl/Itai/Avni 1978), Eytzinger-Layout-Suche (Khuong/Morin 2017), Skip-Liste
-(Pugh 1990), binärer Suchbaum und B-Baum (Bayer/McCreight~\cite{bayer1972btree}) sowie
-Open-Addressing-Hashing (Knuth~\cite{knuth1998taocp3}). Die \emph{Traversierungs-Achsen} trennen
-Algorithmus- und Cache-Sicht: T1 (Cache-Memory-Traversierung) reicht von der Cache-Line-Wanderung
-über Stride-Prefetch (P21 Chen) und HBM-Nähe (P32 Schmidt) bis zur cache-oblivious-Rekursion (P17
+Such-\emph{Methoden}: k-äre Suche (Schlegel/Gemulla/Lehner~\cite{schlegel2009kary}, TU-Dresden),
+Interpolationssuche (Perl/Itai/Avni~\cite{perl1978interpolation}), Eytzinger-Layout-Suche
+(Khuong/Morin~\cite{khuong2017eytzinger}), Skip-Liste (Pugh~\cite{pugh1990skiplist}), binärer
+Suchbaum und B-Baum (Bayer/McCreight~\cite{bayer1972btree}) sowie Open-Addressing-Hashing
+(Knuth~\cite{knuth1998taocp3}). Die \emph{Traversierungs-Achsen} trennen Algorithmus- und
+Cache-Sicht: T1 (Cache-Memory-Traversierung) reicht von der Cache-Line-Wanderung über
+Stride-Prefetch (P21 Chen) und HBM-Nähe (P32 Schmidt) bis zur cache-oblivious-Rekursion (P17
 Bender~\cite{frigo1999cache}) und dem L1/L2/L3-Bündel (P27 Zhang); T2 (Mapping) verbindet beide über
 lineare 1:1-Abbildung, Hash-Redirect (P07) oder Permutations-Index (P03 Masstree) --- eine im Stand
 der Technik dünn, überwiegend per Baseline besetzte Achse. Die \emph{Pfadkompression} (T3)
@@ -275,28 +276,32 @@ hinaus), während der Zähler in allen (auch inneren) Knoten als \emph{Anti-Patt
 
 \subsection{Nebenläufigkeit, I/O, Migration und Pufferung}\label{ssec:sota-ax-conc}
 Die \emph{Nebenläufigkeits-Achse} (T8) gliedert sich in 8.1 Muster und 8.2 Sperr-Modus. Die Muster
-reichen vom seriellen Nullpunkt über grobes Sperren (Dijkstra 1965) und Leser-/Schreiber-Sperren
-(Courtois 1971) zum optimistischen Lock-Coupling (P08), zu lock-freien (Michael/Scott 1996) und
-wait-freien Verfahren (Herlihy 1991) sowie zu RCU (P29) und Hazard-Pointern (P30); der Sperr-Modus
+reichen vom seriellen Nullpunkt über grobes Sperren (Dijkstra~\cite{dijkstra1965concurrent}) und
+Leser-/Schreiber-Sperren (Courtois~\cite{courtois1971readers}) zum optimistischen Lock-Coupling
+(P08), zu lock-freien (Michael/Scott~\cite{michael1996queue}) und wait-freien Verfahren
+(Herlihy~\cite{herlihy1991waitfree}) sowie zu RCU (P29) und Hazard-Pointern (P30); der Sperr-Modus
 unterscheidet read-only, read-write, upgradeable und optimistische Validierung. Die \emph{I/O-Achse}
-(T14, IO1--IO3) instanziiert gepufferte (Stonebraker 1981), direkte und memory-mapped Ein-/Ausgabe
-(Crotty, CIDR 2022) neben dem In-Memory-Nullpunkt. Die \emph{Migrations-Achse} (T15, MG1--MG3) trägt
-statische Platzierung, Hot/Cold-Trennung (Anti-Caching 2013), mehrstufige
-RAM$\to$NVM$\to$SSD-Migration (2018) und ML-getriebene adaptive Migration (LeCaR 2018). Die
-\emph{Pufferungs-Achsen} (T17/T18) schließlich umfassen je rund ein Dutzend Bausteine:
-Operations-Puffer von der FIFO-/LIFO-Schlange über den Disruptor-Ringpuffer (2011), die Delta-Kette
-(Bw-Tree 2013), den Copy-on-Write-Puffer (Driscoll 1989), den Epoch-Puffer (P29), die Skip-Liste
-(Pugh 1990) und den Tombstone-Puffer (LSM, O'Neil 1996) bis zu lock-freien SPSC- (Lamport 1983) und
-MPMC-Queues (Michael/Scott 1996); sowie Schreib-Rückführung (Flush) von eager über lazy,
+(T14, IO1--IO3) instanziiert gepufferte (Stonebraker~\cite{stonebraker1981os}), direkte und
+memory-mapped Ein-/Ausgabe (Crotty~\cite{crotty2022mmap}) neben dem In-Memory-Nullpunkt. Die
+\emph{Migrations-Achse} (T15, MG1--MG3) trägt statische Platzierung, Hot/Cold-Trennung (Anti-Caching
+2013), mehrstufige RAM$\to$NVM$\to$SSD-Migration (2018) und ML-getriebene adaptive Migration (LeCaR
+2018). Die \emph{Pufferungs-Achsen} (T17/T18) schließlich umfassen je rund ein Dutzend Bausteine:
+Operations-Puffer von der FIFO-/LIFO-Schlange über den
+Disruptor-Ringpuffer~\cite{thompson2011disruptor}, die Delta-Kette
+(Bw-Tree~\cite{levandoski2013bwtree}), den Copy-on-Write-Puffer
+(Driscoll~\cite{driscoll1989persistent}), den Epoch-Puffer (P29), die Skip-Liste
+(Pugh~\cite{pugh1990skiplist}) und den Tombstone-Puffer (LSM, O'Neil~\cite{oneil1996lsm}) bis zu
+lock-freien SPSC- (Lamport~\cite{lamport_spsc}) und MPMC-Queues
+(Michael/Scott~\cite{michael1996queue}); sowie Schreib-Rückführung (Flush) von eager über lazy,
 schwellwert- und zeitfenster-basiert (Kafka) bis adaptiv (RocksDB-LSM).
 
 \subsection{Index-Organisation und Filter}\label{ssec:sota-ax-idx}
 Die \emph{Index-Organisations-Achse} (T13) unterscheidet die geclusterte Anordnung (Speicher- gleich
 Indexordnung; Bayer/McCreight~\cite{bayer1972btree}), die ungeordnete Heap-Ablage, die
 index-organisierte Tabelle (Oracle, VLDB 2000) und den nicht-geclusterten Sekundärindex
-(Comer~\cite{comer1979btree}). Die \emph{Filter-Achse} (T16, FT1--FT3) trägt den Bloom-Filter
-(1970), den Cuckoo-Filter (CoNEXT 2014), den succinct-Bereichsfilter SuRF (P10) und den Xor-Filter
-(2020).
+(Comer~\cite{comer1979btree}). Die \emph{Filter-Achse} (T16, FT1--FT3) trägt den
+Bloom-Filter~\cite{bloom1970}, den Cuckoo-Filter~\cite{fan2014cuckoo}, den succinct-Bereichsfilter
+SuRF (P10) und den Xor-Filter~\cite{graf2020xor}.
 
 Diese Sezierung zeigt zugleich die Schieflage der Vorarbeiten: Wenige Achsen sind dicht und vielfach
 besetzt (Such-, Knotentyp-, Allokator-, Prefetch-Achse), andere ausschließlich mit
