@@ -189,9 +189,10 @@ P20--P28, synchronization P08/P29--P30, TU-Dresden hardware P31--P33) thereby ap
 The \emph{search axis} (T0, sub-axes SA1--SA3) carries the most organs: as original bindings ART
 (P01~\cite{leis2013art}), HOT (P02~\cite{binna2018hot}), START (P05~\cite{fent2020start}), SuRF
 (P10~\cite{zhang2018surf}), and Wormhole (P07~\cite{wu2019wormhole}); in addition generic search
-\emph{methods}: k-ary search (Schlegel/Gemulla/Lehner, DaMoN 2009 --- TU Dresden), interpolation
-search (Perl/Itai/Avni 1978), Eytzinger-layout search (Khuong/Morin 2017), skip list (Pugh 1990),
-binary search tree and B-tree (Bayer/McCreight~\cite{bayer1972btree}), and open-addressing hashing
+\emph{methods}: k-ary search (Schlegel/Gemulla/Lehner~\cite{schlegel2009kary}, TU Dresden),
+interpolation search (Perl/Itai/Avni~\cite{perl1978interpolation}), Eytzinger-layout search
+(Khuong/Morin~\cite{khuong2017eytzinger}), skip list (Pugh~\cite{pugh1990skiplist}), binary search
+tree and B-tree (Bayer/McCreight~\cite{bayer1972btree}), and open-addressing hashing
 (Knuth~\cite{knuth1998taocp3}). The \emph{traversal axes} separate the algorithm and cache views: T1
 (cache-memory traversal) ranges from cache-line walking through stride prefetch (P21 Chen) and HBM
 proximity (P32 Schmidt) to cache-oblivious recursion (P17 Bender~\cite{frigo1999cache}) and the
@@ -264,27 +265,31 @@ layout), while the counter in all (including inner) nodes counts as an \emph{ant
 
 \subsection{Concurrency, I/O, Migration, and Buffering}\label{ssec:sota-ax-conc}
 The \emph{concurrency axis} (T8) divides into 8.1 patterns and 8.2 lock mode. The patterns range
-from the serial zero point through coarse locking (Dijkstra 1965) and reader/writer locks (Courtois
-1971) to optimistic lock coupling (P08), lock-free (Michael/Scott 1996) and wait-free methods
-(Herlihy 1991), as well as RCU (P29) and hazard pointers (P30); the lock mode distinguishes
-read-only, read-write, upgradeable, and optimistic validation. The \emph{I/O axis} (T14, IO1--IO3)
-instantiates buffered (Stonebraker 1981), direct, and memory-mapped I/O (Crotty, CIDR 2022)
-alongside the in-memory zero point. The \emph{migration axis} (T15, MG1--MG3) carries static
-placement, hot/cold separation (anti-caching 2013), multi-level RAM$\to$NVM$\to$SSD migration
-(2018), and ML-driven adaptive migration (LeCaR 2018). The \emph{buffering axes} (T17/T18), finally,
-comprise about a dozen building blocks each: operation buffers from the FIFO/LIFO queue through the
-Disruptor ring buffer (2011), the delta chain (Bw-Tree 2013), the copy-on-write buffer (Driscoll
-1989), the epoch buffer (P29), the skip list (Pugh 1990), and the tombstone buffer (LSM, O'Neil
-1996) to lock-free SPSC (Lamport 1983) and MPMC queues (Michael/Scott 1996); as well as write-back
-(flush) from eager through lazy, threshold- and time-window-based (Kafka) to adaptive (RocksDB LSM).
+from the serial zero point through coarse locking (Dijkstra~\cite{dijkstra1965concurrent}) and
+reader/writer locks (Courtois~\cite{courtois1971readers}) to optimistic lock coupling (P08),
+lock-free (Michael/Scott~\cite{michael1996queue}) and wait-free methods
+(Herlihy~\cite{herlihy1991waitfree}), as well as RCU (P29) and hazard pointers (P30); the lock mode
+distinguishes read-only, read-write, upgradeable, and optimistic validation. The \emph{I/O axis}
+(T14, IO1--IO3) instantiates buffered (Stonebraker~\cite{stonebraker1981os}), direct, and
+memory-mapped I/O (Crotty~\cite{crotty2022mmap}) alongside the in-memory zero point. The
+\emph{migration axis} (T15, MG1--MG3) carries static placement, hot/cold separation (anti-caching
+2013), multi-level RAM$\to$NVM$\to$SSD migration (2018), and ML-driven adaptive migration (LeCaR
+2018). The \emph{buffering axes} (T17/T18), finally, comprise about a dozen building blocks each:
+operation buffers from the FIFO/LIFO queue through the Disruptor ring
+buffer~\cite{thompson2011disruptor}, the delta chain (Bw-Tree~\cite{levandoski2013bwtree}), the
+copy-on-write buffer (Driscoll~\cite{driscoll1989persistent}), the epoch buffer (P29), the skip list
+(Pugh~\cite{pugh1990skiplist}), and the tombstone buffer (LSM, O'Neil~\cite{oneil1996lsm}) to
+lock-free SPSC (Lamport~\cite{lamport_spsc}) and MPMC queues
+(Michael/Scott~\cite{michael1996queue}); as well as write-back (flush) from eager through lazy,
+threshold- and time-window-based (Kafka) to adaptive (RocksDB LSM).
 
 \subsection{Index Organization and Filters}\label{ssec:sota-ax-idx}
 The \emph{index-organization axis} (T13) distinguishes the clustered arrangement (storage order
 equals index order; Bayer/McCreight~\cite{bayer1972btree}), the unordered heap storage, the
 index-organized table (Oracle, VLDB 2000), and the non-clustered secondary index
-(Comer~\cite{comer1979btree}). The \emph{filter axis} (T16, FT1--FT3) carries the Bloom filter
-(1970), the cuckoo filter (CoNEXT 2014), the succinct range filter SuRF (P10), and the Xor filter
-(2020).
+(Comer~\cite{comer1979btree}). The \emph{filter axis} (T16, FT1--FT3) carries the Bloom
+filter~\cite{bloom1970}, the cuckoo filter~\cite{fan2014cuckoo}, the succinct range filter SuRF
+(P10), and the Xor filter~\cite{graf2020xor}.
 
 This dissection also reveals the imbalance of the prior works: a few axes are densely and repeatedly
 populated (search, node-type, allocator, prefetch axis), others exclusively with baseline/textbook
