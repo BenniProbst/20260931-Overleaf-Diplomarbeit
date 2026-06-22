@@ -125,9 +125,9 @@ mess-orientierte Realisierung. Die zentralen Beiträge sind:
 \begin{itemize}
   \item Eine ABI-stabile Modul-Schnittstelle: eine einheitliche C-Modulgrenze
   (\texttt{comdare\_create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exportiert je Permutation genau
-  ein Lebewesen; dahinter liegt eine dreischichtige Abstraktionskette (CacheEngine $\to$
-  ExecutionEngine $\to$ SearchEngine) mit variadisch templatierten Hybrid-API-Spezialisierungen
-  (1~Parameter $\Rightarrow$ \texttt{std::vector}-API; 2~Parameter $\Rightarrow$
+  ein Lebewesen (Suchalgorithmus-Binary); dahinter liegt eine dreischichtige
+  Abstraktionskette (CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine) mit variadisch templatierten
+  Hybrid-API-Spezialisierungen (1~Parameter $\Rightarrow$ \texttt{std::vector}-API; 2~Parameter $\Rightarrow$
   \texttt{std::map}-API; $N>2 \Rightarrow$ \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
   \item Eine neunzehn-Achsen-Permutationsmatrix mit \texttt{std::variant}-Bausteinen und
   Compile-Time-Fallback zwischen Prüfling-Stack und Stand-der-Technik-Stack.
@@ -142,34 +142,35 @@ mess-orientierte Realisierung. Die zentralen Beiträge sind:
   \item Ein Mess-Treiber mit Defined-/Full-Modus-Unterscheidung, profilbewusstem Workload-Routing
   und drei Granularitäten --- Micro-, Makro- und Gesamt-Benchmarking (einzelne Bestandteile,
   Interface-Operationen, ganze Algorithmen).
-  \item \emph{Als Zielsetzung und Ausblick:} die Auslieferung des besten Gesamtalgorithmus ---
-  automatisch ausgewählt aus den feingliedrigen Messergebnissen --- als eigenständige, ABI-stabile
-  Binary hinter dem einheitlichen Suchalgorithmus-Interface; die Mess-Pipeline liefert die dafür
-  nötige Rangbildung bereits, die automatische Auswahl und der Binary-Versand sind als Erweiterung
-  vorgesehen.
+  \item Eine bias-freie Vergleichs-Matrix, die \emph{alle} Lastprofile gegen \emph{alle}
+  rekonstruierten Lebewesen fährt und so dem methodischen Heimspiel-Bias der
+  Einzelveröffentlichungen begegnet.
   \item Eine generische Plattform-Probe, die Cache-Eigenschaften (Line-Größe, Hierarchie-Tiefe,
   Topologie) je Zielplattform ermittelt und als feste Größen in eine systemoptimierte Binary
   einfließen lässt; die beiden Produktionsmaschinen werden dafür unter zwei Betriebssystemen
   (immutables Talos und root-Linux mit vollem Hardware-Zähler-Zugriff) vermessen.
-  \item Eine bias-freie Vergleichs-Matrix, die \emph{alle} Lastprofile gegen \emph{alle}
-  rekonstruierten Lebewesen fährt und so dem methodischen Heimspiel-Bias der
-  Einzelveröffentlichungen begegnet.
+  \item \emph{Als Zielsetzung und Ausblick:} die Auslieferung des besten Gesamtalgorithmus
+  unter dem Messaspekt des besten Cache-aware Verhaltens und Beschleunigung unter Cache-line Anpassung ---
+  automatisch ausgewählt aus den feingliedrigen Messergebnissen --- als eigenständige, ABI-stabile
+  Binary hinter dem einheitlichen Suchalgorithmus-Interface; die Mess-Pipeline liefert die dafür
+  nötige Rangbildung bereits, die automatische Auswahl und der Binary-Versand sind als Erweiterung
+  vorgesehen.  
 \end{itemize}
 
 \section{Aufbau der Arbeit}\label{sec:structure}
-% Es sind nicht nur Such- und Allokator-Cluster. Es gibt mehrere Achsen Repositories, die thematisch mehrere Achsen abbilden und die Sub-Achsen sollten wir auch nicht vergessen, die derzeit dokumentiert sind. Da die Diplomarbeit durchaus eine Arbeit mit 60 bis 80 Seiten eigenem Volltext sein darf, ist genug Platz für Details der mehrstufigen Untergliederung der Architektur. Derzeit fehlt aber hauptsächlich im Stand der Technik ein eigenes Unterkapitel, was sich mit dem nicht-technischen Bereich des Suchalgorithmus Architektur-Designs beschäftigt, weil unser Framework eine Architektur-Design-Erfin dung mithilfe von fortgeschrittenen Design-Pattern zur Lösung eines technischen Problems darstellt, welches bisher immer mit "bloßen Händen" gelöst wurde, wir konstruieren aber vor der Arbeit erst eine Schaufel -> lösen das Problem also indierekt auf einem nicht sofort ersichtlichen Weg. Der Stand der Technik ist komplett richtig, muss aber durch Konteption und Voraussetzungen von Suchalgorithmen beginnen, was eine Webrecherche erfordert und natürlich professionelle wissenschaftliche Zitate. Wir bewegen uns also parallel zur Forschungsfeld der Datenbanken im Bereich des Software-Engineerings an der TU Dresden und deren Zielen (Webrecherche bitte).
+% Es sind nicht nur Such- und Allokator-Cluster. Es gibt mehrere Achsen Repositories, die thematisch mehrere Achsen abbilden und die Sub-Achsen sollten wir auch nicht vergessen, die derzeit dokumentiert sind. Da die Diplomarbeit durchaus eine Arbeit mit 60 bis 80 Seiten eigenem Volltext sein darf, ist genug Platz für Details der mehrstufigen Untergliederung der Architektur. Derzeit fehlt aber hauptsächlich im Stand der Technik ein eigenes Unterkapitel, was sich mit dem nicht-technischen Bereich des Suchalgorithmus Architektur-Designs beschäftigt, weil unser Framework eine Architektur-Design-Erfindung mithilfe von fortgeschrittenen Design-Pattern zur Lösung eines technischen Problems darstellt, welches bisher immer mit "bloßen Händen" gelöst wurde, wir konstruieren aber vor der Arbeit erst eine Schaufel -> lösen das Problem also indierekt auf einem nicht sofort ersichtlichen Weg. Der Stand der Technik ist komplett richtig, muss aber durch Konteption und Voraussetzungen von Suchalgorithmen beginnen, was eine Webrecherche erfordert und natürlich professionelle wissenschaftliche Zitate. Wir bewegen uns also parallel zur Forschungsfeld der Datenbanken im Bereich des Software-Engineerings an der TU Dresden und deren Zielen (Webrecherche bitte).
 Kapitel~\ref{ch:fundamentals} führt die nötigen Grundlagen als Definitions-Klassen ein.
 Kapitel~\ref{ch:sota} spiegelt diese im Stand der Technik als Instanzen: einen Überblick mit
 Korpus-Clustern, die Cache-Konzepte, die achsenweise Sezierung der Verfahren, die
 Workload-Frameworks, die Mess-Technologien und das Architektur-Design --- abschließend die
-Forschungslücke. Kapitel~\ref{ch:concept} stellt das Achsen-Bibliotheks-Framework, die geschichtete
+Forschungslücke mit Fokus auf Cache-line aware Optimierung als einfach-Konfiguration in der 
+cache-engine. Kapitel~\ref{ch:concept} stellt das Achsen-Bibliotheks-Framework, die geschichtete
 Architektur, die ABI-Schnittstelle und die neunzehn-Achsen-Permutationsmatrix vor, einschließlich
 der thematischen Achsen-Repositorien und ihrer Sub-Achsen. Kapitel~\ref{ch:impl} dokumentiert die
 Implementierung über die drei Repositorien. Kapitel~\ref{ch:methodology} beschreibt die
 Mess-Methodik mit den drei Pflicht-Messreihen (A--C), den drei Granularitäten
 (Micro-/Makro-/Gesamt-Benchmarking), den realen Datensätzen und den Fairness-Regeln.
 Kapitel~\ref{ch:results} präsentiert und diskutiert die Ergebnisse einschließlich der Hypothesen
-H1--H3. Kapitel~\ref{ch:conclusion} schließt mit Zusammenfassung und Ausblick. Der eigene Volltext
-ist auf einen Umfang von rund 60 bis 80 Seiten ausgelegt.
+H1--H3. Kapitel~\ref{ch:conclusion} schließt mit Zusammenfassung und Ausblick.
 
-% Allgemeiner Kommentar zu Verbesserungsvorschlägen: Der Große Beleg liegt in der Diplomarbeit und liefert möglicherweise noch Anregungen zur strukturellen Erweiterung der Diplomarbeit, bitte lies ihn, indem du die Struktur nicht nur über die Sektionen, sondern auch alle Strukturierungseigenschaften der subsections und subsubsections liest und verstehst.
+% Allgemeiner Kommentar zu Verbesserungsvorschlägen: Der Große Beleg liegt in der Diplomarbeit und liefert möglicherweise noch Anregungen zur strukturellen Erweiterung der Diplomarbeit.
