@@ -31,15 +31,17 @@ welcher Knoten die Seite besitzt.
 Die Cache-Line-Größe ist je Mikroarchitektur fest verdrahtet, unterscheidet sich aber zwischen
 Architekturen. Auf x86-64 (AMD wie Intel) und auf gängigen ARM-Kernen (etwa Cortex-A76 oder
 Neoverse~V2) beträgt sie 64\,Byte; einzelne Designs verwenden auf SoC-Ebene breitere Linien ---
-Apple-Silicon etwa 128\,Byte auf L2 und System-Level-Cache~\cite{apple_optimization}. Programme
-können die tatsächliche Größe zur Laufzeit \emph{auslesen} --- über \texttt{CPUID} auf x86, das
-Register \texttt{CTR\_EL0} auf ARM und die \texttt{riscv\_hwprobe}-Schnittstelle auf
-RISC-V~\cite{arm_arm,intel_sdm} ---, sie aber nicht verändern. Ebenso variiert die Tiefe der
-Hierarchie: nicht jede Plattform besitzt einen L3-Cache (einfache RISC-V-Kerne wie der SiFive~U74
-enden bei einem geteilten L2), während andere einen großen oder sogar asymmetrisch verteilten L3
-mitbringen (etwa der gestapelte 3D-V-Cache mancher AMD-Prozessoren). Für ein cache-line-bewusstes
-Layout ist die je Zielplattform ermittelte Line-Größe und Cache-Tiefe daher ein
-\emph{Eingabeparameter der Übersetzung} und keine feste Annahme;
+Apple-Silicon etwa 128\,Byte auf L2 und System-Level-Cache~\cite{apple_optimization}. Über die
+Architekturen hinweg reichen die belegten Line-Größen von schmaleren 32\,Byte auf älteren oder
+eingebetteten Kernen über die heute verbreitete 64-Byte-Linie bis zu
+128\,Byte~\cite{hennessy2019architecture}. Programme können die tatsächliche Größe zur Laufzeit
+\emph{auslesen} --- über \texttt{CPUID} auf x86, das Register \texttt{CTR\_EL0} auf ARM und die
+\texttt{riscv\_hwprobe}-Schnittstelle auf RISC-V~\cite{arm_arm,intel_sdm} ---, sie aber nicht
+verändern. Ebenso variiert die Tiefe der Hierarchie: nicht jede Plattform besitzt einen L3-Cache
+(einfache RISC-V-Kerne wie der SiFive~U74 enden bei einem geteilten L2), während andere einen großen
+oder sogar asymmetrisch verteilten L3 mitbringen (etwa der gestapelte 3D-V-Cache mancher
+AMD-Prozessoren). Für ein cache-line-bewusstes Layout ist die je Zielplattform ermittelte Line-Größe
+und Cache-Tiefe daher ein \emph{Eingabeparameter der Übersetzung} und keine feste Annahme;
 Abschnitt~\ref{ssec:aware-oblivious} greift dies für die Abgrenzung der Arbeit wieder auf.
 
 \subsection{Adressübersetzung: TLB und dTLB}\label{ssec:tlb}
@@ -152,7 +154,6 @@ messwertgetrieben sein.
 
 \section{Klassen von Suchstrukturen}\label{sec:search-classes}
 % Die als großes Bild dargelegten SUchbäume und Suchalgorithmen sind korrekt, aber dieses Kapitel muss alle Bestandteile eines Suchalgorithmus und der einzelnen Typen von Suchalgorithmen im Bezug auf die von uns im Code gefundenen Achsen vollständig als Unterkapitel aufgliedern. Unsere Arbeit besteht schließlich im Kern aus deren "Sezierung". Alle bekannten Paper belegten Suchalgorithmen aufzulisten, mit Quellen zu versehen und kurz zu benennen ist die eine Sache, deren Interna in Achsen Algorithmen zu sezieren, sodass eine Basis an gleichen Achsen (mit je veriablen Algorithmen) als Entwurfsraum erkennbar bleibt, ist die andere Sache. Wir listen also alle Algorithmen als Ganzes allgemein für die Typen der "Lebewesen" Gesamtalgorithmen und danach Zerlegen wir erst im Stand der Technik alle "Lebewesen" Gesamtalgorithmen in jede Achse einzeln mit den laut Papern bekannten Algorithmen, ordnen aber die "Organe"-Algorithmen einer Achse zu und verweisen nur ganz kurz zu welchem "Lebewesen" sie angehören. Bezüglich des Kerns der Arbeit sollte sich diese nicht nur ausschließlich auf baumartige Strukturen konzentrieren, sondern auch auf Container, die wir testweise als std::vector Hülle abbilden, weiterhin sind auch flache Suchalgorithmen und "Exoten" wissenschaftlich ausfindig zu machen und ausdrücklich erlaubt, müssen aber noch ergänzt werden. Der Teil über den Anschluss weiterer Strukturklassen/Achsen ohne die Grundorganisation des Messapparates und der Observer Struktur zu stören, ist korrekt.
-\subsection{Etablierte Untergliederung der Suchalgorithmen}\label{ssec:genera}
 Suchstrukturen lassen sich danach einordnen, mit welchem Mechanismus sie einen Schlüssel auf einen
 Datensatz abbilden~\cite{knuth1998taocp3}. \emph{Vergleichsbasierte} Strukturen lokalisieren den
 Schlüssel über Ordnungsvergleiche und setzen eine totale Ordnung voraus; hierzu zählen die
@@ -172,42 +173,68 @@ Kapitel~\ref{ch:concept} als Achsensatz freilegt.
 
 % Das ist korrekt aber zu grob. Weiterhin sind unter den baumförmigen alle Kategorien auszuführen, weitere kategorien sind hinzuzufügen, ich denke an sections, subsections und subsubsections. Wissenschaftliche Belege und Zitate für die Korrektheit der Definitionen sind immer Pflicht
 Innerhalb dieser Mechanismus-Klassen hat die Forschung konkrete Struktur-\emph{Klassen}
-hervorgebracht; sie werden hier auf Klassen-Ebene benannt und belegt, während ihre interne Sezierung
-in Achsen --- inklusive konkreter interner Ausprägungen wie ARTs Knotentypen --- erst im Stand der
-Technik (Kapitel~\ref{ch:sota}) als \emph{Instanzen} erfolgt.
+hervorgebracht; sie werden hier je Mechanismus-Klasse als eigener Abschnitt auf Klassen-Ebene
+benannt und belegt, während ihre interne Sezierung in Achsen --- inklusive konkreter interner
+Ausprägungen wie ARTs Knotentypen --- erst im Stand der Technik (Kapitel~\ref{ch:sota}) als
+\emph{Instanzen} erfolgt.
 
-\subsubsection{Vergleichsbasierte Suchbäume}
-Vergleichsbasierte Bäume lokalisieren Schlüssel über Ordnungsvergleiche. Aus dem unbalancierten
-binären Suchbaum gehen die selbstbalancierenden \emph{AVL-Bäume}~\cite{adelsonvelsky1962avl} und
-\emph{Rot-Schwarz-Bäume}~\cite{bayer1972symmetric,guibas1978redblack} hervor; für block- und
-externspeicherorientierte Indizes etablierten sich \emph{B-} und
-\emph{B\textsuperscript{+}-Bäume}~\cite{bayer1972btree,comer1979btree}. Für den Hauptspeicher
-unmittelbar einschlägig ist der \emph{T-Baum}~\cite{lehman1986ttree}.
+\subsection{Vergleichsbasierte Suchbäume}\label{ssec:comparison-trees}
+Vergleichsbasierte Bäume lokalisieren Schlüssel über Ordnungsvergleiche und erreichen im
+balancierten Fall logarithmische Suchtiefe; sie unterscheiden sich vor allem darin, wie sie diese
+Balance erhalten und wie groß ihre Knoten sind.
 
-\subsubsection{Digitale und präfixbasierte Strukturen}
+\subsubsection{AVL- und Rot-Schwarz-Bäume}
+Aus dem unbalancierten binären Suchbaum gehen die selbstbalancierenden
+\emph{AVL-Bäume}~\cite{adelsonvelsky1962avl} hervor, deren Geschwister-Teilbäume sich in der Höhe um
+höchstens eins unterscheiden, sowie die
+\emph{Rot-Schwarz-Bäume}~\cite{bayer1972symmetric,guibas1978redblack}, die dieselbe logarithmische
+Höhe über eine Knotenfärbung mit lockereren, aber günstiger zu wartenden Invarianten sichern.
+
+\subsubsection{B- und B\textsuperscript{+}-Bäume}
+Für block- und externspeicherorientierte Indizes etablierten sich die
+\emph{B-Bäume}~\cite{bayer1972btree} und die
+\emph{B\textsuperscript{+}-Bäume}~\cite{comer1979btree}, die alle Nutzdaten in den Blättern halten
+und innere Knoten auf Wegweiser reduzieren; ein Knoten entspricht dabei typischerweise einer
+Speicher- oder Cache-Block-Größe.
+
+\subsubsection{T-Baum}
+Für den Hauptspeicher unmittelbar einschlägig ist der \emph{T-Baum}~\cite{lehman1986ttree}, der die
+Balancierung des AVL-Baums mit knotenlokalen Wertebereichen verbindet und so die Zahl der
+Zeiger-Indirektionen je Suchschritt senkt.
+
+\subsection{Digitale und präfixbasierte Strukturen}\label{ssec:digital}
 Digitale Strukturen verzweigen nach den Bytes des Schlüssels statt durch Vergleich, sodass die
-Suchpfadlänge von der Schlüssellänge abhängt und nicht von der Schlüsselanzahl. Der
-\emph{Trie}~\cite{delabriandais1959trie,fredkin1960trie} ist die Grundform; \emph{Radix-} und
-\emph{PATRICIA}-Bäume~\cite{morrison1968patricia} kollabieren dünn belegte Ein-Kind-Ketten durch
-Pfadkompression. Der \emph{Adaptive Radix Tree} (ART)~\cite{leis2013art} passt die
-Knotenrepräsentation an den tatsächlichen Verzweigungsgrad an und dient dieser Arbeit durchgängig
-als Referenzentwurf; \emph{Verzweigungsgrad} (Fanout) und \emph{Knotenrepräsentation} bestimmen
-dabei Platzbedarf wie Cache-Verhalten.
+Suchpfadlänge von der Schlüssellänge abhängt und nicht von der Schlüsselanzahl.
 
-\subsubsection{Hashing}
+\subsubsection{Trie}
+Der \emph{Trie}~\cite{delabriandais1959trie,fredkin1960trie} ist die Grundform: Jeder Pfad von der
+Wurzel buchstabiert einen Schlüssel, und gemeinsame Präfixe werden zwischen Schlüsseln geteilt.
+
+\subsubsection{Radix- und PATRICIA-Bäume}
+\emph{Radix-} und \emph{PATRICIA}-Bäume~\cite{morrison1968patricia} kollabieren dünn belegte
+Ein-Kind-Ketten durch Pfadkompression und senken so Höhe und Speicherbedarf gegenüber dem reinen
+Trie.
+
+\subsubsection{Adaptive Radix Tree (ART)}
+Der \emph{Adaptive Radix Tree} (ART)~\cite{leis2013art} passt die Knotenrepräsentation an den
+tatsächlichen Verzweigungsgrad an und dient dieser Arbeit durchgängig als Referenzentwurf;
+\emph{Verzweigungsgrad} (Fanout) und \emph{Knotenrepräsentation} bestimmen dabei Platzbedarf wie
+Cache-Verhalten.
+
+\subsection{Hashing}\label{ssec:hashing}
 Hashing bildet Schlüssel direkt über eine Hashfunktion ab und kennt keine inhärente Ordnung, weshalb
 Bereichsabfragen teuer sind~\cite{knuth1998taocp3}. Neben offener und verketteter Adressierung
 erreicht \emph{Cuckoo-Hashing}~\cite{pagh2004cuckoo} konstante Worst-Case-Lookups, und moderne,
 SIMD-beschleunigte Tabellen wie SwissTable~\cite{abseil_swisstable} erzielen hohe praktische Dichte.
 Hashing tritt in dieser Arbeit nur als nicht-baumartige Vergleichsgröße auf.
 
-\subsubsection{Räumliche Strukturen}
+\subsection{Räumliche Strukturen}\label{ssec:spatial}
 Räumliche Strukturen partitionieren einen mehrdimensionalen Schlüsselraum --- etwa der
 \emph{k-d-Baum}~\cite{bentley1975kdtree}, der \emph{Quadtree}~\cite{finkel1974quadtree} und der
 \emph{R-Baum}~\cite{guttman1984rtree}. Sie liegen mit ihren mehrdimensionalen Schlüsseln außerhalb
 des Umfangs dieser Arbeit und werden nur der Vollständigkeit halber genannt.
 
-\subsubsection{Flache Verfahren und theoretische Exoten}
+\subsection{Flache Verfahren und theoretische Exoten}\label{ssec:flat-exotic}
 Als Grenzfall steht das \emph{flache} Verfahren: ein sortiertes Array mit Binär- oder
 Interpolationssuche~\cite{knuth1998taocp3} ist streng genommen das einzelne Blatt eines Baumes. Auf
 String-Schlüsseln verallgemeinert das \emph{Suffix-Array} dieses flache, sortierte Layout zu einem
@@ -239,12 +266,13 @@ darunter liegen \emph{Lebewesen-Unterklassen} mit festem Achsensatz (die SearchA
 mit ihren neunzehn Achsen sowie Set, Sequence, Adapter und View unter dem Container-Interface). Eine
 \emph{Achse} ist eine orthogonale Teilentscheidung --- ein „Organ" --- eines Gesamt-Algorithmus; ein
 konkretes Verfahren ist damit ein Punkt im kartesischen Produkt der Achsen, und die klassischen
-Familien aus Abschnitt~\ref{ssec:genera} erweisen sich als bloße Lese-Gruppierungen orthogonaler
+Familien aus den Abschnitten~\ref{ssec:comparison-trees}--\ref{ssec:flat-exotic} erweisen sich als
+bloße Lese-Gruppierungen orthogonaler
 Achsen-Belegungen~\cite{idreos2018periodic,idreos2018datacalculator}. Als eigenen Prüfling steuert
 diese Arbeit den PRT-ART bei (einen Probst-Redirect-Tree-/ART-Hybrid), dessen Achsen-Beiträge
 ebenfalls erst in den Kapiteln~\ref{ch:concept} und~\ref{ch:impl} seziert werden. So bleiben die
-fremde Klassifikation (Abschnitte~\ref{ssec:genera} und~\ref{ssec:container-taxonomy}) und die in
-dieser Arbeit verwendete, achsenorientierte Sezierungs-Sicht sauber getrennt.
+fremde Klassifikation (Abschnitte~\ref{ssec:comparison-trees}--\ref{ssec:container-taxonomy}) und
+die in dieser Arbeit verwendete, achsenorientierte Sezierungs-Sicht sauber getrennt.
 
 \section{Einheitliche Vergleichsinterfaces}\label{sec:compare-interfaces}
 % Das Vergleichsinterface ist (Webrecherche) aus der C++ Hauptdokumentation übernommen worden und muss auch für std:: vector separat als subsection parallel zu std::map gelistet werden. Dazu gehört die Aufgliederung ALLER im Standard verfügbaren Interface funktionen und Gewährleistung der jeweiligen Funktionalität samt tests. Falls sich interfaces "unter der Haube" als Zusammensetzung anderer Interfaces entpuppen, müssen diese je Funktionsinterface beschrieben werden, ansonsten ist für jede Standard-Interface-Funktion die offizielle erwartete Funktionalität gegen den Suchalgorithmus in der Arbeit zu dokumentieren. Dies ist ausnahmsweise in die Arbeit zu übernehmen, weil wir im weiteren Verlauf schließlich die Suchalgorithmus-Hülle intern mit dynamisch austauschbaren Achsen-Algorithmen ersetzen werden, wodurch die interne Verarbeitung einer jeden Interface Funktion erklärungsbedürftig wird, wie diese nun wirklich verkabelt ist, anstelle des Standardfalls. Diese Dokumentation muss auch für die Weiterentwicklung der cache-engine als zentrales Dokument verfügbar gemacht werden, um anderen Entwicklern den Einstieg und die exakten cache-engine function-handle-hops zu erklären. Bezüglich der Schnittstellen und dem Verhalten zwischen innen und außen müssen wir unterscheiden, welche Ebenen der Dynamik es in unserem System gibt: Meiner Auffassug nach unterscheidet sich dies zuerst in compile-time und run-time Dynamik und innerhalb der beiden Kategorien einmal in Lebewesen-Typen die nur eine bestimmte Anzahl der vorhandenen Achsen verwenden, dann die Achsenalgorithmen selbst die zur Compile time in ein Lebewesen-Binary hineinkompiliert werden; dann unterscheiden wir noch die Subachsen die dynamische runtime Parameter aufweisen und wir kennen eine weitere Aufgliederung in statische Sub-Achsen die compile-time Auswahl an statischen Teil-Algorithmen betiteln, die unterschiedliche Komplexität haben. Diese Prinzipien sind in unserem System wahrscheinlich neu, aber bedürfen noch eine ausführliche Webrecherche zum Stand der Technik
@@ -292,6 +320,11 @@ Diese Trennung ist im Permutations-Baum der Cache-Engine verankert (Kapitel~\ref
 statische Achsen-Ebenen erzeugen je Pfad eine eigene Binary, dynamische Sub-Achsen sind virtuelle
 Laufzeit-Schleifen über derselben Binary. Erst dadurch wird je Interface-Funktion erklärbar, wie sie
 intern verdrahtet ist --- ein Aspekt, den ein eigenes Entwickler-Dokument der Cache-Engine vertieft.
+Gegenüber dem Stand der Technik --- der statischen Entwurfsraum-Aufzählung des
+\emph{Data Calculator}~\cite{idreos2018datacalculator} und dem klassischen
+\emph{Policy-based Design}~\cite{alexandrescu2001modern} --- führt diese Taxonomie compile- und
+laufzeitvariable Achsen-Ebenen ausdrücklich gemeinsam; eine etablierte Benennung dieser Staffelung
+fand eine Web-Recherche nicht (vgl.\ Abschnitt~\ref{ssec:new-patterns}).
 
 \section{Lasten und Workloads}\label{sec:workloads-basics}
 % Simples Feedback: Was ist eine Last? Was ist ein Workload? Was ist das Ziel der Variation? Welche Workloads konnten über ALLE Paper recherchiert werden, die derzeit in der Diplomarbeit gelistet sind? Welche Messdaten stecken per Diplomarbeit Dokumentation genau hinter den verwendeten Workloads, woraus bestehen sie? Gibt es Lastprofil-playbooks die mit multiplen Interface Anfragen durchgeführt werden oder handelt es sich bezüglich des Inerfaces um isolierte und unrealistische Einzelzugriffe? Bezüglich der Workloads erwarte ich auch zuerst ein verallgemeinertes Hauptkapitel und dann die Frameworks, welche diese Workloads bereitstellen können, denn durch die große Verteilung verschiedener Workloads und nicht vergleichbarer Lasten über multiple Paper und Suchalgorithmen, sind wir gezwungen ALL DIESE gegen alle Lebewesen-Binaries also Suchalgorithmen (und zusätzlich Container) angepasst laufen zu lassen, um die absolute Vergleichbarkeit aus den Messwerten zu ermitteln.
@@ -326,13 +359,14 @@ Daneben stützen sich die analysierten Veröffentlichungen auf weitere Framework
 \emph{SOSD}~\cite{kipf2019sosd}, die Transaktions-Benchmarks der \emph{TPC}-Familie (TPC-C,
 TPC-DS)~\cite{tpc_benchmarks}, die Integration in reale Systeme (etwa SuRF als Bloom-Filter-Ersatz
 in RocksDB), reale String-Korpora (URLs, DNA, Wörterbuch-Terme) sowie --- bei den hardware-nahen
-Arbeiten --- \emph{SPEC~CPU}~\cite{spec_cpu2017} und \emph{CloudSuite}~\cite{ferdman2012cloudsuite};
-der Allokator-Korpus wird mit allokator-spezifischen Suiten vermessen
-(\texttt{mimalloc-bench}~\cite{mimalloc_bench}, Larson, threadtest, shbench). Da diese Frameworks
-unterschiedliche, untereinander nicht vergleichbare Lasten erzeugen, abstrahiert die Arbeit sie zu
-einem gemeinsamen Satz von Lastprofilen und fährt diese als \emph{dynamische Workload-Achse} über
-alle Lebewesen-Binaries (Kapitel~\ref{ch:methodology}); die Anbindung der nicht-YCSB-Frameworks
-erfolgt über einen Datensatz-Lader.
+Arbeiten --- \emph{SPEC~CPU}~\cite{spec_cpu2017}, \emph{CloudSuite}~\cite{ferdman2012cloudsuite} und
+der Architektur-Simulator \emph{gem5}~\cite{binkert2011gem5}; der Allokator-Korpus wird mit
+allokator-spezifischen Suiten vermessen (\texttt{mimalloc-bench}~\cite{mimalloc_bench}, Larson,
+threadtest, shbench und LADDIS). Da diese Frameworks unterschiedliche, untereinander nicht
+vergleichbare Lasten erzeugen, abstrahiert die Arbeit sie zu einem gemeinsamen Satz von Lastprofilen
+und fährt diese als \emph{dynamische Workload-Achse} über alle Lebewesen-Binaries
+(Kapitel~\ref{ch:methodology}); die Anbindung der nicht-YCSB-Frameworks erfolgt über einen
+Datensatz-Lader.
 
 \section{Wissenschaftliches Messen}\label{sec:measurement-basics}
 % [AP-G8] NEU (verifiziert fehlend). Vgl. Kapitel-Schluss-Kommentar (Mess-Thema + Grundlagen/SoTA-Verzahnung).
