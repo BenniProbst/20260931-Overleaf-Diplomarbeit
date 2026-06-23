@@ -23,8 +23,12 @@
 \ifx\thesislang\langDE \thesisDEtrue \else \thesisDEfalse \fi
 % Pass 'german' to zihpub only in DE mode (English is the template default):
 \ifthesisDE \PassOptionsToClass{german}{zihpub}\fi
+% hyperref der Klasse via \PassOptionsToClass uebergeben statt als globale
+% \documentclass-Option: so taucht 'hyperref' nicht mehr in der globalen Optionsliste auf,
+% die xcolor scannt (sonst: "Package option `hyperref' is obsolete and ignored").
+\PassOptionsToClass{hyperref}{zihpub}
 
-\documentclass[diplominf,utf8,hyperref,lof,lot,twoside]{zihpub}
+\documentclass[diplominf,utf8,lof,lot,twoside]{zihpub}
 
 % --- Additional packages (NOT loaded by zihpub.cls) -------------------
 \usepackage{booktabs}
@@ -39,6 +43,10 @@
 \hbadness=10000  % kosmetische Underfull-\hbox-Meldungen (lockerer Zeilensatz) im Log unterdruecken
 \vbadness=10000  % kosmetische Underfull-\vbox-Meldungen (Seitenausgleich) im Log unterdruecken
 \usepackage{csquotes}                 % \enquote{...} — language-aware quotation marks
+% Das Literal-Zeichen → (via inputenc auf \textrightarrow gemappt) fehlt in Times' TS1-Encoding
+% und loest sonst je Vorkommen eine Font-Substitutions-Meldung aus. Auf den Math-Pfeil abbilden,
+% der in jeder Schrift verfuegbar ist (behebt die Warnungen auch in auto-generierten Tabellen).
+\renewcommand{\textrightarrow}{\ensuremath{\rightarrow}}
 
 % --- Language-specific typographic conventions ------------------------
 \ifthesisDE
