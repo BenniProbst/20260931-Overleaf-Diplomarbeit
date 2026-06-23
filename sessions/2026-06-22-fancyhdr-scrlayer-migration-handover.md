@@ -1,6 +1,14 @@
 # Übergabe: fancyhdr → scrlayer-scrpage Migration (zihpub.cls)
 
-**Datum:** 2026-06-22 · **Status:** DESIGNED + 99 % angewandt, dann REVERTIERT (sicherer Stand) ·
+> ✅ **ERLEDIGT am 2026-06-23 in Commit `cfc9508`** — Migration vollständig + **visuell
+> verifiziert** (Pixel-Diff before/after, nur Kopf-Band betroffen, Fließtext identisch). Zusätzlich
+> 4 BibTeX-Warnungen behoben. DE+EN: 0 Errors / 0 Overfull / 0 BibTeX-Warnungen / 0 KOMA-Advisory.
+> Drei nötige Angleichungen für identische Optik: `automark`+`\MakeMarkcase=\MakeUppercase` (GROSS-
+> Marken), `\chapter/sectionmarkformat` mit Punkt (numbers=noenddot-Kompensation),
+> `\setkomafont{pagehead/pagenumber}{\normalfont}` (aufrecht statt KOMA-`\slshape`).
+> Das Folgende ist die historische Planungs-Übergabe.
+
+**Datum:** 2026-06-22 · **Status:** ~~DESIGNED + 99 % angewandt, dann REVERTIERT~~ → **DONE (`cfc9508`)** ·
 **Sauberer HEAD:** `e1b6da9` (Build DE 148 / EN 136, Log leer außer KOMA-Advisory)
 
 ## Warum revertiert
