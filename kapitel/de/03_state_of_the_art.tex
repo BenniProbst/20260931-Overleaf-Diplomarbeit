@@ -29,11 +29,13 @@ web-verifizierten Provenienz-Map über rund 110 Organ-Algorithmen.
 
 Dass das Achsen-Gerüst auch \emph{nicht-baumartige} Verfahren trägt, belegt eine reine Hash-Tabelle
 (\texttt{absl::flat\_hash\_map}/SwissTable~\cite{abseil_swisstable}) als Gegenprobe innerhalb der
-SearchAlgorithm-Gattung: Sie erfüllt dasselbe \texttt{std::map}-Interface über ein
-\emph{limitiertes Achsen-Subset} --- die trie-spezifischen Achsen (Pfadkompression, Knotentyp,
-Bereichs-Index) entfallen als Durchreich-Variante, während Allokation, Prefetch, Nebenläufigkeit,
-Speicher-Layout und ISA-SIMD (für das SwissTable-Gruppen-Lookup) geteilt bleiben --- und erfordert
-so keine eigene Gattung.
+SearchAlgorithm-Gattung: Sie erfüllt das \emph{Punktanfrage-Subset} des \texttt{std::map}-Interface
+(\texttt{find}/\texttt{insert}/\texttt{erase}); die ordnungsbasierten Operationen
+(\texttt{lower\_bound}/\texttt{upper\_bound}, geordnete Bereichsiteration) entfallen, da eine
+Hash-Tabelle ungeordnet ist. Über dieses Subset belegt sie ein \emph{limitiertes Achsen-Subset}: die
+trie-spezifischen Achsen (Pfadkompression, Knotentyp, Bereichs-Index) entfallen als
+Durchreich-Variante, während Allokation, Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD
+(für das SwissTable-Gruppen-Lookup) geteilt bleiben --- und erfordert so keine eigene Gattung.
 
 \subsection{Der Korpus nach Herkunfts-Clustern}\label{ssec:sota-corpus}
 Ergänzend zur achsenweisen Sezierung (Abschnitt~\ref{sec:sota-axes}) ordnet dieser Überblick die
@@ -85,7 +87,10 @@ Vermessungen: Graefe und Larson (P15, 2001) untersuchen B-Baum-Indizes explizit 
 CPU-Cache-Ebenen, Bender, Demaine und Farach-Colton (P16, 2002; P17, 2005) modellieren ein
 mehrstufiges Speicher-Modell mit einem Block-Transfer-Parameter und lösen darin das
 Baum-Layout-Problem auch bei unbekannter Block-Größe nahezu optimal~\cite{bender2002treelayout}, und
-Zhang (P27, ASPLOS 2025) bündelt Prefetches hierarchisch über L1/L2/L3.
+Zhang et al.\ (P27, ASPLOS 2025) untersuchen mit \emph{Hierarchical Prefetching} einen
+software-/hardware-kooperativen \emph{Instruktions}-Prefetcher für Server-Anwendungen; er ist als
+Prefetching-Instanz relevant, nicht als datenstruktur-spezifischer L1/L2/L3-Datenprefetch für
+Baum-Layouts.
 
 \subsection{Cache-Line-bewusstes Layout}\label{ssec:sota-cacheline}
 Das cache-line-orientierte Layout (Abschnitt~\ref{ssec:cache-line-sizes}) ist der dominante
@@ -108,20 +113,21 @@ bleibt in den Suchalgorithmus-Papern jedoch unterbelegt --- eine Beobachtung, au
 Forschungslücke (Abschnitt~\ref{sec:gap}) zurückkommt.
 
 \subsection{Schreib-Protokolle, Update-Heuristiken und Inklusions-Politik}\label{ssec:sota-update}
-Das in Abschnitt~\ref{ssec:coherence} eingeführte Cache-Update-Verhalten ist je ISA und je
-Cache-Ebene konkret festgelegt. \emph{Schreib-Protokolle:} ARMv8 wählt Write-Through, Write-Back
-oder Non-Cacheable sowie Read- bzw.\ Read-Write-Allocate über Seiten-Attribute~\cite{arm_arm},
-während x86 als Normalfall Write-Back mit Write-Allocate verwendet~\cite{intel_sdm}.
+Das in Abschnitt~\ref{ssec:coherence} eingeführte Cache-Update-Verhalten ist nur teilweise über die
+ISA sichtbar; Ersetzung, Inklusion und konkrete Kohärenz sind überwiegend je Mikroarchitektur und
+Cache-Ebene festgelegt. \emph{Schreib-Protokolle:} ARMv8 wählt Write-Through, Write-Back oder
+Non-Cacheable sowie Read- bzw.\ Read-Write-Allocate über Seiten-Attribute~\cite{arm_arm}, während
+x86 als Normalfall Write-Back mit Write-Allocate verwendet~\cite{intel_sdm}.
 \emph{Heuristische Ersetzungs-/Update-Strategien:} von LRU und Pseudo-LRU bis zur
 \emph{Re-Reference Interval Prediction} (RRIP/DRRIP), die mit zwei Bit je Line scan- und
 thrash-resistente Verdrängung erreicht~\cite{jaleel2010rrip} und auf der adaptiven
-Insertions-Politik aufbaut~\cite{qureshi2007adaptive}. \emph{Inklusions-Politik:}
-Intel-Client-Prozessoren führen einen inklusiven L3, Intel-Server ab Skylake-X einen
-nicht-inklusiven, während AMD Zen den L3 als überwiegend exklusiven Victim-Cache
-betreibt~\cite{intel_optimization,amd_sog}. Diese drei Aspekte bestimmen gemeinsam, welche Ebenen
-ein Schreibzugriff aktualisiert; da sie mikroarchitektonisch fixiert und zur Laufzeit nicht wählbar
-sind, fließen sie als \emph{vermessene} Plattform-Eigenschaften in die systemoptimierte Binary ein
-(Abschnitt~\ref{ssec:aware-oblivious}).
+Insertions-Politik aufbaut~\cite{qureshi2007adaptive}. \emph{Inklusions-Politik:} frühere
+Intel-Client-Generationen (etwa Nehalem) führen einen inklusiven L3, Intel-Server ab
+Skylake-SP/Xeon~Scalable einen nicht-inklusiven, während AMD-Zen-Generationen den L3 überwiegend
+nicht-inklusiv bzw.\ victim-artig betreiben~\cite{intel_optimization,amd_sog}. Diese drei Aspekte
+bestimmen gemeinsam, welche Ebenen ein Schreibzugriff aktualisiert; da sie mikroarchitektonisch
+fixiert und zur Laufzeit nicht wählbar sind, fließen sie als \emph{vermessene}
+Plattform-Eigenschaften in die systemoptimierte Binary ein (Abschnitt~\ref{ssec:aware-oblivious}).
 
 \subsection{Cache-bewusste und cache-oblivious Entwürfe}\label{ssec:sota-aware}
 Beide Philosophien aus Abschnitt~\ref{ssec:aware-oblivious} sind im Stand der Technik instanziiert:
@@ -188,7 +194,7 @@ TU-Dresden-Hardware P31--P33) erscheinen dabei \emph{aufgelöst} in ihren Organ-
     T17 queuing\_q1 & --- & Disruptor, Bw-Tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
     T18 queuing\_q2 & --- & Eager/Lazy/Watermark/Kafka/RocksDB \\
     Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (26) \\
-    Build simd (09b) & --- & SSE2/AVX2/AVX-512/NEON/SVE2/RVV/CUDA \\
+    Build simd (09b) & --- & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
     Build hardware (12) & 12.1--12.5 & HW-Strategie je Paper (Tab.~\ref{tab:hw-sched}) \\
     \bottomrule
   \end{tabular}
@@ -205,14 +211,14 @@ Suchbaum und B-Baum (Bayer/McCreight~\cite{bayer1972btree}) sowie Open-Addressin
 (Knuth~\cite{knuth1998taocp3}). Die \emph{Traversierungs-Achsen} trennen Algorithmus- und
 Cache-Sicht: T1 (Cache-Memory-Traversierung) reicht von der Cache-Line-Wanderung über
 Stride-Prefetch (P21 Chen) und HBM-Nähe (P32 Schmidt) bis zur cache-oblivious-Rekursion (P17
-Bender~\cite{frigo1999cache}) und dem L1/L2/L3-Bündel (P27 Zhang); T2 (Mapping) verbindet beide über
-lineare 1:1-Abbildung, Hash-Redirect (P07) oder Permutations-Index (P03 Masstree) --- eine im Stand
-der Technik dünn, überwiegend per Baseline besetzte Achse. Die \emph{Pfadkompression} (T3)
-instanziiert die byte-weise Variante (P01), den Single-Bit-Patricia-Split (Morrison
-1968~\cite{morrison1968patricia}; P02), die kollabierte Macro-Node (P04 CoCo) und das
-Multi-Byte-Rewiring (P05). Die \emph{Knotentyp-Achse} (T4, NT1--NT3, 13 Bausteine) und die
-Build-Achse \emph{Seitentyp} (PG1--PG3, 26 Bausteine) bündeln die adaptiven Layouts: Node4/16/48/256
-(P01), HOT-Compound (P02), Internal/Border (P03), Decision/Span (P06
+Bender~\cite{frigo1999cache}) und dem instruktionsseitigen Bündel-Prefetch (P27 Zhang); T2 (Mapping)
+verbindet beide über lineare 1:1-Abbildung, Hash-Redirect (P07) oder Permutations-Index (P03
+Masstree) --- eine im Stand der Technik dünn, überwiegend per Baseline besetzte Achse. Die
+\emph{Pfadkompression} (T3) instanziiert die byte-weise Variante (P01), den
+Single-Bit-Patricia-Split (Morrison 1968~\cite{morrison1968patricia}; P02), die kollabierte
+Macro-Node (P04 CoCo) und das Multi-Byte-Rewiring (P05). Die \emph{Knotentyp-Achse} (T4, NT1--NT3,
+13 Bausteine) und die Build-Achse \emph{Seitentyp} (PG1--PG3, 26 Bausteine) bündeln die adaptiven
+Layouts: Node4/16/48/256 (P01), HOT-Compound (P02), Internal/Border (P03), Decision/Span (P06
 B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}), LOUDS-Dense/Sparse (P10),
 CSS-Knoten/CSB\textsuperscript{+}-Node-Group/Hankins-Wide (P11/P12/P13) sowie die PRT-ART-Familie.
 
@@ -234,12 +240,13 @@ Varint (P01).
 \subsection{Hardware-nahe Organe}\label{ssec:sota-ax-hw}
 Die \emph{Prefetch-Achse} (T7, PF1--PF3, 6 Bausteine) reicht von keinem Prefetch über
 software-festes (P21 Chen) und adaptiv-distanziertes (P23 Khan) bis zu fill-buffer-bewusstem (P25
-Mahling), pfad-/jump-pointer-orientiertem (P26 Zhang) und hierarchischem Bündel-Prefetch (P27
-Zhang); die explizite Hardware-Prefetch-Instruktion stammt aus Wormhole (P07). Die \emph{ISA-Achse}
-(T12) und die Build-Achse \emph{SIMD-Erweiterung} (09b) führen die Vendor-Spezifikationen: x86-64,
-AArch64, Power und RISC-V mit SSE2/AVX2/AVX-512, NEON/SVE2, RVV und CUDA. Zwei übergreifende
-Strategie-Achsen halten fest, was ein Algorithmus aktiv \emph{nutzt} bzw.\ wie er Arbeit
-\emph{verteilt}: die \emph{Hardware-Strategie} (Achse 12; Sub 12.1 SIMD-Familie, 12.2
+Mahling), pfad-/jump-pointer-orientiertem (P26 Zhang) und hierarchischem
+Instruktions-Bündel-Prefetch (P27 Zhang); die explizite Hardware-Prefetch-Instruktion stammt aus
+Wormhole (P07). Die \emph{ISA-Achse} (T12) und die Build-Achse \emph{SIMD-Erweiterung} (09b) führen
+die Vendor-Spezifikationen: x86-64, AArch64, Power und RISC-V mit SSE2/AVX2/AVX-512, NEON/SVE2 und
+RVV sowie --- getrennt davon als GPU-/Beschleuniger-Profil (SIMT, kein CPU-SIMD) --- CUDA. Zwei
+übergreifende Strategie-Achsen halten fest, was ein Algorithmus aktiv \emph{nutzt} bzw.\ wie er
+Arbeit \emph{verteilt}: die \emph{Hardware-Strategie} (Achse 12; Sub 12.1 SIMD-Familie, 12.2
 Cache-Level-Targeting, 12.3 NUMA, 12.4 Prefetch-Hardware, 12.5 Atomic-Familie) und die
 \emph{Scheduling-Strategie} (Achse 13; Sub 13.1 Worker-Pool-Layout, 13.2 SIMD-Worker-Limit ---
 hardwarebedingt typisch zwei von $N$ Kernen ---, 13.3 heterogener P-/E-Kern-Dispatch, 13.4
@@ -254,7 +261,7 @@ hinaus), während der Zähler in allen (auch inneren) Knoten als \emph{Anti-Patt
 
 \begin{table}[!htbp]
   \centering\small
-  \caption{Hardware- und Scheduling-Strategie pro SOTA-Paper (Auswahl); der Vollkatalog steht in Anhang~\ref{app:blocks}.}\label{tab:hw-sched}
+  \caption{In dieser Arbeit zugewiesene Ziel-Hardware- und Scheduling-Profile je rekonstruiertem SOTA-Verfahren (Auswahl; die Profile sind Rekonstruktions-Ziele dieser Arbeit, nicht zwingend Original-Paper-Eigenschaften); der Vollkatalog steht in Anhang~\ref{app:blocks}.}\label{tab:hw-sched}
   \begin{tabular}{@{}l p{4.6cm} p{5.6cm}@{}}
     \toprule
     \textbf{Paper} & \textbf{Hardware-Strategie (Achse 12)} & \textbf{Scheduling-Strategie (Achse 13)} \\
@@ -482,8 +489,8 @@ Knotengröße und Prefetch eher Cache und TLB als die Algorithmus-Logik. Vierzeh
 Veröffentlichungen liefern überhaupt kein eigenes Index-Lastprofil (Survey-, Theorie- und
 Hardware-Arbeiten). Erst wenn \emph{alle} Lastprofile gegen \emph{alle} Lebewesen-Binaries (und die
 Container-Hüllen) laufen --- der Workload als dynamische Achse (Kapitel~\ref{ch:methodology}) ---,
-lässt sich der „Sieger nur im selbstgewählten Heimprofil" entlarven und bias-freie Vergleichbarkeit
-gewinnen. Diese Unvollständigkeit der Vorarbeiten ist Teil der Forschungslücke
+lässt sich der „Sieger nur im selbstgewählten Heimprofil" sichtbar machen und bias-reduzierte
+Vergleichbarkeit gewinnen. Diese Unvollständigkeit der Vorarbeiten ist Teil der Forschungslücke
 (Abschnitt~\ref{sec:gap}).
 
 \section{Mess-Technologien als Instanzen}\label{sec:sota-measurement}
@@ -526,7 +533,7 @@ zählerbasierten PMC-Kategorien sind vorgesehen, ihre Erhebung jedoch an Hardwar
 gebunden --- die vollständige Mess-Architektur entwickelt Kapitel~\ref{ch:methodology}.
 \emph{Welche} dieser Instanzen das vorgeschlagene Framework übernimmt und welche es als überholt
 ersetzt, analysiert Kapitel~\ref{ch:concept} dialektisch (These--Antithese--Synthese): jede
-Vorarbeit (These) trifft im bias-freien Quervergleich auf ihre Grenzen (Antithese), woraus die
+Vorarbeit (These) trifft im bias-reduzierten Quervergleich auf ihre Grenzen (Antithese), woraus die
 tieferen Ergebnisse der eigenen Apparatur als Synthese hervorgehen. Damit schließt der Stand der
 Technik unmittelbar an die Forschungslücke an (Abschnitt~\ref{sec:gap}).
 
@@ -582,17 +589,17 @@ Kapitel~\ref{ch:concept} dialektisch (vgl.\ Abschnitt~\ref{ssec:sota-meas-bridge
 
 Die Sezierung in Abschnitt~\ref{sec:sota-axes} legt die zentrale Lücke offen: Jede der untersuchten
 Arbeiten optimiert nur wenige Achsen isoliert, und
-\emph{kein einziges Verfahren belegt alle neunzehn Achsen gemeinsam}. Manche Achsen sind im Stand
-der Technik ausschließlich mit Baseline- oder Lehrbuch-Varianten besetzt (das Mapping zwischen
-Algorithmus- und Cache-Traversierung), andere treten nur als \emph{Mess-Ziel} auf (der dTLB), und
-die räumliche Such-Klasse fehlt ganz; Achsen wie Ein-/Ausgabe, Migration, Filter und Pufferung sind
-zwar je einzeln belegt, aber nie zusammen mit den Such-Achsen in einem Entwurf.
+\emph{im untersuchten Korpus belegt kein einziges Verfahren alle neunzehn Achsen gemeinsam}. Manche
+Achsen sind im Stand der Technik ausschließlich mit Baseline- oder Lehrbuch-Varianten besetzt (das
+Mapping zwischen Algorithmus- und Cache-Traversierung), andere treten nur als \emph{Mess-Ziel} auf
+(der dTLB), und die räumliche Such-Klasse fehlt ganz; Achsen wie Ein-/Ausgabe, Migration, Filter und
+Pufferung sind zwar je einzeln belegt, aber nie zusammen mit den Such-Achsen in einem Entwurf.
 
 Hinzu kommt die methodische Lücke: Die Ergebnisse werden in nicht vergleichbaren Settings berichtet,
-und der Paper-Bias --- jede Veröffentlichung wählt ihr Heimspiel-Lastprofil
-(Abschnitt~\ref{ssec:sota-wl-bias}) --- verhindert einen fairen Quervergleich. Es fehlt eine
-bias-freie Vermessung \emph{aller} Lastprofile gegen \emph{alle} Verfahren auf einer gemeinsamen
-Basis.
+und die häufige Wahl szenariospezifischer, oft günstig zugeschnittener Lastprofile
+(Abschnitt~\ref{ssec:sota-wl-bias}) erschwert einen fairen Quervergleich. Es fehlt eine
+bias-reduzierte Vermessung \emph{aller} Lastprofile gegen \emph{alle} Verfahren auf einer
+gemeinsamen Basis.
 
 Was fehlt --- und was diese Arbeit beiträgt --- ist daher die systematische, orthogonale
 \emph{Achsen-Zerlegung} dieser Entwürfe samt einer \emph{permutierten Mess-Architektur}, die sie als
