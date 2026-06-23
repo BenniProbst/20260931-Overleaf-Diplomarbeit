@@ -15,13 +15,14 @@ between the registers and main memory~\cite{hennessy2019architecture}. The trans
 levels is the \emph{cache line}; its size, however, is not a universal constant but a property fixed
 per microarchitecture (Section~\ref{ssec:cache-line-sizes}). Nor does transfer occur strictly
 ``block-wise in one piece'': techniques such as \emph{critical-word-first} deliver the requested
-word first; DDR5 splits the memory channel into two independent 32-bit sub-channels; and
-non-temporal or write-combining stores bypass the regular line granularity~\cite{intel_sdm}. An
-access that finds its datum in a cache level is cheap; a miss is forwarded to the next, slower
-level, and a miss in the last-level cache reaches main memory at a cost of several hundred
-cycles~\cite{hennessy2019architecture,drepper2007memory}. On multi-socket and chiplet systems,
-non-uniform memory access (NUMA) additionally makes the latency of a reference depend on which node
-owns the page~\cite{drepper2007memory}.
+word first; DDR5 splits the memory channel into two independent 32-bit
+sub-channels~\cite{micron_ddr5}; and non-temporal or write-combining stores bypass the normal
+write-allocate path rather than fetching the affected cache line into the cache
+hierarchy~\cite{intel_sdm}. An access that finds its datum in a cache level is cheap; a miss is
+forwarded to the next, slower level, and a miss in the last-level cache reaches main memory at a
+cost of several hundred cycles~\cite{hennessy2019architecture,drepper2007memory}. On multi-socket
+and chiplet systems, non-uniform memory access (NUMA) additionally makes the latency of a reference
+depend on which node owns the page~\cite{drepper2007memory}.
 
 \subsection{Cache-Line Sizes: Static and Dynamic}\label{ssec:cache-line-sizes}
 The cache-line size is hard-wired per microarchitecture but differs between architectures. On x86-64
@@ -31,13 +32,14 @@ and the system-level cache~\cite{apple_optimization}. Across architectures, the 
 use range from narrower 32~bytes on older or embedded cores through the now-common 64-byte line up
 to 128~bytes~\cite{hennessy2019architecture,intel_optimization,amd_sog}. Programs can \emph{read}
 the actual size at run time --- via \texttt{CPUID} on x86, the \texttt{CTR\_EL0} register on ARM,
-and the \texttt{riscv\_hwprobe} interface on RISC-V~\cite{arm_arm,intel_sdm} --- but cannot change
-it. The depth of the hierarchy likewise varies: not every platform has an L3 cache (simple RISC-V
-cores such as the SiFive~U74 stop at a shared L2), while others bring a large or even asymmetrically
-distributed L3 (e.g.\ the stacked 3D V-Cache of some AMD processors). For a cache-line-aware layout,
-the line size and cache depth determined per target platform are therefore an
-\emph{input parameter of compilation} rather than a fixed assumption;
-Section~\ref{ssec:aware-oblivious} takes this up again for the delimitation of the thesis.
+and --- with limitations --- the \texttt{riscv\_hwprobe} interface on RISC-V (e.g.\ CBO block
+sizes)~\cite{arm_arm,intel_sdm} --- but cannot change it. The depth of the hierarchy likewise
+varies: not every platform has an L3 cache (simple RISC-V cores such as the SiFive~U74 stop at a
+shared L2), while others bring a large or even asymmetrically distributed L3 (e.g.\ the stacked 3D
+V-Cache of some AMD processors). For a cache-line-aware layout, the line size and cache depth
+determined per target platform are therefore an \emph{input parameter of compilation} rather than a
+fixed assumption; Section~\ref{ssec:aware-oblivious} takes this up again for the delimitation of the
+thesis.
 
 \subsection{Address Translation: TLB and dTLB}\label{ssec:tlb}
 Besides the data-cache hierarchy there exists a second one, for address translation: the
@@ -50,7 +52,7 @@ is the second, independent locality boundary alongside the cache line: large or 
 nodes raise dTLB pressure independently of cache utilization, which is why huge pages (2~MiB/1~GiB)
 enlarge the TLB reach.
 
-\subsection{Cache Coherence, Write and Update Behaviour per ISA}\label{ssec:coherence}
+\subsection{Cache Coherence, Write and Update Behaviour per Implementation}\label{ssec:coherence}
 Caches handle writes according to two basic strategies: \emph{write-through} writes immediately
 through to the next level, whereas \emph{write-back} initially records the change only in the cache
 line (\emph{dirty}) and writes it back only on eviction --- saving bus traffic and lowering write
@@ -74,12 +76,12 @@ In multi-core systems a \emph{coherence protocol} ensures the consistency of sha
 widespread, invalidation-based \emph{MESI} protocol keeps each line in one of the states
 \emph{Modified}, \emph{Exclusive}, \emph{Shared}, or \emph{Invalid}, extended by vendors into
 variants such as MOESI (AMD) or MESIF (Intel)~\cite{hennessy2019architecture}. Which write,
-allocation, replacement, inclusion, and coherence strategy applies concretely is part of the
-microarchitecture definition per ISA and per cache level and not selectable at run time; their
-concrete manifestations are presented by the state of the art (Section~\ref{sec:sota-cache}), and
-their effect --- in particular \emph{cache-line ping-pong} under contending writes to the same line
---- motivates the telemetry and concurrency axes of the engine (Chapters~\ref{ch:concept}
-and~\ref{ch:impl}).
+allocation, replacement, inclusion, and coherence strategy applies concretely is predominantly a
+property of the respective microarchitecture, cache level, and the memory attributes set by the
+operating system, and not freely selectable at run time; their concrete manifestations are presented
+by the state of the art (Section~\ref{sec:sota-cache}), and their effect --- in particular
+\emph{cache-line ping-pong} under contending writes to the same line --- motivates the telemetry and
+concurrency axes of the engine (Chapters~\ref{ch:concept} and~\ref{ch:impl}).
 
 \subsection{Cache-Aware and Cache-Oblivious}\label{ssec:aware-oblivious}
 A data structure is \emph{cache-aware} if its layout is tuned to concrete cache parameters (line
@@ -95,17 +97,17 @@ engine.
 The present thesis pursues a third, intermediate path. \emph{First}, the actual cache properties
 (line size, hierarchy depth, topology) are \emph{determined} per target platform and enter a
 \emph{system-optimized binary} as fixed quantities --- the line size itself is a compilation input,
-since it is not changeable at run time on any platform (Section~\ref{ssec:cache-line-sizes}).
-\emph{Second}, the \emph{configurable} cache-near settings --- prefetch distance, batch and inline
-thresholds, pool budgets, and, where architecture and operating system permit, the hardware
-prefetcher --- are carried as axis parameters that are permuted at run time against an
-already-loaded binary (Section~\ref{ssec:dynamics-levels} and Chapter~\ref{ch:concept}).
-\emph{Third}, this latitude is delimited depending on hardware and operating system: from fully
-run-time-configurable (mutable Linux with MSR access) through boot- or compile-time static
-(immutable operating systems) to fixed (read-only cache registers on ARM and RISC-V). Thus
-cache-oblivious behaviour is complemented by \emph{measured} locality knowledge that enables a
-heuristic, measurement- oriented selection of the settings per load pattern; the \emph{why} of this
-construction is developed in Chapter~\ref{ch:concept}.
+since on the platforms considered here it is not changeable at run time as a program parameter
+(Section~\ref{ssec:cache-line-sizes}). \emph{Second}, the \emph{configurable} cache-near settings
+--- prefetch distance, batch and inline thresholds, pool budgets, and, where architecture and
+operating system permit, the hardware prefetcher --- are carried as axis parameters that are
+permuted at run time against an already-loaded binary (Section~\ref{ssec:dynamics-levels} and
+Chapter~\ref{ch:concept}). \emph{Third}, this latitude is delimited depending on hardware and
+operating system: from fully run-time-configurable (mutable Linux with MSR access) through boot- or
+compile-time static (immutable operating systems) to fixed (read-only cache registers on ARM and
+RISC-V). Thus cache-oblivious behaviour is complemented by \emph{measured} locality knowledge that
+enables a heuristic, measurement- oriented selection of the settings per load pattern; the
+\emph{why} of this construction is developed in Chapter~\ref{ch:concept}.
 
 \subsection{Heuristics and Their Automation}\label{ssec:heuristics}
 The ``measurement-oriented selection of the settings'' hinted at in the previous section rests on
@@ -315,7 +317,7 @@ The \emph{goal of variation} is to break a methodological bias: each publication
 the load profile under which its own algorithm performs best (a read-only trie avoids updates, a
 compressed filter seeks negative queries, a cache-aware layout favours Zipf hotspots). Only when
 \emph{all} load profiles run against \emph{all} living-being binaries (and additionally the
-container shells) can absolute, bias-free comparability be gained. The concrete ``all-against-all''
+container shells) can largely bias-reduced comparability be gained. The concrete ``all-against-all''
 matrix belongs in the evaluation methodology (Chapter~\ref{ch:methodology}); here only the
 conceptual framework is laid.
 
@@ -346,14 +348,14 @@ dataset loader.
 \subsection{Quality Criteria of Scientific Measurement}\label{ssec:measurement-criteria}
 Scientific measurement is subject to established quality criteria~\cite{hoefler2015benchmarking}.
 \emph{Reproducibility} requires fixed random seeds, a deterministic execution order, and fully
-documented measurement configurations, so that a run is bit-exactly repeatable. \emph{Validity}
-breaks down into internal (causally cleanly isolated effects), construct (the metric actually
-measures the intended concept), and external validity (transferability to other platforms and
-loads). \emph{Fairness} demands identical inputs --- the same keys, workloads, and warmup --- for
-all comparison candidates; missing capabilities of a baseline are reported as \emph{N/A} rather than
-covertly emulated through auxiliary constructs. Finally, \emph{dispersion} is part of the statement:
-instead of arithmetic means, percentiles over HDR histograms are reported and the statistical
-significance of differences is tested~\cite{hoefler2015benchmarking}.
+documented measurement configurations, so that runs are methodically repeatable and statistically
+comparable. \emph{Validity} breaks down into internal (causally cleanly isolated effects), construct
+(the metric actually measures the intended concept), and external validity (transferability to other
+platforms and loads). \emph{Fairness} demands identical inputs --- the same keys, workloads, and
+warmup --- for all comparison candidates; missing capabilities of a baseline are reported as
+\emph{N/A} rather than covertly emulated through auxiliary constructs. Finally, \emph{dispersion} is
+part of the statement: instead of arithmetic means, percentiles over HDR histograms are reported and
+the statistical significance of differences is tested~\cite{hoefler2015benchmarking}.
 
 \subsection{Measurement Patterns and Concepts Used}\label{ssec:measurement-patterns}
 On these criteria several measurement patterns build, whose \emph{why} only Chapter~\ref{ch:concept}
@@ -388,8 +390,10 @@ The engine relies on compile-time composition to avoid run-time dispatch in the 
 \emph{Concepts} constrain the building-block interfaces; the
 \emph{Curiously Recurring Template Pattern} (CRTP) provides static polymorphism;
 \texttt{if~constexpr} and \texttt{std::conditional\_t} choose per axis between a probe
-implementation and a cache-engine default; and C++23 \emph{modules} form an ABI-stable boundary
-between the permutation binaries and the builder. Together these facilities realize the
+implementation and a cache-engine default; and C++23 \emph{modules} structure the translation units
+between the permutation binaries and the builder, but do not by themselves guarantee portable ABI
+stability~\cite{wg21_modules_abi}; that is established only by an explicitly C-stable module
+boundary (\texttt{comdare\_create\_anatomy}). Together these facilities realize the
 \emph{zero-cost abstraction} on which the permutation matrix rests. Added to this are
 \emph{policy-based design} (the composition as a tuple of nineteen axis policies),
 \emph{tag dispatch} for the probe-versus-default resolution, and \emph{type-list computation}
