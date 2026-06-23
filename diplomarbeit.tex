@@ -38,16 +38,19 @@
 \usepgfplotslibrary{colormaps}        % named colormaps (viridis) for the L-f latency-surface heatmaps
 \usepackage{siunitx}
 \usepackage{listings}
-% [DA-FIX] microtype 3.2a vs. LaTeX-Kernel 2025-06-01 (TeX Live 2025): der Kernel hat \showhyphens
-% geaendert; microtypes \CheckCommand kennt die neue Definition nicht -> "Command \showhyphens has
-% changed". \showhyphens ist ein reiner Silbentrennungs-Debug-Befehl (nie im Satz benutzt); microtype
-% definiert ihn unmittelbar danach ohnehin korrekt neu. Wir setzen ihn vorab exakt auf die von
-% \CheckCommand erwartete Definition (microtype-pdftex.def, isoliert getestet) -> die Pruefung besteht
-% legitim, keine Suppression. ENTFERNEN, sobald microtype > 3.2a die Kernel-Aenderung kennt.
-\makeatletter
-\def\showhyphens#1{\setbox0\vbox{\color@begingroup\everypar{}\parfillskip\z@skip\hsize\maxdimen\normalfont\pretolerance\m@ne\tolerance\m@ne\hbadness\z@\showboxdepth\z@\ #1\color@endgroup}}
-\makeatother
 \usepackage{microtype}
+% [DA-FIX] microtype 3.2a vs. LaTeX-Kernel 2025-06-01 (TeX Live 2025): "Command \showhyphens has
+% changed". microtype prueft \showhyphens erst beim \begin{document}; eine reine Praeambel-Definition
+% wird bis dahin neu gesetzt (deshalb griff sie nicht). Daher per LaTeX-Hook GENAU vor microtypes
+% begindocument-Setup (Regel: before microtype) auf die von \CheckCommand erwartete Definition
+% (microtype-pdftex.def) setzen -> die Pruefung besteht legitim, keine Suppression. \showhyphens ist
+% ein reiner Silbentrennungs-Debug-Befehl (nie im Satz benutzt) -> null PDF-Wirkung.
+% ENTFERNEN, sobald microtype > 3.2a die Kernel-Aenderung kennt.
+\makeatletter
+\newcommand\da@fixshowhyphens{\def\showhyphens##1{\setbox0\vbox{\color@begingroup\everypar{}\parfillskip\z@skip\hsize\maxdimen\normalfont\pretolerance\m@ne\tolerance\m@ne\hbadness\z@\showboxdepth\z@\ ##1\color@endgroup}}}
+\AddToHook{begindocument}[da@showhyphensfix]{\da@fixshowhyphens}
+\DeclareHookRule{begindocument}{da@showhyphensfix}{before}{microtype}
+\makeatother
 \setlength{\emergencystretch}{3em}     % Rest-Overfulls (unumbrechbare lange \texttt-Tokens) abfangen
 % Drei-stellige Seitenzahlen (Anhang, S.\,100+) ragten in fett-Helvetica 1.29pt aus der
 % Standard-Nummern-Box des Inhaltsverzeichnisses; Box verbreitern, damit sie sauber hineinpassen.
