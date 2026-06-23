@@ -164,8 +164,8 @@ TU-Dresden-Hardware P31--P33) erscheinen dabei \emph{aufgelöst} in ihren Organ-
     \textbf{Achse (T)} & \textbf{Sub-Achsen} & \textbf{Beitragende Quellen} \\
     \midrule
     T0 search\_algo & SA1--SA3 & P01,P02,P05,P07,P10; k-ary (TUD 2009), Interpol., Eytzinger, Skip-List, B-Baum, Hash \\
-    T1 cache\_traversal & 3.B & Cache-Line-Default; P17,P21,P27,P32 \\
-    T2 mapping & 3.M & P03,P07,P27; CE-Baseline \\
+    T1 cache\_traversal & 3.B & Cache-Line-Default; P17,P21,P32 \\
+    T2 mapping & 3.M & P03,P07; CE-Baseline \\
     T3 path\_compression & --- & P01,P02,P04,P05,P09 \\
     T4 node\_type & NT1--NT3 & P01,P02,P03,P04,P05,P06,P11,P12,P13 \\
     T5 memory\_layout & HM1--HM4 & P06,P09,P11,P12,P32; Default \\
@@ -211,15 +211,14 @@ Suchbaum und B-Baum (Bayer/McCreight~\cite{bayer1972btree}) sowie Open-Addressin
 (Knuth~\cite{knuth1998taocp3}). Die \emph{Traversierungs-Achsen} trennen Algorithmus- und
 Cache-Sicht: T1 (Cache-Memory-Traversierung) reicht von der Cache-Line-Wanderung über
 Stride-Prefetch (P21 Chen) und HBM-Nähe (P32 Schmidt) bis zur cache-oblivious-Rekursion (P17
-Bender~\cite{frigo1999cache}) und dem instruktionsseitigen Bündel-Prefetch (P27 Zhang); T2 (Mapping)
-verbindet beide über lineare 1:1-Abbildung, Hash-Redirect (P07) oder Permutations-Index (P03
-Masstree) --- eine im Stand der Technik dünn, überwiegend per Baseline besetzte Achse. Die
-\emph{Pfadkompression} (T3) instanziiert die byte-weise Variante (P01), den
-Single-Bit-Patricia-Split (Morrison 1968~\cite{morrison1968patricia}; P02), die kollabierte
-Macro-Node (P04 CoCo) und das Multi-Byte-Rewiring (P05). Die \emph{Knotentyp-Achse} (T4, NT1--NT3,
-13 Bausteine) und die Build-Achse \emph{Seitentyp} (PG1--PG3, 26 Bausteine) bündeln die adaptiven
-Layouts: Node4/16/48/256 (P01), HOT-Compound (P02), Internal/Border (P03), Decision/Span (P06
-B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}), LOUDS-Dense/Sparse (P10),
+Bender~\cite{frigo1999cache}); T2 (Mapping) verbindet beide über lineare 1:1-Abbildung,
+Hash-Redirect (P07) oder Permutations-Index (P03 Masstree) --- eine im Stand der Technik dünn,
+überwiegend per Baseline besetzte Achse. Die \emph{Pfadkompression} (T3) instanziiert die byte-weise
+Variante (P01), den Single-Bit-Patricia-Split (Morrison 1968~\cite{morrison1968patricia}; P02), die
+kollabierte Macro-Node (P04 CoCo) und das Multi-Byte-Rewiring (P05). Die \emph{Knotentyp-Achse} (T4,
+NT1--NT3, 13 Bausteine) und die Build-Achse \emph{Seitentyp} (PG1--PG3, 26 Bausteine) bündeln die
+adaptiven Layouts: Node4/16/48/256 (P01), HOT-Compound (P02), Internal/Border (P03), Decision/Span
+(P06 B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}), LOUDS-Dense/Sparse (P10),
 CSS-Knoten/CSB\textsuperscript{+}-Node-Group/Hankins-Wide (P11/P12/P13) sowie die PRT-ART-Familie.
 
 \subsection{Speicher-, Allokations- und Wert-Organe}\label{ssec:sota-ax-mem}
@@ -271,7 +270,7 @@ hinaus), während der Zähler in allen (auch inneren) Knoten als \emph{Anti-Patt
     P03 Masstree & scalar, L1-aware, CAS & thread-per-core + work-stealing \\
     P05 START & AVX2 (Multi-Byte-Span), L1-aware, CAS & thread-per-core \\
     P20 B-Trees Are Back & AVX2, HBM-aware, NUMA-aware, CAS & work-stealing + hybrid \\
-    P27 hp-soft & PREFETCH (L1/L2/L3-Bundle), all-cache, CAS & thread-per-core + Co-Routine \\
+    P27 hp-soft & PREFETCH (Instr.-Bundle), all-cache, CAS & thread-per-core + Co-Routine \\
     P28 Kuehn & PREFETCH (scalar Counter), L1-aware, CAS & thread-per-core + Sampling \\
     P31 Ungethuem & AVX-512 (HBM), HBM-aware, NUMA-aware, CAS & hybrid (P-/E-Kerne) \\
     P32 Schmidt & AVX-512 (SIMD-Stride), HBM-aware, NUMA-aware, CAS & hybrid \\
