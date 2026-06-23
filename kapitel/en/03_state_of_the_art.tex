@@ -156,8 +156,8 @@ P20--P28, synchronization P08/P29--P30, TU-Dresden hardware P31--P33) thereby ap
     \textbf{Axis (T)} & \textbf{Sub-axes} & \textbf{Contributing sources} \\
     \midrule
     T0 search\_algo & SA1--SA3 & P01,P02,P05,P07,P10; k-ary (TUD 2009), interpol., Eytzinger, skip list, B-tree, hash \\
-    T1 cache\_traversal & 3.B & cache-line default; P17,P21,P27,P32 \\
-    T2 mapping & 3.M & P03,P07,P27; CE baseline \\
+    T1 cache\_traversal & 3.B & cache-line default; P17,P21,P32 \\
+    T2 mapping & 3.M & P03,P07; CE baseline \\
     T3 path\_compression & --- & P01,P02,P04,P05,P09 \\
     T4 node\_type & NT1--NT3 & P01,P02,P03,P04,P05,P06,P11,P12,P13 \\
     T5 memory\_layout & HM1--HM4 & P06,P09,P11,P12,P32; default \\
@@ -202,17 +202,16 @@ interpolation search (Perl/Itai/Avni~\cite{perl1978interpolation}), Eytzinger-la
 tree and B-tree (Bayer/McCreight~\cite{bayer1972btree}), and open-addressing hashing
 (Knuth~\cite{knuth1998taocp3}). The \emph{traversal axes} separate the algorithm and cache views: T1
 (cache-memory traversal) ranges from cache-line walking through stride prefetch (P21 Chen) and HBM
-proximity (P32 Schmidt) to cache-oblivious recursion (P17 Bender~\cite{frigo1999cache}) and the
-instruction-side bundle prefetch (P27 Zhang); T2 (mapping) connects the two via linear 1:1 mapping,
-hash redirect (P07), or permutation index (P03 Masstree) --- an axis sparsely populated in the state
-of the art, predominantly by a baseline. \emph{Path compression} (T3) instantiates the byte-wise
-variant (P01), the single-bit PATRICIA split (Morrison 1968~\cite{morrison1968patricia}; P02), the
-collapsed macro node (P04 CoCo), and multi-byte rewiring (P05). The \emph{node-type axis} (T4,
-NT1--NT3, 13 building blocks) and the build axis \emph{page type} (PG1--PG3, 26 building blocks)
-bundle the adaptive layouts: Node4/16/48/256 (P01), HOT compound (P02), internal/border (P03),
-decision/span (P06 B\textsuperscript{2}-tree~\cite{schmeisser2022b2tree}), LOUDS dense/sparse (P10),
-CSS node/CSB\textsuperscript{+} node group/Hankins wide (P11/P12/P13), as well as the PRT-ART
-family.
+proximity (P32 Schmidt) to cache-oblivious recursion (P17 Bender~\cite{frigo1999cache}); T2
+(mapping) connects the two via linear 1:1 mapping, hash redirect (P07), or permutation index (P03
+Masstree) --- an axis sparsely populated in the state of the art, predominantly by a baseline.
+\emph{Path compression} (T3) instantiates the byte-wise variant (P01), the single-bit PATRICIA split
+(Morrison 1968~\cite{morrison1968patricia}; P02), the collapsed macro node (P04 CoCo), and
+multi-byte rewiring (P05). The \emph{node-type axis} (T4, NT1--NT3, 13 building blocks) and the
+build axis \emph{page type} (PG1--PG3, 26 building blocks) bundle the adaptive layouts:
+Node4/16/48/256 (P01), HOT compound (P02), internal/border (P03), decision/span (P06
+B\textsuperscript{2}-tree~\cite{schmeisser2022b2tree}), LOUDS dense/sparse (P10), CSS
+node/CSB\textsuperscript{+} node group/Hankins wide (P11/P12/P13), as well as the PRT-ART family.
 
 \subsection{Memory, Allocation, and Value Organs}\label{ssec:sota-ax-mem}
 The \emph{memory-layout axis} (T5, HM1--HM4, 8 building blocks) ranges from cache-line-aligned AoS
@@ -262,7 +261,7 @@ layout), while the counter in all (including inner) nodes counts as an \emph{ant
     P03 Masstree & scalar, L1-aware, CAS & thread-per-core + work-stealing \\
     P05 START & AVX2 (multi-byte span), L1-aware, CAS & thread-per-core \\
     P20 B-Trees Are Back & AVX2, HBM-aware, NUMA-aware, CAS & work-stealing + hybrid \\
-    P27 hp-soft & PREFETCH (L1/L2/L3 bundle), all-cache, CAS & thread-per-core + co-routine \\
+    P27 hp-soft & PREFETCH (instr.\ bundle), all-cache, CAS & thread-per-core + co-routine \\
     P28 Kuehn & PREFETCH (scalar counter), L1-aware, CAS & thread-per-core + sampling \\
     P31 Ungethuem & AVX-512 (HBM), HBM-aware, NUMA-aware, CAS & hybrid (P-/E-cores) \\
     P32 Schmidt & AVX-512 (SIMD stride), HBM-aware, NUMA-aware, CAS & hybrid \\
