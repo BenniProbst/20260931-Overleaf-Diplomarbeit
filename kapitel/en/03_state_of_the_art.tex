@@ -23,10 +23,13 @@ map over roughly 110 organ algorithms.
 
 That the axis scaffold also carries \emph{non-tree-like} methods is demonstrated by a plain hash
 table (\texttt{absl::flat\_hash\_map}/SwissTable~\cite{abseil_swisstable}) as a counter-check within
-the SearchAlgorithm genus: it satisfies the same \texttt{std::map} interface over a
-\emph{limited axis subset} --- the trie-specific axes (path compression, node type, range index)
-collapse to pass-through variants, while allocation, prefetch, concurrency, memory layout, and ISA
-SIMD (for the SwissTable group lookup) remain shared --- and thus requires no genus of its own.
+the SearchAlgorithm genus: it satisfies the \emph{point-query subset} of the \texttt{std::map}
+interface (\texttt{find}/\texttt{insert}/\texttt{erase}); the order-based operations
+(\texttt{lower\_bound}/\texttt{upper\_bound}, ordered range iteration) do not apply, as a hash table
+is unordered. Over this subset it populates a \emph{limited axis subset}: the trie-specific axes
+(path compression, node type, range index) collapse to pass-through variants, while allocation,
+prefetch, concurrency, memory layout, and ISA SIMD (for the SwissTable group lookup) remain shared
+--- and thus requires no genus of its own.
 
 \subsection{The Corpus by Origin Clusters}\label{ssec:sota-corpus}
 Complementing the axis-wise dissection (Section~\ref{sec:sota-axes}), this overview assigns the
@@ -76,8 +79,10 @@ The multi-level hierarchy (Section~\ref{ssec:cache-levels}) is the subject of fu
 measurements: Graefe and Larson (P15, 2001) study B-tree indexes explicitly against the CPU cache
 levels, Bender, Demaine, and Farach-Colton (P16, 2002; P17, 2005) model a multi-level memory model
 with a block-transfer parameter and solve the tree-layout problem within it near-optimally even for
-an unknown block size~\cite{bender2002treelayout}, and Zhang (P27, ASPLOS 2025) bundles prefetches
-hierarchically across L1/L2/L3.
+an unknown block size~\cite{bender2002treelayout}, and Zhang et al.\ (P27, ASPLOS 2025) study, with
+\emph{Hierarchical Prefetching}, a software-/hardware-cooperative \emph{instruction} prefetcher for
+server applications; it is relevant as a prefetching instance, not as a data-structure-specific
+L1/L2/L3 data prefetch for tree layouts.
 
 \subsection{Cache-Line-Aware Layout}\label{ssec:sota-cacheline}
 Cache-line-oriented layout (Section~\ref{ssec:cache-line-sizes}) is the dominant guiding idea of
@@ -100,18 +105,20 @@ underpopulated in the search-algorithm papers --- an observation to which the re
 (Section~\ref{sec:gap}) returns.
 
 \subsection{Write Protocols, Update Heuristics, and Inclusion Policy}\label{ssec:sota-update}
-The cache-update behaviour introduced in Section~\ref{ssec:coherence} is concretely fixed per ISA
-and per cache level. \emph{Write protocols:} ARMv8 chooses write-through, write-back, or
-non-cacheable, as well as read- or read-write-allocate, through page attributes~\cite{arm_arm},
+The cache-update behaviour introduced in Section~\ref{ssec:coherence} is only partly visible through
+the ISA; replacement, inclusion, and concrete coherence are predominantly fixed per
+microarchitecture and cache level. \emph{Write protocols:} ARMv8 chooses write-through, write-back,
+or non-cacheable, as well as read- or read-write-allocate, through page attributes~\cite{arm_arm},
 while x86 uses write-back with write-allocate as the normal case~\cite{intel_sdm}.
 \emph{Heuristic replacement/update strategies:} from LRU and pseudo-LRU to
 \emph{Re-Reference Interval Prediction} (RRIP/DRRIP), which achieves scan- and thrash-resistant
 eviction with two bits per line~\cite{jaleel2010rrip} and builds on the adaptive insertion
-policy~\cite{qureshi2007adaptive}. \emph{Inclusion policy:} Intel client processors maintain an
-inclusive L3, Intel servers since Skylake-X a non-inclusive one, while AMD Zen operates the L3 as a
-predominantly exclusive victim cache~\cite{intel_optimization,amd_sog}. Together these three aspects
-determine which levels a write updates; since they are microarchitecturally fixed and not selectable
-at run time, they enter the system-optimized binary as \emph{measured} platform properties
+policy~\cite{qureshi2007adaptive}. \emph{Inclusion policy:} early Intel client generations
+(e.g.\ Nehalem) maintain an inclusive L3, Intel servers since Skylake-SP/Xeon~Scalable a
+non-inclusive one, while AMD Zen generations operate the L3 predominantly non-inclusively or
+victim-like~\cite{intel_optimization,amd_sog}. Together these three aspects determine which levels a
+write updates; since they are microarchitecturally fixed and not selectable at run time, they enter
+the system-optimized binary as \emph{measured} platform properties
 (Section~\ref{ssec:aware-oblivious}).
 
 \subsection{Cache-Aware and Cache-Oblivious Designs}\label{ssec:sota-aware}
@@ -179,7 +186,7 @@ P20--P28, synchronization P08/P29--P30, TU-Dresden hardware P31--P33) thereby ap
     T17 queuing\_q1 & --- & Disruptor, Bw-Tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
     T18 queuing\_q2 & --- & eager/lazy/watermark/Kafka/RocksDB \\
     Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (26) \\
-    Build simd (09b) & --- & SSE2/AVX2/AVX-512/NEON/SVE2/RVV/CUDA \\
+    Build simd (09b) & --- & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
     Build hardware (12) & 12.1--12.5 & HW strategy per paper (Tab.~\ref{tab:hw-sched}) \\
     \bottomrule
   \end{tabular}
@@ -196,15 +203,16 @@ tree and B-tree (Bayer/McCreight~\cite{bayer1972btree}), and open-addressing has
 (Knuth~\cite{knuth1998taocp3}). The \emph{traversal axes} separate the algorithm and cache views: T1
 (cache-memory traversal) ranges from cache-line walking through stride prefetch (P21 Chen) and HBM
 proximity (P32 Schmidt) to cache-oblivious recursion (P17 Bender~\cite{frigo1999cache}) and the
-L1/L2/L3 bundle (P27 Zhang); T2 (mapping) connects the two via linear 1:1 mapping, hash redirect
-(P07), or permutation index (P03 Masstree) --- an axis sparsely populated in the state of the art,
-predominantly by a baseline. \emph{Path compression} (T3) instantiates the byte-wise variant (P01),
-the single-bit PATRICIA split (Morrison 1968~\cite{morrison1968patricia}; P02), the collapsed macro
-node (P04 CoCo), and multi-byte rewiring (P05). The \emph{node-type axis} (T4, NT1--NT3, 13 building
-blocks) and the build axis \emph{page type} (PG1--PG3, 26 building blocks) bundle the adaptive
-layouts: Node4/16/48/256 (P01), HOT compound (P02), internal/border (P03), decision/span (P06
-B\textsuperscript{2}-tree~\cite{schmeisser2022b2tree}), LOUDS dense/sparse (P10), CSS
-node/CSB\textsuperscript{+} node group/Hankins wide (P11/P12/P13), as well as the PRT-ART family.
+instruction-side bundle prefetch (P27 Zhang); T2 (mapping) connects the two via linear 1:1 mapping,
+hash redirect (P07), or permutation index (P03 Masstree) --- an axis sparsely populated in the state
+of the art, predominantly by a baseline. \emph{Path compression} (T3) instantiates the byte-wise
+variant (P01), the single-bit PATRICIA split (Morrison 1968~\cite{morrison1968patricia}; P02), the
+collapsed macro node (P04 CoCo), and multi-byte rewiring (P05). The \emph{node-type axis} (T4,
+NT1--NT3, 13 building blocks) and the build axis \emph{page type} (PG1--PG3, 26 building blocks)
+bundle the adaptive layouts: Node4/16/48/256 (P01), HOT compound (P02), internal/border (P03),
+decision/span (P06 B\textsuperscript{2}-tree~\cite{schmeisser2022b2tree}), LOUDS dense/sparse (P10),
+CSS node/CSB\textsuperscript{+} node group/Hankins wide (P11/P12/P13), as well as the PRT-ART
+family.
 
 \subsection{Memory, Allocation, and Value Organs}\label{ssec:sota-ax-mem}
 The \emph{memory-layout axis} (T5, HM1--HM4, 8 building blocks) ranges from cache-line-aligned AoS
@@ -224,10 +232,11 @@ varint (P01).
 \subsection{Hardware-Near Organs}\label{ssec:sota-ax-hw}
 The \emph{prefetch axis} (T7, PF1--PF3, 6 building blocks) ranges from no prefetch through
 software-fixed (P21 Chen) and adaptively distanced (P23 Khan) to fill-buffer-aware (P25 Mahling),
-path-/jump-pointer-oriented (P26 Zhang), and hierarchical bundle prefetch (P27 Zhang); the explicit
-hardware prefetch instruction stems from Wormhole (P07). The \emph{ISA axis} (T12) and the build
-axis \emph{SIMD extension} (09b) carry the vendor specifications: x86-64, AArch64, Power, and RISC-V
-with SSE2/AVX2/AVX-512, NEON/SVE2, RVV, and CUDA. Two overarching strategy axes record what an
+path-/jump-pointer-oriented (P26 Zhang), and hierarchical instruction-bundle prefetch (P27 Zhang);
+the explicit hardware prefetch instruction stems from Wormhole (P07). The \emph{ISA axis} (T12) and
+the build axis \emph{SIMD extension} (09b) carry the vendor specifications: x86-64, AArch64, Power,
+and RISC-V with SSE2/AVX2/AVX-512, NEON/SVE2, and RVV, as well as --- separately, as a
+GPU/accelerator profile (SIMT, not CPU SIMD) --- CUDA. Two overarching strategy axes record what an
 algorithm actively \emph{uses} and how it \emph{distributes} work: the \emph{hardware strategy}
 (axis 12; sub 12.1 SIMD family, 12.2 cache-level targeting, 12.3 NUMA, 12.4 prefetch hardware, 12.5
 atomic family) and the \emph{scheduling strategy} (axis 13; sub 13.1 worker-pool layout, 13.2
@@ -243,7 +252,7 @@ layout), while the counter in all (including inner) nodes counts as an \emph{ant
 
 \begin{table}[!htbp]
   \centering\small
-  \caption{Hardware and scheduling strategy per SOTA paper (selection); the full catalogue is in Appendix~\ref{app:blocks}.}\label{tab:hw-sched}
+  \caption{Target hardware and scheduling profiles assigned in this thesis per reconstructed SOTA method (selection; the profiles are reconstruction targets of this thesis, not necessarily original-paper properties); the full catalogue is in Appendix~\ref{app:blocks}.}\label{tab:hw-sched}
   \begin{tabular}{@{}l p{4.6cm} p{5.6cm}@{}}
     \toprule
     \textbf{Paper} & \textbf{Hardware strategy (axis 12)} & \textbf{Scheduling strategy (axis 13)} \\
@@ -463,7 +472,7 @@ Schmidt) measure cache and TLB rather than algorithm logic, via node size and pr
 the publications provide no index load profile at all (survey, theory, and hardware works). Only
 when \emph{all} load profiles run against \emph{all} living-being binaries (and the container
 shells) --- the workload as a dynamic axis (Chapter~\ref{ch:methodology}) --- can the ``winner only
-in its self-chosen home profile'' be unmasked and bias-free comparability be gained. This
+in its self-chosen home profile'' be made visible and bias-reduced comparability be gained. This
 incompleteness of the prior works is part of the research gap (Section~\ref{sec:gap}).
 
 \section{Measurement Technologies as Instances}\label{sec:sota-measurement}
@@ -505,7 +514,7 @@ a conformance gate against \texttt{std::map}); the counter-based PMC categories 
 their collection is tied to hardware-counter access --- the complete measurement architecture is
 developed in Chapter~\ref{ch:methodology}. \emph{Which} of these instances the proposed framework
 adopts and which it replaces as obsolete is analysed dialectically (thesis--antithesis--synthesis)
-in Chapter~\ref{ch:concept}: each prior work (thesis) meets its limits in the bias-free
+in Chapter~\ref{ch:concept}: each prior work (thesis) meets its limits in the bias-reduced
 cross-comparison (antithesis), from which the deeper results of the proposed apparatus emerge as
 synthesis. Thus the state of the art connects directly to the research gap (Section~\ref{sec:gap}).
 
@@ -559,16 +568,16 @@ Chapter~\ref{ch:concept} (cf.\ Section~\ref{ssec:sota-meas-bridge}).
 
 The dissection in Section~\ref{sec:sota-axes} exposes the central gap: each of the surveyed works
 optimizes only a few axes in isolation, and
-\emph{not a single method populates all nineteen axes jointly}. Some axes are populated in the state
-of the art exclusively with baseline or textbook variants (the mapping between algorithm and cache
-traversal), others appear only as a \emph{measurement target} (the dTLB), and the spatial search
-class is missing entirely; axes such as I/O, migration, filter, and buffering are each populated
-individually, but never together with the search axes in one design.
+\emph{in the corpus studied, not a single method populates all nineteen axes jointly}. Some axes are
+populated in the state of the art exclusively with baseline or textbook variants (the mapping
+between algorithm and cache traversal), others appear only as a \emph{measurement target} (the
+dTLB), and the spatial search class is missing entirely; axes such as I/O, migration, filter, and
+buffering are each populated individually, but never together with the search axes in one design.
 
 Added to this is the methodological gap: the results are reported in incomparable settings, and the
-paper bias --- each publication chooses its home-field load profile
-(Section~\ref{ssec:sota-wl-bias}) --- prevents a fair cross-comparison. What is missing is a
-bias-free measurement of \emph{all} load profiles against \emph{all} methods on a common basis.
+the frequent choice of scenario-specific, often favourably tailored load profiles
+(Section~\ref{ssec:sota-wl-bias}) hampers a fair cross-comparison. What is missing is a bias-reduced
+measurement of \emph{all} load profiles against \emph{all} methods on a common basis.
 
 What is missing --- and what this thesis contributes --- is therefore the systematic, orthogonal
 \emph{axis decomposition} of these designs together with a \emph{permuted measurement architecture}
