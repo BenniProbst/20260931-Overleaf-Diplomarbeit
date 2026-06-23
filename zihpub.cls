@@ -586,49 +586,49 @@ Wissenschaftlichen Hochleistungsrechnen''}
 % kopfzeile auch bei chapters
 \ifx\@empty\@isreport
 \else
-\renewcommand*{\chapterpagestyle}{fancy}
+\renewcommand*{\chapterpagestyle}{scrheadings}
 \fi
 
 % kopfzeile auch bei abstract
 \let\@altab=\abstract
 \let\end@altab=\endabstract
 \renewenvironment{abstract}{%
-\fancyfoot{}
-\fancyhead{}
+\clearpairofpagestyles
+\relax
 \if@final
-  \fancyhead[LE,RO]{\thepage}
+  \ohead{\thepage}
 \else
   \if@twoside
-    \fancyhead[LE,RO]{\thepage}
+    \ohead{\thepage}
   \else
-    \fancyhead[R]{\thepage}
+    \ohead{\thepage}
   \fi
 \fi
 \begin{@altab}%
-\thispagestyle{fancy}}{\end{@altab}%
+\thispagestyle{scrheadings}}{\end{@altab}%
 \cleardoublepage
 \ifx\@empty\@isreport
   \if@final
-    \fancyhead[LO]{\@author}
-    \fancyhead[RE]{\@title}
+    \lohead{\@author}
+    \rehead{\@title}
   \else
     \if@twoside
-      \fancyhead[LO]{\@author}
-      \fancyhead[RE]{\@title}
+      \lohead{\@author}
+      \rehead{\@title}
     \else
-      \fancyhead[L]{\@author -- \@title}
+      \ihead{\@author{} -- \@title}
     \fi
   \fi
 \else
   \if@final
-    \fancyhead[LO]{\rightmark}
-    \fancyhead[RE]{\leftmark}
+    \lohead{\rightmark}
+    \rehead{\leftmark}
   \else
     \if@twoside
-      \fancyhead[LO]{\rightmark}
-      \fancyhead[RE]{\leftmark}
+      \lohead{\rightmark}
+      \rehead{\leftmark}
     \else
-      \fancyhead[L]{\rightmark}
+      \ihead{\rightmark}
     \fi
   \fi
 \fi}
@@ -784,7 +784,19 @@ Wissenschaftlichen Hochleistungsrechnen''}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Kopfzeile
-\RequirePackage{fancyhdr}
+% [DA-FIX] Migration fancyhdr -> scrlayer-scrpage (KOMA-empfohlen). headsepline reproduziert
+% die fancyhdr-Standard-Kopflinie. automark populiert \leftmark/\rightmark (scrheadings allein
+% setzt \@mkboth auf no-op -> leere Marken). \MakeMarkcase=\MakeUppercase reproduziert die GROSS-
+% Marken der bisherigen fancyhdr-Kopfzeile (z.B. "2. GRUNDLAGEN").
+\RequirePackage[headsepline,automark]{scrlayer-scrpage}
+\renewcommand*{\MakeMarkcase}{\MakeUppercase}
+% Punkt nach der Nummer in den Kopf-Marken erzwingen (KOMA unterdrueckt ihn wegen
+% numbers=noenddot via \autodot); die bisherige fancyhdr-Kopfzeile zeigte "2." / "2.1.".
+\renewcommand*{\chaptermarkformat}{\thechapter.\enskip}
+\renewcommand*{\sectionmarkformat}{\thesection.\enskip}
+% Kopf-Schrift aufrecht (KOMA-Default ist \slshape; fancyhdr nutzte die aufrechte Grundschrift).
+\setkomafont{pagehead}{\normalfont}
+\setkomafont{pagenumber}{\normalfont}
 
 % Automatische Generierung des Dokumentgrundgeruests
 \ifx\@empty\@isdiss
@@ -852,10 +864,10 @@ Wissenschaftlichen Hochleistungsrechnen''}
 	\fi
 	
 	% Seitenstil festlegen
-	\fancyfoot{}
-	\fancyhead{}
-	\pagestyle{fancy}
-	\thispagestyle{fancy}
+	\clearpairofpagestyles
+	\relax
+	\pagestyle{scrheadings}
+	\thispagestyle{scrheadings}
 	% Aufgabenstellung
 	\ifx\@empty\@isdiploma
 	\else
@@ -931,12 +943,12 @@ Wissenschaftlichen Hochleistungsrechnen''}
 	%Inhaltsverzeichnis
 	\pagenumbering{arabic}
 	\if@final
-	  \fancyhead[LE,RO]{\thepage}
+	  \ohead{\thepage}
 	\else
 	  \if@twoside
-	    \fancyhead[LE,RO]{\thepage}
+	    \ohead{\thepage}
 	  \else
-	    \fancyhead[R]{\thepage}
+	    \ohead{\thepage}
 	  \fi
 	\fi
 	\if@notoc
@@ -958,26 +970,26 @@ Wissenschaftlichen Hochleistungsrechnen''}
 	\markboth{}{}
 	\ifx\@empty\@isreport
 	  \if@final
-	    \fancyhead[LO]{\@author}
-	    \fancyhead[RE]{\@title}
+	    \lohead{\@author}
+	    \rehead{\@title}
 	  \else
 	    \if@twoside
-	      \fancyhead[LO]{\@author}
-	      \fancyhead[RE]{\@title}
+	      \lohead{\@author}
+	      \rehead{\@title}
 	    \else
-	      \fancyhead[L]{\@author -- \@title}
+	      \ihead{\@author{} -- \@title}
 	    \fi
 	  \fi
 	\else
 	  \if@final
-	    \fancyhead[LO]{\rightmark}
-	    \fancyhead[RE]{\leftmark}
+	    \lohead{\rightmark}
+	    \rehead{\leftmark}
 	  \else
 	    \if@twoside
-	      \fancyhead[LO]{\rightmark}
-	      \fancyhead[RE]{\leftmark}
+	      \lohead{\rightmark}
+	      \rehead{\leftmark}
 	    \else
-	      \fancyhead[L]{\leftmark}
+	      \ihead{\leftmark}
 	    \fi
 	  \fi
 	\fi
@@ -1090,10 +1102,10 @@ Wissenschaftlichen Hochleistungsrechnen''}
 		  \if@twoside \next@tpage\cleardoubleemptypage \fi
 		\fi
 	% Seitenstil festlegen
-		\fancyfoot{}
-		\fancyhead{}
-		\pagestyle{fancy}
-		\thispagestyle{fancy}			
+		\clearpairofpagestyles
+		\relax
+		\pagestyle{scrheadings}
+		\thispagestyle{scrheadings}			
 			% zeilenabstand ja nach variante
 		\if@final
 		  %\singlespacing
@@ -1131,12 +1143,12 @@ Wissenschaftlichen Hochleistungsrechnen''}
 	%Inhaltsverzeichnis
 		\pagenumbering{arabic}
 		\if@final
-		  \fancyhead[LE,RO]{\thepage}
+		  \ohead{\thepage}
 		\else
 		  \if@twoside
-		    \fancyhead[LE,RO]{\thepage}
+		    \ohead{\thepage}
 		  \else
-		    \fancyhead[R]{\thepage}
+		    \ohead{\thepage}
 		  \fi
 		\fi
 		\if@notoc
@@ -1158,26 +1170,26 @@ Wissenschaftlichen Hochleistungsrechnen''}
 		\markboth{}{}
 		\ifx\@empty\@isreport
 		  \if@final
-		    \fancyhead[LO]{\@author}
-		    \fancyhead[RE]{\@title}
+		    \lohead{\@author}
+		    \rehead{\@title}
 		  \else
 		    \if@twoside
-		      \fancyhead[LO]{\@author}
-		      \fancyhead[RE]{\@title}
+		      \lohead{\@author}
+		      \rehead{\@title}
 		    \else
-		      \fancyhead[L]{\@author -- \@title}
+		      \ihead{\@author{} -- \@title}
 		    \fi
 		  \fi
 		\else
 		  \if@final
-		    \fancyhead[LO]{\rightmark}
-		    \fancyhead[RE]{\leftmark}
+		    \lohead{\rightmark}
+		    \rehead{\leftmark}
 		  \else
 		    \if@twoside
-		      \fancyhead[LO]{\rightmark}
-		      \fancyhead[RE]{\leftmark}
+		      \lohead{\rightmark}
+		      \rehead{\leftmark}
 		    \else
-		      \fancyhead[L]{\leftmark}
+		      \ihead{\leftmark}
 		    \fi
 		  \fi
 		\fi
