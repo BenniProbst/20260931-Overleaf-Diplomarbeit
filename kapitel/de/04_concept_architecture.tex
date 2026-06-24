@@ -45,6 +45,75 @@ löst das Trennbarkeits-Problem der Aufgabenstellung: weil sich jede Achse einze
 Alternativen austauschen lässt, während alle übrigen Achsen fixiert bleiben, wird der
 Gewichtungsbeitrag jedes einzelnen Bestandteils zur Gesamtleistung isoliert messbar.
 
+\section{Dialektische Aneignung des Standes der Technik}\label{sec:dialectic}
+
+Bevor die eine Architektur (Abschnitt~\ref{sec:three-layer}) entwickelt wird, eignet sich diese
+Arbeit den in Kapitel~\ref{ch:sota} katalogisierten Bestand \emph{dialektisch} an: Jede dort
+vermessene Instanz (\emph{These}) trifft im bias-reduzierten Quervergleich auf ihre Grenzen
+(\emph{Antithese}); daraus folgt je Achse die Entscheidung, ein Organ zu \emph{übernehmen} oder eine
+überholte Annahme zu \emph{ersetzen}, woraus der eigene Beitrag als \emph{Synthese} hervorgeht. Der
+rote Faden dieser Synthese ist ein \enquote{dritter Weg} zwischen fest verdrahteter
+Cache-Bewusstheit und cache-oblivious-Ignoranz: \emph{gemessenes} Lokalitätswissen, das jede Achse
+als orthogonales, permutierbares und einzeln messbares Organ explizit macht.
+Tabelle~\ref{tab:dialectic} fasst diese Aneignung je Kompositions-Achse zusammen, gruppiert nach den
+sechs Herkunfts-Clustern aus Abschnitt~\ref{ssec:sota-corpus}; die je Achse beitragenden Quellen
+führt Abschnitt~\ref{sec:sota-axes} (Tabelle~\ref{tab:axes-overview}), den vollständigen
+Bausteine-Katalog Anhang~\ref{app:blocks}.
+
+Bei vielen Achsen ist die \emph{Antithese} keine überholte Fremd-Instanz, sondern die implizite
+Annahme, die Entscheidung gar nicht als wählbar zu betrachten; die Synthese besteht dann darin, sie
+überhaupt als Achse explizit und messbar zu machen (in der Ersetzen-Spalte als \enquote{---}
+markiert). Zwei Cluster-Zuordnungen sind bewusst Näherungen: die Cache-Traversal-Achse~(T1) bezieht
+ihre Anregungen sowohl aus der Layout-Theorie als auch aus dem Prefetching, und die
+Reklamations-Unterachse des Allokators~(T6) teilt ihre Quellen mit der Synchronisation~(T8) --- eine
+Inter-Organ-Verdrahtung, keine Cluster-Verletzung.
+
+{\footnotesize
+\begin{longtable}{@{}p{2.3cm}p{3.7cm}p{2.7cm}p{3.6cm}@{}}
+\caption{Dialektische Aneignung der Stand-der-Technik-Instanzen je Kompositions-Achse}\label{tab:dialectic}\\
+\toprule
+\textbf{Achse} & \textbf{übernommen (These)} & \textbf{ersetzt (Antithese)} & \textbf{Synthese-Kern} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Achse} & \textbf{übernommen} & \textbf{ersetzt} & \textbf{Synthese-Kern} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\multicolumn{4}{@{}l}{\emph{Cluster A --- Trie-/Knoten-Familie}} \\
+T0 Search-Algorithm & ART, HOT, START, SuRF, Wormhole; k-äre/Interpolations-Suche & Monolith \enquote{Struktur ist Verfahren} & Such-Paradigma als permutierbare Achse \\
+T3 Path-Compression & byte-weise (ART), Patricia (HOT), Macro-Node (CoCo), Multi-Byte (START) & unkomprimierter Rohpfad & Kompressions-Granularität wählbar \\
+T4 Node-Type & ART Node4/16/48/256 & feste Knotengröße & adaptive Knotenklasse + Storage-Delegation \\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Cluster B --- Hybrid-/B\textsuperscript{+}-/Layout-Theorie}} \\
+T1 Cache-Traversal & Cache-Line-Stride (Chen), cache-oblivious (Bender), HBM (Schmidt) & implizite Lehrbuch-Linearsuche & Algorithmus- und Cache-Sicht getrennt \\
+T2 Mapping & lineare 1:1-Abbildung; Hash-Redirect, Permutations-Index & --- & Direct- vs.\ Pool-Relative-Mapping explizit \\
+T5 Memory-Layout & AoS-aligned, SoA, LOUDS-bitgepackt, CSS/CSB\textsuperscript{+}, AoSoA & --- & vier Layout-Dimensionen permutierbar \\
+T13 Index-Organization & Clustered, IOT, Non-Clustered, Heap & --- & Storage-Order als eigene Achse \\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Cluster C --- Allokation}} \\
+T6 Allocator & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/Hazard & algorithmus-fest verdrahteter Allokator & Allokation als gemeinsames Interface-Organ (sieben Sub-Familien) \\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Cluster D --- Prefetching}} \\
+T7 Prefetch & Distance-Estimator (ART), Hardware (Wormhole), Stride (Chen), adaptiv & Prefetch nicht als Achse isoliert & Path-Oriented Bundle-Prefetch (eigen) \\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Cluster E --- Synchronisation}} \\
+T8 Concurrency & OLC (ART), RCU, Hazard-Pointer; Lock-/Wait-Free & grobes Sperren als einzige Annahme & Pattern $\perp$ Reclamation als zwei Sub-Achsen \\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Cluster F --- Hardware, Messung und Engineering (TU-Dresden-nah)}} \\
+T9 Serialization & Raw-Binary, Varint (ART), succinct (LOUDS/FST), LZ77 & --- & Kodierung/Kompression wählbar \\
+T10 Telemetry & Density-Tracker, Insert-Zähler, HdrHistogram, Pfad-Zähler & All-Node-Zähler (Cache-Line-Ping-Pong) & kohärenz-schonende Leaf-Only-Telemetrie \\
+T11 Value-Handle & Inline, External-Pool, Immutable-Shared (RCU), Versioned & implizit fest eingebetteter Wert & Platzierung, Ownership und Versionierung (+ Chain-Ref) \\
+T12 ISA & Vendor-Spec x86-64/AArch64/Power/RISC-V (+ SIMD) & --- & Ziel-ISA als Compile-Time-Achse \\
+T14 I/O-Dispatch & Buffered, mmap, Direct-IO & mmap als Anti-Pattern & Persistenz von der Suchstruktur entkoppelt \\
+T15 Migration & Hot/Cold, Multi-Tier NVM, LeCaR-ML & Tiering nie mit Such-Achsen kombiniert & Migrationslogik als messbare Achse \\
+T16 Filter & Bloom, Cuckoo, SuRF-Range, Xor & Filter nie mit Such-Achsen integriert & Filter als orthogonales Organ \\
+T17 Queuing-q1 & Disruptor-Ring, Delta-Chain, CoW, Epoch-RCU, SPSC/MPMC & Operations-Puffer nie als Achse & Puffer mit Zugriffsmuster-Klassen \\
+T18 Queuing-q2 & Eager/Lazy, Watermark (LSM), Timed & Flush-Policy implizit & adaptive EWMA-Flush-Policy (eigen) \\
+\end{longtable}
+}
+
 \section{Vier-Subsystem-Trennung (M-Modell)}\label{sec:m-model}
 
 Die Diplomarbeit, der Cache-Engine-Builder, die Cache-Engine und der Prüfling sind
