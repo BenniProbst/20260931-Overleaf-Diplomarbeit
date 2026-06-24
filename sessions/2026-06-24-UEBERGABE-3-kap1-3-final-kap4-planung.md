@@ -63,15 +63,18 @@
    A-Korpus-„25" = identisch mit T6, KEIN eigener Faktor; mit den 3 Build-Achsen ≈ `10^{16}`). → **ch2 `10^{14}` ist korrekt;
    ch4/6/8 `10^{11}` (Untertreibung) auf „rund `10^{14}`" angleichen.** (Exakte Zählung impl-agent-verifiziert, Größenordnung robust.)
 2. **4.2 Dialektik:** als eigene frühe Sektion, **Inhalt aus Kapitel 1–3 übernehmen** (These–Antithese–Synthese ist dort etabliert,
-   v.a. ch3 `sec:gap`/§3.4.3/§3.6). Kompakte Tabelle (Achse | übernommen | ersetzt | Synthese-Kern), KEIN Variantenkatalog (→ Anhang D verweisen).
-3. **Stufe↔Reihe-Mapping (§4.8):** **verbose erklären** (nicht pauschal „bilden direkt ab"). Knackpunkt: Stufe 2 (nur Prüfling) ↔
-   Reihe A (PRT-ART vs SOTA) passt nicht 1:1 — die echte Zuordnung muss präzise ausformuliert werden (ggf. ch6-`ch:methodology`-Reihen-Def
-   A/B/C lesen + Impl-Agent-Stufen-Identifier verifizieren, dann verbose schreiben).
+   v.a. ch3 `sec:gap`/§3.4.3/§3.6). Tabelle **nach den 6 Herkunfts-Clustern (A–F) gruppiert, dabei ALLE 19 Achsen lückenlos**
+   (je Achse eine Zeile innerhalb ihres Clusters: übernommen | ersetzt | Synthese-Kern), KEIN Variantenkatalog (→ Anhang D verweisen).
+3. **Stufe↔Reihe-Mapping (§4.8), ENTSCHIEDEN:** **verbose** so ausformulieren — Stufe 1 (SOTA-Standards) + Stufe 2 (Prüfling)
+   → **Reihe A** (Prüfling vs SOTA); Stufe 3 (Full Join) → **Reihe B** (systematische Variation); **Reihe C (Merge/Regression
+   alt-neu) = build-übergreifend, NICHT stufengebunden**. Gegen ch6 `ch:methodology` + Impl-Agent-Stufen-Identifier verifizieren.
 4. **ASCII-Baum §4.4 → echtes Diagramm** (TikZ) **aus dem Kontext der ersten 3 Kapitel** erstellen. STRIKT die „eine Architektur"-Lehre
    wahren: Wurzel IExecutionEngine → Geschwister IAnatomyBase(Lebewesen)/IVirusExecutionEngine; SearchAlgorithm-Unterklasse ≡ Lebewesen;
    darunter SearchAlgorithmAnatomy<C> (Körper, 19 Organe) + SearchAlgorithmAbiAdapter<A> (ABI-Sicht „SearchEngine"). KEINE Parallel-Bäume.
    (TikZ/pgfplots ist geladen; Build-testen!)
 5. **Heuristik-Future-Work:** bestätigt — in ch4 §4.8.1 nur **Anriss**, ausführlich in **ch6**.
+6. **Schau-Darstellungen (ENTSCHIEDEN: ALLE VIER bauen):** §4.3 M-Modell-Komponentendiagramm · §4.4 Architektur-Diagramm ·
+   §4.5 ABI-Signatur-Listing · §4.8 Drei-Stufen-Schema. Layout/Caption = Text-Agent; code-treue Inhalte impl-agent-verifiziert.
 
 ---
 

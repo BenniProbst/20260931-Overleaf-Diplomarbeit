@@ -55,12 +55,19 @@ Vor dem Tiefen-Füllen code-treu zu verifizieren/liefern:
 - Builder: Profil-Zählung 30 = 8 + 22 gegen Code, `ExperimentDriver`-Phasen + 2 opt-in, HardwareProfile/Build-Achse-12, Stufen-Identifier (§4.8).
 - **Zahl-Widerspruch `10^{11}` (ch4/6/8) vs `10^{14}` (ch2):** brutto vs. netto klären.
 
-## 5. Offene Autor-Entscheidungen (vom Autor zu beantworten)
-1. `10^{11}` vs `10^{14}` — welche Zahl, brutto/netto, wie benennen (konsistent über ch2/4/6/8)?
-2. 4.2 Dialektik als eigene frühe Sektion (Empfehlung) oder in §4.1 integriert?
-3. §4.8 Stufe↔Reihe-Mapping explizit (Stufe 1→B, 2→?, 3→C)? Stufe 2 (nur Prüfling) ↔ Reihe A passt nicht 1:1.
-4. ASCII-Baum §4.4 durch echtes Diagramm ersetzen oder belassen?
-5. Heuristik-Future-Work: ausführlich nur ch6, in ch4 nur Anriss — bestätigt?
+## 5. Autor-Entscheidungen — ALLE BEANTWORTET (2026-06-24, VERBINDLICH)
+1. **Permutationen = rund `10^{14}`** (selbst nachgerechnet aus Anhang-D-Bausteine-Katalog, 19 Achsen T0–T18;
+   A-Korpus-„25" = T6, kein eigener Faktor; mit 3 Build-Achsen ≈ `10^{16}`). ch2 `10^{14}` bleibt; **ch4 §4.5 / ch6 `sec:explosion` / ch8 `10^{11}` → „rund `10^{14}`" angleichen.**
+2. **4.2 Dialektik = eigene frühe Sektion** (nach §4.1), Inhalt aus **ch1–3** übernehmen.
+3. **Stufe↔Reihe (verbose):** Stufe 1 (SOTA-Standards) + Stufe 2 (Prüfling) → **Reihe A** (Prüfling vs SOTA);
+   Stufe 3 (Full Join) → **Reihe B** (systematische Variation); **Reihe C (Merge/Regression alt-neu) = build-übergreifend, NICHT stufengebunden.**
+   So ausformulieren statt „bilden direkt ab"; gegen ch6 `ch:methodology`-Reihen-Def + Impl-Agent-Stufen-Identifier verifizieren.
+4. **ASCII §4.4 → echtes TikZ-Diagramm** aus ch1–3-Kontext (Lehre strikt wahren).
+5. **Heuristik:** ch4 §4.8.1 nur Anriss, ausführlich ch6 — bestätigt.
+6. **Schau-Darstellungen: ALLE VIER bauen** — §4.3 M-Modell-Komponentendiagramm · §4.4 Architektur-Diagramm ·
+   §4.5 ABI-Signatur-Listing · §4.8 Drei-Stufen-Schema (code-treue Inhalte impl-agent-verifiziert; Layout/Caption = Text-Agent).
+7. **4.2 Dialektik-Tabelle: nach den 6 Herkunfts-Clustern (A–F) gruppiert, dabei ALLE 19 Achsen lückenlos abdecken**
+   (Cluster-Gruppierung als Tabellen-Struktur, je Achse eine Zeile innerhalb ihres Clusters).
 
 ## 6. Pfade
 - ch4: `kapitel/{de,en}/04_concept_architecture.tex`. Forward-Ziele: ch6 `ch:methodology`/`sec:explosion`,
