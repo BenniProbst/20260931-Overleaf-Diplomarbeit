@@ -467,7 +467,12 @@ Wissenschaftlichen Hochleistungsrechnen''}
 %\addtolength{\voffset}{2cm}
 %\addtolength{\voffset}{-\baselineskip}
 %\setlength{\topmargin}{0mm}
-%\setlength{\headheight}{2.0\baselineskip}
+% [DA-FIX] headheight fuer scrlayer-scrpage (headsepline + langer uppercase-Laufkopf
+% braucht ~2 Zeilen = min. 32.99pt; vorher 17pt -> Warnung + Overfull \vbox). Statt textheight
+% zu kuerzen (haette ~8 Seiten hinzugefuegt) wird footskip um den gleichen Betrag (~17pt)
+% reduziert -> Seitenhoehe ausbalanciert, textheight + Paginierung unveraendert.
+\setlength{\headheight}{34pt}
+\setlength{\footskip}{30pt}
 %\setlength{\headsep}{\baselineskip}
 \setlength{\textheight}{24.5cm}
 \setlength{\textwidth}{16cm}
