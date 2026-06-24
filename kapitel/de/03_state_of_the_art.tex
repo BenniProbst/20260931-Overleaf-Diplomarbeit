@@ -115,21 +115,16 @@ dTLB-Optimierungs-Achse bleibt in den Suchalgorithmus-Papern jedoch unterbelegt 
 Beobachtung, auf die die Forschungslücke (Abschnitt~\ref{sec:gap}) zurückkommt.
 
 \subsection{Schreib-Protokolle, Update-Heuristiken und Inklusions-Politik}\label{ssec:sota-update}
-Das in Abschnitt~\ref{ssec:coherence} eingeführte Cache-Update-Verhalten ist nur teilweise über die
-ISA sichtbar; Ersetzung, Inklusion und konkrete Kohärenz sind überwiegend je Mikroarchitektur und
-Cache-Ebene festgelegt. \emph{Schreib-Protokolle:} ARMv8 wählt Write-Through, Write-Back oder
-Non-Cacheable sowie Read- bzw.\ Read-Write-Allocate über Seiten-Attribute~\cite{arm_arm}, während
-x86 als Normalfall Write-Back mit Write-Allocate verwendet~\cite{intel_sdm}.
-\emph{Heuristische Ersetzungs-/Update-Strategien:} von LRU und Pseudo-LRU bis zur
-\emph{Re-Reference Interval Prediction} (RRIP/DRRIP), die mit zwei Bit je Line scan- und
-thrash-resistente Verdrängung erreicht~\cite{jaleel2010rrip} und auf der adaptiven
-Insertions-Politik aufbaut~\cite{qureshi2007adaptive}. \emph{Inklusions-Politik:} frühere
-Intel-Client-Generationen (etwa Nehalem) führen einen inklusiven L3, Intel-Server ab
-Skylake-SP/Xeon~Scalable einen nicht-inklusiven, während AMD-Zen-Generationen den L3 überwiegend
-nicht-inklusiv bzw.\ victim-artig betreibt~\cite{intel_optimization,amd_sog}. Diese drei Aspekte
-bestimmen gemeinsam, welche Ebenen ein Schreibzugriff aktualisiert; da sie mikroarchitektonisch
-fixiert und zur Laufzeit nicht wählbar sind, fließen sie als \emph{vermessene}
-Plattform-Eigenschaften in die systemoptimierte Binary ein (Abschnitt~\ref{ssec:aware-oblivious}).
+Das in Abschnitt~\ref{ssec:coherence} eingeführte Cache-Update-Verhalten --- Schreib-Protokolle
+(Write-Through/-Back, Write-/No-Write-Allocate), heuristische Ersetzung (LRU bis RRIP/DRRIP) und
+Inklusions-Politik --- ist nur teilweise über die ISA sichtbar und überwiegend je Mikroarchitektur
+und Cache-Ebene festgelegt. Als konkrete \emph{Instanz} dieser fixierten Eigenschaften variiert etwa
+die Inklusions-Politik des L3 zwischen den Generationen: frühere Intel-Client-Generationen (etwa
+Nehalem) führen einen inklusiven L3, Intel-Server ab Skylake-SP/Xeon~Scalable einen
+nicht-inklusiven, während AMD-Zen-Generationen den L3 überwiegend nicht-inklusiv bzw.\ victim-artig
+betreibt~\cite{intel_optimization,amd_sog}. Da diese Aspekte mikroarchitektonisch fixiert und zur
+Laufzeit nicht wählbar sind, fließen sie als \emph{vermessene} Plattform-Eigenschaften in die
+systemoptimierte Binary ein (Abschnitt~\ref{ssec:aware-oblivious}).
 
 \subsection{Cache-bewusste und cache-oblivious Entwürfe}\label{ssec:sota-aware}
 Beide Philosophien aus Abschnitt~\ref{ssec:aware-oblivious} sind im Stand der Technik instanziiert:
@@ -550,10 +545,8 @@ Zwei-Phasen-Operationsschleife und ein Konformitäts-Gatter gegen \texttt{std::m
 zählerbasierten PMC-Kategorien sind vorgesehen, ihre Erhebung jedoch an Hardware-Zähler-Zugriff
 gebunden --- die vollständige Mess-Architektur entwickelt Kapitel~\ref{ch:methodology}.
 \emph{Welche} dieser Instanzen das vorgeschlagene Framework übernimmt und welche es als überholt
-ersetzt, analysiert Kapitel~\ref{ch:concept} dialektisch (These--Antithese--Synthese): jede
-Vorarbeit (These) trifft im bias-reduzierten Quervergleich auf ihre Grenzen (Antithese), woraus die
-tieferen Ergebnisse der eigenen Apparatur als Synthese hervorgehen. Damit schließt der Stand der
-Technik unmittelbar an die Forschungslücke an (Abschnitt~\ref{sec:gap}).
+ersetzt, entwickelt Kapitel~\ref{ch:concept}; damit schließt der Stand der Technik unmittelbar an
+die Forschungslücke an (Abschnitt~\ref{sec:gap}).
 
 \section{Architektur-Design und Software-Engineering von Suchstrukturen}\label{sec:sota-design}
 Über die technischen Mechanismen hinaus ist das in dieser Arbeit vorgeschlagene Framework primär
@@ -606,8 +599,6 @@ gehaltenen Marke Comdare bzw.\ der BEP~Venture~UG übernommen, wo es ursprüngli
 UltiHash-Datenbank der ehemaligen UltiHash Inc. --- der Optimierung von Deduplikations-Verfahren
 diente. Der Beitrag der vorliegenden Arbeit ist die Übertragung und Ausformung dieses Konzepts auf
 cache-bewusste Suchstrukturen sowie seine design-pattern-getriebene, mess-orientierte Realisierung.
-\emph{Welche} fremden Instanzen das Framework übernimmt und welche es als überholt ersetzt,
-entwickelt Kapitel~\ref{ch:concept} dialektisch (vgl.\ Abschnitt~\ref{ssec:sota-meas-bridge}).
 
 \section{Forschungslücke}\label{sec:gap}
 
@@ -627,10 +618,10 @@ gemeinsamen Basis.
 
 Was fehlt --- und was diese Arbeit beiträgt --- ist daher die systematische, orthogonale
 \emph{Achsen-Zerlegung} dieser Entwürfe samt einer \emph{permutierten Mess-Architektur}, die sie als
-explizite Konfigurationen rekonstruiert und auf einer gemeinsamen Basis vermisst. Eine Abschätzung von
-cache-aware Algorithmen ist ohne eine Aufteilung der maßgeblichen das Caching beeinflussenden Eigenschaften,
-sonst nicht differenzierbar. Welche der hier
-katalogisierten Instanzen das vorgeschlagene Framework übernimmt und welche es als überholt ersetzt,
-entwickelt das folgende Kapitel dialektisch (These--Antithese--Synthese,
-Abschnitt~\ref{ssec:sota-design-contribution}); daraus gehen die tieferen Ergebnisse der eigenen
-Apparatur hervor.
+explizite Konfigurationen rekonstruiert und auf einer gemeinsamen Basis vermisst. Eine Abschätzung
+von cache-aware Algorithmen ist ohne eine Aufteilung der maßgeblichen das Caching beeinflussenden
+Eigenschaften, sonst nicht differenzierbar. Welche der hier katalogisierten Instanzen das
+vorgeschlagene Framework übernimmt und welche es als überholt ersetzt, entwickelt das folgende
+Kapitel dialektisch (These--Antithese--Synthese): jede Vorarbeit (These) trifft im bias-reduzierten
+Quervergleich auf ihre Grenzen (Antithese), woraus die tieferen Ergebnisse der eigenen Apparatur als
+Synthese hervorgehen.

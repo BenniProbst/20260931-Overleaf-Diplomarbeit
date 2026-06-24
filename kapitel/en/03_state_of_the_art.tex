@@ -106,21 +106,16 @@ however, remains underpopulated in the search-algorithm papers --- an observatio
 research gap (Section~\ref{sec:gap}) returns.
 
 \subsection{Write Protocols, Update Heuristics, and Inclusion Policy}\label{ssec:sota-update}
-The cache-update behaviour introduced in Section~\ref{ssec:coherence} is only partly visible through
-the ISA; replacement, inclusion, and concrete coherence are predominantly fixed per
-microarchitecture and cache level. \emph{Write protocols:} ARMv8 chooses write-through, write-back,
-or non-cacheable, as well as read- or read-write-allocate, through page attributes~\cite{arm_arm},
-while x86 uses write-back with write-allocate as the normal case~\cite{intel_sdm}.
-\emph{Heuristic replacement/update strategies:} from LRU and pseudo-LRU to
-\emph{Re-Reference Interval Prediction} (RRIP/DRRIP), which achieves scan- and thrash-resistant
-eviction with two bits per line~\cite{jaleel2010rrip} and builds on the adaptive insertion
-policy~\cite{qureshi2007adaptive}. \emph{Inclusion policy:} early Intel client generations
+The cache-update behaviour introduced in Section~\ref{ssec:coherence} --- write protocols
+(write-through/-back, write-/no-write-allocate), heuristic replacement (LRU through RRIP/DRRIP), and
+inclusion policy --- is only partly visible through the ISA and predominantly fixed per
+microarchitecture and cache level. As a concrete \emph{instance} of these fixed properties, the L3
+inclusion policy, for example, varies across generations: early Intel client generations
 (e.g.\ Nehalem) maintain an inclusive L3, Intel servers since Skylake-SP/Xeon~Scalable a
 non-inclusive one, while AMD Zen generations operate the L3 predominantly non-inclusively or
-victim-like~\cite{intel_optimization,amd_sog}. Together these three aspects determine which levels a
-write updates; since they are microarchitecturally fixed and not selectable at run time, they enter
-the system-optimized binary as \emph{measured} platform properties
-(Section~\ref{ssec:aware-oblivious}).
+victim-like~\cite{intel_optimization,amd_sog}. Since these aspects are microarchitecturally fixed
+and not selectable at run time, they enter the system-optimized binary as \emph{measured} platform
+properties (Section~\ref{ssec:aware-oblivious}).
 
 \subsection{Cache-Aware and Cache-Oblivious Designs}\label{ssec:sota-aware}
 Both philosophies from Section~\ref{ssec:aware-oblivious} are instantiated in the state of the art:
@@ -527,10 +522,8 @@ occupancy. Of these, the apparatus currently realizes the time- and observer-bas
 a conformance gate against \texttt{std::map}); the counter-based PMC categories are foreseen but
 their collection is tied to hardware-counter access --- the complete measurement architecture is
 developed in Chapter~\ref{ch:methodology}. \emph{Which} of these instances the proposed framework
-adopts and which it replaces as obsolete is analysed dialectically (thesis--antithesis--synthesis)
-in Chapter~\ref{ch:concept}: each prior work (thesis) meets its limits in the bias-reduced
-cross-comparison (antithesis), from which the deeper results of the proposed apparatus emerge as
-synthesis. Thus the state of the art connects directly to the research gap (Section~\ref{sec:gap}).
+adopts and which it replaces as obsolete is developed in Chapter~\ref{ch:concept}; thus the state of
+the art connects directly to the research gap (Section~\ref{sec:gap}).
 
 \section{Architectural Design and Software Engineering of Search Structures}\label{sec:sota-design}
 Beyond the technical mechanisms, the framework proposed in this thesis is primarily an
@@ -578,9 +571,7 @@ development of this thesis but adopted from prior work by the author within the 
 by him, respectively the BEP~Venture~UG, where it originally served --- in the context of the
 UltiHash database --- the optimization of deduplication procedures. The contribution of the present
 thesis is the transfer and shaping of this concept onto cache-aware search structures, as well as
-its design-pattern-driven, measurement-oriented realization. \emph{Which} foreign instances the
-framework adopts and which it replaces as obsolete is developed dialectically in
-Chapter~\ref{ch:concept} (cf.\ Section~\ref{ssec:sota-meas-bridge}).
+its design-pattern-driven, measurement-oriented realization.
 
 \section{Research Gap}\label{sec:gap}
 
@@ -601,5 +592,6 @@ What is missing --- and what this thesis contributes --- is therefore the system
 \emph{axis decomposition} of these designs together with a \emph{permuted measurement architecture}
 that reconstructs them as explicit configurations and measures them on a common basis. Which of the
 instances catalogued here the proposed framework adopts and which it replaces as obsolete is
-developed dialectically (thesis--antithesis--synthesis, Section~\ref{ssec:sota-design-contribution})
-by the following chapter; from this the deeper results of the proposed apparatus emerge.
+developed dialectically (thesis--antithesis--synthesis) by the following chapter: each prior work
+(thesis) meets its limits in the bias-reduced cross-comparison (antithesis), from which the deeper
+results of the proposed apparatus emerge as synthesis.
