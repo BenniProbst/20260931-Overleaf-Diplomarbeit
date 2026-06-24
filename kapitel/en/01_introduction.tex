@@ -13,10 +13,11 @@ self-tuning approaches (START~\cite{fent2020start}).
 In parallel, a dedicated body of research on cache awareness, prefetching, and allocation strategies
 has emerged. Heuristics such as Cache-Sensitive Search Trees, cache-oblivious layouts, and
 hierarchical prefetching each address a separately considered aspect of the search-algorithm
-architecture. Because code whose behaviour rests on cache-line-optimized execution is so
-fundamental, it is sensible to segment the constituent parts of the search-algorithm shell into
-axes. This amounts to the backward abstraction of known search-algorithm components into reusable
-modules across the most important state-of-the-art papers.
+architecture. In doing so, the focus when finding heuristics rests mainly on the assumption of
+empirically discovered heuristic improvements and measurements. Because code whose behaviour rests
+on cache-line-optimized execution is so fundamental, it is sensible to segment the constituent parts
+of the search-algorithm shell into axes. This amounts to the backward abstraction of known
+search-algorithm components into reusable modules across the most important state-of-the-art papers.
 
 This thesis closes that gap with a framework whose building blocks are treated as interchangeable
 design dimensions of a large design space~\cite{idreos2018periodic, idreos2018datacalculator}.
@@ -39,9 +40,10 @@ interchangeable axes, (ii)~reconstructs published algorithms as explicit configu
 (iii)~measures both individual axes and whole algorithms on a single, fair basis.
 
 \section{Research Questions}\label{sec:rqs}
-From the task description and the supervision meetings arise one main research question frozen with
-the supervisor (RQ0) and four measurable sub-questions (RQ1--RQ4); complementary aspects are
-attached as \emph{sub-questions}.
+From the task description and the goal of cache-line optimization, and given the ubiquity of the
+influence of cache-line settings, the following research questions arise: one main question (RQ0)
+and four measurable sub-questions (RQ1--RQ4); complementary aspects are attached as
+\emph{sub-questions}.
 \begin{description}
   \item[RQ0 (Main question)] By how much do \emph{active, measurement-driven} cache-aware decisions
   --- page type, memory layout, value placement, and prefetching --- improve the performance of
@@ -78,7 +80,9 @@ attached as \emph{sub-questions}.
   \item[RQ4 (Compile time vs.\ run time)] Which axis properties must be fixed at compile time to
   produce platform-optimized, provenance-verifiable binaries per permutation, and which can or must
   be selected at run time (bit-encoded permutation identifier, adaptive layout selection) without
-  violating scientific comparability (identical compiler and flag basis)?
+  violating scientific comparability (identical compiler and flag basis)? Does the measurement make
+  it possible to generate ISA+OS-optimized binaries for a search-algorithm recombination whose
+  heuristic optimization is perfectly tailored to its runtime environment?
 \end{description}
 
 \section{Objectives and Contributions}\label{sec:contributions}
@@ -131,17 +135,19 @@ measurement-oriented realization. The central contributions are:
   \item A measurement driver with defined-/full-mode distinction, profile-aware workload routing,
   and three granularities --- micro-, macro-, and overall benchmarking (individual constituents,
   interface operations, whole algorithms).
-  \item \emph{As objective and outlook:} delivery of the best overall algorithm --- automatically
-  selected from the fine-grained measurement results --- as a standalone, ABI-stable binary behind
-  the unified search-algorithm interface; the measurement pipeline already provides the required
-  ranking, while the automatic selection and binary shipping are envisioned as an extension.
+  \item A bias-free comparison matrix that runs \emph{all} load profiles against \emph{all}
+  reconstructed living beings, thereby countering the methodological home-field bias of the
+  individual publications.
   \item A generic platform probe that determines cache properties (line size, hierarchy depth,
   topology) per target platform and feeds them as fixed quantities into a system-optimized binary;
   the two production machines are measured for this purpose under two operating systems (immutable
   Talos and root Linux with full hardware-counter access).
-  \item A bias-free comparison matrix that runs \emph{all} load profiles against \emph{all}
-  reconstructed living beings, thereby countering the methodological home-field bias of the
-  individual publications.
+  \item \emph{As objective and outlook:} delivery of the best overall algorithm under the
+  measurement aspect of the best cache-aware behaviour and acceleration under cache-line adaptation
+  --- automatically selected from the fine-grained measurement results --- as a standalone,
+  ABI-stable binary behind the unified search-algorithm interface; the measurement pipeline already
+  provides the required ranking, while the automatic selection and binary shipping are envisioned as
+  an extension.
 \end{itemize}
 
 \section{Structure of the Thesis}\label{sec:structure}
@@ -149,7 +155,8 @@ measurement-oriented realization. The central contributions are:
 Chapter~\ref{ch:fundamentals} introduces the necessary background as definitional classes.
 Chapter~\ref{ch:sota} mirrors these in the state of the art as instances: an overview with corpus
 clusters, the cache concepts, the axis-wise dissection of the methods, the workload frameworks, the
-measurement technologies, and the architectural design --- closing with the research gap.
+measurement technologies, and the architectural design --- closing with the research gap, with a
+focus on cache-line-aware optimization as a single-configuration setting in the cache engine.
 Chapter~\ref{ch:concept} presents the axis library framework, the layered architecture, the ABI
 interface, and the nineteen-axis permutation matrix, including the thematic axis repositories and
 their sub-axes. Chapter~\ref{ch:impl} documents the implementation across the three repositories.
@@ -157,4 +164,4 @@ Chapter~\ref{ch:methodology} describes the measurement methodology with the thre
 measurement series (A--C), the three granularities (micro-/macro-/overall benchmarking), the real
 datasets, and the fairness rules. Chapter~\ref{ch:results} presents and discusses the results,
 including the hypotheses H1--H3. Chapter~\ref{ch:conclusion} concludes with a summary and an
-outlook. The author's own full text is dimensioned for a length of roughly 60 to 80 pages.
+outlook.
