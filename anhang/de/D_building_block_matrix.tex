@@ -1,7 +1,7 @@
 \chapter{Bausteine-Matrix}\label{app:blocks}
 
 Dieser Anhang enthält die vollständige Bausteine-Matrix, auf die der Stand der Technik
-(Kapitel~\ref{ch:sota}) verweist. Je Achse sind der Zweck, die \emph{statischen} Sub-Achsen
+(Kapitel~\ref{ch:sota}) verweist. Jede Achse ist dabei ein \emph{Organ} des Lebewesens: Ein konkreter Suchalgorithmus (technisch \texttt{SearchAlgorithm}, metaphorisch ein Lebewesen) ist die feste Komposition seiner neunzehn Achsen, von denen jede einem Organ entspricht; die je Achse aufgeführten Baustein-Varianten sind die austauschbaren Ausprägungen dieses Organs, und ihre Permutation gleicht einem genetischen Experiment am Lebewesen. Je Achse sind der Zweck, die \emph{statischen} Sub-Achsen
 (übersetzungszeitlich wählbare Varianten-Familien) und die \emph{dynamischen} Sub-Achsen
 (Laufzeit-Parameter) sowie die konkreten Baustein-Varianten mit ihrer Quelle (Paper-Kennung oder
 Code/Baseline) aufgeführt. Die Angaben sind aus dem Code der \texttt{comdare-cache-engine} und gegen
@@ -9,6 +9,8 @@ die Paper-Provenienz-Map (Doc~18) verifiziert.
 
 \setlength{\tabcolsep}{3pt}
 \section{T0 Suchalgorithmen-Achse T0 (Such-Strukturen und Such-Methoden)}
+
+Diese Achse ist das \emph{Such-Organ} (T0) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Systematische Permutation von 17 konkreten Suchalgorithmen und Such-Strukturen (Array-basiert, sortierte Vektoren, Original-Paper-Wrapper, Such-Methoden wie k-ary/\allowbreak{}Interpolation, sowie geordnete Strukturen wie Skip-Liste/\allowbreak{}B-Baum) zur messären Quantifizierung des Einflusses der Such-Paradigma-Wahl auf Performance-Charakteristiken im einheitlichen \texttt{std::map}-Interface. Sub-Achsen klassifizieren nach Zugriffsdichte (SA1 dense, SA2 sparse, SA3/\allowbreak{}SA4 multilevel), ermöglichen Compliance-Nachweise über Paper-Mixins (Habich-Anforderung: \texttt{is\_\allowbreak{}original}-Markierung pro Funktion/\allowbreak{}Wrapper), und identifizieren SIMD-fähige sowie store-traversierbare Varianten.
 
@@ -40,11 +42,11 @@ Array256\allowbreak{}Search\allowbreak{}Algo (S01) & ART Node256 direkt-adressie
 Vector\allowbreak{}U8\allowbreak{}U8\allowbreak{}Search\allowbreak{}Algo (S02) & Sparse sortiertes Key-Value-Vektor-Paar: \texttt{std::vector<u8> keys} + \texttt{std::vector<u64> values} mit \texttt{std::lower\_\allowbreak{}bound}. O(log n) Lookup, O(n) Insert/\allowbreak{}Erase. Konzept-äquivalent zu HOT-k-Constrained. SIMD-fähig (Bitmask-Scan). & Code/\allowbreak{}Baseline (Binna SIGMOD 2018 HOT Paper P02) \\
 Vector\allowbreak{}U16\allowbreak{}U16\allowbreak{}Search\allowbreak{}Algo (S03) & Sparse sortiertes u16-Vektor-Paar: \texttt{std::vector<u16> keys} + \texttt{std::vector<u64> values}. Vereinfachtes START-Konzept (Multi-Byte-Diskriminatoren ohne Cost-DP). O(log n) Lookup, O(n) Insert/\allowbreak{}Erase. & Code/\allowbreak{}Baseline (Fent ICDEW 2020 START Paper P05) \\
 Array65535\allowbreak{}Search\allowbreak{}Algo (S09) & Mid-Density direkt-adressiert uint16-basiert (25--50 \% Füllungsdichte). Aus prt-art Legacy-Code (REV 6 \S5.17) migriert. O(1) Lookup aber mit Speicher-Overhead vs. SA1 denser Arrays. & Code/\allowbreak{}Baseline (prt-art F.6-Migration) \\
-Original\allowbreak{}Art\allowbreak{}Search\allowbreak{}Algo (S04) & ART Paper-Bindung (\texttt{unodb::db}): \texttt{ist\_\allowbreak{}original\_\allowbreak{}module()=true} (4/\allowbreak{}4 Funktionen originall). Paper-Mixin via SHA256-validierte Tool-Codegenerierung. Habich-Compliance: \texttt{get\_\allowbreak{}compiler()='gcc-9.5'}, all insert/\allowbreak{}lookup/\allowbreak{}erase/\allowbreak{}clear marked original. & P01 (Leis/\allowbreak{}Kemper/\allowbreak{}Neumann ICDE 2013, Apache-2.0 unodb) \\
-Original\allowbreak{}Hot\allowbreak{}Search\allowbreak{}Algo (S05) & HOT Paper-Bindung (HOTRowex): \texttt{is\_\allowbreak{}original\_\allowbreak{}module()=false} (2/\allowbreak{}4 originall). insert/\allowbreak{}lookup originall, aber erase/\allowbreak{}clear Lücken (Hot\allowbreak{}Rowex ist append-only; Re-Impl fallback). Paper P02. & P02 (Binna et al. SIGMOD 2018, ISC ISC) \\
-Original\allowbreak{}Start\allowbreak{}Search\allowbreak{}Algo (S06) & START Paper-Bindung (sosd-Adapter): \texttt{is\_\allowbreak{}original\_\allowbreak{}module()=false} (2/\allowbreak{}4 originall). insert/\allowbreak{}lookup originall, erase/\allowbreak{}clear Lücken (kein remove im sosd-Adapter). Paper P05, Multi-Byte Diskriminatoren. & P05 (Fent/\allowbreak{}Jungmair/\allowbreak{}Kipf/\allowbreak{}Neumann ICDEW 2020, MIT) \\
-Original\allowbreak{}Wormhole\allowbreak{}Search\allowbreak{}Algo (S07) & Wormhole Paper-Bindung: \texttt{is\_\allowbreak{}original\_\allowbreak{}module()=false} (3/\allowbreak{}4 originall). put/\allowbreak{}get/\allowbreak{}del originall, clear Lücke. Hybrid Hash+Trie+B+ Index. GPL-3.0-lizenziert (blockiert Original-Code-Linking für Thesis). & P07 (Wu/\allowbreak{}Ni/\allowbreak{}Jiang Euro\allowbreak{}Sys 2019, GPL-3.0) \\
-Original\allowbreak{}Surf\allowbreak{}Search\allowbreak{}Algo (S08) & Su\allowbreak{}RF Paper-Bindung (FST mit LOUDS-Bitmap): \texttt{is\_\allowbreak{}original\_\allowbreak{}module()=false} (1/\allowbreak{}4 originall, nur lookup). Succinct Range Filter, Multi-Header-Bibliothek. Paper P10. & P10 (Zhang/\allowbreak{}Lim/\allowbreak{}Andersen SIGMOD 2018, Apache-2.0) \\
+Original\allowbreak{}Art\allowbreak{}Search\allowbreak{}Algo (S04) & ART Paper-Bindung (\texttt{unodb::db}): \texttt{ist\_\allowbreak{}original\_\allowbreak{}module()=true} (4/\allowbreak{}4 Funktionen original). Paper-Mixin via SHA256-validierte Tool-Codegenerierung. Habich-Compliance: \texttt{get\_\allowbreak{}compiler()='gcc-9.5'}, all insert/\allowbreak{}lookup/\allowbreak{}erase/\allowbreak{}clear marked original. & P01 (Leis/\allowbreak{}Kemper/\allowbreak{}Neumann ICDE 2013, Apache-2.0 unodb) \\
+Original\allowbreak{}Hot\allowbreak{}Search\allowbreak{}Algo (S05) & HOT Paper-Bindung (HOTRowex): \texttt{is\_\allowbreak{}original\_\allowbreak{}module()=false} (2/\allowbreak{}4 original). insert/\allowbreak{}lookup original, aber erase/\allowbreak{}clear Lücken (Hot\allowbreak{}Rowex ist append-only; Re-Impl fallback). Paper P02. & P02 (Binna et al. SIGMOD 2018, ISC ISC) \\
+Original\allowbreak{}Start\allowbreak{}Search\allowbreak{}Algo (S06) & START Paper-Bindung (sosd-Adapter): \texttt{is\_\allowbreak{}original\_\allowbreak{}module()=false} (2/\allowbreak{}4 original). insert/\allowbreak{}lookup original, erase/\allowbreak{}clear Lücken (kein remove im sosd-Adapter). Paper P05, Multi-Byte Diskriminatoren. & P05 (Fent/\allowbreak{}Jungmair/\allowbreak{}Kipf/\allowbreak{}Neumann ICDEW 2020, MIT) \\
+Original\allowbreak{}Wormhole\allowbreak{}Search\allowbreak{}Algo (S07) & Wormhole Paper-Bindung: \texttt{is\_\allowbreak{}original\_\allowbreak{}module()=false} (3/\allowbreak{}4 original). put/\allowbreak{}get/\allowbreak{}del original, clear Lücke. Hybrid Hash+Trie+B+ Index. GPL-3.0-lizenziert (blockiert Original-Code-Linking für Thesis). & P07 (Wu/\allowbreak{}Ni/\allowbreak{}Jiang Euro\allowbreak{}Sys 2019, GPL-3.0) \\
+Original\allowbreak{}Surf\allowbreak{}Search\allowbreak{}Algo (S08) & Su\allowbreak{}RF Paper-Bindung (FST mit LOUDS-Bitmap): \texttt{is\_\allowbreak{}original\_\allowbreak{}module()=false} (1/\allowbreak{}4 original, nur lookup). Succinct Range Filter, Multi-Header-Bibliothek. Paper P10. & P10 (Zhang/\allowbreak{}Lim/\allowbreak{}Andersen SIGMOD 2018, Apache-2.0) \\
 KAry\allowbreak{}Search\allowbreak{}Algo (S10) & k-ary Search Such-METHODE (Schlegel/\allowbreak{}Gemulla/\allowbreak{}Lehner Da\allowbreak{}Mo\allowbreak{}N 2009): K-Wege-Partition statt Halbierung bei der Binärsuche. K ist iterable\_\allowbreak{}aspect (K $\in$ \{2,4,8,16\}). O($\lceil$log\_\allowbreak{}\{K+1\} n$\rceil$) Iterationen, parallele ILP-Vergleiche. Array-Familie aber kein treues dediziertes Traversal-Organ (SA2-Klassifikation). C++23-Re-Impl, \texttt{is\_\allowbreak{}original=false}. & Paper (Schlegel/\allowbreak{}Gemulla/\allowbreak{}Lehner Da\allowbreak{}Mo\allowbreak{}N 2009 pseudocode study) \\
 Interpolation\allowbreak{}Search\allowbreak{}Algo (S11) & Interpolationssuche Such-METHODE (Perl/\allowbreak{}Itai/\allowbreak{}Avni CACM 1978): verteilungsbewusste Positionsschätzung statt blinder Halbierung. O(log log N) avg bei Gleichverteilung, O(N) worst-case. Nicht SIMD-vektorisierbar (datenabhängiger Index). C++23-Re-Impl. & Paper (Perl/\allowbreak{}Itai/\allowbreak{}Avni CACM 1978, pseudocode) \\
 Eytzinger\allowbreak{}Search\allowbreak{}Algo (S12) & Eytzinger/\allowbreak{}BFS-Layout branch-free Suche (Khuong/\allowbreak{}Morin JEA 2017): Cache-Layout-Such-METHODE mit branch-free Kern. Keys in BFS-Ordnung des impliziten Suchbaums. Fuer große Arrays laut Paper schnellste Allzweck-Layout. C++23-Re-Impl (Experiment-Harness ohne Standard-Lizenz). & Paper (Khuong/\allowbreak{}Morin JEA 2017 ar\allowbreak{}Xiv:1509.05053) \\
@@ -60,6 +62,8 @@ BTree\allowbreak{}Search\allowbreak{}Algo (S17) & Balancierter Block-orientierte
 \emph{Beitragende Paper:} P01, P02, P05, P07, P10~\cite{leis2013art,binna2018hot,fent2020start,wu2019wormhole,zhang2018surf}.
 
 \section{T1 Cache-Speicher-Traversierung (Fanout-Lookup)}
+
+Diese Achse ist das \emph{Cache-Traversierungs-Organ} (T1) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Die Achse \texttt{axis\_\allowbreak{}03b} definiert drei distinkte Strategien zur Schlüssel-Auflösung in kleinen Fanout-Arrays (typisch: B+-Tree oder Trie Inner Nodes). Sie spannt ein Spektrum von linearer Suche (O(N), cache-freundlich, klein), über multiplikatives Hashing mit Open-Addressing (O(1) amortisiert, Knuth-Fibonacci), bis zur sortierten Binärsuche (O(log N), geordnete Traversierung, B+-Tree-Standard). Alle drei sind Lehrbuch-Baselines ohne Original-Code-Linking, implementiert als reine C++23-Re-Implementierungen.
 
@@ -94,6 +98,8 @@ Variante & Beschreibung & Quelle \\
 
 \section{T2 Slot-zu-Offset-Mapping (Traversal-Sublayer)}
 
+Diese Achse ist das \emph{Mapping-Organ} (T2) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
+
 Vermittlung zwischen logischen Slot-Indizes und physischen Speicher-Offsets in Trie-Inner-Nodes und Speicher-Pools. Die Achse bietet zwei grundsätzlich verschiedene Zuordnungsstrategien: direkte absolute Offsets (lineare Packing) oder pool-relative Offsets mit automatischem Rebase-Mechanismus zur Unterstützung von Speicher-Umallokation und Persistent-Data-Structures.
 
 \subsection*{Statische Sub-Achsen}
@@ -125,6 +131,8 @@ Pool\allowbreak{}Relative & Wrapper für Pool-Relatives-Offset-Mapping mit O(1)-
 \emph{Beitragende Paper:} P03, P07, P27~\cite{mao2012masstree,wu2019wormhole,zhang2025hierarchical}.
 
 \section{T3 Pfadkompression}
+
+Diese Achse ist das \emph{Pfadkompressions-Organ} (T3) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Definiert die Kompressions-Granularität und -Strategie für Schlüsselpfade in Trie-Strukturen. Steuert, wie innere Knoten redundante Byte-Sequenzen oder signifikante Bits gemeinsamer Präfixe speichern und navigieren, um Speicher- und Cache-Effizienz zu optimieren.
 
@@ -161,6 +169,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} P01, P02, P04, P05, P09~\cite{leis2013art,binna2018hot,boffa2024coco,fent2020start,jacobson1989louds}.
 
 \section{T4 Knotentypen (Node-Type-Achse)}
+
+Diese Achse ist das \emph{Knotentyp-Organ} (T4) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Die Achse \texttt{axis\_\allowbreak{}04\_\allowbreak{}node\_\allowbreak{}type} definiert die vier Knotenformate des Adaptive Radix Tree (ART) als austauschbare Varianten: Node4, Node16, Node48 und Node256. Jeder Knotentyp bietet eine andere Balance zwischen Speicher, Cache-Effizienz und Suchgeschwindigkeit. Diese Achse bildet die Basis für adaptive Baum-Reorganisationen und ist zentral für das Design der Suchalgorithmen.
 
@@ -203,6 +213,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} P01~\cite{leis2013art}.
 
 \section{T5 Speicher-Layout (Memory Layout)}
+
+Diese Achse ist das \emph{Speicher-Layout-Organ} (T5) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Diese Achse klassifiziert die räumliche Organisation von Datensätzen im Speicher und beeinflusst damit Cache-Effizienz, SIMD-Vectorisierbarkeit und False-Sharing-Charakteristiken. Sie erfasst orthogonal vier Design-Dimensionen: (1) Alignment-Strategien (Cache-Line-Padding vs. Strict-Packing), (2) Datenorganisation (zeilenorientiert Ao\allowbreak{}S vs. spaltenorientiert So\allowbreak{}A vs. Hybrid Ao\allowbreak{}So\allowbreak{}A), (3) Packing-Dichte (dense vs. succinct bit-packed), (4) Stride-Muster (sequenziell vs. interleaved). Die Layout-Wahl ist ein primärer Treiber für Cache-Lokalität und SIMD-Fähigkeit bei Index-Traversal.
 
@@ -256,6 +268,8 @@ Variante & Beschreibung & Quelle \\
 
 \section{T6 Allokator-Achse (T6)}
 
+Diese Achse ist das \emph{Allokations-Organ} (T6) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
+
 Diese Achse stellt die Speicherverwaltungsstrategie für die Cache-Engine bereit. Sie definiert 25 konkrete Allocator-Wrapper für verschiedene Algorithmen und Techniken (von klassischen Baselines wie Buddy und Slab über moderne Research-Allokatoren wie mimalloc, jemalloc, snmalloc bis zu spezialisierten Varianten für NUMA, PIM und formal verifizierte Systeme). Alle Wrapper erfüllen standardisierte Concepts und sind orthogonal nach 7 Compile-Time-Varianten-Familien (Freelist-Topologie, Size-Class-Schema, Thread-Lokalität, Synchronisation, Allokationspolicy, Reklamation, Fragmentierungsstrategie) strukturierbar.
 
 \subsection*{Statische Sub-Achsen}
@@ -302,7 +316,7 @@ Variante & Beschreibung & Quelle \\
 \texttt{HMalloc\allowbreak{}Allocator} (A15) & Hybrid Lock-Free Allocator mit skalierbare Speicherverwaltung. Li/\allowbreak{}Yao/\allowbreak{}Tang/\allowbreak{}Lin (IEEE ICPADS 2019). Keine eigenständige OSS-Implementierung. & P— (Research Baseline) \\
 \texttt{PIMMalloc\allowbreak{}Allocator} (A16) & Processing-In-Memory Allocator für heterogene HW mit schnellem lokalen Speicher. VIA-Research (HPCA 2026, ar\allowbreak{}Xiv:2505.13002). Spezialisiert auf PIM-Hardware. & P— (OSS, MIT) \\
 \texttt{Crystalline\allowbreak{}Allocator} (A17) & Wait-Free Memory Allocator mit formalen Guarantees. Solodkyy/\allowbreak{}Bunkov (PLDI 2021). Garantiert wait-free Reclamation ohne deferred free. & P— (Research) \\
-\texttt{Exgen\allowbreak{}Allocator} (A18) & Single-Threaded Specialized Allocator mit Optimierungen für Single-Threaded Workloads. UT Austin (IEEE CAL 2025, ar\allowbreak{}Xiv:2510.10219). „Old is Gold`` Prinzip. & P— (Research, Konfidenz medium) \\
+\texttt{Exgen\allowbreak{}Allocator} (A18) & Single-Threaded Specialized Allocator mit Optimierungen für Single-Threaded Workloads. UT Austin (IEEE CAL 2025, ar\allowbreak{}Xiv:2510.10219). \enquote{Old is Gold} Prinzip. & P— (Research, Konfidenz medium) \\
 \texttt{Buddy\allowbreak{}Allocator} (A19) & Buddy-System mit Power-of-2-Splitting für einfache Fragmentierungskontrolle. Knuth (TAo\allowbreak{}CP Vol.1, 1968). Klassisches Lehrbuch-Paradigma. & P— (Baseline/\allowbreak{}Textbook) \\
 \texttt{Dlmalloc\allowbreak{}Allocator} (A20) & Doug Lea Malloc mit Bins-basierter Klassifizierung. Lea (1987-2012). Original Code-Linking (is\_\allowbreak{}original=2/\allowbreak{}2). & P— (OSS, Public-Domain/\allowbreak{}CC0, is\_\allowbreak{}original) \\
 \texttt{Pt\allowbreak{}Malloc2\allowbreak{}Allocator} (A21) & ptmalloc2 (glibc malloc) mit expliziter Wrapper-Kontrolle. Wolfram Gloger /\allowbreak{} Ulrich Drepper (1990er-2000er). Lizenz-blockiert (LGPL-2.1+). & P— (OSS, LGPL-2.1+, blockiert Linking) \\
@@ -317,6 +331,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} P29, P30~\cite{mckenney2001rcu,michael2004hazard}.
 
 \section{T7 Prefetch-Strategie}
+
+Diese Achse ist das \emph{Prefetch-Organ} (T7) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Die Prefetch-Achse bestimmt die Strategie zum vorausschauenden Laden von Knoten und Adressen entlang des erwarteten Such-Pfads in einer Trie-Datenstruktur. Sie unterstützt vier konkrete Strategien mit unterschiedlichen Triggermechanismen und Heuristiken: keine Prefetch (Mess-Baseline), distanzgeschätzte Software-Prefetch auf Basis von Knoten-Dichte und Cache-Latenz (ART-Standard), explizite Hardware-Prefetch-Instruktionen (Wormhole-Standard) und pfadorientierte Prefetch mit Bundle-Granularität (PRT-ART Diplomarbeit).
 
@@ -354,6 +370,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} P01, P07, P21~\cite{leis2013art,wu2019wormhole,chen2001prefetch}.
 
 \section{T8 Nebenläufigkeits-Synchronisations-Achse (Concurrency Axis T8)}
+
+Diese Achse ist das \emph{Nebenläufigkeits-Organ} (T8) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Diese Achse regelt Synchronisationsmuster und sichere Speicherreclamation für nebenläufige Zugriffe auf Baum-/\allowbreak{}Indexstrukturen. Die Achse stellt compile-time wählbare Synchronisations-Patterns (None/\allowbreak{}Blocking/\allowbreak{}Reader-Writer/\allowbreak{}Optimistic/\allowbreak{}Lock-Free/\allowbreak{}Wait-Free) bereit sowie orthogonale Reclamation-Schemata (RCU/\allowbreak{}Hazard-Pointer) für sichere Speicherfreigabe in lock-freien Strukturen.
 
@@ -396,6 +414,8 @@ Variante & Beschreibung & Quelle \\
 
 \section{T9 Serialisierung (Kodierung und Kompression)}
 
+Diese Achse ist das \emph{Serialisierungs-Organ} (T9) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
+
 Achse 10 bestimmt, wie Daten innerhalb des Cache-Engine-Systems kodiert und komprimiert werden: vom Raw-Binary-Speicherlayout über variable Längenkodierung bis zur Succinct-Bit-Packing. Die Wahl der Serialisierungsstrategie beeinflusst direkt CPU-Kosten (Delta-Encoding, Bit-Manipulation, LEB128-Varint), Speicher-Overhead und IO-Bandbreitennutzung --- kritisch für LSM-Trees und Read-Heavy-Workloads mit Approx-Filter (Su\allowbreak{}RF/\allowbreak{}LOUDS).
 
 \subsection*{Statische Sub-Achsen}
@@ -419,7 +439,7 @@ SR3 & Kompression und Vorverarbeitung & Block-Kompression (LZ4/\allowbreak{}Snap
 Variante & Beschreibung & Quelle \\
 \midrule
 \endhead
-\texttt{Raw\allowbreak{}Binary\allowbreak{}Serialization} & Roh-Byte-Speicherlayout (memcpy). Baseline ohne Transformation. Minimaler CPU-Aufwand. Typ. für In-Memory-Workloads ohne Kompression. Variante: \texttt{serieialisierte\_\allowbreak{}scan()} liest 32-Bit Felder + Order-sensitive Checksum. & Code/\allowbreak{}Baseline \\
+\texttt{Raw\allowbreak{}Binary\allowbreak{}Serialization} & Roh-Byte-Speicherlayout (memcpy). Baseline ohne Transformation. Minimaler CPU-Aufwand. Typ. für In-Memory-Workloads ohne Kompression. Variante: \texttt{serialisierte\_\allowbreak{}scan()} liest 32-Bit Felder + Order-sensitive Checksum. & Code/\allowbreak{}Baseline \\
 \texttt{Var\allowbreak{}Len\allowbreak{}Serialization} & Variable-Längen-Kodierung mit Signalisierungsbits (LEB128-Var\allowbreak{}Int). Standard für ART (Leis ICDE 2013 P01). Kleine Werte = wenige Bytes. Signalisierungsbits markieren Byte-Länge. Datenabhängige Schleife (1-5 Bytes). FNV-1a-Mix der Varint-Bytes. & P01 \\
 \texttt{Succinct\allowbreak{}Serialization} & Bit-für-Bit-Packing mit minimaler Bitbreite (LOUDS/\allowbreak{}Su\allowbreak{}RF). Erreicht Information-theoretisches Minimum n*H + o(n) bits. Read-Only nach Build. Optimal für Approx-Filter + Read-Heavy. Höchster Per-Element-CPU-Aufwand (echte Bit-Manipulation). Variante: \texttt{serialize\_\allowbreak{}scan()} mit 64-Bit Akkumulator. & P10,P09 \\
 \texttt{Compressed\allowbreak{}Serialization} & Block-Kompression (LZ4/\allowbreak{}Snappy) auf Roh-Binary aufgesetzt. Trade-off: CPU-Kosten vs IO/\allowbreak{}Memory-Bandbreite. Variante: Delta-Encoding gegen Vorgänger + Zigzag-Transform (negatives Delta $\rightarrow$ kleine unsigned). Typisch für LSM-Trees. Mittlerer CPU-Aufwand. & Code/\allowbreak{}LZ77-Based \\
@@ -430,6 +450,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} P01, P09, P10~\cite{leis2013art,jacobson1989louds,zhang2018surf}.
 
 \section{T10 Telemetrie und Messinstrumentierung (axis\_\allowbreak{}11)}
+
+Diese Achse ist das \emph{Telemetrie-Organ} (T10) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Definiert Strategien zur Messung von Index-Operationen (Insert, Lookup, Erase) mit verschiedenen Overhead-Profilen. Unterstützt Density-Tracking für adaptive Node-Typ-Wahl, globale Insert-Counter für Durchsatz-Messungen, HDR-Histogramme für Latenz-Quantile und leaf-only-Counter zur Vermeidung von Cache-Line-False-Sharing in den Messzyklen.
 
@@ -468,6 +490,8 @@ Variante & Beschreibung & Quelle \\
 
 \section{T11 Wert-Handle (Value-Handle)}
 
+Diese Achse ist das \emph{Wert-Handle-Organ} (T11) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
+
 Die Wert-Handle-Achse definiert, wie Datenwerte (Values) im Cache-Index gespeichert und zugegriffen werden: inline im Node-Slot, extern in einem Pool, mittels immutable-shared References (RCU-Style), versioned Pointer (MVCC), oder verkettete externe Referenzen (Multi-Value). Diese Achse charakterisiert die Speicherlayout-Strategie für Values und bestimmt damit die Zugriffslatenz (direkt vs. indirekt) und Concurrency-Semantik (Snapshot vs. Versioning).
 
 \subsection*{Statische Sub-Achsen}
@@ -503,6 +527,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} P01, P03, P07, P29~\cite{leis2013art,mao2012masstree,wu2019wormhole,mckenney2001rcu}.
 
 \section{T12 Instruktionssatz-Architektur (ISA)}
+
+Diese Achse ist das \emph{ISA-Organ} (T12) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Achse T12 spezifiziert die Ziel-CPU-Instruktionssatz-Architektur als Compile-Time-Konstante und ermöglicht damit Cross-Platform-Optimierungen für vier dominante Serverarchitekturen: x86-64 (Intel/\allowbreak{}AMD), AArch64 (ARM), Power-ISA (IBM) und RISC-V (Open-Source). Jede Variante definiert eine hardware-spezifische SIMD-Baseline (SSE2, NEON, VSX, skalar) und charakterisiert damit die Vektorbeschleunigungspotenziale für Cache-Engine-Operationen wie \texttt{simd\_\allowbreak{}field\_\allowbreak{}sum} (Akkumulation von 32-bit-Wort-Feldern).
 
@@ -540,6 +566,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} ---
 
 \section{T13 Index-Organisation}
+
+Diese Achse ist das \emph{Index-Organisations-Organ} (T13) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Klassifizierung der Datenspeicherung und Indexstrukturierung nach drei orthogonalen Dimensionen: Storage-Order (Heap/\allowbreak{}Clustered/\allowbreak{}Ungeordnet), Index-Count (keine/\allowbreak{}einzeln/\allowbreak{}mehrfach) und Data-Embedding (separate Speicherung vs. in Leaf-Pages eingebettet). Diese Achse modelliert fundamentale DBMS-Entwurfsentscheidungen, die Cache-Verhalten, Zugriffsmuster und I/\allowbreak{}O-Charakteristiken auf Basis von Index-Order vs. Storage-Order-Alignment entscheidend beeinflussen.
 
@@ -579,6 +607,8 @@ Variante & Beschreibung & Quelle \\
 
 \section{T14 I/\allowbreak{}O-Dispatch-Achse}
 
+Diese Achse ist das \emph{I/O-Dispatch-Organ} (T14) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
+
 Modellierung und Auswahl von I/\allowbreak{}O-Strategien für die Persistierung und den Speicherzugriff im Index: Speicherung im RAM-only (Baseline), gepuffert via OS-Page-Cache (Standard), direkter I/\allowbreak{}O mit \texttt{O\_\allowbreak{}DIRECT}-Flag (NVMe-Optimierung), oder Memory-Mapped File I/\allowbreak{}O (Persistent Memory). Diese Achse ermöglicht die Entkopplung der Such- und Baum-Strukturen von der Persistierungs-Implementierung und gestattet A/\allowbreak{}B-Messungen der Dispatch-Overhead-Profile unter identischen Workloads.
 
 \subsection*{Statische Sub-Achsen}
@@ -615,6 +645,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} Stonebraker-1981, Crotty-2022~\cite{stonebraker1981os,crotty2022mmap}
 
 \section{T15 Migrations-Strategie-Achse}
+
+Diese Achse ist das \emph{Migrations-Organ} (T15) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Die Migrations-Strategie-Achse (T15, \texttt{axis\_\allowbreak{}migration}) kapselt Entscheidungslogiken zur Daten-Platzierung across mehrschichtige Speicher-Hierarchien (RAM/\allowbreak{}SSD/\allowbreak{}HDD, Hot/\allowbreak{}Cold-Tiers). Sie modelliert, wann und wie häufig zugegriffene Daten zu schnellerem Storage promoviert bzw. selten zugegriffene demoviert werden, ohne echte Tier-Migration durchzuführen (Entscheidungslogik-Messung nur). Unterstützt vier konkrete Strategien: static (Baseline), Heat/\allowbreak{}Cold-Separation, Multi-Tier-Hierarchie, ML-driven Adaptive.
 
@@ -668,6 +700,8 @@ Variante & Beschreibung & Quelle \\
 
 \section{T16 Filter-Achse}
 
+Diese Achse ist das \emph{Filter-Organ} (T16) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
+
 Die Filter-Achse T16 bietet wählbare probabilistische und deterministische Membership-Query-Filter (Punkt- und Bereichsabfragen). Sie deckt klassische Bloom-Filter mit k Hash-Funktionen, den deletable-Cuckoo-Filter mit Bucket-Hashing und Fingerprints, den succinct Range-Filter Su\allowbreak{}RF mit LOUDS-Trie-Navigaion sowie den platzsparenden Xor-Filter mit konstanter 3er-XOR-Latenz ab. Zweck: Trade-offs zwischen Raum, Abfragelatenz, Mutability und Falsch-Positiv-Rate direkt im Cache-Engine-Experiment messbar machen.
 
 \subsection*{Statische Sub-Achsen}
@@ -704,6 +738,8 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Paper:} Bloom 1970, Fan et al. Co\allowbreak{}NEXT 2014, Zhang et al. SIGMOD 2018, Graf+Lemire JEA 2020~\cite{bloom1970,fan2014cuckoo,zhang2018surf,graf2020xor}.
 
 \section{T17 Pufferung Q1 (Operations-Puffer)}
+
+Diese Achse ist das \emph{Pufferungs-Organ (Q1)} (T17) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
 
 Die Achse \texttt{axis\_\allowbreak{}q1\_\allowbreak{}queuing} realisiert verschiedene Pufferungsstrategien für Operationen im Cache-Engine-Kontext. Sie umfasst Lehrbuch-ADTs (FIFO, LIFO, Append-Only, Priority-Heap), spezialisierte Versioning-Techniken (Delta-Chain, Copy-on-Write, Epoch, Tombstone) sowie moderne Lock-Free-Queues (SPSC/\allowbreak{}MPMC nach Lamport und Vyukov). Die Strategien werden zur Laufzeit durch eine W2-Registry selektiert und sind klassifizierbar nach Zugriffsmuster (sequenziell, sortiert, zyklisch, versioniert, batched, lock-free).
 
@@ -756,6 +792,8 @@ Variante & Beschreibung & Quelle \\
 
 \section{T18 Pufferung Q2 (Flush-Policy)}
 
+Diese Achse ist das \emph{Pufferungs-Organ (Q2)} (T18) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Kapitel~\ref{ch:sota}).
+
 Die Achse Q2 definiert automatische Spülstrategien für Schreibpuffer. Sie entscheidet, WANN ein gefüllter Buffer sein Ausgabeergebnis an die nächste Stufe propagiert --- nach je einer Operation (Eager), gar nicht (Lazy), bei Schwellwertüberschuss (Watermark), nach Zeitfenster (Timed) oder adaptiv nach Workload-Häufigkeit (EWMA-gesteuert LSM-Stil). Dies ist zentral für den Speicher-/\allowbreak{}Durchsatz-Tradeoff und die Batching-Effizienz in Cache-Engines.
 
 \subsection*{Statische Sub-Achsen}
@@ -782,9 +820,9 @@ Variante & Beschreibung & Quelle \\
 \endhead
 \texttt{Eager\allowbreak{}Flush} & Pessimistische Write-Through-Policy: spült nach JEDER \texttt{put()}-Operation vollständig (Full\allowbreak{}Flush). Niedrigste Latenz, aber maximale Spülfrequenz und höchster Durchsatzaufwand --- klassisches Synchronous-Write-Pattern. & Lehrbuch Write-Through Policy /\allowbreak{} Code Baseline \\
 \texttt{Lazy\allowbreak{}Flush} & Optimistische Write-Back-Policy: spült NIE automatisch, nur bei expliziter Eviction aus dem Buffer. Maximales Batching, minimale Spülfrequenz --- klassisches Deferred-Write-Pattern. \texttt{should\_\allowbreak{}flush()} gibt IMMER No\allowbreak{}Flush zurück. & Lehrbuch Write-Back Policy /\allowbreak{} Code Baseline \\
-\texttt{Watermark\allowbreak{}Flush} & Schwellwert-gesteuerte Flush-Policy (Default 75\% Kapazität). Iterable Aspekt mit 5 Varianten (50\%, 65\%, 75\%, 85\%, 95\%) für Laufzeit-Permutation. Verwandt mit LSM-Tree Memtable-Trigger (O'Neill 1996). & LSM-Tree O'Neill 1996 (verwandt) /\allowbreak{} Code Implementation \\
+\texttt{Watermark\allowbreak{}Flush} & Schwellwert-gesteuerte Flush-Policy (Default 75\% Kapazität). Iterable Aspekt mit 5 Varianten (50\%, 65\%, 75\%, 85\%, 95\%) für Laufzeit-Permutation. Verwandt mit LSM-Tree Memtable-Trigger (O'Neil 1996). & LSM-Tree O'Neil 1996 (verwandt) /\allowbreak{} Code Implementation \\
 \texttt{Timed\allowbreak{}Flush} & Zeit-Fenster-basierte Micro-Batching-Policy (iterable Aspekt: 10/\allowbreak{}100/\allowbreak{}1000/\allowbreak{}10000 ms). Inspiriert von Kafka (Net\allowbreak{}DB 2011) und Spark D-Streams (SOSP 2013) für Bounded-Latency-Guarantees. Unabhängig von Pufferfüllung. & Kafka Net\allowbreak{}DB 2011 /\allowbreak{} Spark SOSP 2013 /\allowbreak{} Code Implementation \\
-\texttt{Adaptive\allowbreak{}Lsm\allowbreak{}Flush} & Selbst-tunende adaptive Watermark-Policy mit EWMA über Burst-Rate. Threshold interpoliert zwischen 60\% (hohe Write-Rate) und 95\% (niedrige Rate). Konzeptuell Rocks\allowbreak{}DB Dynamic Leveled Compaction + O'Neill LSM 1996; EWMA-Logik ist CE-eigen. Erste Q2-Strategie mit \texttt{is\_\allowbreak{}adaptive=true}. & Rocks\allowbreak{}DB Dynamic Leveled Compaction /\allowbreak{} O'Neill LSM-Tree 1996 /\allowbreak{} Code Implementation \\
+\texttt{Adaptive\allowbreak{}Lsm\allowbreak{}Flush} & Selbst-tunende adaptive Watermark-Policy mit EWMA über Burst-Rate. Threshold interpoliert zwischen 60\% (hohe Write-Rate) und 95\% (niedrige Rate). Konzeptuell Rocks\allowbreak{}DB Dynamic Leveled Compaction + O'Neil LSM 1996; EWMA-Logik ist CE-eigen. Erste Q2-Strategie mit \texttt{is\_\allowbreak{}adaptive=true}. & Rocks\allowbreak{}DB Dynamic Leveled Compaction /\allowbreak{} O'Neil LSM-Tree 1996 /\allowbreak{} Code Implementation \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
