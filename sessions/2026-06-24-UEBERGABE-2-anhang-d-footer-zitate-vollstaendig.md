@@ -12,8 +12,14 @@
 
 **Es ist NICHTS mehr offen an der Anhang-D-Zitate-Bereinigung.** Verifiziert:
 - `P?`-Platzhalter: **0** · `& Paper (…)`-Platzhalter: **0** · Phantom-Quelle „Solodkyy/Bunkov": **0**.
-- 22 Achsen-Footer durchgängig im 2-Kategorien-Format. Build DE+EN je **0 `.log`-Errors + 0 `.blg`-Warnungen**.
-- HEAD `af81e0d`, alles auf `BenniProbst/20260931-Overleaf-Diplomarbeit` `main` gepusht.
+- 22 Achsen-Footer durchgängig im 2-Kategorien-Format. Build DE+EN je **0 `.log`-Errors + 0 BibTeX-Errors + 0 `.blg`-Warnungen**.
+- HEAD `40bd59f`, alles auf `BenniProbst/20260931-Overleaf-Diplomarbeit` `main` gepusht.
+
+> ⚠️ **NACHTRAG (Fix `40bd59f`):** Der erste „fertig"-Stand (`af81e0d`) hatte **9 doppelt definierte Bib-Keys**
+> (BibTeX „Repeated entry"). Ursache: 9 Keys existierten BEREITS im Korpus (ungenutzt, nur als „Paper (…)" benannt),
+> ich habe sie beim Zitieren erneut angelegt. **Mein `.blg`-Check übersah das**, weil die Regex nur `^(Warning--|---)`
+> prüfte — „Repeated entry---" ist ein *Error*, beginnt mit „Repeated", und der Warning-Zähler bleibt 0. **Lehre in §4.**
+> Behoben durch Dedup (korrekte Kopie je Key behalten). Künftiger Build-Check MUSS `Repeated entry`/`I'm skipping` mitprüfen.
 
 **Was als Nächstes ansteht (NICHT mehr Anhang D):** Es gibt keinen erzwungenen nächsten Schritt aus dieser Arbeit.
 Sinnvolle Kandidaten je nach User-Wunsch: (a) Kap. 4–8 EN-Äquivalenz fortführen (#82 AP-EN, aus Übergabe 1 §8),
@@ -34,8 +40,10 @@ Sinnvolle Kandidaten je nach User-Wunsch: (a) Kap. 4–8 EN-Äquivalenz fortfüh
 | `aecfddd` | Footer-Batch 2c: T0-Suchmethoden (Bausteine S10–S17 + Footer); neue Keys `schlegel2009kary`, `perl1978interpolation`, `khuong2017arraylayouts`. |
 | `3f78b7c` | Footer-Batch 2d: Build-PG ins 2-Kategorien-Format (Provenienz P01–P04+Morrison+PRT-ART; Kontext P05/P06/P10/P11/P12/P13/P20). |
 | `af81e0d` | Batch 2e: A14-Entwirrung (TEMERAIRE + Zhou) + A17-Phantom-Korrektur (Crystalline = Reclamation, Nikolaev/Ravindran, umbenannt) + SIMD-Spec-Paper (SVE/RVV/Tesla); neue Keys `zhou2024tcmallocwarehouse`, `nikolaev2021crystalline`, `nikolaev2024crystalline`, `stephens2017sve`, `minervini2023vitruvius`, `riscv_vector_spec_1_0`, `lindholm2008tesla`; Achsen-Titel → „Vektor-/Accelerator-Erweiterungs-Achse". |
+| `535c35c` | Diese Übergabe 2 (Erstfassung). |
+| `40bd59f` | **Fix: 9 doppelte Bib-Keys entfernt** (BibTeX „Repeated entry", s. §0-Nachtrag + §4 Pkt. 0). herter/yang = web-verifizierte Kopie behalten (Original falsch), Rest = Original. |
 
-> Vorheriger Session-Endpunkt war `61e0666` (Übergabe 1). Diese Session = `3d40f14`…`af81e0d` = **8 Commits, 25 neue Bib-Keys.**
+> Vorheriger Session-Endpunkt war `61e0666` (Übergabe 1). Diese Session = `3d40f14`…`40bd59f` = **10 Commits, 25 neue Bib-Keys (netto, nach Dedup).**
 
 ---
 
@@ -72,6 +80,21 @@ User-Regelwerk (Decision 4), jetzt durchgängig umgesetzt:
 ---
 
 ## 4. FALLSTRICKE / LEKTIONEN (NICHT wiederholen)
+
+0. **DOPPELTE BIB-KEYS + BLINDER BUILD-CHECK (der teuerste Fehler dieser Session).**
+   **(a) Vor dem Anlegen eines „neuen" Bib-Keys IMMER `grep -c "{<key>," literatur.bib` (oder DOI/Titel suchen).**
+   9 vermeintlich neue Keys (knuth1998taocp3, dijkstra1965concurrent, courtois1971readers, herlihy1991waitfree,
+   bonwick1994slab, yang2023numalloc, herter2011cama, schlegel2009kary, perl1978interpolation) existierten BEREITS
+   im Korpus — ungenutzt, im Anhang nur als „Paper (…)" benannt. Erneutes Anlegen ⇒ BibTeX „Repeated entry".
+   **(b) Der Build-Check MUSS BibTeX-ERRORS prüfen, nicht nur -Warnings.** Meine Regex `^(Warning--|---)` + Zähler
+   `warning$ -- N` übersah „Repeated entry---" komplett (Error, beginnt mit „Repeated", Warning-Zähler bleibt 0).
+   **Pflicht-Check ab jetzt (beide Sprachen):**
+   `grep -cE "Repeated entry|I'm skipping|I couldn't" diplomarbeit-<L>.blg` (==0) UND `^(Warning--|---)` (==0)
+   UND `.log` `^!|Citation .* undefined|Reference .* undefined` (==0). Lehre: BibTeX-Fehler crashen den Build NICHT
+   (es überspringt + nimmt die erste Kopie → Cites lösen trotzdem auf → `.log` bleibt sauber → trügerisch „fertig").
+   **(c) Bei Dedup die KORREKTE Kopie behalten:** mehrere Original-Korpus-Einträge waren fehlerhaft (herter2011cama
+   hatte falsche Autoren + DOI `.10`; yang2023numalloc falsche Autoren) — die diese Session web-verifizierten Kopien
+   waren richtig. Also nicht blind „erstes Vorkommen behalten", sondern inhaltlich vergleichen.
 
 1. **VERIFIZIEREN, NIE RATEN — diese Session fing 8 Sach-/Attributionsfehler** (s. §5). Jeder neue Bib-Eintrag + jede
    „passt-schon"-Annahme wurde per WebSearch/Bausteine-Lesung belegt. Beispiel-Kette der falsch geratenen Vorannahmen,
