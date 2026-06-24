@@ -3,7 +3,11 @@
 This chapter presents the core contribution of the thesis: an axis library framework that decomposes
 cache-aware search algorithms into interchangeable, orthogonal building-block axes, the layered
 engine architecture that realizes it, the ABI-stable module interface, the nineteen-axis permutation
-matrix, the probe PRT-ART, and the builder that orchestrates the three-stage evaluation.
+matrix, the probe PRT-ART, and the builder that orchestrates the three-stage evaluation. The guiding
+thread is the separability problem of Section~\ref{sec:problem}: only the modular interchangeability
+of the axes makes the weighting contribution of each individual constituent individually measurable
+--- demonstrated empirically in Section~\ref{sec:sensitivity} and grounded methodically in
+Chapter~\ref{ch:methodology}.
 
 \section{The Axis Library Framework}\label{sec:axis-framework}
 
@@ -31,7 +35,7 @@ node-layout organ, a traversal organ, an allocation organ, and so on, each organ
 expression. Permuting the axes then resembles a genetic experiment --- exchanging organs between
 organisms yields new composite algorithms with previously unknown cache-line behaviour. The research
 goal is to find this shared anatomy and, within the resulting design
-space~\cite{idreos2018periodic, idreos2018datacalculator}, the fastest composite for a given
+space (cf.\ Section~\ref{ssec:sota-design-space}), the fastest composite for a given
 data-type-specific load pattern. It is precisely this modular interchangeability that solves the
 separability problem of the task: because each axis can be swapped against its alternatives in
 isolation while all other axes stay fixed, the weighting contribution of every single constituent to
@@ -98,93 +102,112 @@ same root.
       |
       +-- IVirusExecutionEngine : IExecutionEngine  virus (axis-less, graph)
 \end{verbatim}
-  \normalsize
+\normalsize
 
-  In this model a search algorithm is a \emph{living organism}, and ``organism'' and
-  \texttt{SearchAlgorithm} denote the same thing --- metaphor and technical term are two names for
-  one entity. The organism is addressed from outside through its genus interface (the test dock, a
-  \texttt{std::map}-like interface); its interior is its \emph{anatomy}. The anatomy is not a second
-  model beside the search algorithm but its \emph{body}: the fixed composition of its nineteen axes,
-  each corresponding to an organ. Across the module boundary the same organism is exposed as an ABI
-  view --- the ABI/runtime layering
-  \texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} is exactly
-  this view of the same organism across the module boundary, not a parallel construct:
-  \texttt{CacheEngine} and \texttt{ExecutionEngine} have clearly separated roles here --- the
-  \texttt{CacheEngine} is the \emph{axis building-block library} and provides the default axis
-  building blocks, whereas the \texttt{ExecutionEngine} supplies the
-  \emph{execution and measurement tools}: the OS primitives (cache-line-aligned allocate,
-  NUMA-conforming read-pin, coherence-aware write) and, in experiment mode, the measurement
-  aggregator over exactly one observer interface. ``SearchEngine'' is the search-API view of the
-  same organism, measured through exactly this one observer interface over all nineteen organs.
-  There is thus a single chain --- root (\texttt{ExecutionEngine}) through the genus test dock down
-  to the organism, which is the same thing as \texttt{SearchAlgorithm} and whose body is the anatomy
-  with its nineteen axes.
+In this model a search algorithm is a \emph{living organism}, and ``organism'' and
+\texttt{SearchAlgorithm} denote the same thing --- metaphor and technical term are two names for
+one entity. The organism is addressed from outside through its genus interface (the test dock, a
+\texttt{std::map}-like interface); its interior is its \emph{anatomy}. The anatomy is not a second
+model beside the search algorithm but its \emph{body}: the fixed composition of its nineteen axes,
+each corresponding to an organ. Across the module boundary the same organism is exposed as an ABI
+view --- the ABI/runtime layering
+\texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} is exactly
+this view of the same organism across the module boundary, not a parallel construct:
+\texttt{CacheEngine} and \texttt{ExecutionEngine} have clearly separated roles here --- the
+\texttt{CacheEngine} is the \emph{axis building-block library} and provides the default axis
+building blocks, whereas the \texttt{ExecutionEngine} supplies the
+\emph{execution and measurement tools}: the OS primitives (cache-line-aligned allocate,
+NUMA-conforming read-pin, coherence-aware write) and, in experiment mode, the measurement
+aggregator over exactly one observer interface. ``SearchEngine'' is the search-API view of the
+same organism, measured through exactly this one observer interface over all nineteen organs.
+There is thus a single chain --- root (\texttt{ExecutionEngine}) through the genus test dock down
+to the organism, which is the same thing as \texttt{SearchAlgorithm} and whose body is the anatomy
+with its nineteen axes.
 
-  \section{ABI-Stable C++23 Module Interface}\label{sec:abi}
+\section{ABI-Stable C++23 Module Interface}\label{sec:abi}
 
-  The ABI follows the variadic-template principle: one parameter $\Rightarrow$ \texttt{std::vector}
-  API, two parameters $\Rightarrow$ \texttt{std::map} API, $N>2 \Rightarrow$
-  \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}. Complex keys are reduced to fixed-length
-  16-byte binary strings by a fingerprint component. The module boundary is binary-stable so that
-  the builder can load pre-compiled permutation modules (LoadLibrary/dlopen) and verify the ABI
-  contract per module.
+The ABI follows the variadic-template principle: one parameter $\Rightarrow$ \texttt{std::vector}
+API, two parameters $\Rightarrow$ \texttt{std::map} API, $N>2 \Rightarrow$
+\texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}. Complex keys are reduced to fixed-length
+16-byte binary strings by a fingerprint component. The module boundary is binary-stable so that
+the builder can load pre-compiled permutation modules (LoadLibrary/dlopen) and verify the ABI
+contract per module.
 
-  \section{The Building-Block Axes}\label{sec:axes}
+\section{The Building-Block Axes}\label{sec:axes}
 
-  After the N-phase extension and the consolidation into the search-algorithm anatomy, the matrix
-  comprises \textbf{nineteen main axes plus roughly fifty-seven sub-axes}: (1)~search-algorithm,
-  (2)~cache-traversal, (3)~mapping, (4)~path-compression, (5)~node-type, (6)~memory-layout,
-  (7)~allocator (allocation, reclamation, NUMA, huge-page, free-list), (8)~prefetch, (9)~concurrency
-  (pattern, locking-mode), (10)~serialization, (11)~telemetry, (12)~value-handle, (13)~ISA,
-  (14)~index-organization, (15)~I/O-dispatch, (16)~migration, (17)~filter, (18)~queuing-q1, and
-  (19)~queuing-q2 --- the seventeen search axes plus the two queuing axes, exactly the nineteen
-  organs that the \texttt{IsComposition} concept enforces per algorithm. Per axis a
-  \texttt{std::variant} enumerates all concretizations (the allocator axis alone offers about two
-  dozen); the Cartesian product spans far more than $10^{11}$ configurations
-  (Section~\ref{sec:explosion}).
+After the N-phase extension and the consolidation into the search-algorithm anatomy, the matrix
+comprises \textbf{nineteen main axes plus roughly fifty-seven sub-axes}: (1)~search-algorithm,
+(2)~cache-traversal, (3)~mapping, (4)~path-compression, (5)~node-type, (6)~memory-layout,
+(7)~allocator (allocation, reclamation, NUMA, huge-page, free-list), (8)~prefetch, (9)~concurrency
+(pattern, locking-mode), (10)~serialization, (11)~telemetry, (12)~value-handle, (13)~ISA,
+(14)~index-organization, (15)~I/O-dispatch, (16)~migration, (17)~filter, (18)~queuing-q1, and
+(19)~queuing-q2 --- the seventeen search axes plus the two queuing axes, exactly the nineteen
+organs that the \texttt{IsComposition} concept enforces per algorithm. Per axis a
+\texttt{std::variant} enumerates all concretizations (the allocator axis alone offers about two
+dozen); the Cartesian product of the main axes spans around $10^{14}$ configurations
+(Section~\ref{sec:explosion}).
 
-  \section{PRT-ART as Probe}\label{sec:prt-art}
+\section{PRT-ART as Probe}\label{sec:prt-art}
 
-  PRT-ART is a \emph{probe}: an abstract organism that supplies some axis organs itself and, for the
-  rest, falls back at compile time (\texttt{resolve\_baustein.hpp}) onto the cache-engine default
-  building blocks where it does not override an axis; the hybrid
-  \texttt{PrtArtSearchEngine<Ts\ldots>} API stays untouched. Its run-time binding is through the
-  execution-engine adapter, not through a search-engine layer of its own. PRT-ART contributes its
-  own implementations in the page, layout, free-list, prefetch, concurrency-pattern, and measurement
-  axes (4+2 pool allocator, distance-estimator prefetch, OLC with reserved value blocks, and the
-  H1/H2/H3 metrics); for the remaining axes it reuses existing SOTA building blocks via permutation
-  configuration.
+PRT-ART is a \emph{probe}: an abstract organism that supplies some axis organs itself and, for the
+rest, falls back at compile time (\texttt{resolve\_baustein.hpp}) onto the cache-engine default
+building blocks where it does not override an axis; the hybrid
+\texttt{PrtArtSearchEngine<Ts\ldots>} API stays untouched. Its run-time binding is through the
+execution-engine adapter, not through a search-engine layer of its own. PRT-ART contributes its
+own implementations in the page, layout, free-list, prefetch, concurrency-pattern, and measurement
+axes (4+2 pool allocator, distance-estimator prefetch, OLC with reserved value blocks, and the
+H1/H2/H3 metrics); for the remaining axes it reuses existing SOTA building blocks via permutation
+configuration.
 
-  \section{CacheEngineBuilder and Three-Stage Evaluation}\label{sec:builder}
+\section{CacheEngineBuilder and Three-Stage Evaluation}\label{sec:builder}
 
-  The builder orchestrates a three-stage evaluation: \textbf{stage~1} (cache-engine only) uses the
-  default variant per axis; \textbf{stage~2} (probe only) replaces the overridden axes with the
-  probe variants and keeps cache-engine defaults elsewhere; \textbf{stage~3} (full join,
-  non-redundant) combines the default and all probe variants. Each stage emits thousands of
-  non-redundant permutation binaries, each loaded at run time as an ABI-stable C++23 module. Stages
-  map directly onto the three mandatory measurement series of Chapter~\ref{ch:methodology}. From the
-  fine-grained measurement results the pipeline already provides the required ranking; the automatic
-  selection of the best overall algorithm and its delivery as a standalone, ABI-stable binary behind
-  the unified search-algorithm interface are envisioned as an extension (objective, outlook).
+The builder orchestrates a three-stage evaluation: \textbf{stage~1} (cache-engine only) uses the
+default variant per axis; \textbf{stage~2} (probe only) replaces the overridden axes with the
+probe variants and keeps cache-engine defaults elsewhere; \textbf{stage~3} (full join,
+non-redundant) combines the default and all probe variants. Each stage emits thousands of
+non-redundant permutation binaries, each loaded at run time as an ABI-stable C++23 module.
 
-  \subsection{Heuristic Profile Evaluation and Binary Selection}\label{sec:heuristic-profile-selection}
+These stages do \emph{not} map one-to-one onto the three mandatory measurement series of
+Chapter~\ref{ch:methodology}; rather, they feed them as follows: the default binaries of stage~1
+(cache-engine building blocks, including the reconstructed state-of-the-art profiles) and the probe
+binaries of stage~2 \emph{jointly} form comparison series~A (probe versus state of the art); the
+non-redundant full join of stage~3 is the basis of variation series~B (systematic permutation of the
+design decisions under otherwise equal conditions). Regression series~C (merge/regression old versus
+new), by contrast, is bound to no single stage but runs across builds over successive states of the
+same configuration. Table~\ref{tab:stage-series} summarizes this mapping.
 
-  Beyond the bare ranking, an end-to-end evaluation step is envisioned as an objective that turns
-  the measurement results into a delivered configuration. The following three stages are
-  \emph{outlook and objective} and, in the current state, \emph{not yet implemented}.
+\begin{table}[!htbp]
+  \centering
+  \caption{Mapping of the three-stage evaluation to the mandatory measurement series}\label{tab:stage-series}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Evaluation stage} & \textbf{Content} & \textbf{feeds series} \\
+    \midrule
+    Stage~1 (cache-engine only) & default building blocks + SOTA profiles & A (baseline also for C) \\
+    Stage~2 (probe only) & overridden axes = probe variants & A \\
+    Stage~3 (full join) & default $\times$ probe, non-redundant & B \\
+    across builds & old versus new of the same configuration & C \\
+    \bottomrule
+  \end{tabular}
 
-  \emph{First}, from the ranking of the three measurement series~A/B/C the best configuration is
-  determined per load profile and data type. Since each series yields a complete axis measurement
-  vector per permutation binary, for a given load/data-type profile one can identify the axis
-  composition that holds the foremost rank under that profile.
+  \smallskip
+  {\footnotesize The three evaluation stages map not one-to-one but in this assignment onto the three
+  mandatory measurement series~A/B/C; series~C is cross-stage.\par}
+\end{table}
 
-  \emph{Second}, the intended selection mechanism --- which infers the best configuration
-  automatically from the measurement results --- is an \emph{ML classification}: from the axis
-  features and the features of the load profile (access distribution, write/read ratio, key/value
-  data type) the suitable axis configuration is predicted. This heuristic selection mechanism is
-  \emph{future work} and not yet realized.
+From the
+fine-grained measurement results the pipeline already provides the required ranking; the automatic
+selection of the best overall algorithm and its delivery as a standalone, ABI-stable binary behind
+the unified search-algorithm interface are envisioned as an extension (objective, outlook).
 
-  \emph{Third}, the result of this evaluation is stored as a reusable \emph{XML load profile} that
-  binds the determined best configuration to a named load/data-type profile and can thus be used
-  directly as input on the next run --- symmetric to the measurement-series XML configurations from
-  Section~\ref{sec:m-model}.
+\subsection{Heuristic Profile Evaluation and Binary Selection}\label{sec:heuristic-profile-selection}
+
+Beyond the bare ranking, an end-to-end evaluation step is envisioned as an \emph{objective and
+outlook} that automatically turns the fine-grained measurement results into a delivered
+configuration: from the ranking of the three measurement series the best axis composition is
+determined per load and data-type profile, an \emph{ML classifier} predicts this configuration from
+the axis and load-profile features (access distribution, write/read ratio, key/value data type), and
+the result is stored as a reusable XML load profile --- symmetric to the measurement-series XML
+configurations from Section~\ref{sec:m-model}. This selection and delivery mechanism is, in the
+current state, \emph{not yet implemented}; its detailed treatment is given in the evaluation
+methodology (Section~\ref{sec:measurements-to-heuristics}) and in the outlook (Chapter~\ref{ch:conclusion}).
