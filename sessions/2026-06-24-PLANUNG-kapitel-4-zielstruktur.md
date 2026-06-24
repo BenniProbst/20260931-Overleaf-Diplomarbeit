@@ -37,13 +37,14 @@ zwei Modelle · „5 Gattungen" · Metapher in Code-Identifiern.
 3. **Gewichts-Schieflage:** §4.7.1 (reines Future Work) ist der längste Block; realisierter Kern
    (ABI §4.5, Achsen §4.6) zu dünn.
 
-## 3. Code-unabhängig SOFORT (Text-Agent) — Teil dieser Session erledigt
-- [x] R2-Redundanz §4.1: Idreos-Cites + kartesisches-Produkt-Herleitung → `\ref{ssec:sota-design-space}`.
-- [x] Quelltext-Hygiene: spuriöse 2-Leerzeichen-Einrückung ab `\end{verbatim}` (§4.3+) auf Spalte 0.
-- [x] 4.2-Dialektik-**Skelett** (Heading + Label + Rahmen-Prosa + TODO-Tabelle), DE+EN.
-- [x] Forward-Refs ergänzt (ch7 `sec:sensitivity`, ch6 `ch:methodology`).
-- [ ] (offen, Text-Seite) 4.0-Intro-Ausbau · 4.2-Tabelle füllen (aus ch3) · §4.8 Stufe↔Reihe-Tabelle ·
-  §4.8.1 kürzen · Schau-Darstellungen (Layout/Caption) — z. T. abhängig von Autor-Entscheidungen (§5).
+## 3. Code-unabhängig (Text-Agent) — VOLLSTÄNDIG ERLEDIGT (Blocks 1–3; Commits `ee873b6` / `9a1e2f3` / `37c8efc`)
+- **Block 1 (Text):** R2-Redundanz §4.1 → `\ref{ssec:sota-design-space}` · Einrückungs-Hygiene §4.3+ · 4.0-Intro + Forward-Refs
+  (`sec:problem`/`sec:sensitivity`/`ch:methodology`) · Zahl **`10^{14}`** (ch4 §4.5 + ch6 `sec:explosion` + ch8) ·
+  §4.8 Stufe↔Reihe **verbose** + Mapping-Tabelle (`tab:stage-series`) · §4.8.1 Heuristik-**Anriss**.
+- **Block 2 (§4.2 Dialektik):** cluster-gruppierte `longtable` (`tab:dialectic`) über **alle 19 Achsen**, Inhalt aus ch1–3 + Anhang D.
+- **Block 3 (4 Schau-Darstellungen):** `fig:one-architecture` (TikZ-Klassenbaum statt ASCII) · `fig:m-model` (M-Modell) ·
+  `fig:abi` (ABI-`lstlisting`) · `fig:three-stage` (Builder→Stufen→Binaries).
+- Build DE+EN durchgehend **0/0** (.log + .blg). **VERBLEIBT NUR die code-abhängige Tiefen-Verifikation (§4) durch den Implementierungs-Agenten.**
 
 ## 4. Übergabe an Implementierungs-Agenten (code-abhängig, NICHT Text-Agent)
 Vor dem Tiefen-Füllen code-treu zu verifizieren/liefern:
