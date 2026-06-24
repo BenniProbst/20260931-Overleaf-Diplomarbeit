@@ -56,10 +56,10 @@ implementation behind the engine ABI. The adapters follow a uniform pattern: a
 \texttt{COMDARE\_HAVE\_<X>} compile flag guards an \texttt{\#if defined} block that wires the
 original API, with a safe fallback (e.g.\ \texttt{std::malloc} or a typed exception) when the
 original is unavailable. This keeps the build self-contained while allowing the original sources to
-be activated per dependency. The hierarchical-prefetch integration (P27) additionally ships a
-build-time call-graph analyzer (\texttt{p27\_bundle\_finder}, a C++23 port of the original
-\texttt{hp\_soft} tool) that identifies functions whose subtree footprint exceeds a threshold as
-bundle entry points.
+be activated per dependency. The hierarchical-prefetch integration
+(P27)~\cite{zhang2025hierarchical} additionally ships a build-time call-graph analyzer
+(\texttt{p27\_bundle\_finder}, a C++23 port of the original \texttt{hp\_soft} tool) that identifies
+functions whose subtree footprint exceeds a threshold as bundle entry points.
 
 \section{Permutation Code Generation and Flag System}\label{sec:codegen}
 
@@ -90,11 +90,11 @@ concurrency variant.
 \section{Telemetry against Cache-Coherence Effects}\label{sec:telemetry}
 
 Per-node counters cause cache-line ping-pong on multi-core systems, which distorts the very
-measurements they collect. Following the Kuehn line of work (P28), the telemetry axis therefore
-offers cache-coherence-aware strategies: \emph{leaf-only counters} (the main variant),
-\emph{sampling} (every $N$-th leaf access), and \emph{offline recompute} (bottom-up aggregation
-before reordering); the classic per-node counter is retained only as a labeled anti-pattern for
-comparison.
+measurements they collect. Following the Kuehn line of work (P28)~\cite{kuehn2023bplustree}, the
+telemetry axis therefore offers cache-coherence-aware strategies: \emph{leaf-only counters} (the
+main variant), \emph{sampling} (every $N$-th leaf access), and \emph{offline recompute} (bottom-up
+aggregation before reordering); the classic per-node counter is retained only as a labeled
+anti-pattern for comparison.
 
 \section{Measurement Pipeline}\label{sec:pipeline}
 
