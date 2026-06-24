@@ -146,7 +146,25 @@ Permutations-Konfiguration (Phase 5, \textsc{execute}: \texttt{create\_instance}
 Prüfling ruft zur Laufzeit Cache-Engine-Dienste (Telemetry, Prefetch, Heuristik) während seiner
 eigenen Lookups auf (ebenfalls Phase 5, \texttt{run\_workload}); die Aggregation erfolgt in Phase 6
 (\textsc{measure}). Diese Symmetrie ermöglicht die \emph{Multi-Prüfling}-Fähigkeit: Messreihe~A
-vergleicht PRT-ART gegen viele SOTA-Adapter in einer einzigen Builder-Pipeline.
+vergleicht PRT-ART gegen viele SOTA-Adapter in einer einzigen Builder-Pipeline
+(Abbildung~\ref{fig:m-model}).
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=5pt, minimum width=3.3cm}]
+    \node[comp] (driver) at (0,0) {\texttt{messung\_driver}\\{\scriptsize Auswertungs-Orchestrator (A/B/C)}};
+    \node[comp] (builder) at (0,-1.7) {\texttt{CacheEngineBuilder}\\{\scriptsize Sieben-Phasen-Pipeline}};
+    \node[comp] (engine) at (-3.0,-3.7) {\texttt{CacheEngine}\\{\scriptsize Achsen-Bausteine-Bibliothek}};
+    \node[comp] (probe) at (3.0,-3.7) {Prüfling (PRT-ART)\\{\scriptsize eigene Achsen-Organe}};
+    \draw[->] (driver) -- (builder);
+    \draw[->] (builder) -- (engine);
+    \draw[->] (builder) -- (probe);
+    \draw[<->] (engine) -- node[below, font=\scriptsize, align=center] {(a)~instantiiert\\(b)~ruft Dienste} (probe);
+  \end{tikzpicture}
+  \caption{Das M-Modell: vier formal getrennte Subsysteme; die \texttt{ExecutionEngine} ist die
+  gemeinsame messbare Wurzel (kein fünftes Subsystem). Die bidirektionale
+  Cache-Engine\,$\leftrightarrow$\,Prüfling-Beziehung trägt die Multi-Prüfling-Fähigkeit.}\label{fig:m-model}
+\end{figure}
 
 Die \texttt{ExecutionEngine} ist dabei kein fünftes Subsystem, sondern die gemeinsame messbare
 Wurzel beziehungsweise das \texttt{IExecutionEngine}-Interface, über das diese vier Subsysteme
@@ -161,22 +179,28 @@ Das Modell kennt \emph{eine} Architektur --- eine einzige, in sich geschlossene 
 Parallel-Bäume. An ihrer Wurzel steht die \texttt{ExecutionEngine} als gemeinsame, ausmessbare
 Abstraktion über allem Messbaren; unter ihr verzweigen sich lediglich \emph{Lebewesen} (Anatomien
 mit Achsen-Organen) und achsenlose \emph{Viren} (etwa reine Graphen-Algorithmen) als Geschwister
-derselben Wurzel.
+derselben Wurzel (Abbildung~\ref{fig:one-architecture}).
 
-\scriptsize
-\begin{verbatim}
-    IExecutionEngine                               Wurzel: alles Ausmessbare
-      |
-      +-- IAnatomyBase : IExecutionEngine          Lebewesen
-      |     |
-      |     +-- SearchAlgorithm-Unterklasse        = "Lebewesen" (Saeugetier)
-      |           |
-      |           +-- SearchAlgorithmAnatomy<C>     = sein KOERPER (19 Organe)
-      |           +-- SearchAlgorithmAbiAdapter<A>  = ABI-Laufzeit-SICHT ("SearchEngine")
-      |
-      +-- IVirusExecutionEngine : IExecutionEngine  Virus (achsenlos, Graph)
-\end{verbatim}
-\normalsize
+\begin{figure}[!htbp]
+  \centering
+  \resizebox{0.92\textwidth}{!}{%
+  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
+    \node[box] (root) at (0,0) {\texttt{IExecutionEngine}\\{\scriptsize Wurzel: alles Ausmessbare}};
+    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize Lebewesen}};
+    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize Virus (achsenlos, Graph)}};
+    \node[box] (sa) at (-3.4,-3.8) {SearchAlgorithm-Unterklasse\\{\scriptsize $\equiv$ \enquote{Lebewesen}}};
+    \node[box] (body) at (-5.9,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{Körper}: 19 Organe}};
+    \node[box] (abi) at (-0.3,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI-Sicht (\enquote{SearchEngine})}};
+    \draw[->] (root) -- (ana);
+    \draw[->] (root) -- (vir);
+    \draw[->] (ana) -- (sa);
+    \draw[->] (sa) -- (body);
+    \draw[->] (sa) -- (abi);
+  \end{tikzpicture}}
+  \caption{Die \emph{eine} Architektur als einzige Hierarchie ohne Parallel-Bäume:
+  \texttt{SearchAlgorithm} \emph{ist} das Lebewesen, seine Anatomie ist sein \emph{Körper}, und
+  \enquote{SearchEngine} ist nur dessen ABI-Laufzeit-Sicht.}\label{fig:one-architecture}
+\end{figure}
 
 Ein Suchalgorithmus ist in diesem Modell ein \emph{Lebewesen}, und \enquote{Lebewesen} und
 \texttt{SearchAlgorithm} bezeichnen denselben Gegenstand --- Metapher und technischer Begriff sind
@@ -206,7 +230,22 @@ Das ABI folgt dem Prinzip variadischer Template-Parameter: ein Parameter $\Right
 \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}. Komplexe Schlüssel werden von einer
 Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert. Die Modulgrenze ist
 binär-stabil, sodass der Builder vorkompilierte Permutations-Module laden (LoadLibrary/dlopen) und
-den ABI-Vertrag je Modul verifizieren kann.
+den ABI-Vertrag je Modul verifizieren kann (Abbildung~\ref{fig:abi}).
+
+\begin{figure}[!htbp]
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
+// C-stabile Modulgrenze: exportiert genau EIN Lebewesen je Permutation
+extern "C" IAnatomyBase* comdare_create_anatomy();
+
+// Variadische Hybrid-API je Parameterzahl (Schluessel K, Werte V):
+//   1 Parameter  ->  std::vector<V>
+//   2 Parameter  ->  std::map<K, V>
+//   N > 2        ->  std::map<K, std::tuple<V1, ..., VN>>
+template<class... Ts> class SearchEngine;   // ABI-Laufzeit-Sicht des Lebewesens
+\end{lstlisting}
+  \caption{Die ABI-stabile C-Modulgrenze und die variadische Hybrid-API. Komplexe Schlüssel werden
+  von einer Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert.}\label{fig:abi}
+\end{figure}
 
 \section{Die Bausteine-Achsen}\label{sec:axes}
 
@@ -241,7 +280,27 @@ Standard-Variante je Achse; \textbf{Stufe~2} (nur Prüfling) ersetzt die übersc
 durch die Prüfling-Varianten und behält sonst die Cache-Engine-Standards; \textbf{Stufe~3} (Full
 Join, nicht-redundant) kombiniert die Standard- und alle Prüfling-Varianten. Jede Stufe erzeugt
 tausende nicht-redundante Permutations-Binaries, die zur Laufzeit jeweils als ABI-stabiles
-C++23-Modul geladen werden.
+C++23-Modul geladen werden (Abbildung~\ref{fig:three-stage}).
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{tikzpicture}[stage/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
+    \node[draw, rounded corners, font=\footnotesize, inner sep=4pt] (b) at (0,0) {\texttt{CacheEngineBuilder}};
+    \node[stage] (s1) at (-4.3,-1.8) {\textbf{Stufe~1}\\\scriptsize nur Cache-Engine:\\Standard je Achse};
+    \node[stage] (s2) at (0,-1.8) {\textbf{Stufe~2}\\\scriptsize nur Prüfling:\\überschriebene Achsen};
+    \node[stage] (s3) at (4.3,-1.8) {\textbf{Stufe~3}\\\scriptsize Full Join:\\Standard $\times$ Prüfling};
+    \node[draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt] (out) at (0,-3.7) {tausende nicht-redundante Permutations-Binaries (ABI-Module)};
+    \draw[->] (b) -- (s1);
+    \draw[->] (b) -- (s2);
+    \draw[->] (b) -- (s3);
+    \draw[->] (s1) -- (out);
+    \draw[->] (s2) -- (out);
+    \draw[->] (s3) -- (out);
+  \end{tikzpicture}
+  \caption{Die Drei-Stufen-Prüfung des Builders: jede Stufe erzeugt nicht-redundante
+  Permutations-Binaries; ihre Zuordnung zu den Messreihen~A/B/C zeigt
+  Tabelle~\ref{tab:stage-series}.}\label{fig:three-stage}
+\end{figure}
 
 Diese Stufen bilden \emph{nicht} eins-zu-eins auf die drei Pflicht-Messreihen aus
 Kapitel~\ref{ch:methodology} ab, sondern speisen sie wie folgt: Die Standard-Binaries der Stufe~1

@@ -140,7 +140,24 @@ permutation configuration (phase 5, \textsc{execute}: \texttt{create\_instance})
 calls cache-engine services (telemetry, prefetch, heuristics) during its own lookups at run time
 (also phase 5, \texttt{run\_workload}); aggregation happens in phase 6 (\textsc{measure}). This
 symmetry enables the \emph{multi-probe} capability: measurement series~A compares PRT-ART against
-many SOTA adapters in a single builder pipeline.
+many SOTA adapters in a single builder pipeline (Figure~\ref{fig:m-model}).
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=5pt, minimum width=3.3cm}]
+    \node[comp] (driver) at (0,0) {\texttt{messung\_driver}\\{\scriptsize evaluation orchestrator (A/B/C)}};
+    \node[comp] (builder) at (0,-1.7) {\texttt{CacheEngineBuilder}\\{\scriptsize seven-phase pipeline}};
+    \node[comp] (engine) at (-3.0,-3.7) {\texttt{CacheEngine}\\{\scriptsize axis building-block library}};
+    \node[comp] (probe) at (3.0,-3.7) {probe (PRT-ART)\\{\scriptsize own axis organs}};
+    \draw[->] (driver) -- (builder);
+    \draw[->] (builder) -- (engine);
+    \draw[->] (builder) -- (probe);
+    \draw[<->] (engine) -- node[below, font=\scriptsize, align=center] {(a)~instantiates\\(b)~calls services} (probe);
+  \end{tikzpicture}
+  \caption{The M model: four formally separated subsystems; the \texttt{ExecutionEngine} is the
+  common measurable root (not a fifth subsystem). The bidirectional
+  cache-engine\,$\leftrightarrow$\,probe relationship carries the multi-probe capability.}\label{fig:m-model}
+\end{figure}
 
 Here the \texttt{ExecutionEngine} is not a fifth subsystem but the common measurable root --- the
 \texttt{IExecutionEngine} interface through which these four subsystems are connected: the cache
@@ -155,22 +172,28 @@ The model has \emph{one} architecture --- a single, self-contained hierarchy wit
 At its root stands the \texttt{ExecutionEngine} as the common, measurable abstraction over
 everything measurable; beneath it the only branching is between \emph{living organisms} (anatomies
 with axis organs) and axis-less \emph{viruses} (e.g.\ pure graph algorithms), as siblings of the
-same root.
+same root (Figure~\ref{fig:one-architecture}).
 
-\scriptsize
-\begin{verbatim}
-    IExecutionEngine                               root: everything measurable
-      |
-      +-- IAnatomyBase : IExecutionEngine          living organism
-      |     |
-      |     +-- SearchAlgorithm subclass           = "organism" (mammal)
-      |           |
-      |           +-- SearchAlgorithmAnatomy<C>     = its BODY (19 organs)
-      |           +-- SearchAlgorithmAbiAdapter<A>  = ABI runtime VIEW ("SearchEngine")
-      |
-      +-- IVirusExecutionEngine : IExecutionEngine  virus (axis-less, graph)
-\end{verbatim}
-\normalsize
+\begin{figure}[!htbp]
+  \centering
+  \resizebox{0.92\textwidth}{!}{%
+  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
+    \node[box] (root) at (0,0) {\texttt{IExecutionEngine}\\{\scriptsize root: everything measurable}};
+    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize living organism}};
+    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize virus (axis-less, graph)}};
+    \node[box] (sa) at (-3.4,-3.8) {SearchAlgorithm subclass\\{\scriptsize $\equiv$ \enquote{organism}}};
+    \node[box] (body) at (-5.9,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{body}: 19 organs}};
+    \node[box] (abi) at (-0.3,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI view (\enquote{SearchEngine})}};
+    \draw[->] (root) -- (ana);
+    \draw[->] (root) -- (vir);
+    \draw[->] (ana) -- (sa);
+    \draw[->] (sa) -- (body);
+    \draw[->] (sa) -- (abi);
+  \end{tikzpicture}}
+  \caption{The \emph{one} architecture as a single hierarchy with no parallel trees:
+  \texttt{SearchAlgorithm} \emph{is} the organism, its anatomy is its \emph{body}, and
+  \enquote{SearchEngine} is only its ABI runtime view.}\label{fig:one-architecture}
+\end{figure}
 
 In this model a search algorithm is a \emph{living organism}, and ``organism'' and
 \texttt{SearchAlgorithm} denote the same thing --- metaphor and technical term are two names for
@@ -199,7 +222,22 @@ API, two parameters $\Rightarrow$ \texttt{std::map} API, $N>2 \Rightarrow$
 \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}. Complex keys are reduced to fixed-length
 16-byte binary strings by a fingerprint component. The module boundary is binary-stable so that
 the builder can load pre-compiled permutation modules (LoadLibrary/dlopen) and verify the ABI
-contract per module.
+contract per module (Figure~\ref{fig:abi}).
+
+\begin{figure}[!htbp]
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
+// C-stable module boundary: exports exactly ONE organism per permutation
+extern "C" IAnatomyBase* comdare_create_anatomy();
+
+// Variadic hybrid API by parameter count (key K, values V):
+//   1 parameter  ->  std::vector<V>
+//   2 parameters ->  std::map<K, V>
+//   N > 2        ->  std::map<K, std::tuple<V1, ..., VN>>
+template<class... Ts> class SearchEngine;   // ABI runtime view of the organism
+\end{lstlisting}
+  \caption{The ABI-stable C module boundary and the variadic hybrid API. Complex keys are reduced to
+  fixed-length 16-byte binary strings by a fingerprint component.}\label{fig:abi}
+\end{figure}
 
 \section{The Building-Block Axes}\label{sec:axes}
 
@@ -233,7 +271,27 @@ The builder orchestrates a three-stage evaluation: \textbf{stage~1} (cache-engin
 default variant per axis; \textbf{stage~2} (probe only) replaces the overridden axes with the
 probe variants and keeps cache-engine defaults elsewhere; \textbf{stage~3} (full join,
 non-redundant) combines the default and all probe variants. Each stage emits thousands of
-non-redundant permutation binaries, each loaded at run time as an ABI-stable C++23 module.
+non-redundant permutation binaries, each loaded at run time as an ABI-stable C++23 module (Figure~\ref{fig:three-stage}).
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{tikzpicture}[stage/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
+    \node[draw, rounded corners, font=\footnotesize, inner sep=4pt] (b) at (0,0) {\texttt{CacheEngineBuilder}};
+    \node[stage] (s1) at (-4.3,-1.8) {\textbf{Stage~1}\\\scriptsize cache-engine only:\\default per axis};
+    \node[stage] (s2) at (0,-1.8) {\textbf{Stage~2}\\\scriptsize probe only:\\overridden axes};
+    \node[stage] (s3) at (4.3,-1.8) {\textbf{Stage~3}\\\scriptsize full join:\\default $\times$ probe};
+    \node[draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt] (out) at (0,-3.7) {thousands of non-redundant permutation binaries (ABI modules)};
+    \draw[->] (b) -- (s1);
+    \draw[->] (b) -- (s2);
+    \draw[->] (b) -- (s3);
+    \draw[->] (s1) -- (out);
+    \draw[->] (s2) -- (out);
+    \draw[->] (s3) -- (out);
+  \end{tikzpicture}
+  \caption{The builder's three-stage evaluation: each stage emits non-redundant permutation
+  binaries; their mapping to the measurement series~A/B/C is shown in
+  Table~\ref{tab:stage-series}.}\label{fig:three-stage}
+\end{figure}
 
 These stages do \emph{not} map one-to-one onto the three mandatory measurement series of
 Chapter~\ref{ch:methodology}; rather, they feed them as follows: the default binaries of stage~1
