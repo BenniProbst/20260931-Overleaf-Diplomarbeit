@@ -263,14 +263,16 @@ Variant & Description & Source \\
 \endhead
 \texttt{Ao\allowbreak{}SStrict\allowbreak{}Memory\allowbreak{}Layout} & Array-of-Structs, tightly packed without cache-line alignment. Advantage: minimal memory footprint (record\_\allowbreak{}size strides, dense). Disadvantage: false-sharing under concurrent writes, poor cache-hit ratio for narrow field scans. Typical for Wormhole index. & Code/\allowbreak{}Baseline \\
 \texttt{Cache\allowbreak{}Line\allowbreak{}Aligned\allowbreak{}Memory\allowbreak{}Layout} & Ao\allowbreak{}S with 64-byte per-record alignment. Avoids false-sharing via padding (stride = round\_\allowbreak{}up(record\_\allowbreak{}size, 64)). Standard for ART/\allowbreak{}HOT/\allowbreak{}Masstree/\allowbreak{}START. Operationally: at record\_\allowbreak{}size=48 (bench build), creates 16-byte overhead per record $\rightarrow$ measurably higher latency than aos\_\allowbreak{}strict, genuine cache effect. & Code/\allowbreak{}Baseline \\
-\texttt{So\allowbreak{}AMemory\allowbreak{}Layout} & Struct-of-Arrays: all fields stored column-wise sequentially. Advantage: contiguous field scans (e.g., keys-only without values) maximize cache-line utilization (\textasciitilde{}16x fewer cache-lines than Ao\allowbreak{}S for single-field scan). Ideal for SIMD vectorization and OLAP indexes. Benefit described in Abadi et al. SIGMOD 2008. & P? (Abadi SIGMOD 2008 related) \\
+\texttt{So\allowbreak{}AMemory\allowbreak{}Layout} & Struct-of-Arrays: all fields stored column-wise sequentially. Advantage: contiguous field scans (e.g., keys-only without values) maximize cache-line utilization (\textasciitilde{}16x fewer cache-lines than Ao\allowbreak{}S for single-field scan). Ideal for SIMD vectorization and OLAP indexes. Benefit described in Abadi et al. SIGMOD 2008. & Abadi et al.\ 2008~\cite{abadi2008columnrow} \\
 \texttt{Packed\allowbreak{}Bitmap\allowbreak{}Memory\allowbreak{}Layout} & Bit-packed succinct layout (LOUDS /\allowbreak{} Su\allowbreak{}RF FST). Stores n entries in \textasciitilde{}n*lg(sigma) bits instead of bytes. Extreme compactness (32x fewer cache-lines than Ao\allowbreak{}S), but higher decode cost per lookup. Foundation: Jacobson LOUDS FOCS 1989 (P09). Modern impl: Su\allowbreak{}RF Apache-2.0. & P09 (Jacobson LOUDS FOCS 1989) \\
 \texttt{Ao\allowbreak{}So\allowbreak{}AMemory\allowbreak{}Layout} & Array-of-Structures-of-Arrays: hybrid layout with block width W=8 (AVX2 lanes). Within block: So\allowbreak{}A (fields contiguous). Across blocks: Ao\allowbreak{}S (blocks strided). Unites SIMD vectorization (So\allowbreak{}A within) with spatial locality (Ao\allowbreak{}S across). Standard in HPC/\allowbreak{}SIMD engines. Convention; no single originating paper, but ISPC idiom. & Code/\allowbreak{}Baseline (HPC/\allowbreak{}SIMD convention) \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
 
-\emph{Contributing sources:} P09~\cite{jacobson1989louds}.
+\emph{Contributing sources:} P09, Abadi et al.\ 2008~\cite{jacobson1989louds,abadi2008columnrow}.
+
+\emph{Related literature:} P06, P11, P12, P32~\cite{schmeisser2022b2tree,rao1999css,rao2000csb,schmidt2025hbm}.
 
 \section{T6 Allocator Axis (T6)}
 
@@ -334,7 +336,7 @@ Variant & Description & Source \\
 \end{longtable}
 \end{scriptsize}
 
-\emph{Contributing sources:} P29, P30~\cite{mckenney2001rcu,michael2004hazard}.
+\emph{Contributing reclamation sources:} P29, P30~\cite{mckenney2001rcu,michael2004hazard}; full allocator corpus A01--A23 see section \enquote{A-Corpus}.
 
 \section{T7 Prefetch Strategy}
 
@@ -374,6 +376,8 @@ Variant & Description & Source \\
 \end{scriptsize}
 
 \emph{Contributing sources:} P01, P07, P21~\cite{leis2013art,wu2019wormhole,chen2001prefetch}.
+
+\emph{Related literature:} P23, P25, P26, P27~\cite{khan2010adaptive,mahling2025hotpath,zhang2024pathprefix,zhang2025hierarchical}.
 
 \section{T8 Concurrency Synchronization Axis (Concurrency Axis T8)}
 
@@ -416,7 +420,7 @@ Variant & Description & Source \\
 \end{longtable}
 \end{scriptsize}
 
-\emph{Contributing sources:} P08, P29, P30~\cite{leis2016olc,mckenney2001rcu,michael2004hazard}.
+\emph{Contributing sources:} Dijkstra 1965, Courtois et al.\ 1971, P08, Michael/\allowbreak{}Scott 1996, Herlihy 1991, P29, P30~\cite{dijkstra1965concurrent,courtois1971readers,leis2016olc,michael1996queue,herlihy1991waitfree,mckenney2001rcu,michael2004hazard}.
 
 \section{T9 Serialization (Encoding and Compression)}
 
@@ -448,12 +452,12 @@ Variant & Description & Source \\
 \texttt{Raw\allowbreak{}Binary\allowbreak{}Serialization} & Raw byte storage layout (memcpy). Baseline without transformation. Minimal CPU cost. Typical for in-memory workloads without compression. Variant: \texttt{serialize\_\allowbreak{}scan()} reads 32-bit fields + order-sensitive checksum. & Code/\allowbreak{}Baseline \\
 \texttt{Var\allowbreak{}Len\allowbreak{}Serialization} & Variable-length encoding with signaling bits (LEB128-Var\allowbreak{}Int). Standard for ART (Leis ICDE 2013 P01). Small values = few bytes. Signaling bits mark byte-length. Data-dependent loop (1-5 bytes). FNV-1a-mix of varint bytes. & P01 \\
 \texttt{Succinct\allowbreak{}Serialization} & Bit-by-bit packing with minimal bit-width (LOUDS/\allowbreak{}Su\allowbreak{}RF). Achieves information-theoretic minimum n*H + o(n) bits. Read-only after build. Optimal for approx-filters + read-heavy. Highest per-element CPU cost (real bit-manipulation). Variant: \texttt{serialize\_\allowbreak{}scan()} with 64-bit accumulator. & P10,P09 \\
-\texttt{Compressed\allowbreak{}Serialization} & Block compression (LZ4/\allowbreak{}Snappy) layered on raw-binary. Trade-off: CPU cost vs IO/\allowbreak{}memory bandwidth. Variant: delta-encoding against predecessor + zigzag-transform (negative delta $\rightarrow$ small unsigned). Typical for LSM-trees. Medium CPU cost. & Code/\allowbreak{}LZ77-Based \\
+\texttt{Compressed\allowbreak{}Serialization} & Block compression (LZ4/\allowbreak{}Snappy) layered on raw-binary. Trade-off: CPU cost vs IO/\allowbreak{}memory bandwidth. Variant: delta-encoding against predecessor + zigzag-transform (negative delta $\rightarrow$ small unsigned). Typical for LSM-trees. Medium CPU cost. & Code/\allowbreak{}LZ77 (Ziv/\allowbreak{}Lempel 1977)~\cite{ziv1977lz77} \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
 
-\emph{Contributing sources:} P01, P09, P10~\cite{leis2013art,jacobson1989louds,zhang2018surf}.
+\emph{Contributing sources:} P01, P09, P10, Ziv/\allowbreak{}Lempel 1977~\cite{leis2013art,jacobson1989louds,zhang2018surf,ziv1977lz77}.
 
 \section{T10 Telemetry and Measurement Instrumentation (axis\_\allowbreak{}11)}
 
