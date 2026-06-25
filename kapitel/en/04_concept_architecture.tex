@@ -118,8 +118,8 @@ same repository but are an executable and a library, respectively.
 
 \begin{enumerate}
   \item \textbf{\texttt{messung\_driver}} (Diplomarbeit/Code) --- the evaluation orchestrator (outer
-  loop): reads the three measurement-series XML configurations (A/B/C), triggers the builder per
-  series, and collects the results for the appendix.
+  loop): reads the permutation-space and measurement-series XML configuration, runs the builder
+  pipeline per mandatory series A/B/C, and collects the results for the appendix.
   \item \textbf{CacheEngineBuilder} (\texttt{cache-engine/apps}) --- an autonomous platform-probing
   system running, via the \texttt{ExperimentDriver} library, the seven-phase pipeline (enumerate,
   codegen, compile, load, execute, measure, persist) --- plus two opt-in phases (hot-compile of
@@ -260,8 +260,8 @@ rest, falls back at compile time (\texttt{resolve\_baustein.hpp}) onto the cache
 building blocks where it does not override an axis; the hybrid
 \texttt{PrtArtSearchEngine<Ts\ldots>} API stays untouched. Its run-time binding is through the
 execution-engine adapter, not through a search-engine layer of its own. PRT-ART contributes its
-own implementations in the page, layout, free-list, prefetch, concurrency-pattern, and measurement
-axes (4+2 pool allocator, distance-estimator prefetch, OLC with reserved value blocks, and the
+own implementations in the page, layout, allocator, prefetch, concurrency-pattern, and measurement
+axes (4+2 pool allocator in the free-list sub-axis, path-oriented (bundle) prefetch, OLC with reserved value blocks, and the
 H1/H2/H3 metrics); for the remaining axes it reuses existing SOTA building blocks via permutation
 configuration.
 
@@ -270,8 +270,9 @@ configuration.
 The builder orchestrates a three-stage evaluation: \textbf{stage~1} (cache-engine only) uses the
 default variant per axis; \textbf{stage~2} (probe only) replaces the overridden axes with the
 probe variants and keeps cache-engine defaults elsewhere; \textbf{stage~3} (full join,
-non-redundant) combines the default and all probe variants. Each stage emits thousands of
-non-redundant permutation binaries, each loaded at run time as an ABI-stable C++23 module (Figure~\ref{fig:three-stage}).
+non-redundant) combines the default and all probe variants. Each stage can emit up to thousands of
+non-redundant permutation binaries, each loaded at run time as an ABI-stable C++23 module; the present
+measurement run materializes only a sparse, capped subset (Figure~\ref{fig:three-stage}).
 
 \begin{figure}[!htbp]
   \centering
@@ -280,7 +281,7 @@ non-redundant permutation binaries, each loaded at run time as an ABI-stable C++
     \node[stage] (s1) at (-4.3,-1.8) {\textbf{Stage~1}\\\scriptsize cache-engine only:\\default per axis};
     \node[stage] (s2) at (0,-1.8) {\textbf{Stage~2}\\\scriptsize probe only:\\overridden axes};
     \node[stage] (s3) at (4.3,-1.8) {\textbf{Stage~3}\\\scriptsize full join:\\default $\times$ probe};
-    \node[draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt] (out) at (0,-3.7) {thousands of non-redundant permutation binaries (ABI modules)};
+    \node[draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt] (out) at (0,-3.7) {non-redundant permutation binaries (ABI modules, capped materialization)};
     \draw[->] (b) -- (s1);
     \draw[->] (b) -- (s2);
     \draw[->] (b) -- (s3);
