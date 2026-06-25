@@ -123,8 +123,8 @@ selben Repository, sind dort aber eine ausführbare Datei bzw.\ eine Bibliothek.
 
 \begin{enumerate}
   \item \textbf{\texttt{messung\_driver}} (Diplomarbeit/Code) --- der Auswertungs-Orchestrator
-  (äußere Schleife): liest die drei Messreihen-XML-Konfigurationen (A/B/C), triggert pro Reihe den
-  Builder und sammelt die Ergebnisse für den Anhang.
+  (äußere Schleife): liest die Permutationsraum- und Messreihen-XML-Konfiguration, durchläuft pro
+  Pflicht-Messreihe A/B/C die Builder-Pipeline und sammelt die Ergebnisse für den Anhang.
   \item \textbf{CacheEngineBuilder} (\texttt{cache-engine/apps}) --- ein autonomes
   Plattform-Ausmess-System, das über die \texttt{ExperimentDriver}-Bibliothek die
   Sieben-Phasen-Pipeline ausführt (Enumerate, Codegen, Compile, Load, Execute, Measure, Persist) ---
@@ -268,8 +268,8 @@ und für die übrigen über einen Compile-Time-Fallback (\texttt{resolve\_bauste
 Cache-Engine-Standardbausteine zurückgreift, wo es eine Achse nicht überschreibt; die hybride
 \texttt{PrtArtSearchEngine<Ts\ldots>}-API bleibt davon unberührt. Die Laufzeit-Anbindung erfolgt
 über den Execution-Engine-Adapter, nicht über eine eigene Such-Engine-Schicht. PRT-ART steuert
-eigene Implementierungen in den Achsen Page, Layout, Free-List, Prefetch, Concurrency-Pattern und
-Measurement bei (4+2-Pool-Allokator, Distance-Estimator-Prefetch, OLC mit reservierten
+eigene Implementierungen in den Achsen Page, Layout, Allocator, Prefetch, Concurrency-Pattern und
+Measurement bei (4+2-Pool-Allokator in der Free-List-Sub-Achse, Path-Oriented-(Bundle-)Prefetch, OLC mit reservierten
 Wert-Blöcken sowie die H1/H2/H3-Metriken); für die übrigen Achsen verwendet er bestehende
 SOTA-Bausteine über die Permutations-Konfiguration wieder.
 
@@ -278,9 +278,10 @@ SOTA-Bausteine über die Permutations-Konfiguration wieder.
 Der Builder orchestriert eine Drei-Stufen-Prüfung: \textbf{Stufe~1} (nur Cache-Engine) nutzt die
 Standard-Variante je Achse; \textbf{Stufe~2} (nur Prüfling) ersetzt die überschriebenen Achsen
 durch die Prüfling-Varianten und behält sonst die Cache-Engine-Standards; \textbf{Stufe~3} (Full
-Join, nicht-redundant) kombiniert die Standard- und alle Prüfling-Varianten. Jede Stufe erzeugt
-tausende nicht-redundante Permutations-Binaries, die zur Laufzeit jeweils als ABI-stabiles
-C++23-Modul geladen werden (Abbildung~\ref{fig:three-stage}).
+Join, nicht-redundant) kombiniert die Standard- und alle Prüfling-Varianten. Jede Stufe kann bis zu
+tausende nicht-redundante Permutations-Binaries erzeugen, die zur Laufzeit jeweils als ABI-stabiles
+C++23-Modul geladen werden; der vorliegende Mess-Lauf materialisiert davon eine spärliche, gedeckelte
+Teilmenge (Abbildung~\ref{fig:three-stage}).
 
 \begin{figure}[!htbp]
   \centering
@@ -289,7 +290,7 @@ C++23-Modul geladen werden (Abbildung~\ref{fig:three-stage}).
     \node[stage] (s1) at (-4.3,-1.8) {\textbf{Stufe~1}\\\scriptsize nur Cache-Engine:\\Standard je Achse};
     \node[stage] (s2) at (0,-1.8) {\textbf{Stufe~2}\\\scriptsize nur Prüfling:\\überschriebene Achsen};
     \node[stage] (s3) at (4.3,-1.8) {\textbf{Stufe~3}\\\scriptsize Full Join:\\Standard $\times$ Prüfling};
-    \node[draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt] (out) at (0,-3.7) {tausende nicht-redundante Permutations-Binaries (ABI-Module)};
+    \node[draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt] (out) at (0,-3.7) {nicht-redundante Permutations-Binaries (ABI-Module, gedeckelt materialisiert)};
     \draw[->] (b) -- (s1);
     \draw[->] (b) -- (s2);
     \draw[->] (b) -- (s3);
