@@ -1,0 +1,20 @@
+# thesis (20260931-overleaf-diplomarbeit) — gitleaks-Konfig
+# LaTeX-Thesis: KEINE echten Secrets erwartet. Die 19 CI-Funde stammen aus dem getrackten,
+# kompilierten PDF (Binaer als Text gescannt = Entropie-FPs) + .eps-Logo + .bib (DOIs/URLs).
+# Loesung: Binaer/generierte/Nicht-Quell-Dateien allowlisten + Entropie-Regel generic-api-key
+# deaktivieren (konsistent mit cache-engine/prt-art/super). Spezifische High-Confidence-Regeln
+# (AWS/GitHub/SSH/private-key etc.) bleiben aktiv = echte Secrets wuerden weiter gefangen.
+
+[extend]
+useDefault = true
+disabledRules = ["generic-api-key"]
+
+[[allowlists]]
+description = "Binaer/generiert/Nicht-Quell (PDF/EPS/BST/CLS = kein sinnvoller Secret-Scan)"
+paths = [
+  '''\.pdf$''',
+  '''\.eps$''',
+  '''\.bst$''',
+  '''\.cls$''',
+  '''(^|/)literatur\.bib$''',
+]
