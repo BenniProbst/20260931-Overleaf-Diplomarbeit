@@ -1,0 +1,64 @@
+# 20260931-overleaf-diplomarbeit (thesis, Projekt 289) — GitLab CI/CD (REV 1, 2026-06-26)
+# ─────────────────────────────────────────────────────────────────────────────
+# P1c (User-Wahl 2026-06-25): „Voll inkl. PDF, latexmk via Infra" — TeXLive ist Runner-Voraussetzung
+# (Infra installiert texlive vor). Bis dahin sind chktex + thesis:pdf per COMDARE_TEXLIVE_AVAILABLE
+# gegatet (sonst sicherer Fail an „fehlt"). gitleaks (hermetisch) laeuft sofort = harter Secrets-Gate.
+#
+# ⚠️ OVERLEAF-HINWEIS: Dieses Repo ist Overleaf-gekoppelt. Diese .gitlab-ci.yml lebt auf `main`.
+#   Overleaf synct typischerweise eigene dated Branches (z.B. overleaf-2026-06-22-1726) -> main bleibt
+#   unberuehrt. Falls dein Sync main ueberschreibt, bitte melden (die Datei ist reversibel).
+
+include:
+  - project: 'comdare/cluster/ci-templates'
+    ref: development
+    file: '/base-pipeline.yml'
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+    - if: '$CI_COMMIT_BRANCH'
+
+stages:
+  - lint
+  - thesis-pdf
+
+variables:
+  GIT_SUBMODULE_STRATEGY: none
+
+# ── Stufe 1: Secrets (gitleaks, hermetisch) — HART, laeuft sofort ──
+lint:secrets:
+  extends: .lint-secrets
+  tags: [baremetal]
+
+# ── LaTeX-Lint (chktex) — TeXLive = Infra-Voraussetzung; advisory (wie clang-format/cppcheck) ──
+lint:latex:
+  stage: lint
+  tags: [baremetal]
+  needs: []
+  allow_failure: true
+  rules:
+    - if: '$COMDARE_TEXLIVE_AVAILABLE == "true"'
+  script:
+    - 'command -v chktex >/dev/null 2>&1 || { echo "chktex (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
+    - 'echo "== chktex ueber alle .tex =="'
+    - 'find . -name "*.tex" -not -path "./_*" -print0 | xargs -0 -r chktex -q -n all || true'
+
+# ── thesis-PDF (latexmk) — TeXLive = Infra-Voraussetzung ──
+thesis:pdf:
+  stage: thesis-pdf
+  tags: [baremetal]
+  needs: []
+  rules:
+    - if: '$COMDARE_TEXLIVE_AVAILABLE == "true"'
+  script:
+    - 'command -v latexmk >/dev/null 2>&1 || { echo "latexmk (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
+    - latexmk -pdf -interaction=nonstopmode -halt-on-error diplomarbeit.tex
+  artifacts:
+    paths:
+      - diplomarbeit.pdf
+    when: always
+    expire_in: 4 weeks
