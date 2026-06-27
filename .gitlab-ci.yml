@@ -1,4 +1,4 @@
-# 20260931-overleaf-diplomarbeit (thesis, Projekt 289) — GitLab CI/CD (REV 1, 2026-06-26)
+# 20260931-overleaf-diplomarbeit (thesis, Projekt 289) — GitLab CI/CD (REV 2, 2026-06-27): §7 Hard-Gate (0 Fehler / <=1 bekannte Warning / .blg ohne Repeated-entry)
 # ─────────────────────────────────────────────────────────────────────────────
 # P1c (User-Wahl 2026-06-25): „Voll inkl. PDF, latexmk via Infra" — TeXLive ist Runner-Voraussetzung
 # (Infra installiert texlive vor). Bis dahin sind chktex + thesis:pdf per COMDARE_TEXLIVE_AVAILABLE
@@ -45,7 +45,8 @@ lint:latex:
   script:
     - 'command -v chktex >/dev/null 2>&1 || { echo "chktex (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
     - 'echo "== chktex ueber alle .tex =="'
-    - 'find . -name "*.tex" -not -path "./_*" -print0 | xargs -0 -r chktex -q -n all || true'
+    # REV2 (Codex-Befund): KEIN `|| true` mehr — chktex-Befunde bleiben als allow_failure-Job sichtbar (advisory, nicht blockierend)
+    - 'find . -name "*.tex" -not -path "./_*" -print0 | xargs -0 -r chktex -q'
 
 # ── thesis-PDF (latexmk) — TeXLive = Infra-Voraussetzung ──
 thesis:pdf:
@@ -54,9 +55,14 @@ thesis:pdf:
   needs: []
   rules:
     - if: '$COMDARE_TEXLIVE_AVAILABLE == "true"'
+  variables:
+    COMDARE_THESIS_KNOWN_WARNINGS: "1"   # §7: genau EINE bekannte (User-akzeptierte) Warning erlaubt; sonst gilt das Dokument als kaputt
   script:
     - 'command -v latexmk >/dev/null 2>&1 || { echo "latexmk (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
     - latexmk -pdf -interaction=nonstopmode -halt-on-error diplomarbeit.tex
+    # ── §7 Hard-Gate: 0 Fehler (latexmk -halt-on-error oben) + <= bekannte Warnings + .blg ohne Repeated-entry/Warning ──
+    - 'test -s diplomarbeit.log || { echo "GATE-FAIL: diplomarbeit.log fehlt (Build unvollstaendig)"; exit 1; }; W=$(grep -c "LaTeX Warning" diplomarbeit.log 2>/dev/null || true); W=${W:-0}; echo "LaTeX-Warnings=$W (erlaubt <=${COMDARE_THESIS_KNOWN_WARNINGS})"; test "$W" -le "${COMDARE_THESIS_KNOWN_WARNINGS}" || { echo "GATE-FAIL: $W LaTeX-Warnings > ${COMDARE_THESIS_KNOWN_WARNINGS} bekannte -> Dokument unordentlich"; exit 1; }'
+    - 'if [ -f diplomarbeit.blg ]; then R=$(grep -ciE "Repeated entry|Warning--" diplomarbeit.blg 2>/dev/null || true); R=${R:-0}; echo "BibTeX .blg Warnings/Repeated=$R"; test "$R" -eq 0 || { echo "GATE-FAIL: .blg unsauber ($R Repeated/Warning) -> Literatur pruefen"; exit 1; }; else echo ".blg nicht vorhanden (keine BibTeX-Stufe in diesem Lauf)"; fi'
   artifacts:
     paths:
       - diplomarbeit.pdf
