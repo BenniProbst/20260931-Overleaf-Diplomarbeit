@@ -176,29 +176,36 @@ allem Messbaren (Abschnitt~\ref{sec:three-layer}), unter der sich der Prüfling 
 
 Das Modell kennt \emph{eine} Architektur --- eine einzige, in sich geschlossene Hierarchie ohne
 Parallel-Bäume. An ihrer Wurzel steht die \texttt{ExecutionEngine} als gemeinsame, ausmessbare
-Abstraktion über allem Messbaren; unter ihr verzweigen sich lediglich \emph{Lebewesen} (Anatomien
-mit Achsen-Organen) und achsenlose \emph{Viren} (etwa reine Graphen-Algorithmen) als Geschwister
-derselben Wurzel (Abbildung~\ref{fig:one-architecture}).
+Abstraktion über allem Messbaren; unter ihr verzweigen sich die anatomie-tragenden \emph{Gattungen} --- der \texttt{SearchAlgorithm}
+(das fokale \emph{Lebewesen}), der schlüssellose \texttt{Container} und der \texttt{Graph} mit
+eigenem, andersartigem Organsatz --- sowie achsenlose \emph{Viren} als Geschwister derselben Wurzel
+(Abbildung~\ref{fig:one-architecture}).
 
 \begin{figure}[!htbp]
   \centering
   \resizebox{0.92\textwidth}{!}{%
   \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
     \node[box] (root) at (0,0) {\texttt{IExecutionEngine}\\{\scriptsize Wurzel: alles Ausmessbare}};
-    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize Lebewesen}};
-    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize Virus (achsenlos, Graph)}};
-    \node[box] (sa) at (-3.4,-3.8) {SearchAlgorithm-Unterklasse\\{\scriptsize $\equiv$ \enquote{Lebewesen}}};
-    \node[box] (body) at (-5.9,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{Körper}: 19 Organe}};
-    \node[box] (abi) at (-0.3,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI-Sicht (\enquote{SearchEngine})}};
+    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize Anatomie-Gattungen}};
+    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize Virus (achsenlos)}};
+    \node[box] (sa) at (-5.6,-3.8) {SearchAlgorithm-Gattung\\{\scriptsize $\equiv$ \enquote{Lebewesen} (Säugetier)}};
+    \node[box] (cont) at (-2.0,-3.8) {Container-Gattung\\{\scriptsize Set/Sequence/Adapter/View}};
+    \node[box] (graph) at (1.5,-3.8) {Graph-Gattung\\{\scriptsize eigener Organsatz}};
+    \node[box] (body) at (-7.0,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{Körper}: 19 Organe}};
+    \node[box] (abi) at (-4.6,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI-Sicht (\enquote{SearchEngine})}};
     \draw[->] (root) -- (ana);
     \draw[->] (root) -- (vir);
     \draw[->] (ana) -- (sa);
+    \draw[->] (ana) -- (cont);
+    \draw[->] (ana) -- (graph);
     \draw[->] (sa) -- (body);
     \draw[->] (sa) -- (abi);
   \end{tikzpicture}}
-  \caption{Die \emph{eine} Architektur als einzige Hierarchie ohne Parallel-Bäume:
-  \texttt{SearchAlgorithm} \emph{ist} das Lebewesen, seine Anatomie ist sein \emph{Körper}, und
-  \enquote{SearchEngine} ist nur dessen ABI-Laufzeit-Sicht.}\label{fig:one-architecture}
+  \caption{Die \emph{eine} Architektur als einzige Hierarchie ohne Parallel-Bäume: unter der Wurzel
+  verzweigen die anatomie-tragenden \emph{Gattungen} (SearchAlgorithm, Container, Graph) und die
+  achsenlosen \emph{Viren}; \texttt{SearchAlgorithm} \emph{ist} das fokale Lebewesen (Säugetier), seine
+  Anatomie ist sein \emph{Körper}, und \enquote{SearchEngine} nur dessen ABI-Laufzeit-Sicht. Container
+  (schlüsselloser Speicher) und Graph tragen eigene Organsätze.}\label{fig:one-architecture}
 \end{figure}
 
 Ein Suchalgorithmus ist in diesem Modell ein \emph{Lebewesen}, und \enquote{Lebewesen} und
@@ -221,6 +228,30 @@ gemessen über genau diese eine Beobachter-Schnittstelle über alle neunzehn Org
 eine einzige Kette --- Wurzel (\texttt{ExecutionEngine}) über das Gattungs-Prüf-Dock zu dem
 Lebewesen, das gleichbedeutend mit \texttt{SearchAlgorithm} ist und dessen Körper die Anatomie mit
 neunzehn Achsen ist.
+
+\subsection{Drei Ebenen und die Verdrahtung der Organe}\label{ssec:three-levels}
+
+Innerhalb dieser einen Hierarchie lassen sich drei Ebenen unterscheiden. Die oberste ist die
+\emph{Gattung} --- das nach außen sichtbare Algorithmus-Interface (das Prüf-Dock):
+\texttt{SearchAlgorithm} (das Schlüssel-Wert-Interface und der Fokus dieser Arbeit),
+\texttt{Container} (schlüsselloser Speicher) und \texttt{Graph}. Darunter liegt die
+\emph{Gattungs-Unterklasse}, die einen festen Achsen-Satz festlegt: unter \texttt{SearchAlgorithm} die
+volle Neunzehn-Achsen-Anatomie (in der biologischen Lesart das \enquote{Säugetier}), unter
+\texttt{Container} die Unterklassen Set, Sequence, Adapter und View (metaphorisch \enquote{Vogel},
+\enquote{Reptil}, \enquote{Wirbelloses}, \enquote{Pflanze}); \texttt{Graph} trägt einen eigenen, andersartigen Organsatz. Die unterste Ebene bilden die
+\emph{Organe} selbst --- bei der SearchAlgorithm-Anatomie die neunzehn Achsen (T0--T18), die innerhalb dieser Unterklasse permutiert
+werden.
+
+Die so eingeführte Anatomie ist dabei mehr als die bloße Aufzählung dieser Organe: sie ist ihre
+\emph{Verdrahtung}. Jedes Organ exportiert ein generalisiertes Interface, über das die übrigen
+Organe seine Dienste in Anspruch nehmen, ohne dessen konkrete Belegung zu kennen. So stellt etwa
+das Allokations-Organ ein gemeinsames Allokations-Interface bereit, das Knoten-Layout, Wert-Ablage
+und Serialisierung für ihre Speicheranforderungen nutzen --- unabhängig davon, welcher konkrete
+Allokator (Abschnitt~\ref{sec:axes}) dahinterliegt. Ein bekannter Suchalgorithmus erscheint in
+diesem Modell folglich nicht als monolithischer Block, sondern als eine bestimmte Verschaltung
+generischer Organ-Interfaces. Genau diese Verschaltung erlaubt es, ein einzelnes Organ
+auszutauschen --- und damit den Permutationsraum aus Abschnitt~\ref{sec:axes} aufzuspannen ---,
+ohne die übrigen Organe neu zu implementieren.
 
 \section{ABI-stabiles C++23-Modul-Interface}\label{sec:abi}
 
@@ -249,7 +280,7 @@ template<class... Ts> class SearchEngine;   // ABI-Laufzeit-Sicht des Lebewesens
 \section{Die Bausteine-Achsen}\label{sec:axes}
 
 Nach der N-Phasen-Erweiterung und der Konsolidierung zur Suchalgorithmus-Anatomie umfasst die
-Matrix \textbf{neunzehn Hauptachsen (T0--T18) plus etwa siebenundfünfzig Sub-Achsen} --- die siebzehn
+Matrix \textbf{neunzehn Hauptachsen (T0--T18) plus etwa vierundsechzig Sub-Achsen} --- die siebzehn
 Such-Achsen (Search-Algorithm, Cache-Traversal, Mapping, Path-Compression, Node-Type, Memory-Layout,
 Allocator, Prefetch, Concurrency, Serialization, Telemetry, Value-Handle, ISA, Index-Organization,
 I/O-Dispatch, Migration, Filter) plus die beiden Queuing-Achsen, genau die Organe, die das
@@ -266,8 +297,8 @@ und für die übrigen über einen Compile-Time-Fallback (\texttt{resolve\_bauste
 Cache-Engine-Standardbausteine zurückgreift, wo es eine Achse nicht überschreibt; die hybride
 \texttt{PrtArtSearchEngine<Ts\ldots>}-API bleibt davon unberührt. Die Laufzeit-Anbindung erfolgt
 über den Execution-Engine-Adapter, nicht über eine eigene Such-Engine-Schicht. PRT-ART steuert
-eigene Implementierungen in den Achsen Page, Layout, Allocator, Prefetch, Concurrency-Pattern und
-Measurement bei (4+2-Pool-Allokator in der Free-List-Sub-Achse, Path-Oriented-(Bundle-)Prefetch, OLC mit reservierten
+eigene Implementierungen in der Build-Achse Page-Type sowie den Organen Layout, Allocator, Prefetch,
+Concurrency-Pattern und Telemetry bei (4+2-Pool-Allokator in der Free-List-Sub-Achse, Path-Oriented-(Bundle-)Prefetch, OLC mit reservierten
 Wert-Blöcken sowie die H1/H2/H3-Metriken); für die übrigen Achsen verwendet er bestehende
 SOTA-Bausteine über die Permutations-Konfiguration wieder.
 
@@ -327,7 +358,8 @@ derselben Konfiguration. Tabelle~\ref{tab:stage-series} fasst diese Zuordnung zu
 
   \smallskip
   {\footnotesize Die drei Prüf-Stufen bilden nicht eins-zu-eins, sondern in dieser Zuordnung auf die
-  drei Pflicht-Messreihen~A/B/C ab; Reihe~C ist stufen-übergreifend.\par}
+  drei Pflicht-Messreihen~A/B/C ab; Reihe~C ist build-/versionsübergreifend (nicht an eine einzelne
+  Prüfstufe gebunden).\par}
 \end{table}
 
 Aus den feingliedrigen Messergebnissen liefert die Pipeline

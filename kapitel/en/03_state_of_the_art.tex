@@ -137,7 +137,7 @@ reference to the origin living being. The proposed framework maintains
 \emph{nineteen composition axes} (T0--T18) as well as three \emph{build axes} (page type, SIMD
 extension, hardware profile); many axes are refined into sub-axes and provide other axes with
 distributed interfaces for carrying out and optimizing their detail operations. The sub-axis labels
-(e.g.\ SA1--SA3 or 6.1--6.5) denote the structuring level of this thesis's building-block matrix
+(e.g.\ SA1--SA4 or AA1--AA7) denote the structuring level of this thesis's building-block matrix
 (Appendix~\ref{app:blocks}); in code they are realized as per-topic variant families
 (\texttt{axis\_<nn>\_<name>/}). Table~\ref{tab:axes-overview} gives the overview of which
 publications contribute an organ per axis; the following subsections elaborate them grouped
@@ -154,36 +154,36 @@ P20--P28, synchronization P08/P29--P30, TU-Dresden hardware P31--P33) thereby ap
     \toprule
     \textbf{Axis} & \textbf{Sub-axes} & \textbf{Contributing sources} \\
     \midrule
-    T0 search\_algo & SA1--SA3 & P01,P02,P05,P07,P10; k-ary (TUD 2009), interpol., Eytzinger, skip list, B-tree, hash \\
-    T1 cache\_traversal & 3.B & cache-line default; P17,P21,P32 \\
-    T2 mapping & 3.M & P03,P07; CE baseline \\
-    T3 path\_compression & --- & P01,P02,P04,P05,P09 \\
+    T0 search\_algo & SA1--SA4 & P01,P02,P05,P07,P10; k-ary (TUD 2009), interpol., Eytzinger, skip list, B-tree, hash \\
+    T1 cache\_traversal & CT1--CT2 & cache-line default; P17,P21,P32 \\
+    T2 mapping & MP1--MP2 & P03,P07; CE baseline \\
+    T3 path\_compression & PC1--PC3 & P01,P02,P04,P05,P09 \\
     T4 node\_type & NT1--NT3 & P01,P02,P03,P04,P05,P06,P11,P12,P13 \\
     T5 memory\_layout & HM1--HM4 & P06,P09,P11,P12,P32; default \\
-    T6 allocator & 6.1--6.5 & A01--A23; P29,P30 \\
+    T6 allocator & AA1--AA7 & A01--A23; P29,P30 \\
     T7 prefetch & PF1--PF3 & P07,P21,P23,P25,P26,P27 \\
-    T8 concurrency & 8.1,8.2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
-    T9 serialization & --- & P01,P09,P10; LZ77 \\
+    T8 concurrency & CC1--CC2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
+    T9 serialization & SR1--SR3 & P01,P09,P10; LZ77 \\
     \midrule
-    T10 telemetry & 11.X1--X4 & P01,P02,P16,P26,P28; HdrHistogram (Gil Tene) \\
-    T11 value\_handle & --- & P01,P03,P07,P29 \\
-    T12 isa & --- & x86-64/AArch64/Power/RISC-V (vendor spec) \\
-    T13 index\_organization & --- & Bayer/McCreight,Comer,Oracle \\
+    T10 telemetry & TM1--TM3 & P01,P02,P16,P26,P28; HdrHistogram (Gil Tene) \\
+    T11 value\_handle & VH1--VH3 & P01,P03,P07,P29 \\
+    T12 isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (vendor spec) \\
+    T13 index\_organization & IO1--IO3 & Bayer/McCreight,Comer,Oracle \\
     T14 io\_dispatch & IO1--IO3 & Stonebraker,Crotty; baselines \\
     T15 migration\_policy & MG1--MG3 & anti-caching,NVM tiering,LeCaR; none \\
     T16 filter & FT1--FT3 & Bloom,Cuckoo,P10,Xor \\
-    T17 queuing\_q1 & --- & Disruptor, Bw-Tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
-    T18 queuing\_q2 & --- & eager/lazy/watermark/Kafka/RocksDB \\
+    T17 queuing\_q1 & QS1--QS6 & Disruptor, Bw-Tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
+    T18 queuing\_q2 & FS1--FS4 & eager/lazy/watermark/Kafka/RocksDB \\
     \midrule
     Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (26) \\
-    Build simd (09b) & --- & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
-    Build hardware (12) & 12.1--12.5 & HW strategy per paper (Tab.~\ref{tab:hw-sched}) \\
+    Build simd (09b) & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
+    Build hardware (12) & HW1--HW4 & HW strategy per paper (Tab.~\ref{tab:hw-sched}) \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsection{Search and Navigation Organs}\label{ssec:sota-ax-nav}
-The \emph{search axis} (T0, sub-axes SA1--SA3) carries the most organs: as original bindings ART
+The \emph{search axis} (T0, sub-axes SA1--SA4) carries the most organs: as original bindings ART
 (P01~\cite{leis2013art}), HOT (P02~\cite{binna2018hot}), START (P05~\cite{fent2020start}), SuRF
 (P10~\cite{zhang2018surf}), and Wormhole (P07~\cite{wu2019wormhole}); in addition generic search
 \emph{methods}: k-ary search (Schlegel/Gemulla/Lehner~\cite{schlegel2009kary}, TU Dresden),
@@ -213,10 +213,11 @@ through pointer-free contiguous arrangement (P11 CSS)~\cite{rao1999css} and sibl
 CSB\textsuperscript{+})~\cite{rao2000csb} to the embedded tree (P06)~\cite{schmeisser2022b2tree},
 bit-packed LOUDS (P09 Jacobson)~\cite{jacobson1989louds}, and the huge-page variants
 (P32)~\cite{schmidt2025hbm}. The \emph{allocator axis} (T6) is the most densely populated, with the
-corpus A01--A23, and is refined into five sub-axes: 6.1 allocation strategy (slab, buddy, region,
-pool, object cache), 6.2 reclamation (epoch, RCU P29, hazard pointers P30, QSBR), 6.3 NUMA affinity
-(P31 Ungethuem)~\cite{ungethuem2017survey}, 6.4 huge-page policy, and 6.5 free-list organization
-(size-class, best-/first-fit, segregated). Table~\ref{tab:allocator-profiles} lists the ten runnable
+corpus A01--A23, and is refined into seven sub-axes: AA1 free-list topology (size-class,
+best-/first-fit, segregated), AA2 size-class schema, AA3 thread locality/NUMA affinity (P31
+Ungethuem)~\cite{ungethuem2017survey}, AA4 synchronization, AA5 allocation strategy (slab, buddy,
+region, pool, object cache), AA6 reclamation (epoch, RCU P29, hazard pointers P30, QSBR), and AA7
+fragmentation strategy; the code provides 25 allocator implementations. Table~\ref{tab:allocator-profiles} lists the ten runnable
 allocator profiles with license and workload affinity. The \emph{value axis} (T11, 5 building
 blocks) distinguishes inline value (P01)~\cite{leis2013art}, pointer, redirect-to-node or external
 pool (P07 Wormhole)~\cite{wu2019wormhole}, versioned pointer (P03 Masstree)~\cite{mao2012masstree},
@@ -234,12 +235,12 @@ instruction stems from Wormhole (P07)~\cite{wu2019wormhole}. The \emph{ISA axis}
 axis \emph{SIMD extension} (09b) carry the vendor specifications: x86-64, AArch64, Power, and RISC-V
 with SSE2/AVX2/AVX-512, NEON/SVE2, and RVV, as well as --- separately, as a GPU/accelerator profile
 (SIMT, not CPU SIMD) --- CUDA. Two overarching strategy axes record what an algorithm actively
-\emph{uses} and how it \emph{distributes} work: the \emph{hardware strategy} (axis 12; sub 12.1 SIMD
-family, 12.2 cache-level targeting, 12.3 NUMA, 12.4 prefetch hardware, 12.5 atomic family) and the
-\emph{scheduling strategy} (axis 13; sub 13.1 worker-pool layout, 13.2 SIMD-worker limit ---
-typically two of $N$ cores, due to hardware ---, 13.3 heterogeneous P-/E-core dispatch, 13.4
-co-routine, 13.5 batch granularity). Table~\ref{tab:hw-sched} assigns both per paper. The
-\emph{telemetry axis} (T10, sub 11.X1--X4, 6 building blocks) instantiates the density tracker
+\emph{uses} and how it \emph{distributes} work: the \emph{hardware strategy} (SIMD
+family, cache-level targeting, NUMA, prefetch hardware, atomic family) and the
+\emph{scheduling strategy} (worker-pool layout, SIMD-worker limit ---
+typically two of $N$ cores, due to hardware ---, heterogeneous P-/E-core dispatch,
+co-routine, batch granularity). Table~\ref{tab:hw-sched} assigns both per paper. The
+\emph{telemetry axis} (T10, sub TM1--TM3, 6 building blocks) instantiates the density tracker
 (P01)~\cite{leis2013art}, the insert counter (P02)~\cite{binna2018hot}, the HdrHistogram (Gil Tene)
 for p50/p95/p99, the path-read counter (P26)~\cite{zhang2024pathprefix}, and the probability hints
 (P16/P17 Bender). The coherence-friendly counter variants --- leaf-only, sampling, and offline
@@ -252,7 +253,7 @@ the counter in all (including inner) nodes counts as an \emph{anti-pattern} (cac
   \caption{Target hardware and scheduling profiles assigned in this thesis per reconstructed SOTA method (selection; the profiles are reconstruction targets of this thesis, not necessarily original-paper properties); the full catalogue is in Appendix~\ref{app:blocks}.}\label{tab:hw-sched}
   \begin{tabular}{@{}l p{4.6cm} p{5.6cm}@{}}
     \toprule
-    \textbf{Paper} & \textbf{Hardware strategy (axis 12)} & \textbf{Scheduling strategy (axis 13)} \\
+    \textbf{Paper} & \textbf{Hardware strategy} & \textbf{Scheduling strategy} \\
     \midrule
     P01 ART & AVX2, L1-aware, none, CAS & thread-per-core \\
     P02 HOT & AVX2 (bit-vector), L1-aware, CAS & thread-per-core \\

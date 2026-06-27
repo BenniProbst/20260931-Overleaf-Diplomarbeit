@@ -169,8 +169,9 @@ measurable (Section~\ref{sec:three-layer}), under which the probe and every engi
 
 The model has \emph{one} architecture --- a single, self-contained hierarchy with no parallel trees.
 At its root stands the \texttt{ExecutionEngine} as the common, measurable abstraction over
-everything measurable; beneath it the only branching is between \emph{living organisms} (anatomies
-with axis organs) and axis-less \emph{viruses} (e.g.\ pure graph algorithms), as siblings of the
+everything measurable; beneath it branch the anatomy-bearing \emph{genera} --- the \texttt{SearchAlgorithm}
+(the focal \emph{living organism}), the keyless \texttt{Container}, and the \texttt{Graph} with its own,
+different organ set --- as well as axis-less \emph{viruses}, as siblings of the
 same root (Figure~\ref{fig:one-architecture}).
 
 \begin{figure}[!htbp]
@@ -178,20 +179,26 @@ same root (Figure~\ref{fig:one-architecture}).
   \resizebox{0.92\textwidth}{!}{%
   \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
     \node[box] (root) at (0,0) {\texttt{IExecutionEngine}\\{\scriptsize root: everything measurable}};
-    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize living organism}};
-    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize virus (axis-less, graph)}};
-    \node[box] (sa) at (-3.4,-3.8) {SearchAlgorithm subclass\\{\scriptsize $\equiv$ \enquote{organism}}};
-    \node[box] (body) at (-5.9,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{body}: 19 organs}};
-    \node[box] (abi) at (-0.3,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI view (\enquote{SearchEngine})}};
+    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize anatomy genera}};
+    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize virus (axis-less)}};
+    \node[box] (sa) at (-5.6,-3.8) {SearchAlgorithm genus\\{\scriptsize $\equiv$ \enquote{organism} (mammal)}};
+    \node[box] (cont) at (-2.0,-3.8) {Container genus\\{\scriptsize Set/Sequence/Adapter/View}};
+    \node[box] (graph) at (1.5,-3.8) {Graph genus\\{\scriptsize own organ set}};
+    \node[box] (body) at (-7.0,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{body}: 19 organs}};
+    \node[box] (abi) at (-4.6,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI view (\enquote{SearchEngine})}};
     \draw[->] (root) -- (ana);
     \draw[->] (root) -- (vir);
     \draw[->] (ana) -- (sa);
+    \draw[->] (ana) -- (cont);
+    \draw[->] (ana) -- (graph);
     \draw[->] (sa) -- (body);
     \draw[->] (sa) -- (abi);
   \end{tikzpicture}}
-  \caption{The \emph{one} architecture as a single hierarchy with no parallel trees:
-  \texttt{SearchAlgorithm} \emph{is} the organism, its anatomy is its \emph{body}, and
-  \enquote{SearchEngine} is only its ABI runtime view.}\label{fig:one-architecture}
+  \caption{The \emph{one} architecture as a single hierarchy with no parallel trees: beneath the root
+  branch the anatomy-bearing \emph{genera} (SearchAlgorithm, Container, Graph) and the axis-less
+  \emph{viruses}. \texttt{SearchAlgorithm} \emph{is} the focal organism (mammal), its anatomy is its
+  \emph{body}, and \enquote{SearchEngine} is only its ABI runtime view; Container (keyless storage)
+  and Graph carry their own organ sets.}\label{fig:one-architecture}
 \end{figure}
 
 In this model a search algorithm is a \emph{living organism}, and ``organism'' and
@@ -213,6 +220,28 @@ same organism, measured through exactly this one observer interface over all nin
 There is thus a single chain --- root (\texttt{ExecutionEngine}) through the genus test dock down
 to the organism, which is the same thing as \texttt{SearchAlgorithm} and whose body is the anatomy
 with its nineteen axes.
+
+\subsection{Three Levels and the Wiring of the Organs}\label{ssec:three-levels}
+
+Within this one hierarchy three levels can be distinguished. The topmost is the \emph{genus} --- the
+externally visible algorithm interface (the test dock): \texttt{SearchAlgorithm} (the key--value
+interface and the focus of this thesis), \texttt{Container} (keyless storage), and \texttt{Graph}.
+Beneath it lies the \emph{genus subclass}, which fixes an axis set: under \texttt{SearchAlgorithm}
+the full nineteen-axis anatomy (in the biological reading the ``mammal''), under \texttt{Container}
+the subclasses Set, Sequence, Adapter, and View (metaphorically ``bird'', ``reptile'', ``invertebrate'',
+``plant''); \texttt{Graph} carries its own, different organ set. The lowest level is formed by the
+\emph{organs} themselves --- for the SearchAlgorithm anatomy the nineteen axes (T0--T18) that are
+permuted within this subclass.
+
+The anatomy thus introduced is more than the mere enumeration of these organs: it is their
+\emph{wiring}. Each organ exports a generalized interface through which the remaining organs draw on
+its services without knowing its concrete assignment. The allocation organ, for instance, provides a
+shared allocation interface that node layout, value storage, and serialization use for their memory
+needs --- regardless of which concrete allocator (Section~\ref{sec:axes}) sits behind it. A known
+search algorithm therefore appears in this model not as a monolithic block but as a particular
+interconnection of generic organ interfaces. It is precisely this interconnection that makes it
+possible to exchange a single organ --- and thereby to span the permutation space of
+Section~\ref{sec:axes} --- without re-implementing the remaining organs.
 
 \section{ABI-Stable C++23 Module Interface}\label{sec:abi}
 
@@ -241,7 +270,7 @@ template<class... Ts> class SearchEngine;   // ABI runtime view of the organism
 \section{The Building-Block Axes}\label{sec:axes}
 
 After the N-phase extension and the consolidation into the search-algorithm anatomy, the matrix
-comprises \textbf{nineteen main axes (T0--T18) plus roughly fifty-seven sub-axes} --- the seventeen
+comprises \textbf{nineteen main axes (T0--T18) plus roughly sixty-four sub-axes} --- the seventeen
 search axes (search-algorithm, cache-traversal, mapping, path-compression, node-type, memory-layout,
 allocator, prefetch, concurrency, serialization, telemetry, value-handle, ISA, index-organization,
 I/O-dispatch, migration, filter) plus the two queuing axes, exactly the organs that the
@@ -258,8 +287,8 @@ rest, falls back at compile time (\texttt{resolve\_baustein.hpp}) onto the cache
 building blocks where it does not override an axis; the hybrid
 \texttt{PrtArtSearchEngine<Ts\ldots>} API stays untouched. Its run-time binding is through the
 execution-engine adapter, not through a search-engine layer of its own. PRT-ART contributes its
-own implementations in the page, layout, allocator, prefetch, concurrency-pattern, and measurement
-axes (4+2 pool allocator in the free-list sub-axis, path-oriented (bundle) prefetch, OLC with reserved value blocks, and the
+own implementations in the build-axis page-type as well as the layout, allocator, prefetch,
+concurrency-pattern, and telemetry organs (4+2 pool allocator in the free-list sub-axis, path-oriented (bundle) prefetch, OLC with reserved value blocks, and the
 H1/H2/H3 metrics); for the remaining axes it reuses existing SOTA building blocks via permutation
 configuration.
 
@@ -317,7 +346,8 @@ same configuration. Table~\ref{tab:stage-series} summarizes this mapping.
 
   \smallskip
   {\footnotesize The three evaluation stages map not one-to-one but in this assignment onto the three
-  mandatory measurement series~A/B/C; series~C is cross-stage.\par}
+  mandatory measurement series~A/B/C; series~C is build-/version-spanning (not bound to a single
+  test stage).\par}
 \end{table}
 
 From the
