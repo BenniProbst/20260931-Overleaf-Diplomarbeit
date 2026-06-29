@@ -8,14 +8,35 @@ Search trees and index structures underpin modern data-intensive systems --- fro
 file systems to language processing. At the same time, today's processors are dominated by the memory hierarchy:
 not the number of operations but their cache behaviour determines run time. From this tension arises the guiding
 question of this thesis.
-\bildPH{B1: Cache wall}{Latency pyramid registers$\to$L1$\to$L2$\to$L3$\to$RAM; the widening gap motivates cache-aware search structures.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, lvl/.style={draw, minimum height=0.55cm, anchor=west, align=left}]
+  \node[lvl, minimum width=1.6cm, fill=blue!22] at (0,2.0)  {registers};
+  \node[lvl, minimum width=2.4cm, fill=blue!17] at (0,1.4)  {L1 --- $\sim$1\,ns};
+  \node[lvl, minimum width=3.4cm, fill=blue!13] at (0,0.8)  {L2 --- $\sim$4\,ns};
+  \node[lvl, minimum width=4.6cm, fill=blue!9]  at (0,0.2)  {L3 --- $\sim$15\,ns};
+  \node[lvl, minimum width=6.0cm, fill=blue!5]  at (0,-0.4) {main memory --- $\sim$100\,ns};
+  \draw[->,thick] (6.4,2.2) -- (6.4,-0.6) node[midway,right,align=left]{latency\\grows};
+\end{tikzpicture}
+\caption{The ``cache wall'': access latency grows across the memory hierarchy by about two orders of magnitude --- not the number of operations but the cache behaviour determines run time.}\label{fig:cache-wall}
+\end{figure}
 \inhaltPH{Motivation from 01\_introduction (sec:motivation), search-tree-first}
 
 \section{Problem Statement}\label{sec:problem}
 In today's search structures cache-awareness is either hard-wired or ignored entirely; above all, however, one
 cannot \emph{separate} which individual design decision benefits which load pattern --- the \emph{separability
 problem}, the central thread of this thesis.
-\bildPH{B2: Separability problem}{Monolithic algorithm (black box) vs. algorithm decomposed into axes: which component contributes to performance?}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth]
+  \node[draw, fill=black!75, text=white, minimum width=2.4cm, minimum height=2.2cm] (mono) at (0,0){algorithm\\(monolith)\\[1mm]{\Large ?}};
+  \node[font=\scriptsize] at (0,-1.65){which part helps?};
+  \draw[->,very thick] (1.5,0) -- (2.9,0);
+  \node[draw, fill=green!12, minimum width=2.2cm] (a1) at (4.9,0.85){node type};
+  \node[draw, fill=green!12, minimum width=2.2cm] (a2) at (4.9,0.0){layout};
+  \node[draw, fill=green!12, minimum width=2.2cm] (a3) at (4.9,-0.85){allocator};
+  \node[font=\scriptsize] at (4.9,-1.65){each axis measurable in isolation};
+\end{tikzpicture}
+\caption{The separability problem: as a monolith it remains unclear which design decision matters; only the decomposition into orthogonal axes makes each contribution measurable in isolation.}\label{fig:separability}
+\end{figure}
 \inhaltPH{Problem statement from 01\_introduction (sec:problem)}
 
 \section{Research Questions}\label{sec:rqs}
