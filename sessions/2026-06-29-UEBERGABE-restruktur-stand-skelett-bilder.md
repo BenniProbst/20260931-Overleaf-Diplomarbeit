@@ -54,6 +54,7 @@
 - **[NIEDRIG, bekannt] `\\`-in-Gruppe-Gotcha** (TikZ) · LF→CRLF-Warnungen sind harmlos · `\showhyphens`-Warnung ist benign (microtype/Kernel).
 
 ## 5. EMPFOHLENE Reihenfolge nächste Session (Stufe 3 vorbereiten!)
+> **User-Entscheid 2026-06-29:** ZUERST Schritt 3 (restliche Konzept-Bilder SYNTH/GATT/PATTERN/USAGE → Kap. 2 visuell komplett), DANN Schritt 1–2 (Alt→Neu-Mapping) und Schritt 4 (Inhalts-Umzug).
 1. **ZUERST: explizites Alt→Neu-Mapping** als Tabelle anlegen (jeder Alt-Abschnitt + jede Tabelle + jede Figur → Ziel-Abschnitt im Neu-Skelett), inkl. der nicht-verankerten Brücken (§4). Erst danach Inhalt bewegen — sonst Verlust.
 2. **Tabellen-Politik final** (s. §6) + `tab:stage-series` zuordnen.
 3. **Restliche Konzept-Bilder** (SYNTH/GATT/PATTERN/USAGE) — sofort machbar, datenunabhängig.
@@ -62,9 +63,9 @@
 6. **Stufe 4 — Anhänge** reaktivieren + anpassen (zuletzt).
 7. Jede Charge: **commit+push BEIDE Remotes** + BASE-Pointer bumpen + **Codex-Review** vor „fertig".
 
-## 6. OFFENE FRAGEN an den User (in nächster Session zuerst klären)
-1. **Tabellen-Politik:** „ALLE Tabellen → Kap. 3" wörtlich (auch `tab:workload-routing`/`tab:datasets`), ODER bleiben die **Evaluations-Tabellen in Kap. 5** (Methodik) und nur die **SOTA-/Achsen-Kataloge** wandern nach Kap. 3? (Empfehlung: Eval-Tabellen→Kap. 5.)
-2. **Nächster Schritt:** zuerst die **restlichen Konzept-Bilder** (SYNTH/GATT/PATTERN/USAGE) fertig, ODER zuerst das **Alt→Neu-Mapping + Stufe-3-Inhalts-Umzug** (Codex-Empfehlung)?
+## 6. ENTSCHIEDEN (User 2026-06-29)
+1. **Tabellen-Politik:** Die **Evaluations-Tabellen** `tab:workload-routing` + `tab:datasets` bleiben in **Kap. 5** (Methodik). Die **SOTA-/Achsen-Kataloge** (`tab:axes-overview`, `tab:dialectic`, `tab:hw-sched`, `tab:wl-frameworks`, `tab:lp-catalog`, `tab:sota-profiles`, `tab:allocator-profiles`) **und** `tab:stage-series` → **Kap. 3**.
+2. **Nächster Schritt:** **zuerst die restlichen Konzept-Bilder** (SYNTH/GATT/PATTERN/USAGE → Kap. 2 visuell komplett), **danach** Alt→Neu-Mapping + Stufe-3-Inhalts-Umzug.
 
 ## 7. Architektur-Konsolidierungen (gelten weiter — NICHT verwässern)
 - Metapher-Kanon: **Lebewesen ≡ SearchAlgorithm** (eng) · **Anatomie = Verdrahtung zwischen Organen** · **3 Ebenen** (Gattung→Tier-Unterklasse→Organe) · **Graph = 3. Gattung** (nicht achsenloser Virus) · 19 Achsen / AA1–AA7-Allocator / Sub-Achsen-Audit (Detail im Glossar `anhang/*/C_glossary` + Sessions 06-27/06-29).
