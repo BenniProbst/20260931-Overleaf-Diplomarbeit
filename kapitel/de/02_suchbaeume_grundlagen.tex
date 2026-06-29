@@ -88,7 +88,27 @@ Messens.
 \end{tikzpicture}
 \caption{Die Anatomie-Brücke: wie ein Lebewesen aus zusammenwirkenden Organen besteht, ist ein Suchalgorithmus eine Komposition von Achsen-Organen; das Mess-System übernimmt die Rolle der medizinischen Diagnostik und vermisst jedes Organ einzeln.}\label{fig:anatomy-bridge}
 \end{figure}
-\bildPH{SYNTH: Synthese Stand der Technik $\to$ Achsen}{Bausteine der Paper-Algorithmen fließen in die gemeinsame Achsen-Matrix.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  paper/.style={draw,rounded corners,fill=orange!12,minimum width=1.8cm,minimum height=0.52cm},
+  ax/.style={draw,fill=green!12,minimum width=2.2cm,minimum height=0.5cm,font=\scriptsize}]
+  \node[font=\scriptsize,text=gray] at (0,2.95){Stand der Technik};
+  \node[paper] (p1) at (0,2.2){ART};
+  \node[paper] (p2) at (0,1.5){HOT};
+  \node[paper] (p3) at (0,0.8){SuRF};
+  \node[paper] (p4) at (0,0.1){Masstree};
+  \node[paper] (p5) at (0,-0.6){Bw-Baum};
+  \node[font=\scriptsize,text=gray] at (5.6,2.95){unsere Achsen-Matrix};
+  \node[ax] (x1) at (5.6,2.2){Knotentyp};
+  \node[ax] (x2) at (5.6,1.5){Layout};
+  \node[ax] (x3) at (5.6,0.8){Allokator};
+  \node[ax] (x4) at (5.6,0.1){Prefetch};
+  \node[ax] (x5) at (5.6,-0.6){Nebenläufigkeit};
+  \foreach \p in {p1,p2,p3,p4,p5}{\foreach \x in {x1,x2,x3,x4,x5}{\draw[gray!22,->] (\p.east)--(\x.west);}}
+  \node[align=center,font=\scriptsize] at (2.8,-1.7){jeder Algorithmus zerfällt in Achsen-Belegungen ---\\die Matrix erntet die Bausteine des gesamten Korpus};
+\end{tikzpicture}
+\caption{Synthese Stand der Technik $\to$ Achsen: die Entwurfsbausteine der bekannten Verfahren werden in orthogonale Achsen zerlegt; jede Achse sammelt die Beiträge des gesamten Korpus --- die Umkehrung von Abbildung~\ref{fig:design-space} (dort ist ein Algorithmus ein Punkt, hier eine Achse ein Sammelbecken).}\label{fig:synth}
+\end{figure}
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   organ/.style={draw,circle,minimum size=1.25cm,fill=green!7,inner sep=0pt}]
@@ -105,6 +125,27 @@ Messens.
 \end{figure}
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  org/.style={draw,rounded corners,fill=green!8,minimum width=1.8cm,minimum height=0.72cm,font=\scriptsize},
+  prov/.style={draw,rounded corners,fill=blue!12,minimum width=2.0cm,minimum height=0.82cm,font=\scriptsize,very thick}]
+  \node[prov] (alloc) at (0,0){Allokator\\{\scriptsize T6}};
+  \node[org] (layout) at (-3.0,1.5){Layout\\{\scriptsize T5}};
+  \node[org] (value) at (3.0,1.5){Wert-Hülle\\{\scriptsize T11}};
+  \node[org] (serial) at (3.0,-1.5){Serialisierung\\{\scriptsize T9}};
+  \node[org] (node) at (-3.0,-1.5){Knotentyp\\{\scriptsize T4}};
+  \node[org] (prefetch) at (0,2.7){Prefetch\\{\scriptsize T7}};
+  \node[org] (conc) at (0,-2.7){Nebenläufigkeit\\{\scriptsize T8}};
+  \draw[->,very thick,blue] (alloc)--(layout);
+  \draw[->,very thick,blue] (alloc)--(value);
+  \draw[->,very thick,blue] (alloc)--(serial);
+  \node[blue,font=\scriptsize,fill=white,inner sep=1pt] at (1.5,0.95){Allokations-Interface};
+  \draw[->,dashed,gray] (prefetch)--(layout);
+  \draw[->,dashed,gray] (conc)--(node);
+  \draw[->,dashed,gray] (node)--(layout);
+\end{tikzpicture}
+\caption{Inter-Organ-Nutzungs-Graph (\enquote{welche Achse nutzt welche}): das Allokations-Organ (T6) stellt sein generalisiertes Interface den speicherbedürftigen Organen Layout, Wert-Hülle und Serialisierung bereit (durchgezogen, vgl.\ Abbildung~\ref{fig:axis-organ}); die übrigen Organ-Kopplungen (gestrichelt) sind repräsentativ --- die vollständige Verdrahtung folgt mit der Achsen-Implementierung in Kapitel~\ref{ch:impl}.}\label{fig:usage}
+\end{figure}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   box/.style={draw,rounded corners,inner sep=3pt,minimum height=0.7cm}]
   \node[box] (root) at (0,0){\texttt{IExecutionEngine}};
   \node[box] (sa) at (-3.5,-1.6){SearchAlgorithm};
@@ -117,5 +158,41 @@ Messens.
 \end{tikzpicture}
 \caption{Das Drei-Ebenen-Modell: Gattung (Ebene 1, Außen-Interface) $\to$ Tier-Unterklasse (Ebene 2, fester Achsen-Satz) $\to$ Organe/Achsen (Ebene 3). Die SearchAlgorithm-Gattung trägt das „Säugetier" mit den neunzehn Achsen; die Container-Gattung die Unterklassen Set/Sequence/Adapter/View.}\label{fig:three-levels}
 \end{figure}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  gen/.style={draw,rounded corners,fill=blue!10,minimum width=2.9cm,minimum height=0.7cm,font=\bfseries\footnotesize},
+  sub/.style={draw,fill=green!8,minimum width=2.9cm,minimum height=0.74cm,font=\scriptsize},
+  tbd/.style={draw,fill=gray!12,minimum width=2.9cm,minimum height=0.74cm,font=\scriptsize}]
+  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (4.0,1.35){Reich \enquote{Animalia} (Lebewesen)};
+  \node[gen] (g1) at (0,0){SearchAlgorithm};
+  \node[gen] (g2) at (4.0,0){Container};
+  \node[gen] (g3) at (8.0,0){Graph};
+  \draw[->] (root)--(g1); \draw[->] (root)--(g2); \draw[->] (root)--(g3);
+  \node[sub] (s1) at (0,-1.2){Säugetier\\{\scriptsize \texttt{map}, \texttt{unordered\_map} --- 19 Achsen}};
+  \draw[->] (g1)--(s1);
+  \node[sub] (c1) at (4.0,-1.2){Vogel $=$ Set\\{\scriptsize \texttt{set}, \texttt{unordered\_set}}};
+  \node[sub] (c2) at (4.0,-2.1){Reptil $=$ Sequence\\{\scriptsize \texttt{vector}, \texttt{list}, \texttt{deque}}};
+  \node[sub] (c3) at (4.0,-3.0){Wirbelloses $=$ Adapter\\{\scriptsize \texttt{stack}, \texttt{queue}}};
+  \node[sub] (c4) at (4.0,-3.9){Pflanze $=$ View\\{\scriptsize \texttt{span}, \texttt{mdspan}}};
+  \draw[->] (g2)--(c1); \draw[->] (g2)--(c2); \draw[->] (g2)--(c3); \draw[->] (g2)--(c4);
+  \node[tbd] (gr1) at (8.0,-1.2){eigener Organsatz\\{\scriptsize Tier-Unterklassen offen}};
+  \draw[->] (g3)--(gr1);
+\end{tikzpicture}
+\caption[Die drei Gattungen mit ihren Tier-Unterklassen]{Die drei Gattungen (Ebene~1) mit ihren Tier-Unterklassen (Ebene~2): \texttt{SearchAlgorithm} trägt als einzige Unterklasse das \enquote{Säugetier} mit der vollen Neunzehn-Achsen-Anatomie; \texttt{Container} fächert in Set, Sequence, Adapter und View auf (\enquote{Vogel}, \enquote{Reptil}, \enquote{Wirbelloses}, \enquote{Pflanze}); \texttt{Graph} besitzt einen eigenen, andersartigen Organsatz (Tier-Unterklassen noch offen). Vgl.\ das verdichtete Modell in Abbildung~\ref{fig:three-levels}.}\label{fig:genera}
+\end{figure}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
+  \node[draw,rounded corners,fill=green!5,minimum width=12.8cm,minimum height=1.7cm] (classic) at (0,0){};
+  \node[font=\bfseries\footnotesize] at (0,0.55){Klassische Entwurfsmuster (GoF) --- im Code durchgängig verwendet};
+  \node[font=\scriptsize] at (0,0.08){\emph{Strategy} (19 Achsen) $\cdot$ \emph{Abstract Factory}\,/\,\emph{Composite}\,/\,\emph{Iterator} (Permutations-Baum)};
+  \node[font=\scriptsize] at (0,-0.42){\emph{Adapter} (Fremd-Code) $\cdot$ \emph{Observer}\,/\,\emph{Decorator} (Mess-Hüllen) $\cdot$ \emph{Memento} (CoW) $\cdot$ \emph{CRTP}\,/\,\emph{Template Method}};
+  \node[draw,rounded corners,fill=orange!8,minimum width=12.8cm,minimum height=2.0cm] (new) at (0,-2.75){};
+  \node[font=\bfseries\footnotesize] at (0,-1.95){Neue Übersetzungszeit-Muster (Beitrag dieser Arbeit)};
+  \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-2.55){\textbf{1.}~\emph{lazy-spärliche kartesische Materialisierung} --- über $10^{14}$ Achsen-Kombinationen werden nur gezählt und je Pfad mixed-radix einzeln on-demand erzeugt};
+  \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-3.32){\textbf{2.}~\emph{typgetriebenes Quelltext-Emittieren} --- aus einer Achsen-Komposition werden Typnamen extrahiert, zu C++-Quelltext gerendert und je Permutation als Modul über die ABI-Grenze geladen};
+  \draw[->,thick] (classic)--(new) node[midway,right,font=\scriptsize]{Komposition};
+\end{tikzpicture}
+\caption{Entwurfsmuster als Bausteine der Architektur: oben die im Code durchgängig verwendeten klassischen GoF-Muster mit ihrer jeweiligen Rolle, unten die zwei in dieser Arbeit benannten neuen Übersetzungszeit-Muster; ihre Komposition bildet die design-pattern-getriebene, mess-orientierte Architektur (Abschnitt~\ref{sec:software-means}).}\label{fig:patterns}
+\end{figure}
 \bildPH{B8: Hüllen / ABI-Adapter}{Lebewesen in der ABI-Hülle über der Modulgrenze; die SearchEngine-Sicht.}
-\inhaltPH{Definitionen aus 04\_concept\_architecture (Eine-Architektur/3-Ebenen/ABI) + 02\_fundamentals (Vergleichsinterfaces, C++23-Pattern, wissenschaftliches Messen) + 03 (Design-Pattern-Beitrag). \textbf{Weitere Bilder:} GATT (alle Gattungen), PATTERN (Entwurfsmuster), USAGE (welche Achse nutzt welche), UML-* (Landkarten aller Code-Interfaces).}
+\inhaltPH{Definitionen aus 04\_concept\_architecture (Eine-Architektur/3-Ebenen/ABI) + 02\_fundamentals (Vergleichsinterfaces, C++23-Pattern, wissenschaftliches Messen) + 03 (Design-Pattern-Beitrag). \textbf{Weitere Bilder:} UML-* (Landkarten aller Code-Interfaces).}
