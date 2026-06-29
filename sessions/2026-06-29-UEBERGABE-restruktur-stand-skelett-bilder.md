@@ -38,9 +38,9 @@
 **Konstanten:** DE führt/EN folgt · Kap. 2 rein konzeptionell/visuell (KEINE Katalog-Tabellen) · Inhalt bleibt, nur Struktur/Fluss/Platzierung.
 
 ## 3. Bilder-Stand (Stufe 2)
-**FERTIG (9, DE+EN, gebaut):** B1 `fig:cache-wall` (1) · B2 `fig:separability` (1) · B3 `fig:search-map` (2.1) · B5 `fig:design-space` (2.1) · B4 `fig:cache-line` (2.2) · ANAT `fig:anatomy-bridge` (2.3, Lebewesen→Achsen→Mess-System-als-Diagnostik) · B6 `fig:axis-organ` (2.3) · B7 `fig:three-levels` (2.3) · B10 `fig:heuristic-loop` (3.5).
+**FERTIG (13, DE+EN, gebaut):** B1 `fig:cache-wall` (1) · B2 `fig:separability` (1) · B3 `fig:search-map` (2.1) · B5 `fig:design-space` (2.1) · B4 `fig:cache-line` (2.2) · ANAT `fig:anatomy-bridge` (2.3, Lebewesen→Achsen→Mess-System-als-Diagnostik) · B6 `fig:axis-organ` (2.3) · B7 `fig:three-levels` (2.3) · B10 `fig:heuristic-loop` (3.5) · **SYNTH `fig:synth`, USAGE `fig:usage`, GATT `fig:genera`, PATTERN `fig:patterns` (alle 2.3, geerdet an 02_fundamentals/04_concept_architecture, codex-GO, Achsen-IDs T9/T11 gegen tab:axes-overview verifiziert)**.
 **Konvention:** TikZ **inline pro Sprache** (DE-Figur in `kapitel/de/`, EN-Figur in `kapitel/en/`); Libraries `arrows.meta,positioning,calc,fit,backgrounds` in `diplomarbeit.tex`. Stil: `>=Stealth`, explizite Koordinaten, `\\` nur top-level im Node (NICHT in `{\scriptsize …}`-Gruppe).
-**OFFEN:** SYNTH · GATT · PATTERN · USAGE (2.3) · B9 PRT-ART-Demonstrator (3.4) · B12 7-Phasen-Pipeline (4.3) · **Massen:** SOTA-ALGO ~30 (2.1) · AXIS-T0..T18 19 (4.3) · UML-Landkarten (2.3) · PRTART-1..N (4.2) · **umzuziehen aus Alt-Kap.4:** `fig:m-model`,`fig:three-stage` (→3.3), `fig:one-architecture`,`fig:abi` (→2.3).
+**OFFEN:** B9 PRT-ART-Demonstrator (3.4) · B12 7-Phasen-Pipeline (4.3) · **Massen:** SOTA-ALGO ~30 (2.1) · AXIS-T0..T18 19 (4.3) · UML-Landkarten (2.3) · PRTART-1..N (4.2) · **umzuziehen aus Alt-Kap.4:** `fig:m-model`,`fig:three-stage` (→3.3), `fig:one-architecture`,`fig:abi` (→2.3).
 
 ## 4. FALLSTRICKE (Codex-Validierung 2026-06-29 — KRITISCH für nächste Session)
 - **[HOCH] Tabellen-Politik unentschieden (OFFENE FRAGE, s. §6):** User sagte „ALLE Tabellen → Kap. 3", aber die **Evaluations-Tabellen** `tab:workload-routing`+`tab:datasets` gehören sachlich nach Kap. 5; `tab:stage-series` ist noch nicht verankert. **Vor dem Umzug klären.**
@@ -71,3 +71,25 @@
 - Metapher-Kanon: **Lebewesen ≡ SearchAlgorithm** (eng) · **Anatomie = Verdrahtung zwischen Organen** · **3 Ebenen** (Gattung→Tier-Unterklasse→Organe) · **Graph = 3. Gattung** (nicht achsenloser Virus) · 19 Achsen / AA1–AA7-Allocator / Sub-Achsen-Audit (Detail im Glossar `anhang/*/C_glossary` + Sessions 06-27/06-29).
 - **Mess-System = Lösung des Suchbaum-Problems** (general→special), demonstriert an PRT-ART; **Aufgabenstellung selbst-erklärend in Kap. 3**.
 - **Anatomie-Metapher (Mensch→Technik)** ist Habichs visuelle Leitidee — bei allen weiteren Bildern mitdenken.
+
+## 8. Fortschritt 2026-06-29 (Fortsetzung) — Konzept-Bilder Kap. 2.3 FERTIG
+- **Erledigt:** Die vier restlichen Konzept-Bilder in §2.3 (`sec:software-means`) gezeichnet, DE+EN inline:
+  `fig:synth` (Synthese SOTA→Achsen, Umkehrung `fig:design-space`) · `fig:usage` (Inter-Organ-Nutzungs-Graph,
+  Allokator-Hub **T6** durchgezogen + repräsentative Kopplungen gestrichelt) · `fig:genera` (alle 3 Gattungen +
+  Tier-Unterklassen, Graph = 3. Gattung; Wurzel = Reich „Animalia"/Lebewesen, NICHT mit `IExecutionEngine`
+  gleichgesetzt) · `fig:patterns` (klassische GoF inkl. Abstract Factory/Template Method + die **zwei neuen
+  Übersetzungszeit-Muster**: lazy-spärliche kartesische Materialisierung, typgetriebenes Quelltext-Emittieren).
+- **Erdung (kein Raten):** PATTERN aus `02_fundamentals.tex` §`sec:cpp23` (ssec:classic-patterns/new-patterns);
+  USAGE aus `04_concept_architecture.tex` `ssec:three-levels` (Allokator→{Layout, Wert-Ablage, Serialisierung});
+  GATT aus derselben Datei (Gattung/Tier-Mapping). **Achsen-IDs gegen die echte Tabelle `tab:axes-overview`
+  (04, T0–T18 fortlaufend) verifiziert** → Korrektur: Serialisierung **T9** (nicht T10=Telemetry),
+  Wert-Hülle **T11** (nicht T14=I/O-Dispatch). Lehre: NIE die `axis_NN`-Verzeichnisnummern mit den T0–T18-IDs
+  gleichsetzen (verschiedene Schemata).
+- **Review:** Codex-Cross-Model (gpt-5.5/xhigh, read-only) — erst NO-GO (T-IDs, fehlende AbstractFactory/TemplateMethod,
+  Wurzel-Label, LoF-Overfull), nach Fixes **GO**.
+- **Build:** DE **36 S.** / EN **34 S.**, 0 Fehler, 0 undefinierte Refs, **0 Overfull** (LoF-Overfull via Kurz-`\caption[...]`).
+- **Git:** Thesis-HEAD **`634bdfe`**, BASE-HEAD **`7399f54`**, beide auf GitHub(origin)+GitLab(gitlab). Overleaf 0/0 (kein Merge nötig).
+- **NÄCHSTER SCHRITT (gemäß §5/§6):** Konzept-Bilder sind durch → jetzt **Schritt 1: explizites Alt→Neu-Mapping**
+  (jeder Alt-Abschnitt/jede Tabelle/jede Figur → Ziel im Neu-Skelett, inkl. der nicht-verankerten Brücken aus §4,
+  v. a. `sec:gap`), Tabellen-Politik (§6) anwenden, **dann** Stufe 3 (Inhalt kapitelweise, je Build+Codex-Review).
+  Massen-Bilder (SOTA-ALGO 2.1, AXIS-T0..T18 4.3, PRTART 4.2) jeweils mit ihrem Kapitel.
