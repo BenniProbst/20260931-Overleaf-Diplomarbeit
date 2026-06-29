@@ -33,5 +33,16 @@ PRT-ART ist der Prüfling, der zeigt, dass das System trägt: er stellt einige O
 \section{Schärfung durch Heuristiken}\label{sec:heuristics}
 Aus den Messreihen lässt sich --- als Ausblick-Mechanismus --- je Last- und Datentyp-Profil die beste
 Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
-\bildPH{B10: Heuristik-Schleife}{Messung $\to$ XML-Profil $\to$ Konfiguration $\to$ zurück in den Filter.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,align=center,
+  stage/.style={draw,rounded corners,fill=blue!4,minimum width=2.8cm,minimum height=1cm}]
+  \node[stage] (mess) at (0,0){Messung\\{\scriptsize Messreihen A/B/C}};
+  \node[stage] (profil) at (4.4,0){XML-Lastprofil\\{\scriptsize gelernte Zuordnung}};
+  \node[stage] (konfig) at (4.4,-2.2){Konfiguration\\{\scriptsize beste Achsen-Komposition}};
+  \node[stage] (filter) at (0,-2.2){Workload-Filter\\{\scriptsize \texttt{<expected\_workload>}}};
+  \draw[->] (mess)--(profil);\draw[->] (profil)--(konfig);
+  \draw[->] (konfig)--(filter);\draw[->] (filter)--(mess);
+\end{tikzpicture}
+\caption{Die Heuristik-Schleife: aus den Messreihen wird je Lastprofil die beste Achsen-Komposition gelernt, als XML-Lastprofil abgelegt und über den Workload-Filter in die nächste Messung zurückgeführt.}\label{fig:heuristic-loop}
+\end{figure}
 \inhaltPH{Heuristik aus 04 (sec:heuristic-profile-selection) + 06 (sec:measurements-to-heuristics)}

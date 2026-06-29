@@ -13,7 +13,18 @@ We first map the landscape of search structures --- comparison-based trees, digi
 hashing, spatial and flat structures --- and depict \emph{every} known algorithm visually in detail. Here the
 abstraction is already located conceptually: every algorithm is a point in a shared design space.
 \bildPH{B3: Search-structure map}{Taxonomy: comparison-based / digital / hash / spatial / flat.}
-\bildPH{B5: Design space (concept)}{Axis cube; one state-of-the-art algorithm = one point.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick]
+  \draw[->] (0,0) -- (4.6,0) node[right]{axis $i$};
+  \draw[->] (0,0) -- (0,3.3) node[above]{axis $j$};
+  \draw[->] (0,0) -- (-1.7,-1.3) node[below left]{axis $k$};
+  \foreach \x in {1,2,3}\foreach \y in {1,2,3}{\fill[black!35] (\x,\y) circle (1.6pt);}
+  \fill[red] (2,2) circle (3.2pt);
+  \node[red,right] at (2.15,2.25){ART $=$ one point};
+  \node[align=center,font=\scriptsize] at (1.6,-2.2){Every state-of-the-art algorithm\\$=$ one point in the Cartesian product of the axes};
+\end{tikzpicture}
+\caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it.}\label{fig:design-space}
+\end{figure}
 \inhaltPH{Landscape from 02\_fundamentals (sec:search-classes) + SOTA overview from 03\_state\_of\_the\_art (sec:sota-overview). \textbf{Figure series SOTA-ALGO-1..M:} one detail figure per paper algorithm (ART, HOT, START, SuRF, Wormhole, B$^2$-tree, \ldots).}
 
 \section{Hardware: Historical Adaptation to Search Performance}\label{sec:hardware-history}
@@ -30,7 +41,33 @@ together visually into \emph{our} axes and define all components, the conceptual
 particular design patterns), the terminology, and the foundations of scientific measurement.
 \bildPH{ANAT-1..3: Anatomy bridge}{Human anatomy (organs + wiring) $\to$ axis=organ $\to$ measurement system as diagnostics.}
 \bildPH{SYNTH: Synthesis state of the art $\to$ axes}{Building blocks of the paper algorithms flow into the shared axis matrix.}
-\bildPH{B6: Axis = organ, anatomy = wiring}{Organs + generalized interfaces between them (e.g.\ the allocation interface).}
-\bildPH{B7: Three levels and genera}{Root $\to$ genera $\to$ tier subclasses $\to$ organs.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  organ/.style={draw,circle,minimum size=1.25cm,fill=green!7,inner sep=0pt}]
+  \node[organ] (alloc) at (0,0){allocation\\organ};
+  \node[organ] (layout) at (-2.7,1.7){layout};
+  \node[organ] (value) at (2.7,1.7){value};
+  \node[organ] (serial) at (0,3.0){serial.};
+  \draw[->,thick,blue] (alloc)--(layout);
+  \draw[->,thick,blue] (alloc)--(value);
+  \draw[->,thick,blue] (alloc)--(serial);
+  \node[blue,font=\scriptsize] at (0,-1.05){shared allocation interface};
+\end{tikzpicture}
+\caption{Axis $=$ organ, anatomy $=$ wiring: each organ exports a generalized interface used by the others --- e.g.\ the shared allocation interface.}\label{fig:axis-organ}
+\end{figure}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  box/.style={draw,rounded corners,inner sep=3pt,minimum height=0.7cm}]
+  \node[box] (root) at (0,0){\texttt{IExecutionEngine}};
+  \node[box] (sa) at (-3.5,-1.6){SearchAlgorithm};
+  \node[box] (co) at (0,-1.6){Container};
+  \node[box] (gr) at (3.5,-1.6){Graph};
+  \node[box] (tier) at (-3.5,-3.2){mammal\\{\scriptsize 19 axes}};
+  \node[box] (cont2) at (0,-3.2){Set, Sequence,\\Adapter, View};
+  \draw[->] (root)--(sa);\draw[->] (root)--(co);\draw[->] (root)--(gr);
+  \draw[->] (sa)--(tier);\draw[->] (co)--(cont2);
+\end{tikzpicture}
+\caption{The three-level model: genus (level 1, outer interface) $\to$ tier subclass (level 2, fixed axis set) $\to$ organs/axes (level 3). The SearchAlgorithm genus carries the ``mammal'' with the nineteen axes; the Container genus the subclasses Set/Sequence/Adapter/View.}\label{fig:three-levels}
+\end{figure}
 \bildPH{B8: Hulls / ABI adapter}{Living being in the ABI hull across the module boundary; the SearchEngine view.}
 \inhaltPH{Definitions from 04\_concept\_architecture (one-architecture/three-levels/ABI) + 02\_fundamentals (comparison interfaces, C++23 patterns, scientific measurement) + 03 (design-pattern contribution). \textbf{Further figures:} GATT (all genera), PATTERN (design pattern), USAGE (which axis uses which), UML-* (maps of all code interfaces).}
