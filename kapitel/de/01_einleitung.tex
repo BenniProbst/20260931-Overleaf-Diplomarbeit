@@ -8,14 +8,35 @@ Suchbäume und Indexstrukturen tragen moderne datenintensive Systeme --- von In-
 Dateisysteme bis zur Sprachverarbeitung. Zugleich werden heutige Prozessoren von der Speicher-Hierarchie
 dominiert: nicht die Zahl der Operationen, sondern ihr Cache-Verhalten bestimmt die Laufzeit. Aus diesem
 Spannungsfeld erwächst die Leitfrage der Arbeit.
-\bildPH{B1: Cache-Wand}{Latenz-Pyramide Register$\to$L1$\to$L2$\to$L3$\to$RAM; die wachsende Lücke motiviert cache-bewusste Suchstrukturen.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, lvl/.style={draw, minimum height=0.55cm, anchor=west, align=left}]
+  \node[lvl, minimum width=1.6cm, fill=blue!22] at (0,2.0)  {Register};
+  \node[lvl, minimum width=2.4cm, fill=blue!17] at (0,1.4)  {L1 --- $\sim$1\,ns};
+  \node[lvl, minimum width=3.4cm, fill=blue!13] at (0,0.8)  {L2 --- $\sim$4\,ns};
+  \node[lvl, minimum width=4.6cm, fill=blue!9]  at (0,0.2)  {L3 --- $\sim$15\,ns};
+  \node[lvl, minimum width=6.0cm, fill=blue!5]  at (0,-0.4) {Hauptspeicher --- $\sim$100\,ns};
+  \draw[->,thick] (6.4,2.2) -- (6.4,-0.6) node[midway,right,align=left]{Latenz\\wächst};
+\end{tikzpicture}
+\caption{Die „Cache-Wand": die Zugriffslatenz wächst über die Speicher-Hierarchie um rund zwei Größenordnungen --- nicht die Operationszahl, sondern das Cache-Verhalten bestimmt die Laufzeit.}\label{fig:cache-wall}
+\end{figure}
 \inhaltPH{Motivation aus 01\_introduction (sec:motivation), suchbaum-first reframen}
 
 \section{Problemstellung}\label{sec:problem}
 Cache-Bewusstheit ist in heutigen Suchstrukturen entweder fest verdrahtet oder ganz ignoriert; vor allem
 aber lässt sich nicht \emph{trennen}, welche einzelne Entwurfsentscheidung welchem Lastmuster nützt --- das
 \emph{Trennbarkeits-Problem}, der rote Faden dieser Arbeit.
-\bildPH{B2: Trennbarkeits-Problem}{Monolithischer Algorithmus (Blackbox) vs. in Achsen zerlegter Algorithmus: welcher Bestandteil trägt zur Leistung bei?}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth]
+  \node[draw, fill=black!75, text=white, minimum width=2.4cm, minimum height=2.2cm] (mono) at (0,0){Algorithmus\\(Monolith)\\[1mm]{\Large ?}};
+  \node[font=\scriptsize] at (0,-1.65){Welcher Teil hilft?};
+  \draw[->,very thick] (1.5,0) -- (2.9,0);
+  \node[draw, fill=green!12, minimum width=2.2cm] (a1) at (4.9,0.85){Knotentyp};
+  \node[draw, fill=green!12, minimum width=2.2cm] (a2) at (4.9,0.0){Layout};
+  \node[draw, fill=green!12, minimum width=2.2cm] (a3) at (4.9,-0.85){Allokator};
+  \node[font=\scriptsize] at (4.9,-1.65){jede Achse einzeln messbar};
+\end{tikzpicture}
+\caption{Das Trennbarkeits-Problem: als Monolith bleibt unklar, welche Entwurfsentscheidung wirkt; erst die Zerlegung in orthogonale Achsen macht jeden Beitrag isoliert messbar.}\label{fig:separability}
+\end{figure}
 \inhaltPH{Problemstellung aus 01\_introduction (sec:problem)}
 
 \section{Forschungsfragen}\label{sec:rqs}

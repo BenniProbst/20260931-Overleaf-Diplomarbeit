@@ -13,7 +13,24 @@ Wir kartieren zunächst die Landschaft der Suchstrukturen --- vergleichsbasierte
 präfixbasierte Verfahren, Hashing, räumliche und flache Strukturen --- und stellen \emph{jeden} bekannten
 Algorithmus bildhaft im Detail dar. Hier wird die Abstraktion bereits konzeptionell verortet: jeder Algorithmus
 ist ein Punkt in einem gemeinsamen Entwurfsraum.
-\bildPH{B3: Such-Struktur-Landkarte}{Taxonomie: vergleichsbasiert / digital / Hash / räumlich / flach.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
+  cat/.style={draw, rounded corners, fill=orange!10, inner sep=3pt}]
+  \node[cat] (root) at (0,0){Suchstrukturen};
+  \node[cat] (a) at (-5,-1.5){vergleichs-\\basiert};
+  \node[cat] (b) at (-2.5,-1.5){digital /\\präfix};
+  \node[cat] (c) at (0,-1.5){Hashing};
+  \node[cat] (d) at (2.5,-1.5){räumlich};
+  \node[cat] (e) at (5,-1.5){flach /\\exotisch};
+  \foreach \x in {a,b,c,d,e} \draw[->] (root)--(\x);
+  \node[font=\scriptsize, text=gray] at (-5,-2.5){B-Baum, AVL};
+  \node[font=\scriptsize, text=gray] at (-2.5,-2.5){Trie, ART, HOT};
+  \node[font=\scriptsize, text=gray] at (0,-2.5){Cuckoo, Swiss};
+  \node[font=\scriptsize, text=gray] at (2.5,-2.5){R-Baum, k-d};
+  \node[font=\scriptsize, text=gray] at (5,-2.5){Skip-Liste};
+\end{tikzpicture}
+\caption{Die Landschaft der Suchstrukturen: fünf Klassen, die das vorgeschlagene Achsen-System gemeinsam erfasst.}\label{fig:search-map}
+\end{figure}
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick]
   \draw[->] (0,0) -- (4.6,0) node[right]{Achse $i$};
@@ -32,7 +49,14 @@ ist ein Punkt in einem gemeinsamen Entwurfsraum.
 Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Wir führen die historische
 Einführung cache-naher Hardware ein --- Cache-Hierarchie, Cache-Line, Adressübersetzung, Kohärenz --- mit Fokus
 auf die \emph{statischen und übersetzungszeit-relevanten} Eigenschaften, die später die Abstraktion tragen.
-\bildPH{B4: Cache-Hierarchie und Cache-Line}{Speicher-Pyramide + eine Cache-Line mit belegten/leeren Bytes (Auslastung).}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center]
+  \foreach \i in {0,...,7} { \draw (\i*0.55,0) rectangle (\i*0.55+0.55,0.55); }
+  \foreach \i in {0,1,2} { \fill[green!30] (\i*0.55+0.03,0.03) rectangle (\i*0.55+0.52,0.52); }
+  \node[anchor=west, align=left] at (4.8,0.27){64-Byte-Cache-Line:\\nur 3 von 8 Einheiten genutzt $\Rightarrow$ niedrige Auslastung};
+\end{tikzpicture}
+\caption{Cache-Line-Auslastung: eine Cache-Line wird stets vollständig geladen; werden nur wenige ihrer Bytes genutzt, sinkt die effektive Bandbreite --- cache-bewusstes Layout hebt die Auslastung.}\label{fig:cache-line}
+\end{figure}
 \inhaltPH{Hardware aus 02\_fundamentals (sec:cache-basics) + 03\_state\_of\_the\_art (sec:sota-cache)}
 
 \section{Software-Mittel und Zusammenführung zur Abstraktion}\label{sec:software-means}
@@ -41,7 +65,29 @@ Abschnitt~\ref{sec:hardware-history} --- lässt sich die Abstraktion \emph{umset
 Verfahren bildhaft zu \emph{unseren} Achsen zusammen und definieren alle Bestandteile, die konzeptionellen
 Spezialkonstrukte (Hüllen, besondere Entwurfsmuster), die Begrifflichkeiten und die Grundlagen wissenschaftlichen
 Messens.
-\bildPH{ANAT-1..3: Anatomie-Brücke}{Menschliche Anatomie (Organe + Verdrahtung) $\to$ Achse=Organ $\to$ Mess-System als Diagnostik.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
+  organism/.style={draw, rounded corners, minimum width=2.8cm, minimum height=3.4cm, fill=red!4},
+  org/.style={draw, circle, fill=red!15, minimum size=0.78cm, inner sep=0pt, font=\scriptsize},
+  axis/.style={draw, rounded corners, fill=green!10, minimum width=2.2cm, minimum height=0.55cm, font=\scriptsize}]
+  \node[organism] (body) at (0,-0.1){};
+  \node[font=\scriptsize] at (0,1.95){\textbf{Lebewesen} (Anatomie)};
+  \node[org] (o1) at (0,0.9){Herz};
+  \node[org] (o2) at (-0.65,-0.1){Lunge};
+  \node[org] (o3) at (0.65,-0.1){Leber};
+  \node[org] (o4) at (0,-1.1){Niere};
+  \draw[->,very thick] (1.7,-0.1) -- (3.0,-0.1) node[midway,above,font=\scriptsize]{Organ $\equiv$ Achse};
+  \node[font=\scriptsize] at (5.4,1.95){\textbf{Suchalgorithmus} (Achsen)};
+  \node[axis] (a1) at (5.4,0.9){Traversal};
+  \node[axis] (a2) at (5.4,0.2){Layout};
+  \node[axis] (a3) at (5.4,-0.5){Allokator};
+  \node[axis] (a4) at (5.4,-1.2){Prefetch};
+  \node[draw, fill=blue!8, font=\scriptsize, align=center] (mess) at (8.3,-0.15){Mess-System\\(„Diagnostik")};
+  \draw[->,blue] (mess) -- (a1); \draw[->,blue] (mess) -- (a2);
+  \draw[->,blue] (mess) -- (a3); \draw[->,blue] (mess) -- (a4);
+\end{tikzpicture}
+\caption{Die Anatomie-Brücke: wie ein Lebewesen aus zusammenwirkenden Organen besteht, ist ein Suchalgorithmus eine Komposition von Achsen-Organen; das Mess-System übernimmt die Rolle der medizinischen Diagnostik und vermisst jedes Organ einzeln.}\label{fig:anatomy-bridge}
+\end{figure}
 \bildPH{SYNTH: Synthese Stand der Technik $\to$ Achsen}{Bausteine der Paper-Algorithmen fließen in die gemeinsame Achsen-Matrix.}
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,

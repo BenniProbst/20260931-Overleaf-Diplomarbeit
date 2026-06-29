@@ -12,7 +12,24 @@ conceptual}; the systematic catalogues follow in Chapter~\ref{ch:measurement}.
 We first map the landscape of search structures --- comparison-based trees, digital and prefix-based methods,
 hashing, spatial and flat structures --- and depict \emph{every} known algorithm visually in detail. Here the
 abstraction is already located conceptually: every algorithm is a point in a shared design space.
-\bildPH{B3: Search-structure map}{Taxonomy: comparison-based / digital / hash / spatial / flat.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
+  cat/.style={draw, rounded corners, fill=orange!10, inner sep=3pt}]
+  \node[cat] (root) at (0,0){search structures};
+  \node[cat] (a) at (-5,-1.5){comparison-\\based};
+  \node[cat] (b) at (-2.5,-1.5){digital /\\prefix};
+  \node[cat] (c) at (0,-1.5){hashing};
+  \node[cat] (d) at (2.5,-1.5){spatial};
+  \node[cat] (e) at (5,-1.5){flat /\\exotic};
+  \foreach \x in {a,b,c,d,e} \draw[->] (root)--(\x);
+  \node[font=\scriptsize, text=gray] at (-5,-2.5){B-tree, AVL};
+  \node[font=\scriptsize, text=gray] at (-2.5,-2.5){trie, ART, HOT};
+  \node[font=\scriptsize, text=gray] at (0,-2.5){Cuckoo, Swiss};
+  \node[font=\scriptsize, text=gray] at (2.5,-2.5){R-tree, k-d};
+  \node[font=\scriptsize, text=gray] at (5,-2.5){skip list};
+\end{tikzpicture}
+\caption{The landscape of search structures: five classes that the proposed axis system captures jointly.}\label{fig:search-map}
+\end{figure}
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick]
   \draw[->] (0,0) -- (4.6,0) node[right]{axis $i$};
@@ -31,7 +48,14 @@ abstraction is already located conceptually: every algorithm is a point in a sha
 The performance of search structures has always been driven by hardware. We introduce the historical advent of
 cache-near hardware --- cache hierarchy, cache line, address translation, coherence --- focusing on the
 \emph{static and compile-time-relevant} properties that later carry the abstraction.
-\bildPH{B4: Cache hierarchy and cache line}{Memory pyramid + one cache line with used/empty bytes (utilization).}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center]
+  \foreach \i in {0,...,7} { \draw (\i*0.55,0) rectangle (\i*0.55+0.55,0.55); }
+  \foreach \i in {0,1,2} { \fill[green!30] (\i*0.55+0.03,0.03) rectangle (\i*0.55+0.52,0.52); }
+  \node[anchor=west, align=left] at (4.8,0.27){64-byte cache line:\\only 3 of 8 units used $\Rightarrow$ low utilization};
+\end{tikzpicture}
+\caption{Cache-line utilization: a cache line is always loaded in full; if only a few of its bytes are used, effective bandwidth drops --- cache-aware layout raises utilization.}\label{fig:cache-line}
+\end{figure}
 \inhaltPH{Hardware from 02\_fundamentals (sec:cache-basics) + 03\_state\_of\_the\_art (sec:sota-cache)}
 
 \section{Software Means and Synthesis into the Abstraction}\label{sec:software-means}
@@ -39,7 +63,29 @@ With which software-system means --- compile-time metaprogramming, static use of
 Section~\ref{sec:hardware-history} --- can the abstraction be \emph{realized}? Here we bring the known methods
 together visually into \emph{our} axes and define all components, the conceptual special constructs (hulls,
 particular design patterns), the terminology, and the foundations of scientific measurement.
-\bildPH{ANAT-1..3: Anatomy bridge}{Human anatomy (organs + wiring) $\to$ axis=organ $\to$ measurement system as diagnostics.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
+  organism/.style={draw, rounded corners, minimum width=2.8cm, minimum height=3.4cm, fill=red!4},
+  org/.style={draw, circle, fill=red!15, minimum size=0.78cm, inner sep=0pt, font=\scriptsize},
+  axis/.style={draw, rounded corners, fill=green!10, minimum width=2.2cm, minimum height=0.55cm, font=\scriptsize}]
+  \node[organism] (body) at (0,-0.1){};
+  \node[font=\scriptsize] at (0,1.95){\textbf{living being} (anatomy)};
+  \node[org] (o1) at (0,0.9){heart};
+  \node[org] (o2) at (-0.65,-0.1){lung};
+  \node[org] (o3) at (0.65,-0.1){liver};
+  \node[org] (o4) at (0,-1.1){kidney};
+  \draw[->,very thick] (1.7,-0.1) -- (3.0,-0.1) node[midway,above,font=\scriptsize]{organ $\equiv$ axis};
+  \node[font=\scriptsize] at (5.4,1.95){\textbf{search algorithm} (axes)};
+  \node[axis] (a1) at (5.4,0.9){traversal};
+  \node[axis] (a2) at (5.4,0.2){layout};
+  \node[axis] (a3) at (5.4,-0.5){allocator};
+  \node[axis] (a4) at (5.4,-1.2){prefetch};
+  \node[draw, fill=blue!8, font=\scriptsize, align=center] (mess) at (8.3,-0.15){measurement\\system (``diagnostics'')};
+  \draw[->,blue] (mess) -- (a1); \draw[->,blue] (mess) -- (a2);
+  \draw[->,blue] (mess) -- (a3); \draw[->,blue] (mess) -- (a4);
+\end{tikzpicture}
+\caption{The anatomy bridge: just as a living being consists of interacting organs, a search algorithm is a composition of axis-organs; the measurement system takes the role of medical diagnostics and measures each organ in isolation.}\label{fig:anatomy-bridge}
+\end{figure}
 \bildPH{SYNTH: Synthesis state of the art $\to$ axes}{Building blocks of the paper algorithms flow into the shared axis matrix.}
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
