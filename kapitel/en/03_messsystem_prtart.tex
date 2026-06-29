@@ -32,5 +32,16 @@ building blocks for the rest.
 \section{Sharpening through Heuristics}\label{sec:heuristics}
 From the measurement series one can derive --- as an outlook mechanism --- the best axis composition per load and
 data-type profile and store it as a reusable profile.
-\bildPH{B10: Heuristic loop}{Measurement $\to$ XML profile $\to$ configuration $\to$ back into the filter.}
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,align=center,
+  stage/.style={draw,rounded corners,fill=blue!4,minimum width=2.8cm,minimum height=1cm}]
+  \node[stage] (mess) at (0,0){measurement\\{\scriptsize series A/B/C}};
+  \node[stage] (profil) at (4.4,0){XML load profile\\{\scriptsize learned mapping}};
+  \node[stage] (konfig) at (4.4,-2.2){configuration\\{\scriptsize best axis composition}};
+  \node[stage] (filter) at (0,-2.2){workload filter\\{\scriptsize \texttt{<expected\_workload>}}};
+  \draw[->] (mess)--(profil);\draw[->] (profil)--(konfig);
+  \draw[->] (konfig)--(filter);\draw[->] (filter)--(mess);
+\end{tikzpicture}
+\caption{The heuristic loop: from the measurement series the best axis composition per load profile is learned, stored as an XML load profile, and fed back via the workload filter into the next measurement.}\label{fig:heuristic-loop}
+\end{figure}
 \inhaltPH{Heuristics from 04 (sec:heuristic-profile-selection) + 06 (sec:measurements-to-heuristics)}
