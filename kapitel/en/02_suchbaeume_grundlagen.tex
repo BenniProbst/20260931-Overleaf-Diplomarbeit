@@ -361,26 +361,33 @@ subclasses Set, Sequence, Adapter, and View; the \texttt{Graph} genus carries it
 (Figure~\ref{fig:genera}). Non-tree-like methods thus require no genus of their own but occupy a
 restricted axis subset of the same genus.
 \begin{figure}[htbp]\centering
+\resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
-  gen/.style={draw,rounded corners,fill=blue!10,minimum width=2.9cm,minimum height=0.7cm,font=\bfseries\footnotesize},
-  sub/.style={draw,fill=green!8,minimum width=2.9cm,minimum height=0.74cm,font=\scriptsize},
-  tbd/.style={draw,fill=gray!12,minimum width=2.9cm,minimum height=0.74cm,font=\scriptsize}]
-  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (4.0,1.35){kingdom \enquote{Animalia} (anatomy-bearing)};
-  \node[gen] (g1) at (0,0){SearchAlgorithm};
+  gen/.style={draw,rounded corners,fill=blue!10,minimum width=2.7cm,minimum height=0.66cm,font=\bfseries\footnotesize},
+  sub/.style={draw,fill=green!8,minimum width=3.0cm,minimum height=0.62cm,font=\scriptsize},
+  tbd/.style={draw,fill=gray!12,minimum width=3.0cm,minimum height=0.7cm,font=\scriptsize},
+  drill/.style={draw,rounded corners,fill=orange!9,minimum width=5.7cm,minimum height=1.0cm,text width=5.3cm,align=left,font=\scriptsize}]
+  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (1.4,1.55){kingdom \enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}, anatomy-bearing)};
+  % Level 1 --- genera (outer interface)
+  \node[gen] (g1) at (-1.7,0){SearchAlgorithm};
   \node[gen] (g2) at (4.0,0){Container};
-  \node[gen] (g3) at (8.0,0){Graph};
+  \node[gen] (g3) at (7.6,0){Graph};
   \draw[->] (root)--(g1); \draw[->] (root)--(g2); \draw[->] (root)--(g3);
-  \node[sub] (s1) at (0,-1.2){mammal\\{\scriptsize \texttt{map}, \texttt{unordered\_map} --- 19 axes}};
-  \draw[->] (g1)--(s1);
-  \node[sub] (c1) at (4.0,-1.2){bird $=$ Set\\{\scriptsize \texttt{set}, \texttt{unordered\_set}}};
-  \node[sub] (c2) at (4.0,-2.1){reptile $=$ Sequence\\{\scriptsize \texttt{vector}, \texttt{list}, \texttt{deque}}};
-  \node[sub] (c3) at (4.0,-3.0){invertebrate $=$ Adapter\\{\scriptsize \texttt{stack}, \texttt{queue}}};
-  \node[sub] (c4) at (4.0,-3.9){plant $=$ View\\{\scriptsize \texttt{span}, \texttt{mdspan}}};
-  \draw[->] (g2)--(c1); \draw[->] (g2)--(c2); \draw[->] (g2)--(c3); \draw[->] (g2)--(c4);
-  \node[tbd] (gr1) at (8.0,-1.2){own organ set\\{\scriptsize tier subclasses open}};
-  \draw[->] (g3)--(gr1);
-\end{tikzpicture}
-\caption[The three genera with their tier subclasses]{The three genera (level~1) with their tier subclasses (level~2): \texttt{SearchAlgorithm} carries as its sole subclass the \enquote{mammal} with the full nineteen-axis anatomy; \texttt{Container} fans out into Set, Sequence, Adapter and View (\enquote{bird}, \enquote{reptile}, \enquote{invertebrate}, \enquote{plant}); \texttt{Graph} has its own, different organ set (tier subclasses still open). Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
+  % Level 2 --- tier subclasses
+  \node[sub,fill=green!18] (s1) at (-1.7,-1.3){\textbf{mammal}\\{\scriptsize \texttt{map} hull $\cdot$ 19 axes}};
+  \node[sub] (c1) at (4.0,-1.05){bird $=$ Set {\scriptsize(\texttt{set})}};
+  \node[sub] (c2) at (4.0,-1.85){reptile $=$ Sequence {\scriptsize(\texttt{vector})}};
+  \node[sub] (c3) at (4.0,-2.65){invertebrate $=$ Adapter {\scriptsize(\texttt{stack})}};
+  \node[sub] (c4) at (4.0,-3.45){plant $=$ View {\scriptsize(\texttt{span})}};
+  \node[tbd] (gr1) at (7.6,-1.3){own organ set\\{\scriptsize subclasses open}};
+  \draw[->] (g1)--(s1); \draw[->] (g2)--(c1); \draw[->] (g2)--(c2); \draw[->] (g2)--(c3); \draw[->] (g2)--(c4); \draw[->] (g3)--(gr1);
+  % Levels 3--5 --- mammal branch down to the compiled individual
+  \node[drill] (l3) at (-1.6,-2.95){\textbf{Level 3 --- organs:} the 19 axes (node type, layout, allocator, prefetch, \dots) \emph{permute}};
+  \node[drill] (l4) at (-1.6,-4.25){\textbf{Level 4 --- concrete animal:} one assignment of \emph{all} axes $=$ one individual (ART, HOT, Masstree, SuRF, START, Wormhole; $+$5 paper bindings)};
+  \node[drill,fill=orange!20,very thick] (l5) at (-1.6,-5.65){\textbf{Level 5 --- animal binary:} compiled per permutation to \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, refined by 3 build axes (page type, SIMD, hardware)};
+  \draw[->,thick] (s1)--(l3); \draw[->,thick] (l3)--(l4); \draw[->,thick] (l4)--(l5);
+\end{tikzpicture}}
+\caption[The three genera and the tier hierarchy down to the compiled binary]{The genus/tier hierarchy across five levels. \texttt{SearchAlgorithm}, \texttt{Container} and \texttt{Graph} are the three \emph{genera} (level~1, outer interface). Each genus hosts its \emph{own} tier subclasses (level~2): \texttt{SearchAlgorithm} exclusively the \enquote{mammal} (\texttt{map} hull, full nineteen-axis anatomy), \texttt{Container} every \emph{non}-mammal subclass (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} still-open ones. The mammal branch is drawn out here down to the individual: the nineteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone animal binary (level~5, additionally identity-refined by three build axes). \emph{Every animal binary is thus an animal of its own}; the hierarchy reaches from the genus down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
 \end{figure}
 
 The actual contribution thus lies less in a single structure than in a \emph{tool}: instead of solving the
@@ -439,16 +446,18 @@ beneath the same root but carry no anatomy.
 
 \begin{figure}[!htbp]
   \centering
-  \resizebox{0.92\textwidth}{!}{%
-  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
-    \node[box] (root) at (0,0) {\texttt{IExecutionEngine}\\{\scriptsize root: everything measurable}};
-    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize anatomy genera}};
-    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize virus (axis-less)}};
-    \node[box] (sa) at (-5.6,-3.8) {SearchAlgorithm genus\\{\scriptsize $\equiv$ \enquote{living being} (mammal)}};
-    \node[box] (cont) at (-2.0,-3.8) {Container genus\\{\scriptsize Set/Sequence/Adapter/View}};
-    \node[box] (graph) at (1.5,-3.8) {Graph genus\\{\scriptsize own organ set}};
-    \node[box] (body) at (-7.0,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{body}: 19 organs}};
-    \node[box] (abi) at (-4.6,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI view (\enquote{SearchEngine})}};
+  \resizebox{0.95\textwidth}{!}{%
+  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=3pt, text width=3.5cm}]
+    \node[box,fill=blue!8,text width=5.3cm] (root) at (0,0) {\texttt{IExecutionEngine} --- \textbf{driver of measurement}\\{\scriptsize \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown}; measurable contract: Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
+    \node[box] (ana) at (-4.4,-2.1) {\texttt{IAnatomyBase}\\{\scriptsize living being (anatomy genera)}};
+    \node[box] (vir) at (4.4,-2.1) {\texttt{IVirus\-Execution\-Engine}\\{\scriptsize virus (axis-less, yet measurable)}};
+    \node[box] (sa) at (-6.2,-4.1) {SearchAlgorithm genus\\{\scriptsize $\equiv$ \enquote{living being} (mammal)}};
+    \node[box] (cont) at (-2.0,-4.1) {Container genus\\{\scriptsize Set/Sequence/Adapter/View}};
+    \node[box] (graph) at (2.2,-4.1) {Graph genus\\{\scriptsize own organ set}};
+    \node[box] (body) at (-7.4,-6.1) {\texttt{Search\-Algorithm\-Anatomy<C>}\\{\scriptsize \emph{body}: composition $+$ \emph{wiring} of the 19 organs}};
+    \node[box] (abi) at (-3.4,-6.1) {\texttt{Search\-Algorithm\-Abi\-Adapter<A>}\\{\scriptsize ABI-runtime view (\enquote{SearchEngine})}};
+    \node[box,fill=orange!8] (comp) at (-7.4,-7.9) {concrete composition (e.g.\ \texttt{ArtComposition})\\{\scriptsize level 4: assignment of \emph{all} 19 axes $=$ one animal}};
+    \node[box,fill=orange!16] (bin) at (-7.4,-9.9) {animal binary \texttt{comdare\_perm\_\-<fp>.dll}\\{\scriptsize level 5: compiled per permutation $+$ 3 build axes}};
     \draw[->] (root) -- (ana);
     \draw[->] (root) -- (vir);
     \draw[->] (ana) -- (sa);
@@ -456,12 +465,18 @@ beneath the same root but carry no anatomy.
     \draw[->] (ana) -- (graph);
     \draw[->] (sa) -- (body);
     \draw[->] (sa) -- (abi);
+    \draw[->] (body) -- (comp);
+    \draw[->] (comp) -- (bin);
   \end{tikzpicture}}
-  \caption{The \emph{one} architecture as a single hierarchy without parallel trees: beneath the root
-  branch the anatomy-bearing \emph{genera} (SearchAlgorithm, Container, Graph) and the axis-less
-  \emph{viruses}; \texttt{SearchAlgorithm} \emph{is} the focal living being (mammal), its anatomy is its
-  \emph{body}, and \enquote{SearchEngine} only its ABI-runtime view. Container (keyless storage) and Graph
-  carry their own organ sets.}\label{fig:one-architecture}
+  \caption{The \emph{one} architecture as a single hierarchy without parallel trees. At the root stands
+  \texttt{IExecutionEngine} as the \emph{driver of measurement} --- the universal measurable contract
+  (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) across all three engine kinds Anatomy,
+  Virus and Hybrid; beneath it branch the anatomy-bearing \emph{genera} (SearchAlgorithm, Container, Graph)
+  and the axis-less \emph{viruses}. \texttt{SearchAlgorithm} \emph{is} the focal living being (mammal); its
+  anatomy is its \emph{body} --- the fixed composition \emph{and wiring} of the 19 organs ---, and
+  \enquote{SearchEngine} only its ABI-runtime view. The mammal branch is drawn out down to the individual:
+  a concrete axis composition (level~4) is compiled per permutation into a standalone animal binary
+  (level~5). Container (keyless storage) and Graph carry their own organ sets.}\label{fig:one-architecture}
 \end{figure}
 
 Concretely, the module boundary is a C-stable interface that exports exactly one living being per
@@ -522,13 +537,14 @@ measurement system in Chapter~\ref{ch:measurement}.
   iface/.style={draw,rounded corners,fill=blue!7,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize},
   comp/.style={draw,fill=green!8,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize}]
   \node[font=\bfseries\scriptsize] at (-4.9,4.7){engine/anatomy hierarchy};
-  \node[iface] (exec) at (-4.9,3.9){IExecutionEngine};
-  \node[iface] (anat) at (-4.9,2.7){IAnatomyBase};
-  \node[iface] (virus) at (-0.6,3.9){IVirusExecutionEngine};
-  \node[comp] (body) at (-4.9,1.5){SearchAlgorithmAnatomy<C>};
-  \node[comp] (abi) at (-4.9,0.3){SearchAlgorithmAbiAdapter<A>};
+  \node[iface,minimum height=1.0cm] (exec) at (-4.9,3.95){IExecutionEngine\\{\normalfont\scriptsize driver of measurement}};
+  \node[iface] (anat) at (-4.9,2.55){IAnatomyBase};
+  \node[iface] (virus) at (-0.6,3.95){IVirusExecutionEngine};
+  \node[comp] (body) at (-4.9,1.4){SearchAlgorithmAnatomy<C>};
+  \node[comp] (abi) at (-4.9,0.25){SearchAlgorithmAbiAdapter<A>};
+  \node[iface,fill=orange!10] (drive) at (-4.9,-0.95){IDriveableTier / IObservableTier};
   \draw[->] (exec)--(anat); \draw[->] (exec.east) to[bend left=10] (virus.west);
-  \draw[->] (anat)--(body); \draw[->] (body)--(abi);
+  \draw[->] (anat)--(body); \draw[->] (body)--(abi); \draw[->] (abi)--(drive);
   \node[font=\bfseries\scriptsize] at (4.9,4.7){per-axis implementation pattern ($\times$19)};
   \node[iface] (topic) at (4.9,3.9){TopicConcept $\wedge$ AxisConcept};
   \node[comp] (crtp) at (4.9,2.7){AxisBase<Derived> (CRTP)};
@@ -537,5 +553,5 @@ measurement system in Chapter~\ref{ch:measurement}.
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{composes 19 axes} (topic.west);
 \end{tikzpicture}}
-\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} over \texttt{IAnatomyBase} and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (the composition of the nineteen axes) and its ABI-runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}); on the right the per-axis implementation pattern repeated for each axis --- a two-layer \texttt{Concept}, a \texttt{requires}-guarded CRTP base, the \texttt{std::variant} building-block family, and the compile-time resolution \texttt{resolve\_baustein}, which chooses per axis between the probe slot and the cache-engine default.}\label{fig:uml-interfaces}
+\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase} and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the nineteen axes) and its ABI-runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), measured and driven through the \texttt{IDriveableTier}/\texttt{IObservableTier} contracts; on the right the per-axis implementation pattern repeated for each axis --- a two-layer \texttt{Concept}, a \texttt{requires}-guarded CRTP base, the \texttt{std::variant} building-block family, and the compile-time resolution \texttt{resolve\_baustein}, which chooses per axis between the probe slot and the cache-engine default.}\label{fig:uml-interfaces}
 \end{figure}
