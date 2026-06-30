@@ -28,9 +28,14 @@
 - F7/F9: **thread×prefetch-Sweep aus pipeline entfernt** (nicht im perm_runner belegt); `ExecutionEngine`→`IObservableTier` (code-genau).
 - F1/F3/F5/F8: **agrawal2005autoadmin auf VLDB 2004 korrigiert**; **axis-organ Knotentyp-Eingang ergänzt** (Caption-Konsistenz); „vierte Achse"→„vierte Mess-Komponente".
 
-## Verbleibend offen (NICHT Teil des Habich-Figuren-Feedbacks — separate Massen-Serien)
-Die repetitiven Massen-Bildserien (als `% TODO` im Text verankert), je eine Serie pro Session:
-- **SOTA-ALGO ~30** (je Paper-Algorithmus ein Detailbild, Kap. 2.1, `02:135`).
-- **AXIS-T0..T18 = 19** (je Achse das Gesamtkonzept-Bild, Kap. 4.3, `04_implementierung:90`) — sollte die code-geerdete Achsen-Sezierung aus `2026-06-30-architektur-analyse-bild-korrekturen.md` §1.5 nutzen.
-- **PRTART-1..N** (je PRT-ART-Algorithmus, Kap. 4.2, `04_implementierung:51`).
+## Massen-Bildserien — ERLEDIGT (als kompakte, code-geerdete Galerien gelöst, Commit `0aae63f`)
+Statt vieler redundanter Einzelbilder je eine systematische Galerie (übersichtlicher, code-treu):
+- **fig:sota-gallery (2.1):** 12 rekonstruierte Suchstrukturen (ART/HOT/Masstree/CoCo/START/B²/Wormhole/LOUDS/SuRF/CSS/CSB⁺/SwissTable), je Klasse + Kern-Idee + charakteristische Achsen (an `tab:axes-overview` angeglichen).
+- **fig:axes-gallery (4.3):** alle 19 Composition-Achsen T0–T18 als Strategie-Concept-Kacheln (Sub-Achsen-Familie + Bausteine + abgeleiteter Standard); code-geerdet via Explore-Agent gegen Anhang D + Registries.
+- **fig:prtart-gallery (4.2):** 6 PRT-ART-Beiträge (4+2-Pool T6, OLC T8, Bundle-Prefetch T7, MultiLevel-Layout T5, kohärenz-bewusste Telemetrie T10, DensityTracker+H1/H2/H3).
+- Codex-cross-model-verifiziert (SOTA-Achsen an Tabelle angeglichen; T13-Subachsen io1–io3 Anhang-D-konform + Tabellen-Fix; DensityTracker-T10-Label).
+- **Git Ende:** Submodul `0aae63f` / BASE `01cabd1`, beide Remotes; DE 146 / EN 136 S., 0 Overfull/undef.
+
+## Verbleibend offen
 - Mess-Experiment (reale A/B/C-Läufe) bleibt mehrtägig → Kap. 5 methodisch mit `\input`-Platzhaltern (nicht aktiv pollen).
+- Optional: aus den kompakten Galerien später bei Bedarf einzelne Detailbilder für besonders zentrale Verfahren/Achsen ausgliedern.
