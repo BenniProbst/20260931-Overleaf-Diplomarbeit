@@ -136,7 +136,8 @@ Die \emph{Such-Achse} (T0) trägt die meisten Organe --- als Original-Bindungen 
 HOT~\cite{binna2018hot}, START~\cite{fent2020start}, SuRF~\cite{zhang2018surf} und
 Wormhole~\cite{wu2019wormhole}, dazu generische Such-Methoden wie k-äre Suche~\cite{schlegel2009kary},
 Interpolationssuche~\cite{perl1978interpolation}, Eytzinger-Layout-Suche~\cite{khuong2017eytzinger},
-Skip-Liste~\cite{pugh1990skiplist} und B-Baum~\cite{bayer1972btree}. Die Traversierungs-Achsen trennen
+Skip-Liste~\cite{pugh1990skiplist}, B-Baum~\cite{bayer1972btree} und
+Open-Addressing-Hashing~\cite{knuth1998taocp3}. Die Traversierungs-Achsen trennen
 Algorithmus- und Cache-Sicht: T1 reicht von der Cache-Line-Wanderung über Stride-Prefetch~\cite{chen2001prefetch}
 und HBM-Nähe~\cite{schmidt2025hbm} bis zur cache-oblivious-Rekursion~\cite{frigo1999cache}, während T2
 (Mapping) über lineare 1:1-Abbildung, Hash-Redirect~\cite{wu2019wormhole} und
@@ -233,7 +234,156 @@ MPMC-Queues~\cite{michael1996queue}. Die \emph{Index-Organisations-Achse} (T13) 
 Anordnung~\cite{bayer1972btree}, Heap-Ablage und nicht-geclusterten Sekundärindex~\cite{comer1979btree},
 die \emph{Filter-Achse} (T16) den Bloom-~\cite{bloom1970}, Cuckoo-~\cite{fan2014cuckoo},
 SuRF-~\cite{zhang2018surf} und Xor-Filter~\cite{graf2020xor}.
-\inhaltPH{3.2b folgt: Workload-Frameworks als Instanzen (sec:sota-workloads) + tab:wl-frameworks, tab:lp-catalog, tab:sota-profiles + Bias (ssec:sota-wl-bias) + Mess-Technologien (sec:sota-measurement)}
+Auch die \emph{Lasten} erscheinen als Instanzen. Die in der Literatur verwendeten Workloads entstammen
+\emph{mehreren}, untereinander nicht vergleichbaren Benchmark-Frameworks; Tabelle~\ref{tab:wl-frameworks}
+ordnet sie den nutzenden Veröffentlichungen zu. Am verbreitetsten ist der Yahoo!\ Cloud Serving Benchmark
+(YCSB)~\cite{cooper2010ycsb}; daneben treten der Index-Benchmark SOSD~\cite{kipf2019sosd}, die
+TPC-Familie~\cite{tpc_benchmarks}, die CPU-Suite SPEC~CPU~\cite{spec_cpu2017}, die Scale-out-Suite
+CloudSuite~\cite{ferdman2012cloudsuite} sowie --- für den Allokator-Korpus ---
+mimalloc-bench~\cite{mimalloc_bench} und die Klassiker Larson, threadtest und shbench auf. Da diese
+Frameworks unvergleichbare Lasten erzeugen, abstrahiert die Arbeit sie zu einem gemeinsamen Satz von
+Lastprofilen.
+
+\begin{table}[!htbp]
+  \caption{Benchmark-Frameworks und nutzende Veröffentlichungen}\label{tab:wl-frameworks}
+  \centering\footnotesize
+  \begin{tabular}{@{}p{3.2cm} p{2.8cm} p{6cm}@{}}
+    \toprule
+    \textbf{Framework} & \textbf{Typ} & \textbf{Nutzende Veröffentlichungen} \\
+    \midrule
+    YCSB~\cite{cooper2010ycsb} & KV-Workload & P02, P03, P07, P20, P26 \\
+    SOSD~\cite{kipf2019sosd} & Index-Benchmark & P05 \\
+    TPC-C / TPC-DS~\cite{tpc_benchmarks} & OLTP / analytisch & P19 \\
+    Real-String-Korpora & String-Datensätze & P04, P06, P10 \\
+    RocksDB-Integration & Real-System & P10 (SuRF) \\
+    SPEC CPU~\cite{spec_cpu2017} & CPU-Suite & P23, P24, P27, A18 \\
+    CloudSuite~\cite{ferdman2012cloudsuite} & Scale-out-Server & P24, P27 \\
+    IBM DB2 & Produktions-DBMS & P22 \\
+    mimalloc-bench~\cite{mimalloc_bench} & Allokator-Suite & A04, A07, A09, A10, A18 \\
+    Larson / threadtest / shbench & Allokator-Klassiker & A01, A03, P08, P30 \\
+    LADDIS & Kernel-Allokator & A02 \\
+    AggSum / Memory-Stream & Bandbreite & P32 \\
+    Custom-Microbenchmarks & per Paper (Zipf/Uniform) & P01, P04, P06, P11--P14, P21, P28 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Aus dieser Analyse destilliert die Arbeit \emph{vierzehn} distinkte Lastprofile (LP01--LP14,
+Tabelle~\ref{tab:lp-catalog}): Sie geben den heterogenen Lasten ein gemeinsames, uint64-basiertes
+Operations-Modell --- der Op-Mix nennt die Anteile von Einfügen, Lookup, Löschen, Scan und
+Read-Modify-Write über definierten Schlüssel-Verteilungen --- und sind je aus konkreten Veröffentlichungen
+abgeleitet.
+
+\begin{table}[!htbp]
+  \caption{Lastprofil-Katalog (14 Profile, aus der 33-Paper-Analyse abgeleitet)}\label{tab:lp-catalog}
+  \centering\footnotesize
+  \begin{tabular}{@{}l p{3.3cm} l l c p{2.4cm}@{}}
+    \toprule
+    \textbf{LP} & \textbf{Kennung} & \textbf{Op-Mix} & \textbf{Verteilung} & \textbf{neg\%} & \textbf{Abgeleitet aus} \\
+    \midrule
+    LP01 & bulk-insert-dense & 100/0/0/0/0 & uniform-seq & 0 & P01, P02, P03, P05, P12 \\
+    LP02 & bulk-insert-sparse & 100/0/0/0/0 & uniform-rand & 0 & P01,P02,P08 \\
+    LP03 & insert-value-length-sweep & 100/0/0/0/0 & uniform-seq & 0 & P01,P08 \\
+    LP04 & static-read-positive & 0/100/0/0/0 & uniform & 0 & P02, P05, P11, P12, P16, P25 \\
+    LP05 & static-read-zipfian & 0/100/0/0/0 & zipfian(.99) & 0 & P10,P20,P25,P28 \\
+    LP06 & static-read-negsweep & 0/100/0/0/0 & uniform & 0--100 & P04,P06,P22 \\
+    LP07 & static-read-string-corpus & 0/100/0/0/0 & real-corpus & 50 & P04,P06,P10 \\
+    LP08 & range-scan-heavy & 0/0/0/100/0 & uniform-seq & 0 & P01,P10,P12,P32 \\
+    LP09 & insert-lookup-5050 & 50/50/0/0/0 & uniform & 0 & P03,P29 \\
+    LP10 & delete-heavy-post-build & 50/0/50/0/0 & uniform-rand & 0 & P01,P08 \\
+    LP11 & mixed-ycsb-oltp & 25/50/0/0/25 & zipfian(.99) & 0 & P10,P19,P20 \\
+    LP12 & concurrent-rmw-stress & 25/9/36/9/9 & uniform & 0 & P07,P29 \\
+    LP13 & concurrent-read-scaling & 0/100/0/0/0 & uniform & 0 & P07,P08,P25,P28 \\
+    LP14 & dynamic-realistic-trace & 9/91/0/0/0 & tpcc-nonuniform & 0 & P19,P20 \\
+    \bottomrule
+  \end{tabular}
+
+  \smallskip
+  {\footnotesize Op-Mix = Anteile von Einfügen/Lookup/Löschen/Scan/RMW; neg\% = Anteil negativer Lookups.\par}
+\end{table}
+
+Für jeden SOTA-Algorithmus und jeden Allokator hält ein Profil-XML die Achsen-Belegung, eine
+Schlüssel-Wert-Signatur und einen optionalen \texttt{<expected\_workload>}-Tag fest, der die
+Mess-Heuristik überschreibt (Tabelle~\ref{tab:sota-profiles}). Drei der 33 Korpus-Arbeiten besitzen bewusst
+kein eigenständiges Profil, sondern gehen nur seziert ein: das optimistische Lock-Coupling von
+ART~\cite{leis2016olc} als Nebenläufigkeits-Organ, die succinct LOUDS-Repräsentation~\cite{jacobson1989louds}
+als Speicher-Layout-Organ (u.\,a.\ in SuRF~\cite{zhang2018surf}) und das Profiling-Werkzeug
+VAMPIR~\cite{berthold2023vampir} als Mess-Technologie; die übrigen 30 tragen je ein eigenes Profil-XML.
+
+\begin{table}[!htbp]
+  \caption{SOTA-Algorithmus-Profile mit Workload-Affinität}\label{tab:sota-profiles}
+  \centering\small
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Profil} & \textbf{Paper-Ref.} & \textbf{expected\_workload} \\
+    \midrule
+    art & P01 (Leis 2013) & YCSB\_C \\
+    hot & P02 (Binna 2018) & YCSB\_C \\
+    masstree & P03 (Mao 2012) & YCSB\_A \\
+    coco\_trie & P04 (Boffa 2024) & YCSB\_C \\
+    start & P05 (Fent 2020) & YCSB\_C \\
+    b2tree & P06 (Schmeisser 2022) & YCSB\_E \\
+    wormhole & P07 (Wu 2019) & YCSB\_A \\
+    surf & P10 (Zhang 2018) & YCSB\_A \\
+    css\_tree & P11 (Rao/Ross 1999) & YCSB\_C \\
+    csb\_tree & P12 (Rao/Ross 2000) & YCSB\_E \\
+    hankins & P13 (Hankins 2003) & YCSB\_C \\
+    samuel & P14 (Samuel 2005) & YCSB\_C \\
+    graefe & P15 (Graefe 2001) & YCSB\_C \\
+    bender\_treelayout & P16 (Bender 2002) & YCSB\_C \\
+    bender\_cacheoblivious & P17 (Bender 2005) & YCSB\_C \\
+    saikkonen\_multilevel & P18 (Saikkonen 2008) & YCSB\_E \\
+    saikkonen\_layoutinvariant & P19 (Saikkonen 2016) & YCSB\_E \\
+    btreesareback & P20 (Mueller 2025) & YCSB\_E \\
+    chen\_prefetch & P21 (Chen 2001) & YCSB\_A \\
+    chen\_fractal & P22 (Chen 2002) & YCSB\_A \\
+    khan\_adaptive & P23 (Khan 2010) & YCSB\_A \\
+    naderan\_tahan & P24 (Naderan-Tahan 2016) & YCSB\_A \\
+    mahling & P25 (Mahling 2025) & YCSB\_E \\
+    zhang\_fgcs & P26 (Zhang 2024) & YCSB\_A \\
+    zhang\_asplos & P27 (Zhang 2025) & YCSB\_A \\
+    kuehn & P28 (Kuehn 2023) & YCSB\_C \\
+    rcu & P29 (McKenney 2001) & YCSB\_B \\
+    hazard\_pointers & P30 (Michael 2004) & YCSB\_B \\
+    ungethuem & P31 (Ungethuem 2017) & YCSB\_C \\
+    to\_stride & P32 (Schmidt 2025) & YCSB\_C \\
+    \bottomrule
+  \end{tabular}
+
+  \smallskip
+  {\footnotesize \texttt{expected\_workload} = YCSB-Workload-Klasse (A/B/C/E/F).\par}
+\end{table}
+
+Der Kern-Befund dieser Lastprofil-Analyse ist ein systematischer \emph{Bias}: Jede Veröffentlichung wählt
+das Lastprofil, unter dem ihr eigener Entwurf am besten abschneidet. Statische, read-only-orientierte
+Tries und Filter rahmen \enquote{build-once, 100\,\% positive Lookups} und meiden Aktualisierungen;
+komprimierte Verfahren machen den Negativ-Anfrage-Anteil zur Primärachse; zipfian-zentrierte Arbeiten
+begünstigen cache-bewusste Reordering-Layouts; und schreib- bzw.\ nebenläufigkeits-lastige Arbeiten treten
+umgekehrt nur dort an, wo statische Strukturen versagen. Vierzehn der Veröffentlichungen liefern überhaupt
+kein eigenes Index-Lastprofil. Erst wenn \emph{alle} Lastprofile gegen \emph{alle} Lebewesen-Binaries
+laufen --- der Workload als dynamische Achse (Kapitel~\ref{ch:eval}) ---, lässt sich der \enquote{Sieger
+nur im selbstgewählten Heimprofil} sichtbar machen und bias-reduzierte Vergleichbarkeit gewinnen.
+
+Schließlich erscheinen auch die Güte-Kriterien wissenschaftlichen Messens (Abschnitt~\ref{sec:software-means})
+als konkrete Technologien. \emph{Hardware-Performance-Zähler} (PMC, über \texttt{perf})~\cite{demelo2010perf}
+sind nahezu universell und liefern Cache-Miss-Raten, dTLB-Misses, Branch-Misses und IPC/CPI; \emph{Profiler}
+wie OTF2/VAMPIR~\cite{berthold2023vampir} und VTune~\cite{reinders2005vtune} erheben trace-basierte
+Laufzeitprofile, \emph{Simulatoren} wie gem5~\cite{binkert2011gem5} liefern hardware-genaue Schätzungen, wo
+reale Zähler fehlen, und das \emph{HdrHistogramm}~\cite{tene_hdrhistogram} erhebt die Latenz-Perzentile
+(p50/p95/p99). Auf der Erhebung baut die Auswertung auf: Statt arithmetischer Mittel werden Median und
+Perzentile berichtet, Unterschiede mit dem verteilungsfreien \emph{Mann-Whitney-U-Test}~\cite{mann1947utest}
+(mit Holm-Korrektur~\cite{holm1979sequential}) auf Signifikanz geprüft und über das Effektmaß
+\emph{Cliff's~$\delta$}~\cite{cliff1993dominance} quantifiziert, den Empfehlungen für wissenschaftliches
+Benchmarking~\cite{hoefler2015benchmarking} folgend. Eine eigene methodische Linie bildet die hardware-nahe
+Messmethodik der TU Dresden (Habich-Gruppe): Ungethüm et al.~\cite{ungethuem2017survey} systematisieren die
+Hardware-Optimierungen für Datenbank-Maschinen, Schmidt et al.~\cite{schmidt2025hbm} vermessen Stride- gegen
+Sequenz-Zugriffe auf HBM, und VAMPIR~\cite{berthold2023vampir} profiliert nicht-funktionale Eigenschaften
+heterogener Speicher. Aus all diesen Technologien ergibt sich der Satz der Mess-Kategorien ---
+Cache-Line-Auslastung, Cache-Misses, dTLB-Misses, Speicher-Fußabdruck, Branch-Misses, IPC/CPI, Latenz,
+Durchsatz und Energie ---, deren zeit- und observer-basierte Teilmenge die eigene Apparatur bereits
+auflöst, während die zählerbasierten PMC-Kategorien an Hardware-Zähler-Zugriff gebunden bleiben; die
+vollständige Mess-Architektur entwickeln das folgende Mess-System (Abschnitt~\ref{sec:measurement-system})
+und Kapitel~\ref{ch:eval}.
 
 \section{Das Mess-System}\label{sec:measurement-system}
 Das Mess-System trennt vier Subsysteme und prüft in drei Stufen, die auf die drei Pflicht-Messreihen abbilden;
