@@ -19,7 +19,30 @@ question of this thesis.
 \end{tikzpicture}
 \caption{The ``cache wall'': access latency grows across the memory hierarchy by about two orders of magnitude --- not the number of operations but the cache behaviour determines run time.}\label{fig:cache-wall}
 \end{figure}
-\inhaltPH{Motivation from 01\_introduction (sec:motivation), search-tree-first}
+Concretely, search algorithms and index structures are the backbone of modern in-memory databases;
+trie-based indexes and cache-line-optimized processing are at the centre of this thesis. Since the
+Adaptive Radix Tree (ART)~\cite{leis2013art} of 2013, research has diversified: trie-height
+optimization (HOT~\cite{binna2018hot}), hybrid B\textsuperscript{+} structures
+(Masstree~\cite{mao2012masstree}, B\textsuperscript{2}-tree~\cite{schmeisser2022b2tree}), succinct
+representations (CoCo-Trie~\cite{boffa2024coco}, SuRF~\cite{zhang2018surf}), and self-tuning approaches
+(START~\cite{fent2020start}).
+
+In parallel, a dedicated body of research on cache awareness, prefetching, and allocation strategies
+has emerged. Heuristics such as Cache-Sensitive Search Trees, cache-oblivious layouts, and hierarchical
+prefetching each address a separately considered aspect of the search-algorithm architecture, with the
+focus usually resting on empirically discovered improvements and measurements. Because so much rests on
+cache-line-optimized behaviour, segmenting the search-algorithm constituents into \emph{axes} suggests
+itself --- a backward abstraction of known building blocks into reusable modules across the most
+important works of the state of the art.
+
+These building blocks can be treated as interchangeable design dimensions of a large design space
+(\emph{design space})~\cite{idreos2018periodic, idreos2018datacalculator}. Structurally different
+search methods --- from tree-like indexes to non-tree-like hash tables, including special properties
+such as cache lines --- thereby become comparable as points of the same design space; non-tree-like
+methods occupy a restricted subset of the dimensions over the same search-algorithm interface, as if
+they were the sole fan of a tree root. As a probe for state-of-the-art membership, PRT-ART, a Probst
+Redirect Tree / ART hybrid and an abstract, incomplete assembly of novel search-algorithm components,
+serves this role.
 
 \section{Problem Statement}\label{sec:problem}
 In today's search structures cache-awareness is either hard-wired or ignored entirely; above all, however, one
@@ -37,13 +60,106 @@ problem}, the central thread of this thesis.
 \end{tikzpicture}
 \caption{The separability problem: as a monolith it remains unclear which design decision matters; only the decomposition into orthogonal axes makes each contribution measurable in isolation.}\label{fig:separability}
 \end{figure}
-\inhaltPH{Problem statement from 01\_introduction (sec:problem)}
+Existing cache-aware index designs optimize one or a few aspects in isolation and report results that
+are hard to compare across publications, because each work uses its own data structures, workloads, and
+measurement methodology. The weights of improvements from individual components remain inseparable: a
+reported performance gain cannot be unambiguously attributed to a single component (node type, layout,
+value placement, prefetching), because the components stay intertwined in the original designs. There
+is no common framework that (i)~decomposes such designs into interchangeable axes, (ii)~reconstructs
+published algorithms as explicit configurations, and (iii)~measures both individual axes and whole
+algorithms on a single, fair basis.
 
 \section{Research Questions}\label{sec:rqs}
-\inhaltPH{RQ1--RQ4 from 01\_introduction (sec:rqs)}
+From the task description and the goal of cache-line optimization, and given the ubiquity of the
+influence of cache-line settings, the following research questions arise: one main question (RQ0) and
+four measurable sub-questions (RQ1--RQ4); complementary aspects are attached as \emph{sub-questions}.
+\begin{description}
+  \item[RQ0 (Main question)] By how much do \emph{active, measurement-driven} cache-aware decisions
+  --- page type, memory layout, value placement, and prefetching --- improve the performance of
+  trie-based search structures over \emph{passive, statically dimensioned} variants on different CPU
+  platforms (hybrid CPUs, Sapphire Rapids)?
+  \item[RQ1 (Composition)] How can a search-algorithm design be canonically decomposed into
+  orthogonal axes and systematized in a permutation matrix, such that the state-of-the-art methods
+  can be reconstructed bias-free as profile configurations --- ideally from their original code ---
+  and permuted arbitrarily? \emph{Sub-question:} Which axis couplings (node type $\times$ SIMD
+  $\times$ path compression) limit the isolation of individual axes, and how does the same
+  axis-constant structure behave with respect to cache-update and cache-line fill behaviour when
+  only the ISA/SIMD axis (SSE2/AVX2/AVX-512, NEON/SVE2, RVV) is varied?
+  \item[RQ2 (Measurement methodology)] How must a reproducible measurement pipeline with
+  hardware-counter collection be designed so that every axis permutation is measured fairly (all
+  else held equal, i.e.\ identical compiler and flag basis) across three measurement series (A--C)
+  over three granularities (micro-, macro-, and overall benchmarking), and under which
+  platform-calibrated criteria does a platform count as successfully verified? \emph{Sub-question:}
+  How can contradictory findings in the literature on the optimal node/cache-line size (one cache
+  line for CSS/CSB\textsuperscript{+} versus up to sixteen for Hankins/Patel) be re-measured
+  bias-free through axis-isolated permutation with all else held equal rather than adopted from
+  incompatible original setups?
+  \item[RQ3 (Probe comparison)] Does the probe PRT-ART win against the eight Rank-1 state-of-the-art
+  (SOTA) designs (ART, HOT, Masstree, CoCo-Trie, START, B\textsuperscript{2}-tree, Wormhole,
+  SuRF)\footnote{The \emph{ranks} order the state-of-the-art publications by centrality for this thesis: Rank-1 comprises the ten most important core works --- among them the eight standalone search designs as well as ARTSync (P08)~\cite{leis2016olc} and LOUDS (P09)~\cite{jacobson1989louds}, which enter as organs ---, Rank-2 the cache-aware layout and B\textsuperscript{+} precursors, and Rank-3 the prefetching, synchronization, and TU-Dresden hardware works.}
+  and the Rank-2/3 SOTA \emph{not} through asymptotic novelty but through better microarchitectural
+  properties (higher cache-line utilization, fewer LLC and dTLB misses, lower branch cost, smaller
+  hot search paths) for exact lookup, prefix lookup, and prefix enumeration --- measured under the
+  three mandatory measurement series A (probe vs.\ state of the art), B (systematic variation of the
+  design decisions), and C (merge/regression old vs.\ new)? \emph{Sub-question:} Which local page
+  representation (8-/16-bit point page versus compact page) is cheapest at a given branch point, and
+  by which platform-calibrated switching rules --- including the order
+  Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
+  by fill level and search type --- should switching occur adaptively?
+  \item[RQ4 (Compile time vs.\ run time)] Which axis properties must be fixed at compile time to
+  produce platform-optimized, provenance-verifiable binaries per permutation, and which can or must
+  be selected at run time (bit-encoded permutation identifier, adaptive layout selection) without
+  violating scientific comparability (identical compiler and flag basis)? Does the measurement make
+  it possible to generate ISA+OS-optimized binaries for a search-algorithm recombination whose
+  heuristic optimization is perfectly tailored to its runtime environment?
+\end{description}
 
 \section{Objective and Contributions}\label{sec:contributions}
-\inhaltPH{Brief contributions from 01\_introduction (sec:contributions); detail follows in the chapters}
+The objective follows the task description in four steps: decompose cache-aware search algorithms into
+interchangeable design constituents, reconstruct state-of-the-art designs as explicit configurations,
+measure and evaluate cache-line-aware behaviour both per constituent and for the whole algorithm on a
+common CPU basis, and deliver the best overall algorithm --- following an autonomous heuristic-profile
+evaluation and heuristic-function modelling --- as a standalone binary. The underlying architecture model --- the three layers (genus
+interface, genus subclass, axis-organs), the four subsystems, and the ABI-stable delivery of the
+search-algorithm \emph{living beings} --- is developed in Chapter~\ref{ch:foundations}; the axis-architecture concept itself is adopted from
+prior work by the author (on its origin see Section~\ref{sec:software-means}), and the contribution of
+this thesis is its transfer to cache-aware search structures and its measurement-oriented realization.
+The central contributions
+are:
+\begin{itemize}
+  \item An ABI-stable module interface: a single C module boundary
+  (\texttt{comdare\_\allowbreak create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exports exactly one
+  living being per permutation; behind it lies a three-layer abstraction chain (CacheEngine $\to$
+  ExecutionEngine $\to$ SearchEngine) with variadically templated hybrid-API specializations
+  (1~parameter $\Rightarrow$ \texttt{std::vector} API; 2~parameters $\Rightarrow$ \texttt{std::map}
+  API; $N>2 \Rightarrow$ \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
+  \item A nineteen-axis permutation matrix with \texttt{std::variant} building blocks and
+  compile-time fallback between the probe stack and the state-of-the-art stack.
+  \item Thirty SOTA algorithm profiles as persisted XML configurations (8~standalone Rank-1 +
+  22~Rank-2/3) that the \texttt{ExperimentDriver} automatically transforms into pre-compiled C++23
+  modules; prospectively, the profile set is to cover every analysed publication with at least one
+  algorithm profile.
+  \item PRT-ART as a probe with eight building-block layers of its own (4+2 pool allocator,
+  optimistic lock coupling with reserved blocks, multi-level layout, path-oriented prefetch, density
+  tracker, hypothesis metrics H1/H2/H3, inline/external/chain-ref value handles, signaling-bit
+  serialization).
+  \item A measurement driver with defined-/full-mode distinction, profile-aware workload routing,
+  and three granularities --- micro-, macro-, and overall benchmarking (individual constituents,
+  interface operations, whole algorithms).
+  \item A bias-free comparison matrix that runs \emph{all} load profiles against \emph{all}
+  reconstructed living beings, thereby countering the methodological home-field bias of the
+  individual publications.
+  \item A generic platform probe that determines cache properties (line size, hierarchy depth,
+  topology) per target platform and feeds them as fixed quantities into a system-optimized binary;
+  the two production machines are measured for this purpose under two operating systems (immutable
+  Talos and root Linux with full hardware-counter access).
+  \item \emph{As objective and outlook:} delivery of the best overall algorithm under the
+  measurement aspect of the best cache-aware behaviour and acceleration under cache-line adaptation
+  --- automatically selected from the fine-grained measurement results --- as a standalone,
+  ABI-stable binary behind the unified search-algorithm interface; the measurement pipeline already
+  provides the required ranking, while the automatic selection and binary shipping are envisioned as
+  an extension.
+\end{itemize}
 
 \section{Structure of the Thesis}\label{sec:structure}
 The structure follows the path from the general to the specific: Chapter~\ref{ch:foundations} lays --- conceptually
