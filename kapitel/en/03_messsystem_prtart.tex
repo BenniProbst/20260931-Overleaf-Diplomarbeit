@@ -380,15 +380,125 @@ the complete measurement architecture is developed by the following measurement 
 \section{The Measurement System}\label{sec:measurement-system}
 The measurement system separates four subsystems and tests in three stages that map onto the three mandatory
 measurement series; it reduces the permutation space deliberately.
-\bildPH{fig:m-model (existing): M-model}{Four formally separated subsystems; the ExecutionEngine as the shared measurable root.}
-\bildPH{fig:three-stage (existing): Three-stage evaluation}{Stages 1/2/3 produce non-redundant permutations per measurement series.}
-\inhaltPH{M-model + builder/three-stage from 04 (sec:m-model, sec:builder) + measurement series/explosion from 06 (sec:series, sec:explosion)}
+Four formally separated subsystems with distinct responsibilities form the model: the
+\texttt{messung\_driver} (the evaluation orchestrator that runs the pipeline per mandatory measurement
+series A/B/C), the \texttt{CacheEngineBuilder} (an autonomous platform-measurement system that executes the
+seven-phase pipeline), the \texttt{CacheEngine} (the axis building-block library with the default
+implementations per axis), and the \texttt{probe} PRT-ART (which supplies some axis-organs itself and
+consumes cache-engine services for the rest). The \texttt{ExecutionEngine} is not a fifth subsystem but the
+shared measurable root (the \texttt{IExecutionEngine} interface) through which these four are connected.
+Defining is the \emph{bidirectional} cache-engine\,$\leftrightarrow$\,probe relationship: the cache engine
+instantiates the probe per permutation configuration, and the probe calls cache-engine services (telemetry,
+prefetch, heuristics) at runtime during its own lookups. This symmetry carries the \emph{multi-probe}
+capability, with which measurement series~A compares the probe against many SOTA adapters in a single
+pipeline (Figure~\ref{fig:m-model}).
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=5pt, minimum width=3.3cm}]
+    \node[comp] (driver) at (0,0) {\texttt{messung\_driver}\\{\scriptsize evaluation orchestrator (A/B/C)}};
+    \node[comp] (builder) at (0,-1.7) {\texttt{CacheEngineBuilder}\\{\scriptsize seven-phase pipeline}};
+    \node[comp] (engine) at (-3.0,-3.7) {\texttt{CacheEngine}\\{\scriptsize axis building-block library}};
+    \node[comp] (probe) at (3.0,-3.7) {probe (PRT-ART)\\{\scriptsize own axis-organs}};
+    \draw[->] (driver) -- (builder);
+    \draw[->] (builder) -- (engine);
+    \draw[->] (builder) -- (probe);
+    \draw[<->] (engine) -- node[below, font=\scriptsize, align=center] {(a)~instantiates\\(b)~calls services} (probe);
+  \end{tikzpicture}
+  \caption{The M-model: four formally separated subsystems; the \texttt{ExecutionEngine} is the shared
+  measurable root (not a fifth subsystem). The bidirectional
+  cache-engine\,$\leftrightarrow$\,probe relationship carries the multi-probe capability.}\label{fig:m-model}
+\end{figure}
+
+The builder orchestrates a \emph{three-stage evaluation}: \textbf{Stage~1} (cache-engine only) uses the
+default variant per axis, \textbf{Stage~2} (probe only) replaces the overridden axes by the probe variants
+and otherwise keeps the defaults, and \textbf{Stage~3} (full join, non-redundant) combines default and all
+probe variants. Each stage can produce up to thousands of non-redundant permutation binaries that are
+loaded at runtime as ABI-stable C++23 modules; the present measurement run materializes a sparse, capped
+subset of these (Figure~\ref{fig:three-stage}).
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{tikzpicture}[stage/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
+    \node[draw, rounded corners, font=\footnotesize, inner sep=4pt] (b) at (0,0) {\texttt{CacheEngineBuilder}};
+    \node[stage] (s1) at (-4.3,-1.8) {\textbf{Stage~1}\\\scriptsize cache-engine only:\\default per axis};
+    \node[stage] (s2) at (0,-1.8) {\textbf{Stage~2}\\\scriptsize probe only:\\overridden axes};
+    \node[stage] (s3) at (4.3,-1.8) {\textbf{Stage~3}\\\scriptsize full join:\\default $\times$ probe};
+    \node[draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt] (out) at (0,-3.7) {non-redundant permutation binaries (ABI modules, capped materialization)};
+    \draw[->] (b) -- (s1);
+    \draw[->] (b) -- (s2);
+    \draw[->] (b) -- (s3);
+    \draw[->] (s1) -- (out);
+    \draw[->] (s2) -- (out);
+    \draw[->] (s3) -- (out);
+  \end{tikzpicture}
+  \caption{The builder's three-stage evaluation: each stage produces non-redundant permutation binaries;
+  their mapping onto the measurement series~A/B/C is shown by
+  Table~\ref{tab:stage-series}.}\label{fig:three-stage}
+\end{figure}
+
+These stages do \emph{not} map one-to-one onto the three mandatory measurement series but feed them: the
+default binaries of Stage~1 (including the reconstructed SOTA profiles) and the probe binaries of Stage~2
+\emph{jointly} form the comparison series~A; the non-redundant full join of Stage~3 is the basis of the
+variation series~B; and the regression series~C is bound to no single stage but runs build-spanning over
+successive states of the same configuration (Table~\ref{tab:stage-series}).
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Mapping of the three-stage evaluation onto the mandatory measurement series}\label{tab:stage-series}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Evaluation stage} & \textbf{Content} & \textbf{feeds series} \\
+    \midrule
+    Stage~1 (cache-engine only) & default building blocks + SOTA profiles & A (baseline also for C) \\
+    Stage~2 (probe only) & overridden axes = probe variants & A \\
+    Stage~3 (full join) & default $\times$ probe, non-redundant & B \\
+    build-spanning & old vs.\ new of the same configuration & C \\
+    \bottomrule
+  \end{tabular}
+
+  \smallskip
+  {\footnotesize The three evaluation stages map not one-to-one but in this assignment onto the three
+  mandatory measurement series~A/B/C; series~C is build-/version-spanning (not bound to a single evaluation
+  stage).\par}
+\end{table}
+
+The three measurement series --- all executed by the \texttt{messung\_driver} via the
+\texttt{ExperimentDriver} library --- are thus: \emph{series~A} (PRT-ART vs.\ state of the art) with the
+modes A\_defined (8 Rank-1 profiles) and A\_full (all 30 SOTA profiles); \emph{series~B} (systematic
+variation of the axis decisions all else held equal, to isolate the contribution of each axis); and
+\emph{series~C} (concrete merge points between PRT-ART building blocks and cache-engine permutations, e.g.\
+PRT-ART OLC + tcmalloc + ART page). Each series is collected in three granularities:
+\emph{micro-benchmarking} compares each design constituent in isolation over the shared category interface,
+\emph{macro-benchmarking} measures the individual \texttt{std::map} operations, and \emph{overall
+benchmarking} runs the YCSB load profiles over every recombination. Precisely this three-granularity
+methodology is the answer to the separability problem: by measuring each constituent first in isolation
+(micro) before it appears in the operation and overall context, the contributions are separated and become
+measurable in isolation instead of remaining blended in the overall throughput.
+
+The system reduces the space thus spanned deliberately. With the extension to nineteen axes plus around
+sixty-four sub-axes it grows to about $10^{14}$ permutations; three mechanisms dampen the explosion: the
+\texttt{<expected\_workload>} profile filter routes only compatible workloads, the \texttt{Defined} mode
+runs only the declared tuples (around 100--1000 per series, which enter the manuscript), and the
+\texttt{Full} or \texttt{Full-Sampled} mode (e.g.\ every thousandth permutation) runs only on the ZIH
+cluster, observing the axis compatibility reported by the platform probe.
 
 \section{PRT-ART as Demonstrator}\label{sec:prtart-demo}
 PRT-ART is the probe that shows the system holds: it supplies some organs itself and falls back on the default
 building blocks for the rest.
-\bildPH{B9: PRT-ART demonstrator}{PRT-ART plugs into the M-model and overrides selected organs.}
-\inhaltPH{PRT-ART concept from 04\_concept\_architecture (sec:prt-art)}
+PRT-ART is a \emph{probe}: an abstract living being that supplies some axis-organs itself and falls back
+via a compile-time fallback (\texttt{resolve\_baustein.hpp}) on the cache-engine default building blocks
+where it does not override an axis; the hybrid \texttt{PrtArtSearchEngine<Ts\ldots>} API remains
+unaffected, and the runtime binding occurs via the execution-engine adapter, not via a separate
+search-engine layer. Concretely, PRT-ART contributes its own implementations in the build axis page type
+and the organs layout, allocator, prefetch, concurrency pattern, and telemetry --- the 4+2 pool allocator
+in the free-list sub-axis, path-oriented (bundle) prefetch, optimistic lock coupling with reserved value
+blocks, and the hypothesis metrics H1/H2/H3 ---; for the remaining axes it reuses existing SOTA building
+blocks via the permutation configuration. Thus the probe shows that the measurement system holds: a novel
+living being arises from a few of its own organs plus the default toolkit and is measurable over the same
+probe dock as every reconstructed SOTA method.
+% TODO Stage-2 masses: B9 PRT-ART demonstrator (PRT-ART in the M-model, overrides selected organs) in 3.4
+% TODO Stage-2 masses: PRTART-1..N one figure per PRT-ART algorithm -> Ch. 4.2
 
 \section{Sharpening through Heuristics}\label{sec:heuristics}
 From the measurement series one can derive --- as an outlook mechanism --- the best axis composition per load and
@@ -405,4 +515,17 @@ data-type profile and store it as a reusable profile.
 \end{tikzpicture}
 \caption{The heuristic loop: from the measurement series the best axis composition per load profile is learned, stored as an XML load profile, and fed back via the workload filter into the next measurement.}\label{fig:heuristic-loop}
 \end{figure}
-\inhaltPH{Heuristics from 04 (sec:heuristic-profile-selection) + 06 (sec:measurements-to-heuristics)}
+\emph{This is an outlook mechanism, not a function implemented within this thesis.} Beyond mere ranking, a
+\emph{heuristic extraction} is envisioned as a follow-up phase after \textbf{Persist} that automatically
+derives from the collected measurements which axis configuration is best per workload and dataset. The
+intended mechanism is an ML classification in three steps: first, features are extracted per permutation
+--- the load-profile and dataset features (workload type, key distribution, alphabet and prefix
+characteristics) and the axis assignment ---, with the best performance measured per load pattern as the
+target; over these an \emph{ML classifier} learns the mapping from load-profile/axis features to the best
+configuration; and it delivers per workload/dataset class the recommended axis composition without
+re-running the entire permutation space. The result is persisted as a reusable \emph{XML load profile} ---
+symmetric to the measurement-series XML configurations --- and can be fed back into the
+\texttt{<expected\_workload>} filter without a full re-measurement; this closes the loop between
+measurement, learned heuristic, and configuration-guiding selection (Figure~\ref{fig:heuristic-loop}). The
+concrete realization of this selection and delivery mechanism remains reserved for future work
+(Chapter~\ref{ch:conclusion}).
