@@ -223,6 +223,17 @@ With which software-system means --- compile-time metaprogramming, static use of
 Section~\ref{sec:hardware-history} --- can the abstraction be \emph{realized}? Here we bring the known methods
 together visually into \emph{our} axes and define all components, the conceptual special constructs (hulls,
 particular design patterns), the terminology, and the foundations of scientific measurement.
+The central idea is to treat an algorithm not as a monolith but as a \emph{composition of orthogonal
+axes} --- each axis a partial decision of a cache-aware index (how pages are arranged, how nodes branch,
+how memory is allocated). A concrete algorithm is then a point in the Cartesian product of all axes, a
+state-of-the-art design an explicit configuration. The decisive property is \emph{modular
+exchangeability}: a new axis variant can be studied in isolation --- its effect measured per axis \emph{and}
+for the whole algorithm --- without reimplementing the others; this is precisely what solves the
+separability problem, since the contribution of each constituent becomes measurable in isolation while the
+other axes are held fixed. A vivid metaphor captures this: a search algorithm as a \emph{living being}
+whose \emph{organs} are the axes, and the measurement system as its medical diagnostics
+(Figure~\ref{fig:anatomy-bridge}).
+
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
   organism/.style={draw, rounded corners, minimum width=2.8cm, minimum height=3.4cm, fill=red!4},
@@ -246,6 +257,12 @@ particular design patterns), the terminology, and the foundations of scientific 
 \end{tikzpicture}
 \caption{The anatomy bridge: just as a living being consists of interacting organs, a search algorithm is a composition of axis-organs; the measurement system takes the role of medical diagnostics and measures each organ in isolation.}\label{fig:anatomy-bridge}
 \end{figure}
+
+The permutation of axes then resembles a genetic experiment: exchanging organs between living beings
+produces new composite algorithms with hitherto unknown cache-line behaviour. The organs themselves are
+won from the state of the art --- the design building blocks of the known methods
+(Section~\ref{sec:overview}) are decomposed into orthogonal axes and collected in a shared axis matrix, so
+that each axis harvests the contributions of the entire corpus (Figure~\ref{fig:synth}).
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   paper/.style={draw,rounded corners,fill=orange!12,minimum width=1.8cm,minimum height=0.52cm},
@@ -267,6 +284,15 @@ particular design patterns), the terminology, and the foundations of scientific 
 \end{tikzpicture}
 \caption{Synthesis state of the art $\to$ axes: the design building blocks of the known methods are decomposed into orthogonal axes; each axis collects the contributions of the entire corpus --- the inverse of Figure~\ref{fig:design-space} (there an algorithm is a point, here an axis is a collecting basin).}\label{fig:synth}
 \end{figure}
+
+The anatomy thus won is more than the enumeration of the organs: it is their \emph{wiring}. Each organ
+exports a generalized interface through which the others use its services without knowing its concrete
+realization --- thus the allocation organ provides a shared allocation interface that node layout, value
+placement, and serialization use for their memory needs (Figure~\ref{fig:axis-organ}). In
+software-engineering terms this is the \emph{feature interaction} of feature-oriented software product
+lines~\cite{apel2013feature,batory1992hierarchical}: an axis corresponds to a feature, a living being to a
+feature composition, the anatomy to the wiring between the features. Which axis uses which is shown by the
+inter-organ usage graph (Figure~\ref{fig:usage}).
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   organ/.style={draw,circle,minimum size=1.25cm,fill=green!7,inner sep=0pt}]
@@ -302,6 +328,15 @@ particular design patterns), the terminology, and the foundations of scientific 
 \end{tikzpicture}
 \caption{Inter-organ usage graph (\enquote{which axis uses which}): the allocation organ (T6) provides its generalized interface to the memory-needing organs layout, value hull and serialization (solid, cf.\ Figure~\ref{fig:axis-organ}); the remaining organ couplings (dashed) are representative --- the complete wiring follows per axis with the implementation in Chapter~\ref{ch:impl}.}\label{fig:usage}
 \end{figure}
+
+These organs are embedded in \emph{one} architecture --- a single, self-contained hierarchy without
+parallel trees. At its root stands the \texttt{ExecutionEngine} as the common, measurable abstraction over
+everything measurable; beneath it three levels can be distinguished: the \emph{genus} as the
+outward-visible algorithm interface (the \emph{probe dock}), beneath it the \emph{genus subclass} with a
+fixed axis set, beneath that the \emph{organs} themselves (Figure~\ref{fig:three-levels}).
+\enquote{Living being} and \texttt{SearchAlgorithm} denote the same entity --- metaphor and technical term
+---; the anatomy is not a second model but the \emph{body} of this living being: the fixed composition of
+its nineteen axis-organs.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   box/.style={draw,rounded corners,inner sep=3pt,minimum height=0.7cm}]
@@ -316,6 +351,13 @@ particular design patterns), the terminology, and the foundations of scientific 
 \end{tikzpicture}
 \caption{The three-level model: genus (level 1, outer interface) $\to$ tier subclass (level 2, fixed axis set) $\to$ organs/axes (level 3). The SearchAlgorithm genus carries the ``mammal'' with the nineteen axes; the Container genus the subclasses Set/Sequence/Adapter/View.}\label{fig:three-levels}
 \end{figure}
+
+At the topmost level there stand exactly three genera. The \texttt{SearchAlgorithm} genus --- the
+key-value-oriented probe dock and the focus of this thesis --- carries as its sole subclass the full
+nineteen-axis \enquote{mammal}; the \texttt{Container} genus (keyless storage) fans out into the
+subclasses Set, Sequence, Adapter, and View; the \texttt{Graph} genus carries its own, different organ set
+(Figure~\ref{fig:genera}). Non-tree-like methods thus require no genus of their own but occupy a
+restricted axis subset of the same genus.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   gen/.style={draw,rounded corners,fill=blue!10,minimum width=2.9cm,minimum height=0.7cm,font=\bfseries\footnotesize},
@@ -338,6 +380,18 @@ particular design patterns), the terminology, and the foundations of scientific 
 \end{tikzpicture}
 \caption[The three genera with their tier subclasses]{The three genera (level~1) with their tier subclasses (level~2): \texttt{SearchAlgorithm} carries as its sole subclass the \enquote{mammal} with the full nineteen-axis anatomy; \texttt{Container} fans out into Set, Sequence, Adapter and View (\enquote{bird}, \enquote{reptile}, \enquote{invertebrate}, \enquote{plant}); \texttt{Graph} has its own, different organ set (tier subclasses still open). Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
 \end{figure}
+
+The actual contribution thus lies less in a single structure than in a \emph{tool}: instead of solving the
+comparison problem directly, this thesis first builds the \enquote{shovel} --- the permutation and
+measurement apparatus --- with which arbitrary axis combinations can be generated and fairly measured.
+Scientifically this apparatus situates itself in the software engineering of \emph{composition}: invasive
+software composition from gray-box components~\cite{assmann2003invasive}, generative
+programming~\cite{czarnecki2000generative}, and feature-oriented software product
+lines~\cite{apel2013feature,batory1992hierarchical}. The axis concept itself is adopted from prior work by
+the author (the Comdare\,/\,BEP~Venture~UG brand, originally for the deduplication optimization of the
+UltiHash database); the contribution of this thesis is its transfer to cache-aware search structures and
+its design-pattern-driven, measurement-oriented realization. In software-engineering terms the apparatus
+is a composition of named design patterns and two new compile-time patterns (Figure~\ref{fig:patterns}).
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
   \node[draw,rounded corners,fill=green!5,minimum width=12.8cm,minimum height=1.7cm] (classic) at (0,0){};
