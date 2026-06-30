@@ -307,6 +307,8 @@ inter-organ usage graph (Figure~\ref{fig:usage}).
 \end{tikzpicture}
 \caption{Axis $=$ organ, anatomy $=$ wiring: each organ exports a generalized interface used by the others --- e.g.\ the shared allocation interface.}\label{fig:axis-organ}
 \end{figure}
+
+Composing these pairwise couplings across all organs yields a directed inter-organ usage graph.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   org/.style={draw,rounded corners,fill=green!8,minimum width=1.8cm,minimum height=0.72cm,font=\scriptsize},
@@ -363,7 +365,7 @@ restricted axis subset of the same genus.
   gen/.style={draw,rounded corners,fill=blue!10,minimum width=2.9cm,minimum height=0.7cm,font=\bfseries\footnotesize},
   sub/.style={draw,fill=green!8,minimum width=2.9cm,minimum height=0.74cm,font=\scriptsize},
   tbd/.style={draw,fill=gray!12,minimum width=2.9cm,minimum height=0.74cm,font=\scriptsize}]
-  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (4.0,1.35){kingdom \enquote{Animalia} (living beings)};
+  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (4.0,1.35){kingdom \enquote{Animalia} (anatomy-bearing)};
   \node[gen] (g1) at (0,0){SearchAlgorithm};
   \node[gen] (g2) at (4.0,0){Container};
   \node[gen] (g3) at (8.0,0){Graph};
@@ -406,5 +408,111 @@ is a composition of named design patterns and two new compile-time patterns (Fig
 \end{tikzpicture}
 \caption{Design patterns as building blocks of the architecture: above the classical GoF patterns used throughout the code with their respective role, below the two new compile-time patterns named in this thesis; their composition forms the design-pattern-driven, measurement-oriented architecture (Section~\ref{sec:software-means}).}\label{fig:patterns}
 \end{figure}
-\bildPH{B8: Hulls / ABI adapter}{Living being in the ABI hull across the module boundary; the SearchEngine view.}
-\inhaltPH{Definitions from 04\_concept\_architecture (one-architecture/three-levels/ABI) + 02\_fundamentals (comparison interfaces, C++23 patterns, scientific measurement) + 03 (design-pattern contribution). \textbf{Further figures:} UML-* (maps of all code interfaces).}
+
+The classical patterns are not ornament but the wiring of the apparatus: \emph{Strategy} encapsulates each
+of the nineteen axes as an interchangeable algorithm, \emph{Abstract Factory}, \emph{Composite}, and
+\emph{Iterator} build and traverse the permutation tree, \emph{Adapter} binds foreign code behind the
+stable engine interface, and \emph{Observer} as well as \emph{Decorator} (non-intrusive measurement hulls)
+collect the measurements, while a \emph{Memento} (copy-on-write) secures the state between warm-up and
+measurement~\cite{gamma1994patterns}. Static polymorphism is provided by the \emph{Curiously Recurring
+Template Pattern} (CRTP) together with \emph{Template-Method} concept checks; \texttt{if~constexpr} and
+\texttt{std::conditional\_t} select per axis between the probe and the cache-engine standard, and
+\emph{policy-based design} captures the composition as a tuple of axis policies~\cite{alexandrescu2001modern}. C++23 modules structure the translation units but by
+themselves do not yet guarantee portable ABI stability~\cite{wg21_modules_abi} --- only the C-stable
+module boundary establishes that.
+Beyond the established patterns, the thesis names two constructions for which a web search found no
+established term: the \emph{lazy-sparse cartesian materialization}, which counts the product space of over
+$10^{14}$ axis combinations only arithmetically and materializes each path individually on demand in mixed
+radix, rather than blowing up the compiler with the full type tree; and the \emph{type-driven source
+emission}, which extracts fully qualified type names from a compile-time axis composition, renders them to
+C++ source, and loads each permutation as a standalone module across the ABI boundary --- thus the probe
+PRT-ART is compiled, by metaprogramming, in matrix layers against the cache engine.
+This one architecture is made visible to the outside through an ABI-stable \emph{hull}. The living being
+\texttt{SearchAlgorithm} and its ABI-runtime view --- the \enquote{SearchEngine} --- are merely two views
+of the same entity across the module boundary, not a parallel construct: the layering
+\texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} separates the roles ---
+the \texttt{CacheEngine} as the axis building-block library, the \texttt{ExecutionEngine} as the root of
+the execution and measurement tooling (OS primitives; in experiment mode the measurement aggregator over
+exactly one observer interface), and the \texttt{SearchEngine} as the search-API view measured over
+precisely that interface (Figure~\ref{fig:one-architecture}). Axis-less \emph{viruses} stand as siblings
+beneath the same root but carry no anatomy.
+
+\begin{figure}[!htbp]
+  \centering
+  \resizebox{0.92\textwidth}{!}{%
+  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
+    \node[box] (root) at (0,0) {\texttt{IExecutionEngine}\\{\scriptsize root: everything measurable}};
+    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize anatomy genera}};
+    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize virus (axis-less)}};
+    \node[box] (sa) at (-5.6,-3.8) {SearchAlgorithm genus\\{\scriptsize $\equiv$ \enquote{living being} (mammal)}};
+    \node[box] (cont) at (-2.0,-3.8) {Container genus\\{\scriptsize Set/Sequence/Adapter/View}};
+    \node[box] (graph) at (1.5,-3.8) {Graph genus\\{\scriptsize own organ set}};
+    \node[box] (body) at (-7.0,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{body}: 19 organs}};
+    \node[box] (abi) at (-4.6,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI view (\enquote{SearchEngine})}};
+    \draw[->] (root) -- (ana);
+    \draw[->] (root) -- (vir);
+    \draw[->] (ana) -- (sa);
+    \draw[->] (ana) -- (cont);
+    \draw[->] (ana) -- (graph);
+    \draw[->] (sa) -- (body);
+    \draw[->] (sa) -- (abi);
+  \end{tikzpicture}}
+  \caption{The \emph{one} architecture as a single hierarchy without parallel trees: beneath the root
+  branch the anatomy-bearing \emph{genera} (SearchAlgorithm, Container, Graph) and the axis-less
+  \emph{viruses}; \texttt{SearchAlgorithm} \emph{is} the focal living being (mammal), its anatomy is its
+  \emph{body}, and \enquote{SearchEngine} only its ABI-runtime view. Container (keyless storage) and Graph
+  carry their own organ sets.}\label{fig:one-architecture}
+\end{figure}
+
+Concretely, the module boundary is a C-stable interface that exports exactly one living being per
+permutation; its variadic hybrid API specializes by parameter count, and complex keys are reduced by a
+fingerprint component to 16-byte binary strings of fixed length (Figure~\ref{fig:abi}).
+
+\begin{figure}[!htbp]
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
+// C-stable module boundary: exports one living being per permutation
+extern "C" IAnatomyBase* comdare_create_anatomy();
+
+// Variadic hybrid API by parameter count (key K, values V):
+//   1 parameter  ->  std::vector<V>
+//   2 parameters ->  std::map<K, V>
+//   N > 2        ->  std::map<K,std::tuple<V1,...,VN>>
+template<class... Ts> class SearchEngine; // ABI-runtime view of the being
+\end{lstlisting}
+  \caption{The ABI-stable C module boundary and the variadic hybrid API. Complex keys are reduced by a
+  fingerprint component to 16-byte binary strings of fixed length.}\label{fig:abi}
+\end{figure}
+To compare structurally different search algorithms \emph{fairly}, the thesis maps them all onto a single,
+well-understood interface: the C++ contract of the ordered map \texttt{std::map<Key,\,Value>} with point
+query (\texttt{find}), insertion/update (\texttt{insert}, \texttt{emplace}),
+deletion (\texttt{erase}), and order-based navigation (\texttt{lower\_bound}/\texttt{upper\_bound}, range
+iteration)~\cite{iso_cpp}. The axes describe the \emph{inner} behaviour behind this fixed interface, so
+that the comparison of two conformant \texttt{std::map} implementations becomes the central measurement
+act; in parallel the sequence hull \texttt{std::vector} (indexed access, resizing, contiguous storage)
+serves as a container comparison case, to check whether an axis composite also carries the container and
+not only the search semantics. Behind the fixed outer interface the system distinguishes several
+\emph{levels of dynamics} that determine \emph{when} an axis decision is made: the topmost split of compile
+time versus run time; the living-being type, which occupies only a subset of the axes; the axis algorithms
+compiled into a binary at compile time (static recombination); the dynamic sub-axes, whose runtime
+parameters (prefetch distance, batch size, inline threshold, pool budget) are varied without
+recompilation; and the static sub-axes as a compile-time choice among partial algorithms of differing
+complexity. Against the static design-space enumeration of the \emph{Data
+Calculator}~\cite{idreos2018datacalculator} and classical \emph{policy-based
+design}~\cite{alexandrescu2001modern}, this taxonomy expressly carries compile- and runtime-variable axis
+levels together.
+
+These building blocks are only as meaningful as their measurement. Scientific measurement is subject to
+established quality criteria~\cite{hoefler2015benchmarking}: \emph{reproducibility} (fixed seeds,
+deterministic order, documented configuration), \emph{validity} (internally causally isolated effects,
+construct and external transferability), \emph{fairness} (identical keys, workloads, and warm-up; missing
+capabilities reported as \emph{N/A} rather than covertly emulated), and \emph{dispersion} as part of the
+statement (percentiles over HDR histograms instead of arithmetic means, with significance testing). On
+these criteria the measurement patterns used here build: a \emph{two-phase operation loop} separates a
+discarded warm-up from the actual measurement; collection is \emph{hybrid} --- isolated axis algorithms
+directly against one another, a composed living being centrally over an ABI-stable per-axis observer
+interface ---; and a \emph{conformance gate} checks the \texttt{std::map} contract before each measurement,
+so that only comparable things are compared. These concepts form the \emph{definitional classes} of
+measurement; their technical \emph{instances} --- hardware performance counters, OTF2/VAMPIR profiling, the
+TU-Dresden hardware measurement methodology --- and the \emph{why} of their choice are developed by the
+measurement system in Chapter~\ref{ch:measurement}.
+% TODO Stage-2 masses: UML maps of all code interface structures in 2.3

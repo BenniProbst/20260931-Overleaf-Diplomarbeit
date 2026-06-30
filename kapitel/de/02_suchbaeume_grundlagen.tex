@@ -319,6 +319,9 @@ zwischen den Features. Welche Achse welche nutzt, zeigt der Inter-Organ-Nutzungs
 \end{tikzpicture}
 \caption{Achse $=$ Organ, Anatomie $=$ Verdrahtung: jedes Organ exportiert ein generalisiertes Interface, das die übrigen nutzen --- etwa das gemeinsame Allokations-Interface.}\label{fig:axis-organ}
 \end{figure}
+
+Setzt man diese paarweisen Kopplungen über alle Organe zusammen, entsteht ein gerichteter
+Inter-Organ-Nutzungs-Graph.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   org/.style={draw,rounded corners,fill=green!8,minimum width=1.8cm,minimum height=0.72cm,font=\scriptsize},
@@ -375,7 +378,7 @@ keine eigene Gattung, sondern belegen ein eingeschränktes Achsen-Subset derselb
   gen/.style={draw,rounded corners,fill=blue!10,minimum width=2.9cm,minimum height=0.7cm,font=\bfseries\footnotesize},
   sub/.style={draw,fill=green!8,minimum width=2.9cm,minimum height=0.74cm,font=\scriptsize},
   tbd/.style={draw,fill=gray!12,minimum width=2.9cm,minimum height=0.74cm,font=\scriptsize}]
-  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (4.0,1.35){Reich \enquote{Animalia} (Lebewesen)};
+  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (4.0,1.35){Reich \enquote{Animalia} (anatomie-tragend)};
   \node[gen] (g1) at (0,0){SearchAlgorithm};
   \node[gen] (g2) at (4.0,0){Container};
   \node[gen] (g3) at (8.0,0){Graph};
@@ -419,5 +422,114 @@ der Apparat eine Komposition benannter Entwurfsmuster und zweier neuer Übersetz
 \end{tikzpicture}
 \caption{Entwurfsmuster als Bausteine der Architektur: oben die im Code durchgängig verwendeten klassischen GoF-Muster mit ihrer jeweiligen Rolle, unten die zwei in dieser Arbeit benannten neuen Übersetzungszeit-Muster; ihre Komposition bildet die design-pattern-getriebene, mess-orientierte Architektur (Abschnitt~\ref{sec:software-means}).}\label{fig:patterns}
 \end{figure}
-\bildPH{B8: Hüllen / ABI-Adapter}{Lebewesen in der ABI-Hülle über der Modulgrenze; die SearchEngine-Sicht.}
-\inhaltPH{Definitionen aus 04\_concept\_architecture (Eine-Architektur/3-Ebenen/ABI) + 02\_fundamentals (Vergleichsinterfaces, C++23-Pattern, wissenschaftliches Messen) + 03 (Design-Pattern-Beitrag). \textbf{Weitere Bilder:} UML-* (Landkarten aller Code-Interfaces).}
+
+Die klassischen Muster sind dabei keine Zierde, sondern die Verkabelung des Apparats: \emph{Strategy}
+kapselt jede der neunzehn Achsen als austauschbaren Algorithmus, \emph{Abstract Factory}, \emph{Composite}
+und \emph{Iterator} bilden und durchlaufen den Permutations-Baum, \emph{Adapter} bindet Fremd-Code hinter
+der stabilen Engine-Schnittstelle an, und \emph{Observer} sowie \emph{Decorator} (nicht-intrusive
+Mess-Hüllen) erheben die Messwerte, während ein \emph{Memento} (Copy-on-Write) den Zustand zwischen
+Warmlauf und Messung sichert~\cite{gamma1994patterns}. Den statischen Polymorphismus liefert das
+\emph{Curiously Recurring Template Pattern} (CRTP) samt \emph{Template-Method}-Concept-Prüfungen;
+\texttt{if~constexpr} und \texttt{std::conditional\_t} wählen je Achse zwischen Prüfling- und
+Cache-Engine-Standard, und \emph{Policy-based Design} fasst die Komposition als Tupel von
+Achsen-Policies~\cite{alexandrescu2001modern}. C++23-Module strukturieren dabei die
+Übersetzungseinheiten, garantieren für sich genommen aber noch keine portable
+ABI-Stabilität~\cite{wg21_modules_abi} --- diese stellt erst die C-stabile Modulgrenze her. Über die etablierten Muster hinaus benennt die Arbeit zwei
+Konstruktionen, für die eine Web-Recherche keine etablierte Bezeichnung fand: die \emph{lazy-spärliche
+kartesische Materialisierung}, die den Produktraum von über $10^{14}$ Achsen-Kombinationen nur
+arithmetisch zählt und je Pfad mixed-radix einzeln on-demand erzeugt, statt den Compiler mit dem vollen
+Typ-Baum zu sprengen; und das \emph{typgetriebene Quelltext-Emittieren}, das aus einer compile-zeitlichen
+Achsen-Komposition voll-qualifizierte Typnamen extrahiert, zu C++-Quelltext rendert und je Permutation als
+eigenständiges Modul über die ABI-Grenze lädt --- so wird der Prüfling PRT-ART per Metaprogrammierung in
+Matrix-Schichten gegen die Cache-Engine kompiliert.
+Diese eine Architektur wird über eine ABI-stabile \emph{Hülle} nach außen sichtbar. Das Lebewesen
+\texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind nur zwei
+Sichten desselben Gegenstands über die Modulgrenze, kein paralleles Konstrukt: Die Schichtung
+\texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} trennt die Rollen ---
+die \texttt{CacheEngine} als Achsen-Bausteine-Bibliothek, die \texttt{ExecutionEngine} als Wurzel der
+Ausführungs- und Mess-Werkzeuge (OS-Primitiven; im Experiment-Modus der Mess-Aggregator über genau eine
+Beobachter-Schnittstelle) und die \texttt{SearchEngine} als die über genau diese Schnittstelle vermessene
+Such-API-Sicht (Abbildung~\ref{fig:one-architecture}). Achsenlose \emph{Viren} stehen als Geschwister
+unter derselben Wurzel, tragen aber keine Anatomie.
+
+\begin{figure}[!htbp]
+  \centering
+  \resizebox{0.92\textwidth}{!}{%
+  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
+    \node[box] (root) at (0,0) {\texttt{IExecutionEngine}\\{\scriptsize Wurzel: alles Ausmessbare}};
+    \node[box] (ana) at (-3.4,-1.9) {\texttt{IAnatomyBase}\\{\scriptsize Anatomie-Gattungen}};
+    \node[box] (vir) at (3.4,-1.9) {\texttt{IVirusExecutionEngine}\\{\scriptsize Virus (achsenlos)}};
+    \node[box] (sa) at (-5.6,-3.8) {SearchAlgorithm-Gattung\\{\scriptsize $\equiv$ \enquote{Lebewesen} (Säugetier)}};
+    \node[box] (cont) at (-2.0,-3.8) {Container-Gattung\\{\scriptsize Set/Sequence/Adapter/View}};
+    \node[box] (graph) at (1.5,-3.8) {Graph-Gattung\\{\scriptsize eigener Organsatz}};
+    \node[box] (body) at (-7.0,-5.7) {\texttt{SearchAlgorithmAnatomy<C>}\\{\scriptsize \emph{Körper}: 19 Organe}};
+    \node[box] (abi) at (-4.6,-5.7) {\texttt{SearchAlgorithmAbiAdapter<A>}\\{\scriptsize ABI-Sicht (\enquote{SearchEngine})}};
+    \draw[->] (root) -- (ana);
+    \draw[->] (root) -- (vir);
+    \draw[->] (ana) -- (sa);
+    \draw[->] (ana) -- (cont);
+    \draw[->] (ana) -- (graph);
+    \draw[->] (sa) -- (body);
+    \draw[->] (sa) -- (abi);
+  \end{tikzpicture}}
+  \caption{Die \emph{eine} Architektur als einzige Hierarchie ohne Parallel-Bäume: unter der Wurzel
+  verzweigen die anatomie-tragenden \emph{Gattungen} (SearchAlgorithm, Container, Graph) und die
+  achsenlosen \emph{Viren}; \texttt{SearchAlgorithm} \emph{ist} das fokale Lebewesen (Säugetier), seine
+  Anatomie ist sein \emph{Körper}, und \enquote{SearchEngine} nur dessen ABI-Laufzeit-Sicht. Container
+  (schlüsselloser Speicher) und Graph tragen eigene Organsätze.}\label{fig:one-architecture}
+\end{figure}
+
+Konkret ist die Modulgrenze eine C-stabile Schnittstelle, die je Permutation genau ein Lebewesen
+exportiert; ihre variadische Hybrid-API spezialisiert sich nach Parameterzahl, und komplexe Schlüssel
+werden von einer Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert
+(Abbildung~\ref{fig:abi}).
+
+\begin{figure}[!htbp]
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
+// C-stabile Modulgrenze: exportiert genau EIN Lebewesen je Permutation
+extern "C" IAnatomyBase* comdare_create_anatomy();
+
+// Variadische Hybrid-API je Parameterzahl (Schluessel K, Werte V):
+//   1 Parameter  ->  std::vector<V>
+//   2 Parameter  ->  std::map<K, V>
+//   N > 2        ->  std::map<K,std::tuple<V1,...,VN>>
+template<class... Ts> class SearchEngine;   // ABI-Laufzeit-Sicht des Lebewesens
+\end{lstlisting}
+  \caption{Die ABI-stabile C-Modulgrenze und die variadische Hybrid-API. Komplexe Schlüssel werden
+  von einer Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert.}\label{fig:abi}
+\end{figure}
+Damit strukturell verschiedene Suchalgorithmen \emph{fair} verglichen werden, bildet die Arbeit sie alle
+auf eine einzige, gut verstandene Schnittstelle ab: den C++-Vertrag der geordneten Map
+\texttt{std::map<Key,\,Value>} mit Punktanfrage (\texttt{find}), Einfügen/Aktualisieren (\texttt{insert},
+\texttt{emplace}), Löschen (\texttt{erase}) und ordnungsbasierter Navigation
+(\texttt{lower\_bound}/\texttt{upper\_bound}, Bereichs-Iteration)~\cite{iso_cpp}. Die Achsen beschreiben das
+\emph{innere} Verhalten hinter dieser festen Schnittstelle, sodass der Vergleich zweier konformer
+\texttt{std::map}-Implementierungen der zentrale Mess-Akt wird; parallel dient die Sequenz-Hülle
+\texttt{std::vector} (indizierter Zugriff, Größenänderung, zusammenhängender Speicher) als
+Container-Vergleichsfall, um zu prüfen, ob ein Achsen-Komposit auch die Container- und nicht nur die
+Suchsemantik trägt. Hinter der festen Außen-Schnittstelle unterscheidet das System mehrere \emph{Ebenen
+der Dynamik}, die festlegen, \emph{wann} eine Achsen-Entscheidung fällt: die oberste Trennung
+Übersetzungszeit gegen Laufzeit; der Lebewesen-Typ, der nur eine Teilmenge der Achsen belegt; die zur
+Übersetzungszeit in eine Binary einkompilierten Achsenalgorithmen (statische Rekombination); die
+dynamischen Sub-Achsen, deren Laufzeit-Parameter (Prefetch-Distanz, Stapelgröße, Inline-Schwelle,
+Pool-Budget) ohne Neuübersetzung variiert werden; und die statischen Sub-Achsen als übersetzungszeitliche
+Auswahl unter Teil-Algorithmen unterschiedlicher Komplexität. Gegenüber der statischen
+Entwurfsraum-Aufzählung des \emph{Data Calculator}~\cite{idreos2018datacalculator} und dem klassischen
+\emph{Policy-based Design}~\cite{alexandrescu2001modern} führt diese Taxonomie compile- und
+laufzeitvariable Achsen-Ebenen ausdrücklich gemeinsam.
+
+Diese Bausteine sind nur so aussagekräftig wie ihre Vermessung. Wissenschaftliches Messen unterliegt
+etablierten Gütekriterien~\cite{hoefler2015benchmarking}: \emph{Reproduzierbarkeit} (feste Seeds,
+deterministische Reihenfolge, dokumentierte Konfiguration), \emph{Validität} (intern kausal isolierte
+Effekte, Konstrukt- und externe Übertragbarkeit), \emph{Fairness} (identische Schlüssel, Workloads und
+Warmup; fehlende Fähigkeiten als \emph{N/A} statt verdeckt emuliert) und die \emph{Streuung} als Teil der
+Aussage (Perzentile über HDR-Histogramme statt arithmetischer Mittel, mit Signifikanzprüfung). Auf diesen
+Kriterien bauen die verwendeten Mess-Muster auf: eine \emph{Zwei-Phasen-Operationsschleife} trennt einen
+verworfenen Warmlauf von der eigentlichen Messung; die Erhebung erfolgt \emph{hybrid} --- isolierte
+Achsen-Algorithmen direkt gegeneinander, ein zusammengesetztes Lebewesen zentral über eine ABI-stabile
+Per-Achsen-Beobachter-Schnittstelle ---; und ein \emph{Konformitäts-Gatter} prüft vor jeder Messung den
+\texttt{std::map}-Vertrag, damit nur Vergleichbares verglichen wird. Diese Konzepte bilden die
+\emph{Definitions-Klassen} des Messens; ihre technischen \emph{Instanzen} --- Hardware-Performance-Zähler,
+OTF2-/VAMPIR-Profiling, die TU-Dresden-Hardware-Messmethodik --- sowie das \emph{Warum} ihrer Wahl führt
+das Mess-System in Kapitel~\ref{ch:measurement} aus.
+% TODO Stufe-2-Massen: UML-Landkarten aller Code-Interface-Strukturen in 2.3
