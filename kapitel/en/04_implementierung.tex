@@ -87,21 +87,38 @@ mirrored GitHub workflow) runs across all three repositories.
 \begin{figure}[htbp]\centering
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
-  ph/.style={draw,rounded corners,fill=blue!6,minimum width=1.7cm,minimum height=0.85cm},
-  opt/.style={draw,rounded corners,dashed,fill=orange!8,minimum width=2.1cm,minimum height=0.7cm,font=\scriptsize}]
+  ph/.style={draw,rounded corners,fill=blue!6,minimum width=1.6cm,minimum height=0.85cm},
+  hi/.style={draw,rounded corners,fill=orange!18,very thick,minimum width=1.6cm,minimum height=0.85cm},
+  opt/.style={draw,rounded corners,dashed,fill=orange!8,minimum width=2.0cm,minimum height=0.65cm,font=\scriptsize},
+  pb/.style={draw,rounded corners,fill=orange!16,very thick,minimum width=3.7cm,minimum height=1.05cm,text width=3.5cm,font=\scriptsize}]
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,0.95){Path A --- \texttt{ExperimentDriver} (in-process, 7 phases)};
   \node[ph] (p1) at (0,0){\textbf{1}\\Enumerate};
-  \node[ph] (p2) at (2,0){\textbf{2}\\Codegen};
-  \node[ph] (p3) at (4,0){\textbf{3}\\Compile};
-  \node[ph] (p4) at (6,0){\textbf{4}\\Load};
-  \node[ph] (p5) at (8,0){\textbf{5}\\Execute};
-  \node[ph] (p6) at (10,0){\textbf{6}\\Measure};
-  \node[ph] (p7) at (12,0){\textbf{7}\\Persist};
+  \node[ph] (p2) at (1.95,0){\textbf{2}\\Codegen};
+  \node[hi] (p3) at (3.9,0){\textbf{3}\\Compile};
+  \node[ph] (p4) at (5.85,0){\textbf{4}\\Load};
+  \node[hi] (p5) at (7.8,0){\textbf{5}\\Execute};
+  \node[hi] (p6) at (9.75,0){\textbf{6}\\Measure};
+  \node[ph] (p7) at (11.7,0){\textbf{7}\\Persist};
   \foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5,p5/p6,p6/p7}{\draw[->,thick] (\a)--(\b);}
-  \node[opt] (o1) at (3,-1.5){opt-in:\\hot-compile};
-  \node[opt] (o2) at (5,-1.5){opt-in:\\ABI verify};
+  \node[font=\scriptsize,text=orange!60!black] at (3.9,0.66){\textsc{Build}};
+  \node[font=\scriptsize,text=orange!60!black] at (8.78,0.66){\textsc{Measure}};
+  \node[opt] (o1) at (2.9,-1.4){opt-in:\\hot-compile};
+  \node[opt] (o2) at (4.9,-1.4){opt-in:\\ABI verify};
   \draw[->,dashed] (o1)--(p3);
   \draw[->,dashed] (o2)--(p4);
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,-2.75){Path B --- \texttt{BuildOrchestrator} $+$ \texttt{perm\_runner} (out-of-process, recommended)};
+  \node[pb] (b1) at (2.0,-3.65){\textbf{BUILD} \texttt{Build\-Orchestrator}: builds \emph{all} tier binaries first (resumable, RAM-aware)};
+  \node[pb] (b2) at (8.0,-3.65){\textbf{MEASURE} \texttt{perm\_runner}: loads $+$ measures each tier binary individually (1 DLL/process, via \texttt{IObservableTier})};
+  \draw[->,very thick] (b1)--node[above,font=\scriptsize]{tier binaries} (b2);
 \end{tikzpicture}}
-\caption{The seven-phase measurement pipeline of the \texttt{ExperimentDriver} per measurement series: Enumerate $\to$ Codegen $\to$ Compile $\to$ Load $\to$ Execute $\to$ Measure $\to$ Persist; two opt-in phases hot-compile missing modules and verify the ABI contract per module.}\label{fig:pipeline}
+\caption{The measurement pipeline in two forms. \textbf{Path~A} (top) is the in-process seven-phase pipeline
+of the \texttt{ExperimentDriver} per measurement series (Enumerate $\to$ Codegen $\to$ Compile $\to$ Load
+$\to$ Execute $\to$ Measure $\to$ Persist; two opt-in phases hot-compile missing modules and verify the ABI
+contract). Highlighted are the genuinely substantial phases: \textsc{Compile} (the \emph{build} of the tier
+binaries) and \textsc{Execute}/\textsc{Measure} (the \emph{measurement}); Codegen/Load/Persist are pure
+plumbing. \textbf{Path~B} (bottom, the recommended route) separates the two tasks out-of-process: the
+\texttt{BuildOrchestrator} builds \emph{all tier binaries first} (resumable, RAM-aware), after which
+\texttt{perm\_runner} loads and measures each binary individually (one DLL per process) through the observer
+interface \texttt{IObservableTier}.}\label{fig:pipeline}
 \end{figure}
 % TODO Stage-2 masses: AXIS-T0..T18 = one overall-concept figure per axis (19) still open (4.3)

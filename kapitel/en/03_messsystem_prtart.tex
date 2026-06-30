@@ -395,19 +395,32 @@ pipeline (Figure~\ref{fig:m-model}).
 
 \begin{figure}[!htbp]
   \centering
-  \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=5pt, minimum width=3.3cm}]
-    \node[comp] (driver) at (0,0) {\texttt{messung\_driver}\\{\scriptsize evaluation orchestrator (A/B/C)}};
-    \node[comp] (builder) at (0,-1.7) {\texttt{CacheEngineBuilder}\\{\scriptsize seven-phase pipeline}};
-    \node[comp] (engine) at (-3.0,-3.7) {\texttt{CacheEngine}\\{\scriptsize axis building-block library}};
-    \node[comp] (probe) at (3.0,-3.7) {probe (PRT-ART)\\{\scriptsize own axis-organs}};
-    \draw[->] (driver) -- (builder);
-    \draw[->] (builder) -- (engine);
-    \draw[->] (builder) -- (probe);
+  \resizebox{0.97\textwidth}{!}{%
+  \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt, minimum width=3.3cm},
+    bm/.style={draw, rounded corners, align=center, font=\scriptsize, inner sep=3pt, text width=3.7cm, minimum height=1.6cm, fill=orange!13}]
+    \node[comp,fill=blue!7,text width=4.7cm] (driver) at (0,0.6) {\texttt{messung\_driver} --- \textbf{WHAT}\\{\scriptsize thesis code: configs A/B/C $\cdot$ micro-bench $\cdot$ Welch statistics}};
+    \node[draw,thick,rounded corners,minimum width=9.8cm,minimum height=2.4cm,fill=gray!4] (bbox) at (0,-2.5){};
+    \node[font=\bfseries\scriptsize,anchor=north] at ([yshift=-2pt]bbox.north){\texttt{CacheEngineBuilder} --- \textbf{HOW}: builds $+$ measures tier binaries per configuration};
+    \node[bm] (build) at (-2.5,-2.75) {\textbf{BUILD}\\{\scriptsize \texttt{Build\-Orchestrator} $+$ \texttt{Experiment\-Tree}: builds all tier binaries per config (resumable, RAM-aware)}};
+    \node[bm] (measure) at (2.5,-2.75) {\textbf{MEASURE}\\{\scriptsize \texttt{perm\_runner} via \texttt{IObservableTier}: measures each tier binary individually (1 DLL / process)}};
+    \draw[->,very thick] (build) -- node[above,font=\scriptsize]{binaries} (measure);
+    \node[comp] (engine) at (-2.9,-5.3) {\texttt{CacheEngine}\\{\scriptsize axis building blocks (HOW)}};
+    \node[comp] (probe) at (2.9,-5.3) {probe (PRT-ART)\\{\scriptsize own axis-organs}};
+    \draw[->] (driver) -- node[right,font=\scriptsize]{configs} (bbox.north);
+    \draw[->] (engine) -- node[left,font=\scriptsize]{blocks} (build);
+    \draw[->] (measure) -- node[right,font=\scriptsize]{measures} (probe);
     \draw[<->] (engine) -- node[below, font=\scriptsize, align=center] {(a)~instantiates\\(b)~calls services} (probe);
-  \end{tikzpicture}
-  \caption{The M-model: four formally separated subsystems; the \texttt{ExecutionEngine} is the shared
-  measurable root (not a fifth subsystem). The bidirectional
-  cache-engine\,$\leftrightarrow$\,probe relationship carries the multi-probe capability.}\label{fig:m-model}
+  \end{tikzpicture}}
+  \caption{The M-model focused on the build and measurement phases. The outer \texttt{messung\_\-driver} loop
+  (\emph{WHAT}, thesis code) feeds the configurations of the three measurement series A/B/C; the
+  \texttt{CacheEngineBuilder} (\emph{HOW}, library) splits into the two genuinely interesting phases:
+  \textbf{BUILD} (\texttt{BuildOrchestrator}/\texttt{ExperimentTree} builds a standalone tier binary per
+  configuration, resumable and RAM-aware) and \textbf{MEASURE} (\texttt{perm\_runner} drives and measures
+  each tier binary individually through the observer interface \texttt{IObservableTier}). The
+\texttt{CacheEngine} supplies the
+  standard axis building blocks, the probe PRT-ART its own organs; their bidirectional relationship
+  ((a)~instantiates, (b)~calls services) carries the multi-probe capability. The \texttt{ExecutionEngine}
+  remains the shared measurable root.}\label{fig:m-model}
 \end{figure}
 
 The builder orchestrates a \emph{three-stage evaluation}: \textbf{Stage~1} (cache-engine only) uses the
