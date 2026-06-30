@@ -482,7 +482,8 @@ unter derselben Wurzel, tragen aber keine Anatomie.
 Konkret ist die Modulgrenze eine C-stabile Schnittstelle, die je Permutation genau ein Lebewesen
 exportiert; ihre variadische Hybrid-API spezialisiert sich nach Parameterzahl, und komplexe Schlüssel
 werden von einer Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert
-(Abbildung~\ref{fig:abi}).
+(Abbildung~\ref{fig:abi}). Wie diese und die übrigen Code-Interfaces im Detail zusammenhängen, fasst die
+UML-Landkarte in Abbildung~\ref{fig:uml-interfaces} zusammen.
 
 \begin{figure}[!htbp]
 \begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
@@ -532,4 +533,26 @@ Per-Achsen-Beobachter-Schnittstelle ---; und ein \emph{Konformitäts-Gatter} pr�
 \emph{Definitions-Klassen} des Messens; ihre technischen \emph{Instanzen} --- Hardware-Performance-Zähler,
 OTF2-/VAMPIR-Profiling, die TU-Dresden-Hardware-Messmethodik --- sowie das \emph{Warum} ihrer Wahl führt
 das Mess-System in Kapitel~\ref{ch:measurement} aus.
-% TODO Stufe-2-Massen: UML-Landkarten aller Code-Interface-Strukturen in 2.3
+\begin{figure}[htbp]\centering
+\resizebox{0.96\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  iface/.style={draw,rounded corners,fill=blue!7,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize},
+  comp/.style={draw,fill=green!8,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize}]
+  \node[font=\bfseries\scriptsize] at (-4.9,4.7){Engine-/Anatomie-Hierarchie};
+  \node[iface] (exec) at (-4.9,3.9){IExecutionEngine};
+  \node[iface] (anat) at (-4.9,2.7){IAnatomyBase};
+  \node[iface] (virus) at (-0.6,3.9){IVirusExecutionEngine};
+  \node[comp] (body) at (-4.9,1.5){SearchAlgorithmAnatomy<C>};
+  \node[comp] (abi) at (-4.9,0.3){SearchAlgorithmAbiAdapter<A>};
+  \draw[->] (exec)--(anat); \draw[->] (exec.east) to[bend left=10] (virus.west);
+  \draw[->] (anat)--(body); \draw[->] (body)--(abi);
+  \node[font=\bfseries\scriptsize] at (4.9,4.7){Implementierungs-Muster je Achse ($\times$19)};
+  \node[iface] (topic) at (4.9,3.9){TopicConcept $\wedge$ AxisConcept};
+  \node[comp] (crtp) at (4.9,2.7){AxisBase<Derived> (CRTP)};
+  \node[comp] (variant) at (4.9,1.5){std::variant<Baustein$_{1..k}$>};
+  \node[iface] (resolve) at (4.9,0.3){resolve\_baustein<Tag>};
+  \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
+  \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{komponiert 19 Achsen} (topic.west);
+\end{tikzpicture}}
+\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} über \texttt{IAnatomyBase} und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (die Komposition der neunzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}); rechts das je Achse wiederholte Implementierungs-Muster --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die \texttt{std::variant}-Baustein-Familie und die Übersetzungszeit-Auflösung \texttt{resolve\_baustein}, die je Achse zwischen Prüfling-Slot und Cache-Engine-Standard wählt.}\label{fig:uml-interfaces}
+\end{figure}
