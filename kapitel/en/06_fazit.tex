@@ -3,10 +3,79 @@
 % [SKELETON] from old 08_conclusion.
 
 \section{Answering the Research Questions}\label{sec:answers}
-\inhaltPH{RQ answers from 08\_conclusion (sec:answers)}
+\paragraph{RQ0 (Main question).} By how much active, measurement-driven cache-aware decisions outperform
+their passive, statically dimensioned counterparts can be quantified conclusively only after the
+end-to-end runs per platform (Section~\ref{sec:outlook}). What is prepared is the apparatus that isolates
+exactly this difference: the same axis-constant structure is permuted once actively (measurement-driven
+layout, prefetch, and value-placement decision) and once passively (statically dimensioned) and compared
+under an identical compiler and flag basis on hybrid CPUs and Sapphire Rapids.
+
+\paragraph{RQ1 (Composition).} The nineteen permutation axes (search-algorithm, cache-traversal, mapping,
+path-compression, node-type, memory-layout, allocator, prefetch, concurrency, serialization, telemetry,
+value-handle, ISA, index-organization, I/O-dispatch, migration, filter, and the two queuing axes) span a
+configuration space of around $10^{14}$ permutations. State-of-the-art designs are reconstructed
+unambiguously through algorithm-profile XMLs: 30 SOTA profiles (8 Rank-1 + 22 Rank-2/3) demonstrate that
+the axis decomposition carries P01--P33. The variadic API specialization (1/2/$N$ parameters onto
+\texttt{std::vector}/\texttt{std::map}/tuple) makes both algorithm- and container-oriented patterns
+expressible on one engine. The non-fully-orthogonal axis couplings (node type $\times$ SIMD $\times$ path
+compression) are marked as such and explicitly restricted during permutation.
+
+\paragraph{RQ2 (Measurement methodology).} Measurement is split into a production mode
+(\texttt{COMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=OFF}, no overhead) and an experiment mode (the
+result aggregator is an integral execution-engine member). Profile-aware workload routing selects the
+workload per permutation from the traversal tag, ensuring fair comparison between range-query- and
+point-lookup-oriented designs. Each series is collected at three granularities --- micro-, macro-, and
+whole-system benchmarking ---, making both individual design components and whole algorithms comparable.
+Contradictory findings in the literature on the optimal node/cache-line size (one versus up to sixteen
+cache lines) are thus not adopted from incompatible original setups but re-measured axis-isolated, with all
+else held equal.
+
+\paragraph{RQ3 (Probe comparison).} The concrete comparison of PRT-ART against the 30 SOTA profiles is
+pending the first measurement runs (Section~\ref{sec:outlook}). The architecture is fully prepared: the
+PRT-ART profile, the three mandatory series templates, the \texttt{ExperimentDriver} with auto-pickup of
+the SOTA profiles, and the ABI-conformant adapter with all \texttt{std::map} operations and notify hooks.
+The cheapest local page representation per branch point (point versus compact page) and its
+platform-calibrated switching rules are likewise part of the PRT-ART profile.
+
+\paragraph{RQ4 (Compile time vs.\ run time).} The separation is anchored in the build system:
+platform-specific axes (ISA, hardware constants) are fixed at compile time and produce
+provenance-verifiable binaries per permutation (SHA256-validated original bodies,
+\texttt{experiment\_compiler()} identifier), while layout and page selection remain selectable at run time
+via a bit-encoded permutation identifier, without violating the common compiler and flag basis.
 
 \section{Limitations}\label{sec:limitations}
-\inhaltPH{Limitations from 08\_conclusion (sec:limitations)}
+\begin{itemize}
+  \item \textbf{Module bodies are currently stubs:} the code-generation pipeline produces ABI-conformant
+  skeleton modules per profile; the actual per-permutation algorithm body remains for a follow-up phase.
+  \item \textbf{Hardware validation pending:} configuration is green locally, but the full \texttt{ctest}
+  and end-to-end \texttt{messung\_driver} runs across the BlockAO platforms (AVX2/AVX-512, ARM NEON/SVE)
+  are outstanding.
+  \item \textbf{Results chapter:} currently methodological; concrete measurements follow.
+\end{itemize}
 
 \section{Outlook}\label{sec:outlook}
-\inhaltPH{Outlook from 08\_conclusion (sec:outlook)}
+In the short term: the end-to-end run of the three mandatory series on real hardware, the generation of
+the measurement diagrams, and the completion of the per-permutation module bodies.
+
+\paragraph{Heuristic automation and binary delivery.} The mechanism demanded by the thesis assignment
+(sub-task~7), which automatically derives the best configuration from the measurement results, is
+deliberately \emph{not yet} implemented and is reserved for a follow-up phase. It presupposes three
+components still to be built: (i) a \emph{heuristic/ML classifier} that maps the load-profile and axis
+features (operation mix, key characteristics, hardware identifier) to the recommended axis configuration;
+(ii) an \emph{XML parser} for the heuristic policies stored as an XML load-profile result and reusable per
+architecture focus; and (iii) a \emph{binary packager} that delivers the thus-selected overall algorithm
+as a standalone binary behind the unified search-algorithm interface. A prerequisite for all three is that
+the end-to-end measurement series be fully available beforehand --- only the robust data basis across all
+permutations and load profiles makes a measurement-driven, automatically controlled selection meaningful;
+until then, the configuration recommendations of Section~\ref{sec:eval-results} are derived manually.
+
+\medskip
+In the medium to long term: a GPU adapter (Grace Hopper cluster, ZIH), PIM-allocator integration (A16),
+and formal verification of selected permutation classes (StarMalloc-style, A13). The three-repository
+architecture lets future students add further probe algorithms analogously to PRT-ART without modifying the
+cache-engine tool library --- a key design principle for the scalability of the research infrastructure.
+Beyond the tree-like search structures treated here, the anatomy principle extends through higher-level
+abstractions to the further structure classes of Section~\ref{sec:overview} --- hash-based, spatial, as
+well as set- and sequence-oriented structures ---, so that the same measurement and permutation apparatus
+can be applied to entirely new classes without rebuilding it; herein lies a key lever for future
+experimental progress.
