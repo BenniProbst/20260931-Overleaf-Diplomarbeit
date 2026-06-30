@@ -7,17 +7,85 @@ Dieses Kapitel steigt in das Detail: zuerst die Repository-Architektur, dann jed
 einzeln und bildhaft, schließlich die Achsen-Implementierung und die Ebenen des Mess-Systems.
 
 \section{Drei-Repository-Architektur}\label{sec:repos}
-\inhaltPH{3-Repository-Architektur + Engine-Terminologie aus 05\_implementation (sec:repos, sec:terminologie-engines)}
+Die Implementierung verteilt sich auf drei Git-Repositorien mit klar getrennten Verantwortlichkeiten:
+\begin{itemize}
+  \item \texttt{comdare-cache-engine} --- \textbf{wie} gemessen wird: die Werkzeug-Bibliothek und der
+  Builder (XML-Config-Parser, \texttt{generate\_\allowbreak module\_\allowbreak from\_\allowbreak profile}-Codegenerierung,
+  Permutations-Schleife, Modul-Loader und der sieben-phasige \texttt{ExperimentDriver}), die ABI-Header,
+  30~SOTA-Profile unter \texttt{algorithm\_profiles/sota} und die Test-Suites; der Quellbaum folgt einem
+  Pitchfork-Layout (\texttt{apps/}, \texttt{libs/}, \texttt{libs/common}).
+  \item \texttt{comdare-prt-art} --- der \textbf{Prüfling}: die hybride \texttt{PrtArtSearchEngine}
+  (Vector/Map/Tuple-API), ihre ABI-Adapter und ihre Bausteine (4+2-Allokator-Pools, OLC mit reservierten
+  Blöcken, MultiLevel-Layout, pfadorientiertes Prefetch, DensityTracker, Hypothesen-Metriken H1/H2/H3).
+  \item \texttt{probst-Diplomarbeit-cache-engine} --- \textbf{was} getestet wird: der
+  \texttt{messung\_driver}, die Experiment-Konfigurationen, die Auswertungs-Pipeline und das Manuskript.
+\end{itemize}
+Quer dazu trennt die Terminologie zwei Engine-Begriffe, die nicht kurzgeschlossen werden dürfen. Die
+\texttt{CacheEngine} (\texttt{cache-engine/libs}) ist die \emph{Werkzeug-Bibliothek der Achsen-Bausteine}:
+Sie stellt je Achse die austauschbaren Entwurfsbestandteile als Concept-/CRTP-Komponenten bereit und
+enthält \emph{keine} Mess-Logik. Die \texttt{ExecutionEngine} hingegen ist die quer zu allen Achsen
+liegende \emph{Ausführungs- und Mess-Infrastruktur}: Als abstrakte messbare Wurzel (\texttt{IExecutionEngine},
+Abschnitt~\ref{sec:measurement-system}) liefert die konkrete \texttt{execution\_engine<Strategy>} die
+OS-Primitiven (cache-line-ausgerichtete Allokation, NUMA-konformes Read-Pinning, kohärenz-bewusstes
+Schreiben) und --- ausschließlich im Experiment-Modus (\texttt{-DCOMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=ON})
+--- den Mess-Aggregator. Kurz: Die \texttt{CacheEngine} liefert die \emph{Bausteine}, die
+\texttt{ExecutionEngine} die \emph{Werkzeuge}; diese Trennung hält den Produktiv-Pfad mess-frei.
 
 \section{PRT-ART im Detail}\label{sec:prtart-impl}
 Aufbauend auf dem bekannten Stand der Technik beschreiben wir jede Schlüsselstelle von PRT-ART einzeln und
 bildhaft.
-\bildPH{PRTART-1..N: je PRT-ART-Algorithmus ein Bild}{4+2-Pool-Allokator, Path-Oriented-Prefetch, OLC, Wert-Hüllen, Knoten-Typen, kohärenz-schonende Telemetrie --- jeweils Bild + Beschreibung.}
-\inhaltPH{PRT-ART-Bestandteile aus 05\_implementation (sec:concurrency, sec:telemetry) + PRT-ART-Detail; je Algorithmus ein Bild}
+PRT-ART steuert mehrere eigene Schlüsselstellen bei, jede an einer anderen Achse. Auf der
+\emph{Allokator-Achse} ersetzt ein \emph{4+2-Pool-Allokator} (vier Größenklassen-Pools plus zwei
+reservierte) die algorithmus-fest verdrahtete Allokation durch eine cache-line-ausgerichtete,
+fragmentierungsarme Free-List. Auf der \emph{Nebenläufigkeits-Achse} --- selbst gegliedert in Pattern
+(8.1) und Locking-Mode (8.2) --- trägt PRT-ART \emph{optimistisches Lock-Coupling (OLC) mit reservierten
+Wert-Blöcken} bei, koordiniert über einen Concurrency-Manager, der die Disziplinen OLC, HTM, STM,
+Lock-Free, RCU und Hazard Pointers führt; die Speicherfreigabe ist dabei eine Sub-Achse des Allokators
+(epoch-, RCU-, Hazard-Pointer- und QSBR-Strategien je Permutation wählbar). Auf der \emph{Prefetch-Achse}
+liefert ein \emph{pfadorientiertes Bundle-Prefetch} die heißen Suchpfade vorab, auf der \emph{Layout-Achse}
+ein \emph{MultiLevel-Layout}. Besonders cache-kritisch ist die \emph{Telemetrie-Achse}: Per-Node-Zähler
+verursachen auf Mehr-Kern-Systemen Cache-Line-Ping-Pong und verfälschen genau jene Messungen, die sie
+erheben. Der Kuehn-Forschungslinie~\cite{kuehn2023bplustree} folgend bietet PRT-ART daher
+cache-kohärenz-bewusste Strategien --- \emph{Leaf-Only-Zähler} (Hauptvariante), \emph{Sampling} (jeder
+$N$-te Blattzugriff) und \emph{Offline-Recompute} (Bottom-up-Aggregation vor dem Reordering) ---, während
+der klassische Per-Node-Zähler nur als gekennzeichnetes Anti-Pattern erhalten bleibt. Den DensityTracker
+und die Hypothesen-Metriken H1/H2/H3 ergänzt der Prüfling als eigene Telemetrie-Organe.
+% TODO Stufe-2-Massen: PRTART-1..N je PRT-ART-Algorithmus ein Bild (4+2-Pool, Path-Prefetch, OLC, Wert-Huellen, Knoten-Typen, Telemetrie) in 4.2
 
 \section{Achsen-Implementierung und Mess-System-Ebenen}\label{sec:axes-impl}
 Jede Achse wird als generalisiertes Interface implementiert; daneben liegen die Ebenen des Mess-Systems von der
 Codegenerierung bis zur Sieben-Phasen-Pipeline.
-\bildPH{AXIS-T0..T18: je Achse das Gesamtkonzept-Bild}{Die Achse als generalisiertes Interface/Organ mit ihren beitragenden Algorithmen (19 Achsen).}
-\bildPH{B12: Sieben-Phasen-Mess-Pipeline}{Enumerate $\to$ Codegen $\to$ Compile $\to$ Load $\to$ Execute $\to$ Measure $\to$ Persist.}
-\inhaltPH{Achsen-Realisierung + Adapter/Codegen/Pipeline aus 05\_implementation (sec:adapters, sec:codegen, sec:concept-crtp, sec:pipeline) + ExperimentDriver-Phasen aus 06 (sec:experimentdriver)}
+Jede Achse ist ein Topic-Verzeichnis, das ein zweischichtiges \emph{Concept} (ein breites Topic-Concept
+und ein enges Achsen-Concept) sowie eine durch eine \texttt{requires}-Klausel abgesicherte
+\emph{CRTP-Basisklasse} enthält. Die Prüfling-gegen-Standard-Auswahl je Achse wird zur Übersetzungszeit
+über \texttt{resolve\_baustein.hpp} (\texttt{std::conditional\_t} über Tag-Spezialisierungen) aufgelöst,
+sodass der Hot-Path weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches enthält --- die zero-cost
+abstraction aus Abschnitt~\ref{sec:software-means}. Jeder SOTA-Entwurf und jeder Allokator wird über einen
+dünnen \emph{Adapter} integriert, der die Original-Implementierung hinter dem Engine-ABI bereitstellt: Ein
+\texttt{COMDARE\_HAVE\_<X>}-Compile-Flag schützt einen \texttt{\#if defined}-Block mit sicherem Fallback
+(etwa \texttt{std::malloc}), sodass der Build eigenständig lauffähig bleibt; die Integration des
+hierarchischen Prefetching~\cite{zhang2025hierarchical} liefert zusätzlich einen Call-Graph-Analyzer zur
+Übersetzungszeit (\texttt{p27\_bundle\_finder}, ein C++23-Port des Original-Werkzeugs \texttt{hp\_soft},
+der Funktionen mit Subtree-Footprint oberhalb eines Schwellwerts als Bundle-Einstiegspunkte identifiziert).
+
+Der Builder überführt jedes Profil in ein vorkompiliertes C++23-Modul; jede Permutation ist durch eine
+bit-gepackte \emph{Permutations-Flag}-Struktur identifiziert, die mit der N-Phasen-Verfeinerung von neun
+Bänken (rund 50~Bit) auf einen breiteren, mehrbänkigen \emph{Permutations-Identifier} mit
+Sub-Bank-Bitfeldern für die neunzehn Achsen und ihre Sub-Achsen wächst; ein Constraint-Filter schließt
+ungültige Kombinationen vor jeder Modulerzeugung aus. Über diese Bausteine läuft die
+\emph{Sieben-Phasen-Mess-Pipeline} des \texttt{ExperimentDriver} je Reihe: (1)~\textbf{Enumerate}
+(XML-Configs parsen, Permutationsliste aufbauen), (2)~\textbf{Codegen} (ein \texttt{comdare\_perm\_<fp>.cpp}
+je Permutation), (3)~\textbf{Compile}, (4)~\textbf{Load} (LoadLibrary/dlopen aller Module),
+(5)~\textbf{Execute} (\texttt{create\_instance} + profilbewusstes \texttt{run\_workload}),
+(6)~\textbf{Measure} (binäre Mess-Records aggregieren) und (7)~\textbf{Persist}
+(\texttt{measurements.csv}/\texttt{.json}); zwei opt-in-Phasen kompilieren fehlende Module hot und
+verifizieren den ABI-Vertrag je Modul. Die nachgelagerte Auswertungs-Werkzeugkette ist eine Folge kleiner
+Programme --- \texttt{sample\_data\_generator} (deterministische Testdaten ohne reale Hardware) $\to$
+\texttt{messung\_driver} (steuert die Reihen) $\to$ \texttt{binary\_to\_csv} (deserialisiert die binären
+Mess-Records) $\to$ \texttt{csv\_to\_latex} (booktabs-Tabellen mit Algorithmus-Steckbriefen je Profil)
+$\to$ \texttt{diagram\_generator} (A4-bewusste TikZ-Plots) $\to$ \texttt{latex\_to\_pdf} ---; der
+Mess-Pfad wird nur unter \texttt{-DCOMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=ON} mitkompiliert,
+sodass der Produktiv-Pfad keinen Mess-Overhead trägt, und Continuous Integration (GitLab CI plus
+gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
+% TODO Stufe-2-Massen: AXIS-T0..T18 je Achse das Gesamtkonzept-Bild (19 Achsen) in 4.3
+% TODO Stufe-2-Massen: B12 Sieben-Phasen-Mess-Pipeline (Enumerate->Codegen->Compile->Load->Execute->Measure->Persist) in 4.3
