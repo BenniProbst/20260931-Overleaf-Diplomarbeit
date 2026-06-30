@@ -42,7 +42,198 @@ Lösung, die diese Lücke schließt.
 \section{Stand der Technik als Achsen-Instanzen}\label{sec:sota-instances}
 Die bekannten Verfahren erscheinen nun systematisch als Achsen-Kompositionen; die vollständigen Kataloge liegen
 hier.
-\inhaltPH{ALLE Tabellen: tab:axes-overview, tab:dialectic, tab:hw-sched, tab:wl-frameworks, tab:lp-catalog, tab:sota-profiles, tab:allocator-profiles (aus 03\_state\_of\_the\_art + 04\_concept\_architecture)}
+Diese Aneignung verläuft \emph{dialektisch} (These--Antithese--Synthese): je Achse wird ein fremdes Organ
+\emph{übernommen} (These) oder eine überholte Annahme \emph{ersetzt} (Antithese), woraus der eigene
+Beitrag als Synthese hervorgeht. Leitend ist der \enquote{dritte Weg} aus
+Abschnitt~\ref{sec:hardware-history} --- gemessenes Lokalitätswissen statt fest verdrahteter oder
+ignorierter Cache-Bewusstheit ---, der jede Achse als orthogonales, permutierbares und einzeln messbares
+Organ explizit macht. Bei vielen Achsen ist die Antithese keine überholte Fremd-Instanz, sondern die
+implizite Annahme, die Entscheidung gar nicht als wählbar zu betrachten; die Synthese besteht dann darin,
+sie überhaupt als Achse explizit zu machen (in der Ersetzen-Spalte als \enquote{---} markiert).
+Tabelle~\ref{tab:dialectic} fasst diese Aneignung je Kompositions-Achse zusammen.
+
+{\footnotesize
+\begin{longtable}{@{}p{2.3cm}p{3.7cm}p{2.7cm}p{3.6cm}@{}}
+\caption{Dialektische Aneignung der Stand-der-Technik-Instanzen je Kompositions-Achse (in Achsen-Reihenfolge T0--T18; Cluster-Kürzel: A~Trie/Knoten, B~Hybrid/Layout, C~Allokation, D~Prefetching, E~Synchronisation, F~Hardware/Messung/Engineering)}\label{tab:dialectic}\\
+\toprule
+\textbf{Achse} & \textbf{übernommen (These)} & \textbf{ersetzt (Antithese)} & \textbf{Synthese-Kern} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Achse} & \textbf{übernommen} & \textbf{ersetzt} & \textbf{Synthese-Kern} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+T0 Search-Algorithm (A) & ART, HOT, START, SuRF, Wormhole; k-äre/Interpolations-Suche & Monolith \enquote{Struktur ist Verfahren} & Such-Paradigma als permutierbare Achse \\
+T1 Cache-Traversal (B) & Cache-Line-Stride (Chen), cache-oblivious (Bender), HBM (Schmidt) & implizite Lehrbuch-Linearsuche & Algorithmus- und Cache-Sicht getrennt \\
+T2 Mapping (B) & lineare 1:1-Abbildung; Hash-Redirect, Permutations-Index & --- & Direct- vs.\ Pool-Relative-Mapping explizit \\
+T3 Path-Compression (A) & byte-weise (ART), Patricia (HOT), Macro-Node (CoCo), Multi-Byte (START) & unkomprimierter Rohpfad & Kompressions-Granularität wählbar \\
+T4 Node-Type (A) & ART Node4/16/48/256 & feste Knotengröße & adaptive Knotenklasse + Storage-Delegation \\
+T5 Memory-Layout (B) & AoS-aligned, SoA, LOUDS-bitgepackt, CSS/CSB\textsuperscript{+}, AoSoA & --- & vier Layout-Dimensionen permutierbar \\
+T6 Allocator (C) & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/Hazard & algorithmus-fest verdrahteter Allokator & Allokation als gemeinsames Interface-Organ (sieben Sub-Familien) \\
+T7 Prefetch (D) & Distance-Estimator (ART), Hardware (Wormhole), Stride (Chen), adaptiv & Prefetch nicht als Achse isoliert & Path-Oriented Bundle-Prefetch (eigen) \\
+T8 Concurrency (E) & OLC (ART), RCU, Hazard-Pointer; Lock-/Wait-Free & grobes Sperren als einzige Annahme & Pattern $\perp$ Reclamation als zwei Sub-Achsen \\
+T9 Serialization (F) & Raw-Binary, Varint (ART), succinct (LOUDS/FST), LZ77 & --- & Kodierung/Kompression wählbar \\
+T10 Telemetry (F) & Density-Tracker, Insert-Zähler, HdrHistogram, Pfad-Zähler & All-Node-Zähler (Cache-Line-Ping-Pong) & kohärenz-schonende Leaf-Only-Telemetrie \\
+T11 Value-Handle (F) & Inline, External-Pool, Immutable-Shared (RCU), Versioned & implizit fest eingebetteter Wert & Platzierung, Ownership und Versionierung (+ Chain-Ref) \\
+T12 ISA (F) & Vendor-Spec x86-64/AArch64/Power/RISC-V (+ SIMD) & --- & Ziel-ISA als Compile-Time-Achse \\
+T13 Index-Organization (B) & Clustered, IOT, Non-Clustered, Heap & --- & Storage-Order als eigene Achse \\
+T14 I/O-Dispatch (F) & Buffered, mmap, Direct-IO & mmap als Anti-Pattern & Persistenz von der Suchstruktur entkoppelt \\
+T15 Migration (F) & Hot/Cold, Multi-Tier NVM, LeCaR-ML & Tiering nie mit Such-Achsen kombiniert & Migrationslogik als messbare Achse \\
+T16 Filter (F) & Bloom, Cuckoo, SuRF-Range, Xor & Filter nie mit Such-Achsen integriert & Filter als orthogonales Organ \\
+T17 Queuing-q1 (F) & Disruptor-Ring, Delta-Chain, CoW, Epoch-RCU, SPSC/MPMC & Operations-Puffer nie als Achse & Puffer mit Zugriffsmuster-Klassen \\
+T18 Queuing-q2 (F) & Eager/Lazy, Watermark (LSM), Timed & Flush-Policy implizit & adaptive EWMA-Flush-Policy (eigen) \\
+\end{longtable}
+}
+
+Der systematische Kern ist die achsenweise \emph{Sezierung}: Jeder Gesamt-Algorithmus wird in seine Organe
+zerlegt, und je Achse werden die beitragenden Organ-Algorithmen aufgeführt, mit kurzem Verweis auf das
+Herkunfts-Lebewesen. Das Framework führt \emph{neunzehn Kompositions-Achsen} (T0--T18) sowie drei
+\emph{Build-Achsen} (Seitentyp, SIMD-Erweiterung, Hardware-Profil); viele Achsen sind in Sub-Achsen
+verfeinert (etwa SA1--SA4 oder AA1--AA7) und liefern anderen Achsen verteilte Interfaces für deren
+Detail-Operationen. Tabelle~\ref{tab:axes-overview} gibt den Überblick, welche Veröffentlichungen je Achse
+ein Organ beitragen; die thematischen Herkunfts-Cluster der Vorarbeiten erscheinen dabei \emph{aufgelöst}
+in ihren Organ-Beiträgen.
+
+\begin{table}[!htbp]
+  \caption{Achsen-Sezierung der Suchverfahren: neunzehn Kompositions-Achsen (T0--T18) und drei
+  Build-Achsen; je Achse die ein Organ beitragenden Quellen.}\label{tab:axes-overview}
+  \centering\footnotesize
+  \begin{tabular}{@{}l l p{6.8cm}@{}}
+    \toprule
+    \textbf{Achse} & \textbf{Sub-Achsen} & \textbf{Beitragende Quellen} \\
+    \midrule
+    T0 search\_algo & SA1--SA4 & P01,P02,P05,P07,P10; k-ary (TUD 2009), Interpol., Eytzinger, Skip-List, B-Baum, Hash \\
+    T1 cache\_traversal & CT1--CT2 & Cache-Line-Default; P17,P21,P32 \\
+    T2 mapping & MP1--MP2 & P03,P07; CE-Baseline \\
+    T3 path\_compression & PC1--PC3 & P01,P02,P04,P05,P09 \\
+    T4 node\_type & NT1--NT3 & P01,P02,P03,P04,P05,P06,P11,P12,P13 \\
+    T5 memory\_layout & HM1--HM4 & P06,P09,P11,P12,P32; Default \\
+    T6 allocator & AA1--AA7 & A01--A23; P29,P30 \\
+    T7 prefetch & PF1--PF3 & P07,P21,P23,P25,P26,P27 \\
+    T8 concurrency & CC1--CC2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
+    T9 serialization & SR1--SR3 & P01,P09,P10; LZ77 \\
+    \midrule
+    T10 telemetry & TM1--TM3 & P01,P02,P16,P26,P28; HdrHistogram (Gil Tene) \\
+    T11 value\_handle & VH1--VH3 & P01,P03,P07,P29 \\
+    T12 isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (Vendor-Spec) \\
+    T13 index\_organization & IO1--IO3 & Bayer/McCreight,Comer,Oracle \\
+    T14 io\_dispatch & IO1--IO3 & Stonebraker,Crotty; Baselines \\
+    T15 migration\_policy & MG1--MG3 & Anti-Caching,NVM-Tiering,LeCaR; None \\
+    T16 filter & FT1--FT3 & Bloom,Cuckoo,P10,Xor \\
+    T17 queuing\_q1 & QS1--QS6 & Disruptor, Bw-Tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
+    T18 queuing\_q2 & FS1--FS4 & Eager/Lazy/Watermark/Kafka/RocksDB \\
+    \midrule
+    Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (26) \\
+    Build simd (09b) & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
+    Build hardware (12) & HW1--HW4 & HW-Strategie je Paper (Tab.~\ref{tab:hw-sched}) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Die \emph{Such-Achse} (T0) trägt die meisten Organe --- als Original-Bindungen ART~\cite{leis2013art},
+HOT~\cite{binna2018hot}, START~\cite{fent2020start}, SuRF~\cite{zhang2018surf} und
+Wormhole~\cite{wu2019wormhole}, dazu generische Such-Methoden wie k-äre Suche~\cite{schlegel2009kary},
+Interpolationssuche~\cite{perl1978interpolation}, Eytzinger-Layout-Suche~\cite{khuong2017eytzinger},
+Skip-Liste~\cite{pugh1990skiplist} und B-Baum~\cite{bayer1972btree}. Die Traversierungs-Achsen trennen
+Algorithmus- und Cache-Sicht: T1 reicht von der Cache-Line-Wanderung über Stride-Prefetch~\cite{chen2001prefetch}
+und HBM-Nähe~\cite{schmidt2025hbm} bis zur cache-oblivious-Rekursion~\cite{frigo1999cache}, während T2
+(Mapping) über lineare 1:1-Abbildung, Hash-Redirect~\cite{wu2019wormhole} und
+Permutations-Index~\cite{mao2012masstree} eine dünn besetzte Achse bleibt. Die \emph{Pfadkompression} (T3)
+instanziiert die byte-weise Variante~\cite{leis2013art}, den Patricia-Split~\cite{morrison1968patricia,binna2018hot},
+die Macro-Node~\cite{boffa2024coco} und das Multi-Byte-Rewiring~\cite{fent2020start}, und die
+\emph{Knotentyp-Achse} (T4) bündelt die adaptiven Layouts von Node4/16/48/256~\cite{leis2013art} über
+HOT-Compound~\cite{binna2018hot} und die CSS-/CSB\textsuperscript{+}-/Hankins-Knoten bis zur
+PRT-ART-Familie.
+
+Die \emph{Speicher-Layout-Achse} (T5) reicht vom cache-line-ausgerichteten AoS über zeigerfreie
+Anordnung~\cite{rao1999css}, Geschwister-Cluster~\cite{rao2000csb} und eingebetteten
+Baum~\cite{schmeisser2022b2tree} bis zum bit-gepackten LOUDS~\cite{jacobson1989louds}. Die
+\emph{Allokator-Achse} (T6) ist mit dem Korpus A01--A23 am dichtesten besetzt und in sieben Sub-Achsen
+verfeinert --- von der Free-List-Topologie über Thread-Lokalität/NUMA-Affinität~\cite{ungethuem2017survey}
+und die Allokationsstrategie bis zur Reklamation (Epoch, RCU~\cite{mckenney2001rcu},
+Hazard-Pointer~\cite{michael2004hazard}, QSBR); der Code stellt 25 Allokator-Implementierungen bereit, von
+denen Tabelle~\ref{tab:allocator-profiles} die zehn lauffähigen Profile mit Lizenz und Workload-Affinität
+listet. Die \emph{Wert-Achse} (T11) unterscheidet Inline-Wert~\cite{leis2013art}, externen
+Pool~\cite{wu2019wormhole}, versionierten Zeiger~\cite{mao2012masstree} und immutable
+Shared-Ref~\cite{mckenney2001rcu}, die \emph{Serialisierungs-Achse} (T9) Raw-Binary, succinct LOUDS/FST und
+Varint~\cite{leis2013art}.
+
+\begin{table}[!htbp]
+  \caption{Allokator-Profile mit Lizenz und Workload-Affinität}\label{tab:allocator-profiles}
+  \centering\small
+  \begin{tabular}{llll}
+    \toprule
+    \textbf{Profil} & \textbf{Familie} & \textbf{Lizenz} & \textbf{expected\_workload} \\
+    \midrule
+    hoard & A01 & Apache-2.0 & YCSB\_A \\
+    michael\_lockfree & A03 & BSD-3 & YCSB\_B \\
+    mimalloc & A04 & MIT & YCSB\_A \\
+    jemalloc & A05 & BSD-2 & YCSB\_B \\
+    tcmalloc & A06 & BSD-3 & YCSB\_C \\
+    snmalloc & A07 & MIT & YCSB\_A \\
+    scalloc & A08 & BSD-3 & YCSB\_A \\
+    rpmalloc & A10 & Public Domain & YCSB\_C \\
+    lrmalloc & A11 & BSD-3 & YCSB\_B \\
+    dlmalloc & A20 & CC0 & YCSB\_C \\
+    \bottomrule
+  \end{tabular}
+
+  \smallskip
+  {\footnotesize \texttt{expected\_workload} = YCSB-Workload-Klasse (A/B/C).\par}
+\end{table}
+
+Auf der hardware-nahen Seite reicht die \emph{Prefetch-Achse} (T7) von keinem Prefetch über
+software-festes~\cite{chen2001prefetch}, adaptiv-distanziertes~\cite{khan2010adaptive} und
+fill-buffer-bewusstes~\cite{mahling2025hotpath} bis zu pfadorientiertem~\cite{zhang2024pathprefix} und
+hierarchischem Bündel-Prefetch~\cite{zhang2025hierarchical}; die explizite Hardware-Prefetch-Instruktion
+stammt aus Wormhole~\cite{wu2019wormhole}. Die \emph{ISA-Achse} (T12) und die Build-SIMD-Erweiterung führen
+die Vendor-Spezifikationen (x86-64, AArch64, Power, RISC-V mit SSE2/AVX2/AVX-512, NEON/SVE2, RVV). Zwei
+übergreifende Strategie-Achsen halten fest, was ein Algorithmus aktiv \emph{nutzt} bzw.\ wie er Arbeit
+\emph{verteilt} --- die Hardware-Strategie und die Scheduling-Strategie ---, die Tabelle~\ref{tab:hw-sched}
+je Paper zuordnet. Die \emph{Telemetrie-Achse} (T10) instanziiert Density-Tracker~\cite{leis2013art},
+Insert-Zähler~\cite{binna2018hot}, HdrHistogramm und Pfad-Lese-Zähler~\cite{zhang2024pathprefix}; die
+kohärenz-schonenden Leaf-Only-Varianten gehen auf Kuehn~\cite{kuehn2023bplustree} zurück, während der
+Zähler in allen Knoten als \emph{Anti-Pattern} (Cache-Line-Ping-Pong) gilt.
+
+\begin{table}[!htbp]
+  \centering\small
+  \caption{In dieser Arbeit zugewiesene Ziel-Hardware- und Scheduling-Profile je rekonstruiertem SOTA-Verfahren (Auswahl; die Profile sind Rekonstruktions-Ziele dieser Arbeit, nicht zwingend Original-Paper-Eigenschaften; der Vollkatalog folgt im Anhang).}\label{tab:hw-sched}
+  \begin{tabular}{@{}l p{4.6cm} p{5.6cm}@{}}
+    \toprule
+    \textbf{Paper} & \textbf{Hardware-Strategie} & \textbf{Scheduling-Strategie} \\
+    \midrule
+    P01 ART & AVX2, L1-aware, none, CAS & thread-per-core \\
+    P02 HOT & AVX2 (Bit-Vektor), L1-aware, CAS & thread-per-core \\
+    P03 Masstree & scalar, L1-aware, CAS & thread-per-core + work-stealing \\
+    P05 START & AVX2 (Multi-Byte-Span), L1-aware, CAS & thread-per-core \\
+    P20 B-Trees Are Back & AVX2, HBM-aware, NUMA-aware, CAS & work-stealing + hybrid \\
+    P27 hp-soft & PREFETCH (Instr.-Bundle), all-cache, CAS & thread-per-core + Co-Routine \\
+    P28 Kuehn & PREFETCH (scalar Counter), L1-aware, CAS & thread-per-core + Sampling \\
+    P31 Ungethuem & AVX-512 (HBM), HBM-aware, NUMA-aware, CAS & hybrid (P-/E-Kerne) \\
+    P32 Schmidt & AVX-512 (SIMD-Stride), HBM-aware, NUMA-aware, CAS & hybrid \\
+    \midrule
+    \textbf{PRT-ART} & \textbf{AVX2, L1-aware (TLB-aligned), local NUMA, PREFETCH, CAS (OLC)} & \textbf{thread-per-core + 2-SIMD-Worker-Limit + hybrid + Co-Routine + micro-batch} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Die \emph{Nebenläufigkeits-Achse} (T8) gliedert sich in Muster und Sperr-Modus: vom seriellen Nullpunkt
+über grobes Sperren~\cite{dijkstra1965concurrent}, Leser-/Schreiber-Sperren~\cite{courtois1971readers} und
+optimistisches Lock-Coupling~\cite{leis2016olc} zu lock-freien~\cite{michael1996queue},
+wait-freien~\cite{herlihy1991waitfree} sowie RCU-~\cite{mckenney2001rcu} und
+Hazard-Pointer-Verfahren~\cite{michael2004hazard}. Die \emph{I/O-Achse} (T14) instanziiert
+gepufferte~\cite{stonebraker1981os}, direkte und memory-mapped Ein-/Ausgabe~\cite{crotty2022mmap}, die
+\emph{Migrations-Achse} (T15) Hot/Cold-Trennung und mehrstufige RAM$\to$NVM$\to$SSD-Migration, und die
+\emph{Pufferungs-Achsen} (T17/T18) reichen vom Disruptor-Ringpuffer~\cite{thompson2011disruptor} über die
+Bw-Tree-Delta-Kette~\cite{levandoski2013bwtree}, den Copy-on-Write-Puffer~\cite{driscoll1989persistent} und
+den Tombstone-Puffer~\cite{oneil1996lsm} bis zu lock-freien SPSC-~\cite{lamport_spsc} und
+MPMC-Queues~\cite{michael1996queue}. Die \emph{Index-Organisations-Achse} (T13) unterscheidet geclusterte
+Anordnung~\cite{bayer1972btree}, Heap-Ablage und nicht-geclusterten Sekundärindex~\cite{comer1979btree},
+die \emph{Filter-Achse} (T16) den Bloom-~\cite{bloom1970}, Cuckoo-~\cite{fan2014cuckoo},
+SuRF-~\cite{zhang2018surf} und Xor-Filter~\cite{graf2020xor}.
+\inhaltPH{3.2b folgt: Workload-Frameworks als Instanzen (sec:sota-workloads) + tab:wl-frameworks, tab:lp-catalog, tab:sota-profiles + Bias (ssec:sota-wl-bias) + Mess-Technologien (sec:sota-measurement)}
 
 \section{Das Mess-System}\label{sec:measurement-system}
 Das Mess-System trennt vier Subsysteme und prüft in drei Stufen, die auf die drei Pflicht-Messreihen abbilden;
