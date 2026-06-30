@@ -32,15 +32,16 @@ abstraction is already located conceptually: every algorithm is a point in a sha
 \end{figure}
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick]
-  \draw[->] (0,0) -- (4.6,0) node[right]{axis $i$};
-  \draw[->] (0,0) -- (0,3.3) node[above]{axis $j$};
-  \draw[->] (0,0) -- (-1.7,-1.3) node[below left]{axis $k$};
+  \draw[->] (0,0) -- (4.8,0) node[right,font=\scriptsize,align=left]{node\\type (T4)};
+  \draw[->] (0,0) -- (0,3.3) node[above,font=\scriptsize]{layout (T5)};
+  \draw[->] (0,0) -- (-1.7,-1.3) node[below left,font=\scriptsize]{allocator (T6)};
   \foreach \x in {1,2,3}\foreach \y in {1,2,3}{\fill[black!35] (\x,\y) circle (1.6pt);}
   \fill[red] (2,2) circle (3.2pt);
   \node[red,right] at (2.15,2.25){ART $=$ one point};
+  \node[draw,rounded corners,fill=blue!5,align=left,font=\scriptsize] at (3.5,2.95){\textbf{Legend:} 3 of\\19 axes (T0--T18)};
   \node[align=center,font=\scriptsize] at (1.6,-2.2){Every state-of-the-art algorithm\\$=$ one point in the Cartesian product of the axes};
 \end{tikzpicture}
-\caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it.}\label{fig:design-space}
+\caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it. For illustration, three of the nineteen axes are chosen --- the real storage organ of node type~(T4), memory layout~(T5) and allocator~(T6); the full design space has nineteen dimensions.}\label{fig:design-space}
 \end{figure}
 Search structures can be classified by the mechanism with which they map a key to a
 record~\cite{knuth1998taocp3}. \emph{Comparison-based} structures locate the key via order comparisons
@@ -295,40 +296,52 @@ feature composition, the anatomy to the wiring between the features. Which axis 
 inter-organ usage graph (Figure~\ref{fig:usage}).
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
-  organ/.style={draw,circle,minimum size=1.25cm,fill=green!7,inner sep=0pt}]
-  \node[organ] (alloc) at (0,0){allocation\\organ};
-  \node[organ] (layout) at (-2.7,1.7){layout};
-  \node[organ] (value) at (2.7,1.7){value};
-  \node[organ] (serial) at (0,3.0){serial.};
-  \draw[->,thick,blue] (alloc)--(layout);
-  \draw[->,thick,blue] (alloc)--(value);
-  \draw[->,thick,blue] (alloc)--(serial);
-  \node[blue,font=\scriptsize] at (0,-1.05){shared allocation interface};
+  organ/.style={draw,circle,minimum size=1.05cm,fill=green!7,inner sep=0pt}]
+  \node[organ,fill=blue!12,minimum size=1.3cm] (store) at (0,0){storage\\organ};
+  \node[organ] (alloc) at (-3.0,1.15){allocator};
+  \node[organ] (node) at (-3.0,0){node type};
+  \node[organ] (layout) at (-3.0,-1.15){layout};
+  \node[organ] (search) at (3.0,0){search};
+  \node[organ,fill=gray!8] (obs) at (2.0,-1.95){telemetry};
+  \draw[->,thick,blue] (alloc)--(store);
+  \draw[->,thick,blue] (node)--(store);
+  \draw[->,thick,blue] (layout)--(store);
+  \draw[->,thick,blue] (store)--(search) node[midway,above,font=\scriptsize,text=blue]{must};
+  \draw[->,dashed,gray] (store)--(obs) node[midway,right,font=\scriptsize]{can};
+  \node[font=\scriptsize,blue] at (0,-1.6){\texttt{StorageOrgan} interface};
 \end{tikzpicture}
-\caption{Axis $=$ organ, anatomy $=$ wiring: each organ exports a generalized interface used by the others --- e.g.\ the shared allocation interface.}\label{fig:axis-organ}
+\caption{Axis $=$ organ, anatomy $=$ wiring: the storage organ (composed of node type, layout and allocator) exports a generalized \texttt{StorageOrgan} interface over which the search runs (solid, \emph{mandatory}); further organs such as telemetry \emph{can} use it via optional observer hooks (dashed, \emph{optional}), but need not.}\label{fig:axis-organ}
 \end{figure}
 
 Composing these pairwise couplings across all organs yields a directed inter-organ usage graph.
 \begin{figure}[htbp]\centering
+\resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
-  org/.style={draw,rounded corners,fill=green!8,minimum width=1.8cm,minimum height=0.72cm,font=\scriptsize},
-  prov/.style={draw,rounded corners,fill=blue!12,minimum width=2.0cm,minimum height=0.82cm,font=\scriptsize,very thick}]
-  \node[prov] (alloc) at (0,0){allocator\\{\scriptsize T6}};
-  \node[org] (layout) at (-3.0,1.5){layout\\{\scriptsize T5}};
-  \node[org] (value) at (3.0,1.5){value hull\\{\scriptsize T11}};
-  \node[org] (serial) at (3.0,-1.5){serialization\\{\scriptsize T9}};
-  \node[org] (node) at (-3.0,-1.5){node type\\{\scriptsize T4}};
-  \node[org] (prefetch) at (0,2.7){prefetch\\{\scriptsize T7}};
-  \node[org] (conc) at (0,-2.7){concurrency\\{\scriptsize T8}};
-  \draw[->,very thick,blue] (alloc)--(layout);
-  \draw[->,very thick,blue] (alloc)--(value);
-  \draw[->,very thick,blue] (alloc)--(serial);
-  \node[blue,font=\scriptsize,fill=white,inner sep=1pt] at (1.5,0.95){allocation interface};
-  \draw[->,dashed,gray] (prefetch)--(layout);
-  \draw[->,dashed,gray] (conc)--(node);
-  \draw[->,dashed,gray] (node)--(layout);
-\end{tikzpicture}
-\caption{Inter-organ usage graph (\enquote{which axis uses which}): the allocation organ (T6) provides its generalized interface to the memory-needing organs layout, value hull and serialization (solid, cf.\ Figure~\ref{fig:axis-organ}); the remaining organ couplings (dashed) are representative --- the complete wiring follows per axis with the implementation in Chapter~\ref{ch:impl}.}\label{fig:usage}
+  org/.style={draw,rounded corners,fill=green!8,minimum width=2.1cm,minimum height=0.66cm,font=\scriptsize},
+  hub/.style={draw,rounded corners,fill=blue!12,minimum width=3.2cm,minimum height=1.15cm,text width=3.0cm,align=center,font=\scriptsize,very thick}]
+  \node[hub] (store) at (0,0){\textbf{storage organ}\\\texttt{Layout\-Aware\-Chunked\-Store}\\{\scriptsize T4\,$\oplus$\,T5\,$\oplus$\,T6}};
+  \node[org] (alloc) at (-4.1,1.4){allocator (T6)};
+  \node[org] (node) at (-4.1,0){node type (T4)};
+  \node[org] (layout) at (-4.1,-1.4){layout (T5)};
+  \node[org] (search) at (4.1,0){search (T0)};
+  \node[org] (prefetch) at (4.1,1.4){prefetch (T7)};
+  \node[org,fill=gray!8] (obs) at (4.1,-1.4){telemetry (T10)};
+  \node[org,fill=gray!6] (conc) at (0,-2.6){concurrency (T8)};
+  \draw[->,very thick,blue] (alloc)--(store);
+  \draw[->,very thick,blue] (node)--(store);
+  \draw[->,very thick,blue] (layout)--(store);
+  \draw[->,very thick,blue] (store)--(search) node[midway,above,font=\scriptsize]{must};
+  \draw[->,dashed,gray] (store)--(prefetch) node[midway,above,font=\scriptsize]{can};
+  \draw[->,dashed,gray] (store)--(obs);
+  \draw[->,dotted,gray] (conc)--(store);
+\end{tikzpicture}}
+\caption{Inter-organ usage graph (\enquote{which axis uses which}): there is exactly \emph{one} canonical
+hub --- the storage organ \texttt{LayoutAwareChunkedStore}, which composes node type~(T4), layout~(T5) and
+allocator~(T6). \emph{Mandatorily} (solid) the store consumes these three axes, and the search~(T0) runs
+over it. All remaining couplings are \emph{optional} (dashed): prefetch~(T7) and telemetry~(T10) read the
+store only via \texttt{requires}-gated observer hooks --- an axis \emph{can} use foreign interfaces, but
+\emph{need} not. The coupling of concurrency~(T8) to the store is not (yet) wired in the code
+(dotted).}\label{fig:usage}
 \end{figure}
 
 These organs are embedded in \emph{one} architecture --- a single, self-contained hierarchy without
@@ -412,8 +425,13 @@ is a composition of named design patterns and two new compile-time patterns (Fig
   \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-2.55){\textbf{1.}~\emph{lazy-sparse cartesian materialization} --- over $10^{14}$ axis combinations are only counted and each path materialized individually on demand in mixed radix};
   \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-3.32){\textbf{2.}~\emph{type-driven source emission} --- from an axis composition type names are extracted, rendered to C++ source and loaded per permutation as a module across the ABI boundary};
   \draw[->,thick] (classic)--(new) node[midway,right,font=\scriptsize]{composition};
+  \node[draw,rounded corners,fill=blue!6,minimum width=12.8cm,minimum height=1.6cm] (chain) at (0,-5.55){};
+  \node[font=\bfseries\footnotesize] at (0,-4.85){Per axis, dissected from the code --- refinement of \emph{Strategy} $+$ \emph{CRTP}\,/\,\emph{Template Method}};
+  \node[font=\scriptsize] at (0,-5.38){topic concept $\to$ axis concept $\to$ permutation concept $\to$ \texttt{AxisBase} (CRTP) $\to$ \texttt{mp\_list} registry};
+  \node[font=\scriptsize] at (0,-5.86){the \emph{literal} \texttt{std::variant} lives only in the eleven-axis \texttt{baustein\_variants} fallback (PRT-ART\,$\leftrightarrow$\,cache-engine)};
+  \draw[->,thick] (new)--(chain) node[midway,right,font=\scriptsize]{per axis};
 \end{tikzpicture}
-\caption{Design patterns as building blocks of the architecture: above the classical GoF patterns used throughout the code with their respective role, below the two new compile-time patterns named in this thesis; their composition forms the design-pattern-driven, measurement-oriented architecture (Section~\ref{sec:software-means}).}\label{fig:patterns}
+\caption{Design patterns as building blocks of the architecture: above the classical GoF patterns used throughout the code with their respective role, in the middle the two new compile-time patterns named in this thesis, below the code-dissected \emph{three-stage concept chain} per axis (topic concept $\to$ axis concept $\to$ cache-engine permutation concept $\to$ CRTP base $\to$ \texttt{mp\_list} registry) as a refinement of \emph{Strategy}/\emph{CRTP} --- where the \emph{literal} \texttt{std::variant} appears not here but only in the eleven-axis \texttt{baustein\_variants} fallback model. Their composition forms the design-pattern-driven, measurement-oriented architecture (Section~\ref{sec:software-means}).}\label{fig:patterns}
 \end{figure}
 
 The classical patterns are not ornament but the wiring of the apparatus: \emph{Strategy} encapsulates each
@@ -531,6 +549,36 @@ so that only comparable things are compared. These concepts form the \emph{defin
 measurement; their technical \emph{instances} --- hardware performance counters, OTF2/VAMPIR profiling, the
 TU-Dresden hardware measurement methodology --- and the \emph{why} of their choice are developed by the
 measurement system in Chapter~\ref{ch:measurement}.
+
+What these measurement patterns concretely collect are three opposing components --- \emph{latency},
+\emph{throughput} and \emph{memory footprint} ---, against which every axis permutation spans as a
+trade-off profile: the same permutation that is a point in the design space in
+Figure~\ref{fig:design-space} appears here as a point inside the trade-off triangle
+(Figure~\ref{fig:measurement-triangle}). A fourth component, the one actually central for cache-aware
+search structures --- the cache-aware behaviour at the node, data and index level via hardware
+performance counters --- is not yet collected in the current implementation state (PMC capture is off by
+default) and therefore remains marked as a pending fourth measurement component.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
+  \coordinate (lat) at (0,3.0);
+  \coordinate (thr) at (-3.2,-0.9);
+  \coordinate (mem) at (3.2,-0.9);
+  \draw[thick,fill=blue!4] (lat)--(thr)--(mem)--cycle;
+  \node[above] at (lat){\textbf{Latency}\\{\scriptsize p50/p99}};
+  \node[below left] at (thr){\textbf{Throughput}\\{\scriptsize ops/s}};
+  \node[below right] at (mem){\textbf{Memory}\\{\scriptsize peak bytes}};
+  \fill[red] (0.5,0.7) circle (2.4pt);
+  \node[red,right,font=\scriptsize] at (0.65,0.7){one axis permutation};
+  \node[draw,dashed,rounded corners,fill=gray!8,align=center,font=\scriptsize,text width=4.6cm] (miss) at (0,-2.75){\textbf{missing (pending):}\\node/data/index level, cache-aware --- HW-PMC off by default};
+  \draw[->,dashed,gray] (miss)--(0,-0.9);
+\end{tikzpicture}
+\caption{The measurement trade-off triangle: every axis permutation spans against the three opposing
+measurement components latency, throughput and memory footprint, and is a point inside it (cf.\ the design
+space in Figure~\ref{fig:design-space}, where the same permutation is a point). The component actually
+central for cache-aware search structures --- the behaviour at the node, data and index level via hardware
+performance counters --- is not yet collected in the current implementation state (dashed).}\label{fig:measurement-triangle}
+\end{figure}
+
 \begin{figure}[htbp]\centering
 \resizebox{0.96\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
