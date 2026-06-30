@@ -42,7 +42,92 @@ abstraction is already located conceptually: every algorithm is a point in a sha
 \end{tikzpicture}
 \caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it.}\label{fig:design-space}
 \end{figure}
-\inhaltPH{Landscape from 02\_fundamentals (sec:search-classes) + SOTA overview from 03\_state\_of\_the\_art (sec:sota-overview). \textbf{Figure series SOTA-ALGO-1..M:} one detail figure per paper algorithm (ART, HOT, START, SuRF, Wormhole, B$^2$-tree, \ldots).}
+Search structures can be classified by the mechanism with which they map a key to a
+record~\cite{knuth1998taocp3}. \emph{Comparison-based} structures locate the key via order comparisons
+and presuppose a total order --- from the self-balancing AVL~\cite{adelsonvelsky1962avl} and red-black
+trees~\cite{bayer1972symmetric,guibas1978redblack} through the block- and external-memory-oriented
+B/B\textsuperscript{+} trees~\cite{bayer1972btree,comer1979btree}, whose nodes typically correspond to a
+cache or memory block size~\cite{graefe2001btree,hankins2003nodesize}, to the main-memory-oriented
+T-tree~\cite{lehman1986ttree}, which combines node-local value ranges with AVL balancing and thereby
+reduces the number of pointer indirections per search step. \emph{Digital} structures, by contrast, branch on the bytes of the key
+rather than by comparison, so that the search-path length depends on the key length and not on the
+number of keys: the \emph{trie}~\cite{delabriandais1959trie,fredkin1960trie} as the basic form, in which every root
+path spells out a key and common prefixes are shared, the
+path-compressed radix/PATRICIA trees~\cite{morrison1968patricia} that collapse sparse one-child chains,
+and the \emph{Adaptive Radix Tree}
+(ART)~\cite{leis2013art}, which adapts the node representation to the actual fanout and serves throughout
+this thesis as the reference design.
+
+Beyond the tree-like methods, \emph{hashing} maps keys directly via a hash function and has no inherent
+order, which makes range queries expensive~\cite{knuth1998taocp3}; cuckoo hashing~\cite{pagh2004cuckoo}
+and SIMD-accelerated tables such as SwissTable~\cite{abseil_swisstable} stand alongside this work as a
+non-tree-like baseline. \emph{Spatial} structures (k-d tree~\cite{bentley1975kdtree},
+quadtree~\cite{finkel1974quadtree}, R-tree~\cite{guttman1984rtree}) partition a multidimensional key
+space and lie outside the scope, as do the theoretical \enquote{exotics} --- the van Emde Boas
+tree~\cite{vanemdeboas1975} and the y-fast trie~\cite{willard1983yfast} with $O(\log\log u)$ over a
+universe of size~$u$, or the Fusion Tree~\cite{fredman1993fusion} that undercuts the comparison bound ---
+as well as the flat, sorted array with binary or interpolation search~\cite{knuth1998taocp3} --- strictly speaking the single leaf
+of a tree --- and its
+string generalization, the suffix array~\cite{manzini2002suffixarray}. This thesis concentrates on the
+tree-like structures of the comparison- and digital-based classes; the principle developed here is,
+however, not bound to trees, for as outwardly different as the classes appear, they share a common inner
+\emph{anatomy} of orthogonal partial decisions that Section~\ref{sec:software-means} exposes as an axis
+set (Figure~\ref{fig:search-map}).
+
+Orthogonal to this search-algorithm view stands the established taxonomy of the \emph{containers} of the
+C++ standard library~\cite{iso_cpp}: sequence containers (\texttt{std::vector}) order by insertion
+position, ordered-associative ones (\texttt{std::map}, \texttt{std::set}) by key order, unordered ones
+(\texttt{std::unordered\_map}) map via a hash function. These standardized interface contracts form the
+common basis against which structurally different methods can be measured uniformly --- the ordered map
+as the common denominator of comparison- and digital-based search structures, the \texttt{std::vector} as
+the sequence view, and the hash table as the unordered counter-check; their placement in the conceptual
+framework of this thesis (genus, genus subclass, axis) is developed in Section~\ref{sec:software-means}.
+
+The design space thus outlined is measured systematically in the state of the art. The analysis draws on
+33~deeply analysed search-algorithm publications (P01--P33) and a parallel allocator corpus of 23~works
+(A01--A23), whose axis assignment is each persisted as an XML profile in the \texttt{comdare-cache-engine};
+the complete building-block and allocator matrices are given in the appendix. The core contribution is
+the \emph{dissection}: every overall algorithm --- a \enquote{living being} --- is decomposed into its
+orthogonal organs, the axes, and the organ algorithms thus obtained are sorted \emph{per axis}, with a
+brief reference to the originating living being, following a web-verified provenance map over roughly
+110~organ algorithms; the systematic, axis-wise dissection takes place in Chapter~\ref{ch:measurement}
+(Section~\ref{sec:sota-instances}). Every state-of-the-art algorithm thereby appears as a point in the
+Cartesian product of the axes (Figure~\ref{fig:design-space}). That the axis framework also carries
+non-tree-like methods is shown by a pure hash table (SwissTable~\cite{abseil_swisstable}) as a
+counter-check within the SearchAlgorithm genus: it satisfies the point-query subset of the
+\texttt{std::map} interface (\texttt{find}/\texttt{insert}/\texttt{erase}), occupies a limited axis subset
+--- allocation, prefetch, concurrency, memory layout, and ISA-SIMD remain shared, the trie-specific axes
+drop out --- and thus requires no genus of its own.
+
+The publications stem from six thematic \emph{origin clusters} that here serve only the holistic placement
+of each living being before it is decomposed into its organs. The \emph{trie family} comprises ART
+(P01)~\cite{leis2013art}, HOT (P02)~\cite{binna2018hot}, Masstree (P03)~\cite{mao2012masstree}, CoCo-Trie
+(P04)~\cite{boffa2024coco}, START (P05)~\cite{fent2020start}, and the succinct tries LOUDS
+(P09)~\cite{jacobson1989louds} and SuRF (P10)~\cite{zhang2018surf}. The \emph{hybrid and
+B\textsuperscript{+} family} unites the B\textsuperscript{2}-tree (P06)~\cite{schmeisser2022b2tree},
+Wormhole (P07)~\cite{wu2019wormhole}, and the cache-sensitive CSS, CSB\textsuperscript{+}, and Hankins
+trees (P11--P13)~\cite{rao1999css,rao2000csb,hankins2003nodesize}. The \emph{layout theory} ranges from
+Samuel (P14)~\cite{samuel2005procaware} and Graefe/Larson (P15)~\cite{graefe2001btree} through the
+cache-oblivious designs of Bender et
+al.\ (P16/P17)~\cite{bender2000cobtree,bender2005coboblivious,bender2002treelayout,bender2002scanning,bender2002orderlist}
+to the layout-invariant trees of Saikkonen/Soisalon-Soininen
+(P18/P19)~\cite{saikkonen2008multilevel,saikkonen2016layout}. The \emph{prefetching} comprises \emph{B-Trees
+Are Back} (P20)~\cite{mueller2025btreesback}, the prefetching B\textsuperscript{+} trees of Chen et
+al.\ (P21/P22)~\cite{chen2001prefetch,chen2002fractal}, Khan (P23)~\cite{khan2010adaptive}, Naderan-Tahan
+(P24)~\cite{naderan2016adaptivefilter}, Mahling (P25)~\cite{mahling2025hotpath}, as well as Zhang
+(P26/P27)~\cite{zhang2024pathprefix,zhang2025hierarchical} and Kuehn (P28)~\cite{kuehn2023bplustree}. The
+\emph{synchronization} carries the optimistic lock coupling of ART (P08)~\cite{leis2016olc}, RCU
+(P29)~\cite{mckenney2001rcu}, and hazard pointers (P30)~\cite{michael2004hazard}; the hardware-near
+\emph{TU-Dresden line}, finally, Ungethüm (P31)~\cite{ungethuem2017survey}, Schmidt
+(P32)~\cite{schmidt2025hbm}, and VAMPIR (P33)~\cite{berthold2023vampir}. The parallel \emph{allocator
+corpus} (A01--A23) spans from the classics dlmalloc~\cite{lea1996dlmalloc}, Hoard~\cite{berger2000hoard},
+Slab~\cite{bonwick1994slab,bonwick2001vmem}, and Michael's lock-free allocation~\cite{michael2004lockfree}
+through the multi-core-scalable mimalloc~\cite{leijen2019mimalloc}, jemalloc~\cite{evans2006jemalloc},
+TCMalloc~\cite{ghemawat2005tcmalloc}, snmalloc~\cite{lietar2019snmalloc}, scalloc~\cite{aigner2015scalloc},
+rpmalloc~\cite{jansson2017rpmalloc}, and lrmalloc~\cite{leite2018lrmalloc} to the cache-aware/predictable
+CAMA~\cite{herter2011cama}, NUMAlloc~\cite{yang2023numalloc}, StarMalloc~\cite{starmalloc2024}, and
+PIM-malloc~\cite{pimmalloc2026}.
+% TODO Stage-2 masses: SOTA-ALGO-1..M detail figures per paper algorithm (ART, HOT, START, SuRF, Wormhole, B^2 ...) in 2.1
 
 \section{Hardware: Historical Adaptation to Search Performance}\label{sec:hardware-history}
 The performance of search structures has always been driven by hardware. We introduce the historical advent of

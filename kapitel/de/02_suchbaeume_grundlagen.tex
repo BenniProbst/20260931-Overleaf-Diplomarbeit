@@ -43,7 +43,96 @@ ist ein Punkt in einem gemeinsamen Entwurfsraum.
 \end{tikzpicture}
 \caption{Der Entwurfsraum: die Achsen spannen ein kartesisches Produkt auf; ein konkreter Algorithmus ist ein Punkt darin.}\label{fig:design-space}
 \end{figure}
-\inhaltPH{Landschaft aus 02\_fundamentals (sec:search-classes) + SOTA-Überblick aus 03\_state\_of\_the\_art (sec:sota-overview). \textbf{Bildserie SOTA-ALGO-1..M:} je Paper-Algorithmus (ART, HOT, START, SuRF, Wormhole, B$^2$-Baum, \ldots) ein Detailbild.}
+Suchstrukturen lassen sich danach einordnen, mit welchem Mechanismus sie einen Schlüssel auf einen
+Datensatz abbilden~\cite{knuth1998taocp3}. \emph{Vergleichsbasierte} Strukturen lokalisieren den
+Schlüssel über Ordnungsvergleiche und setzen eine totale Ordnung voraus --- von den
+selbstbalancierenden AVL-~\cite{adelsonvelsky1962avl} und
+Rot-Schwarz-Bäumen~\cite{bayer1972symmetric,guibas1978redblack} über die block- und
+externspeicherorientierten B-/B\textsuperscript{+}-Bäume~\cite{bayer1972btree,comer1979btree}, deren
+Knoten typischerweise einer Cache- oder Speicherblock-Größe entsprechen~\cite{graefe2001btree,hankins2003nodesize},
+bis zum hauptspeicher-nahen T-Baum~\cite{lehman1986ttree}, der knotenlokale Wertebereiche mit der
+AVL-Balance verbindet und so die Zahl der Zeiger-Indirektionen je Suchschritt senkt. \emph{Digitale} Strukturen verzweigen dagegen
+nach den Bytes des Schlüssels statt durch Vergleich, sodass die Suchpfadlänge von der Schlüssellänge und
+nicht von der Schlüsselanzahl abhängt: der \emph{Trie}~\cite{delabriandais1959trie,fredkin1960trie} als
+Grundform, in dem jeder Wurzelpfad einen Schlüssel buchstabiert und gemeinsame Präfixe geteilt werden,
+die pfadkomprimierten Radix-/PATRICIA-Bäume~\cite{morrison1968patricia}, die dünn belegte Ein-Kind-Ketten
+kollabieren, und der
+\emph{Adaptive Radix Tree} (ART)~\cite{leis2013art}, der die Knotenrepräsentation an den tatsächlichen
+Verzweigungsgrad anpasst und dieser Arbeit durchgängig als Referenzentwurf dient.
+
+Jenseits der baumartigen Verfahren bildet \emph{Hashing} Schlüssel direkt über eine Hashfunktion ab und
+kennt keine inhärente Ordnung, weshalb Bereichsabfragen teuer sind~\cite{knuth1998taocp3};
+Cuckoo-Hashing~\cite{pagh2004cuckoo} und SIMD-beschleunigte Tabellen wie SwissTable~\cite{abseil_swisstable}
+treten dieser Arbeit als nicht-baumartige Vergleichsgröße zur Seite. \emph{Räumliche} Strukturen
+(k-d-Baum~\cite{bentley1975kdtree}, Quadtree~\cite{finkel1974quadtree}, R-Baum~\cite{guttman1984rtree})
+partitionieren einen mehrdimensionalen Schlüsselraum und liegen außerhalb des Umfangs, ebenso wie die
+theoretischen \enquote{Exoten} --- der van-Emde-Boas-Baum~\cite{vanemdeboas1975} und der y-fast
+Trie~\cite{willard1983yfast} mit $O(\log\log u)$ über einem Universum der Größe~$u$ oder der die
+Vergleichsschranke unterschreitende Fusion Tree~\cite{fredman1993fusion} --- sowie das flache, sortierte
+Array mit Binär- oder Interpolationssuche~\cite{knuth1998taocp3} --- streng genommen das einzelne Blatt
+eines Baumes --- und seine String-Verallgemeinerung, das
+Suffix-Array~\cite{manzini2002suffixarray}. Diese Arbeit konzentriert sich auf die baumartigen Strukturen
+der vergleichs- und der digitalbasierten Klasse; das entwickelte Prinzip ist jedoch nicht an Bäume
+gebunden, denn so verschieden die Klassen äußerlich wirken, teilen sie doch eine gemeinsame innere
+\emph{Anatomie} aus orthogonalen Teilentscheidungen, die Abschnitt~\ref{sec:software-means} als
+Achsensatz freilegt (Abbildung~\ref{fig:search-map}).
+
+Quer zu dieser Suchalgorithmus-Sicht steht die etablierte Untergliederung der \emph{Container} der
+C++-Standardbibliothek~\cite{iso_cpp}: Sequenz-Container (\texttt{std::vector}) ordnen nach
+Einfügeposition, geordnet-assoziative (\texttt{std::map}, \texttt{std::set}) nach Schlüsselordnung,
+ungeordnete (\texttt{std::unordered\_map}) bilden über eine Hashfunktion ab. Diese genormten
+Schnittstellen-Verträge bilden die gemeinsame Basis, gegen die sich strukturell verschiedene Verfahren
+einheitlich vermessen lassen --- die geordnete Map als gemeinsamer Nenner vergleichs- wie
+digitalbasierter Suchstrukturen, der \texttt{std::vector} als Sequenz-Sicht und die Hash-Tabelle als
+ungeordnete Gegenprobe; ihre Einordnung in das Begriffsgerüst dieser Arbeit (Gattung,
+Gattungs-Unterklasse, Achse) entwickelt Abschnitt~\ref{sec:software-means}.
+
+Der so umrissene Entwurfsraum wird im Stand der Technik systematisch ausgemessen. Die Analyse stützt sich
+auf 33~tiefenanalysierte Suchalgorithmus-Veröffentlichungen (P01--P33) und einen parallelen
+Allokator-Korpus aus 23~Arbeiten (A01--A23), deren Achsen-Belegung jeweils als XML-Profil in der
+\texttt{comdare-cache-engine} persistiert ist; die vollständigen Bausteine- und Allokator-Matrizen führt
+der Anhang. Der Kernbeitrag ist dabei die \emph{Sezierung}: Jeder Gesamt-Algorithmus --- ein
+\enquote{Lebewesen} --- wird in seine orthogonalen Organe, die Achsen, zerlegt, und die so gewonnenen
+Organ-Algorithmen werden je Achse einsortiert, mit kurzem Verweis auf das Herkunfts-Lebewesen, einer
+web-verifizierten Provenienz-Map über rund 110~Organ-Algorithmen folgend; die systematische, achsenweise
+Sezierung erfolgt in Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:sota-instances}). Jeder
+Stand-der-Technik-Algorithmus erscheint so als ein Punkt im kartesischen Produkt der Achsen
+(Abbildung~\ref{fig:design-space}). Dass das Achsen-Gerüst auch nicht-baumartige Verfahren trägt, belegt
+eine reine Hash-Tabelle (SwissTable~\cite{abseil_swisstable}) als Gegenprobe innerhalb der
+SearchAlgorithm-Gattung: Sie erfüllt das Punktanfrage-Subset des \texttt{std::map}-Interface
+(\texttt{find}/\texttt{insert}/\texttt{erase}), belegt ein limitiertes Achsen-Subset --- Allokation,
+Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD bleiben geteilt, die trie-spezifischen Achsen
+entfallen --- und erfordert so keine eigene Gattung.
+
+Die Veröffentlichungen entstammen sechs thematischen \emph{Herkunfts-Clustern}, die hier nur der
+ganzheitlichen Einordnung jedes Lebewesens dienen, bevor es in seine Organe zerlegt wird. Die
+\emph{Trie-Familie} umfasst ART (P01)~\cite{leis2013art}, HOT (P02)~\cite{binna2018hot}, Masstree
+(P03)~\cite{mao2012masstree}, CoCo-Trie (P04)~\cite{boffa2024coco}, START (P05)~\cite{fent2020start}
+sowie die succinct-Tries LOUDS (P09)~\cite{jacobson1989louds} und SuRF (P10)~\cite{zhang2018surf}. Die
+\emph{Hybrid- und B\textsuperscript{+}-Familie} vereint den B\textsuperscript{2}-Baum
+(P06)~\cite{schmeisser2022b2tree}, Wormhole (P07)~\cite{wu2019wormhole} und die cache-sensitiven CSS-,
+CSB\textsuperscript{+}- und Hankins-Bäume (P11--P13)~\cite{rao1999css,rao2000csb,hankins2003nodesize}.
+Die \emph{Layout-Theorie} reicht von Samuel (P14)~\cite{samuel2005procaware} und Graefe/Larson
+(P15)~\cite{graefe2001btree} über die cache-oblivious Entwürfe von Bender et
+al.\ (P16/P17)~\cite{bender2000cobtree,bender2005coboblivious,bender2002treelayout,bender2002scanning,bender2002orderlist}
+bis zu den layout-invarianten Bäumen von Saikkonen/Soisalon-Soininen
+(P18/P19)~\cite{saikkonen2008multilevel,saikkonen2016layout}. Das \emph{Prefetching} umfasst \emph{B-Trees
+Are Back} (P20)~\cite{mueller2025btreesback}, die Prefetching-B\textsuperscript{+}-Bäume von Chen et
+al.\ (P21/P22)~\cite{chen2001prefetch,chen2002fractal}, Khan (P23)~\cite{khan2010adaptive}, Naderan-Tahan
+(P24)~\cite{naderan2016adaptivefilter}, Mahling (P25)~\cite{mahling2025hotpath} sowie Zhang
+(P26/P27)~\cite{zhang2024pathprefix,zhang2025hierarchical} und Kuehn (P28)~\cite{kuehn2023bplustree}. Die
+\emph{Synchronisation} trägt das optimistische Lock-Coupling von ART (P08)~\cite{leis2016olc}, RCU
+(P29)~\cite{mckenney2001rcu} und Hazard-Pointer (P30)~\cite{michael2004hazard}; die hardware-nahe
+\emph{TU-Dresden-Linie} schließlich Ungethüm (P31)~\cite{ungethuem2017survey}, Schmidt
+(P32)~\cite{schmidt2025hbm} und VAMPIR (P33)~\cite{berthold2023vampir}. Der parallele
+\emph{Allokator-Korpus} (A01--A23) spannt von den Klassikern dlmalloc~\cite{lea1996dlmalloc},
+Hoard~\cite{berger2000hoard}, Slab~\cite{bonwick1994slab,bonwick2001vmem} und Michaels lock-freier
+Allokation~\cite{michael2004lockfree} über die mehrkern-skalierbaren mimalloc~\cite{leijen2019mimalloc},
+jemalloc~\cite{evans2006jemalloc}, TCMalloc~\cite{ghemawat2005tcmalloc}, snmalloc~\cite{lietar2019snmalloc},
+scalloc~\cite{aigner2015scalloc}, rpmalloc~\cite{jansson2017rpmalloc} und lrmalloc~\cite{leite2018lrmalloc}
+bis zu den cache-aware/vorhersagbaren CAMA~\cite{herter2011cama}, NUMAlloc~\cite{yang2023numalloc},
+StarMalloc~\cite{starmalloc2024} und PIM-malloc~\cite{pimmalloc2026}.
+% TODO Stufe-2-Massen: SOTA-ALGO-1..M Detailbilder je Paper-Algorithmus (ART, HOT, START, SuRF, Wormhole, B^2 ...) in 2.1
 
 \section{Hardware: historische Anpassung an die Suchleistung}\label{sec:hardware-history}
 Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Wir führen die historische
