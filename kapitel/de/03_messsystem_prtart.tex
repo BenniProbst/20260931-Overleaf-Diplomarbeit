@@ -404,19 +404,32 @@ mit der Messreihe~A den Prüfling gegen viele SOTA-Adapter in einer einzigen Pip
 
 \begin{figure}[!htbp]
   \centering
-  \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=5pt, minimum width=3.3cm}]
-    \node[comp] (driver) at (0,0) {\texttt{messung\_driver}\\{\scriptsize Auswertungs-Orchestrator (A/B/C)}};
-    \node[comp] (builder) at (0,-1.7) {\texttt{CacheEngineBuilder}\\{\scriptsize Sieben-Phasen-Pipeline}};
-    \node[comp] (engine) at (-3.0,-3.7) {\texttt{CacheEngine}\\{\scriptsize Achsen-Bausteine-Bibliothek}};
-    \node[comp] (probe) at (3.0,-3.7) {Prüfling (PRT-ART)\\{\scriptsize eigene Achsen-Organe}};
-    \draw[->] (driver) -- (builder);
-    \draw[->] (builder) -- (engine);
-    \draw[->] (builder) -- (probe);
+  \resizebox{0.97\textwidth}{!}{%
+  \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt, minimum width=3.3cm},
+    bm/.style={draw, rounded corners, align=center, font=\scriptsize, inner sep=3pt, text width=3.7cm, minimum height=1.6cm, fill=orange!13}]
+    \node[comp,fill=blue!7,text width=4.7cm] (driver) at (0,0.6) {\texttt{messung\_driver} --- \textbf{WAS}\\{\scriptsize Diplomarbeit-Code: Konfigs A/B/C $\cdot$ Mikro-Bench $\cdot$ Welch-Statistik}};
+    \node[draw,thick,rounded corners,minimum width=9.8cm,minimum height=2.4cm,fill=gray!4] (bbox) at (0,-2.5){};
+    \node[font=\bfseries\scriptsize,anchor=north] at ([yshift=-2pt]bbox.north){\texttt{CacheEngineBuilder} --- \textbf{WIE}: baut $+$ misst Tier-Binaries je Konfiguration};
+    \node[bm] (build) at (-2.5,-2.75) {\textbf{BUILD}\\{\scriptsize \texttt{Build\-Orchestrator} $+$ \texttt{Experiment\-Tree}: baut alle Tier-Binaries je Konfig (resumierbar, RAM-gewahr)}};
+    \node[bm] (measure) at (2.5,-2.75) {\textbf{MEASURE}\\{\scriptsize \texttt{perm\_runner} über \texttt{IObservableTier}: misst jede Tier-Binary einzeln (1 DLL / Prozess)}};
+    \draw[->,very thick] (build) -- node[above,font=\scriptsize]{Binaries} (measure);
+    \node[comp] (engine) at (-2.9,-5.3) {\texttt{CacheEngine}\\{\scriptsize Achsen-Bausteine (WIE)}};
+    \node[comp] (probe) at (2.9,-5.3) {Prüfling (PRT-ART)\\{\scriptsize eigene Achsen-Organe}};
+    \draw[->] (driver) -- node[right,font=\scriptsize]{Konfigs} (bbox.north);
+    \draw[->] (engine) -- node[left,font=\scriptsize]{Bausteine} (build);
+    \draw[->] (measure) -- node[right,font=\scriptsize]{misst} (probe);
     \draw[<->] (engine) -- node[below, font=\scriptsize, align=center] {(a)~instantiiert\\(b)~ruft Dienste} (probe);
-  \end{tikzpicture}
-  \caption{Das M-Modell: vier formal getrennte Subsysteme; die \texttt{ExecutionEngine} ist die
-  gemeinsame messbare Wurzel (kein fünftes Subsystem). Die bidirektionale
-  Cache-Engine\,$\leftrightarrow$\,Prüfling-Beziehung trägt die Multi-Prüfling-Fähigkeit.}\label{fig:m-model}
+  \end{tikzpicture}}
+  \caption{Das M-Modell mit Fokus auf die Build- und Mess-Phasen. Die äußere
+  \texttt{messung\_\-driver}-Schleife (\emph{WAS}, Diplomarbeit-Code) speist die Konfigurationen der drei
+  Messreihen A/B/C ein; der \texttt{CacheEngineBuilder} (\emph{WIE}, Bibliothek) zerfällt in die beiden
+  eigentlich interessanten Phasen: \textbf{BUILD} (\texttt{BuildOrchestrator}/\texttt{ExperimentTree} baut
+  je Konfiguration eine eigenständige Tier-Binary, resumierbar und RAM-gewahr) und \textbf{MEASURE}
+  (\texttt{perm\_runner} treibt und misst jede Tier-Binary einzeln über die Beobachter-Schnittstelle
+  \texttt{IObservableTier}). Die
+  \texttt{CacheEngine} liefert die Standard-Achsen-Bausteine, der Prüfling PRT-ART seine eigenen Organe;
+  ihre bidirektionale Beziehung ((a)~instantiiert, (b)~ruft Dienste) trägt die Multi-Prüfling-Fähigkeit. Die
+  \texttt{ExecutionEngine} bleibt die gemeinsame messbare Wurzel.}\label{fig:m-model}
 \end{figure}
 
 Der Builder orchestriert eine \emph{Drei-Stufen-Prüfung}: \textbf{Stufe~1} (nur Cache-Engine) nutzt die
