@@ -5,7 +5,109 @@
 Die Evaluation legt zuerst die Methodik offen und wertet darauf aufbauend die Messreihen aus.
 
 \section{Methodik}\label{sec:eval-method}
-\inhaltPH{Hypothesen, Workloads+Datensätze (tab:workload-routing, tab:datasets), Plattformen, Fairness aus 06\_evaluation\_methodology (sec:hypotheses, sec:workloads, sec:platforms, sec:fairness)}
+Drei \emph{Hypothesen} leiten die Auswertung:
+\begin{description}
+  \item[H1 (Page-Type-Kosten)] Die mittleren Zugriffskosten je Page-Type-Variante unterscheiden sich
+  systematisch nach Workload: dichte Page-Typen gewinnen erwartungsgemäß unter Zipf-Verteilung (YCSB-A),
+  bereichsoptimierte Pages unter Bereichs-Scans (YCSB-E).
+  \item[H2 (Code-Qualität pro Quelle)] Der vom Original-Quell-Repository geerbte Code-Qualitäts-Score
+  korreliert messbar mit dem erreichten Durchsatz.
+  \item[H3 (Inline- vs.\ External- vs.\ Chain-Verteilung)] Die beobachtete Verteilung der drei
+  ValueHandle-Varianten korreliert mit der Page-Dichte: dichte Pages bevorzugen Inline, spärliche Pages
+  External und PRT-ART-Heuristiken ChainRef.
+\end{description}
+
+Phase~5 leitet den YCSB-Workload je Permutation aus dem Traversal-Tag des Profils ab
+(Tabelle~\ref{tab:workload-routing}); Module ohne Profil verwenden den globalen Default-Workload. Als
+Datengrundlage dienen reale String-Datensätze unterschiedlicher Charakteristik
+(Tabelle~\ref{tab:datasets}), jeder mit einer Reproduzierbarkeits-Akte aus Quelle, Prüfsumme, Zeilenzahl,
+Vorverarbeitung und Seed-Regel für die synthetischen Miss-, Update- und Delete-Schlüssel.
+
+\begin{table}[h]
+  \centering
+  \caption{Profil-bewusstes Workload-Routing}\label{tab:workload-routing}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Traversal-Tag} & \textbf{YCSB-Workload} & \textbf{Charakteristik} \\
+    \midrule
+    \texttt{RANGE\_SCAN} / \texttt{RANGE\_HOT\_PATH} & YCSB-E & Bereichsabfragen \\
+    \texttt{HOT\_PATH} / \texttt{PRTART\_HOT\_PATH} & YCSB-A & 50/50 Lesen/Aktualisieren, Zipf \\
+    \texttt{STANDARD} (Default) & YCSB-C & nur Lesen \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[h]
+  \centering
+  \caption{Reale Datensätze und ihre Charakteristik}\label{tab:datasets}
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Datensatz} & \textbf{Charakteristik} \\
+    \midrule
+    \texttt{url} & sehr lange Schlüssel, lange gemeinsame Präfixe, mittleres Alphabet \\
+    \texttt{dna} & kleines Alphabet, hohe Wiederholung, tiefe Präfix-Entropie \\
+    \texttt{protein} & biologische Sequenzen, kleines bis mittleres Alphabet \\
+    \texttt{xml} & strukturierte Strings mit wiederkehrenden Präfixen \\
+    \texttt{tpcds-id} & datenbanknahe IDs, sortiert und unsortiert \\
+    \texttt{trec-terms} & Wörterbuch-/Suchindex-Terme mit definierten Miss-Schlüsseln \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Die Messungen zielen auf eine lokale Workstation zur Entwicklungs-Verifikation und den
+TU-Dresden-ZIH-Cluster (Barnard CPU, Capella GPU) für die vollständigen Sweeps, plus die
+Rang-3-Plattformen (Ryzen~9~9950X3D, Intel~i9~14900KS und eine HBM-Plattform). Ein \texttt{IPlatformProbe}
+(Phase~1) meldet je Plattform die lauffähige Teilmenge der Achsen (etwa AVX-512 nur dort, wo verfügbar, HBM-aware nur auf HBM-Hardware); je
+Plattform werden ein Scalar-, ein
+AVX2- und --- auf Barnard --- ein AVX-512-Build vorbereitet, und auf Hybrid-CPUs werden P- und E-Cores
+getrennt vermessen. Auf den Produktions-Zielmaschinen wird zudem jede Messung unter \emph{zwei
+Betriebssystem-Regimes} erhoben, um Produktions-Treue von Mess-Tiefe zu trennen: Ein \emph{immutables}
+Betriebssystem (Talos) spiegelt den Produktiv-Einsatz und erzwingt boot-/übersetzungsstatische
+Cache-Einstellungen (Abschnitt~\ref{sec:hardware-history}); ein \emph{root-Linux mit vollem
+Hardware-Zähler-Zugriff} (\texttt{perf}/MSR) macht hingegen die zählerbasierten Mess-Kategorien (Cache-,
+dTLB- und Branch-Misses, IPC/CPI, Abschnitt~\ref{sec:sota-instances}) und die laufzeit-konfigurierbaren
+cache-nahen Achsen-Parameter (Prefetch-Distanz, Hardware-Prefetcher) überhaupt erst zugänglich. Die zeit- und observer-basierten Kategorien laufen
+unter beiden Regimes identisch und sichern die Vergleichbarkeit.
+
+Faire Vergleichbarkeit ist über feste Regeln gesichert: Jeder Vergleich trennt einen gemeinsamen
+Minimalmodus (Common-Denominator: externe Werte-Handles, keine PRT-ART-Spezialpfade) vom
+PRT-ART-Native-Modus; alle Verfahren erhalten identische, normalisierte Byte-Schlüssel sowie identische
+Miss-, Update- und Delete-Mengen, mit je Plattform und Workload protokolliertem Warmup, Randomisierung und
+Thread-Pinning. Fehlende Fähigkeiten einer Baseline --- etwa Bereichs-Scans einer Hash-Tabelle --- werden
+als N/A ausgewiesen statt verdeckt emuliert; für jede Fremdbibliothek werden Compiler, Flags, ISA-Pfad,
+Allokator und Commit-Hash mitgeloggt, und jede Konfiguration wird in mehreren getrennten Läufen mit über
+HDR-Histogramme bestimmten Perzentilen vermessen.
 
 \section{Ergebnisse und Analyse}\label{sec:eval-results}
-\inhaltPH{Auswertungs-Pipeline, Messreihe A/B/C, Achsen-Sensitivität, Diskussion aus 07\_results\_evaluation (sec:eval-pipeline, sec:result-a, sec:result-b, sec:result-c, sec:sensitivity, sec:discussion)}
+Zum Zeitpunkt der Erstellung sind Methodik und Auswertungs-Pipeline vorhanden und auf Beispieldaten
+verifiziert; die Läufe auf realer Hardware stehen aus (Abschnitt~\ref{sec:limitations}). Pro Reihen-Lauf
+schreibt der \texttt{messung\_driver} unter \texttt{Code/\_runs/<date>/<spec\_id>/} die Dateien
+\texttt{measurements.csv} (eine Zeile je Permutation: Cycles, L1/L2/L3-Misses, Branches, Durchsatz),
+\texttt{measurements.json} und optionale binäre Records; die Auswertung reichert sie über
+\texttt{binary\_to\_csv} an, rendert \texttt{csv\_to\_latex}-Steckbriefe je Profil und
+\texttt{diagram\_generator}-Diagramme (A4-bewusste TikZ-Balkendiagramme, Scatter-Plots, Heatmaps), die das
+Manuskript über \texttt{\textbackslash input\{tikz/<spec\_id>/\ldots\}} und
+\texttt{\textbackslash input\{tabellen/<spec\_id>\ldots\}} aus den sprachneutralen Verzeichnissen einbindet.
+Die drei Messreihen werden dann ausgewertet: Reihe~A (PRT-ART vs.\ Stand der Technik, mit den Hypothesen
+H1--H3 aus Abschnitt~\ref{sec:eval-method}), Reihe~B (Cache-Engine-Permutationen) und Reihe~C (Full Join).
+
+% Nach dem ersten messung_driver-Lauf hier einfuegen:
+%   \input{tikz/A_full/cycles_per_permutation.tikz}
+%   \input{tabellen/A_full_summary.tex}
+%   \input{tikz/B_cache_engine_perms/heatmap.tikz}
+%   \input{tikz/C_merge/comparison.tikz}
+
+Den Kern der Auswertung bildet die \emph{Achsen-Sensitivitätsanalyse}, die unmittelbar das
+Trennbarkeits-Problem der Aufgabenstellung beantwortet: Im Stand der Technik sind die Gewichtungen der
+Verbesserungen \emph{einzelner} Algorithmus-Bestandteile bislang nicht trennbar, weil jede Veröffentlichung
+ihren Nutzen in einer eigenen, inkompatiblen Messumgebung belegt. Indem das Achsen-Framework jeden
+Bestandteil als austauschbare Achse über einer sonst konstanten Struktur isoliert, wird der Beitrag jeder
+Entwurfsentscheidung erstmals unter sonst gleichen Bedingungen separierbar und messbar zurechenbar. Anhand
+der Records je Permutation quantifiziert die Analyse auf der Micro-Granularität, welche Achse am meisten zur
+Performance-Varianz beiträgt; Makro- und Gesamt-Benchmarking ergänzen die Operations- und die
+YCSB-Lastprofil-Ebene, und aus der Rangbildung über die drei Granularitäten folgt die Empfehlung von
+Standard-Konfigurationen je Workload-Klasse. Damit schließt sich der Bogen zur Aufgabenstellung: Die
+Sensitivitätsanalyse liefert genau die getrennte Gewichtung der einzelnen Bestandteile, deren Fehlen das
+Ausgangsproblem war. Die Ergebnisse werden schließlich vor dem Leitmotiv der Arbeit diskutiert --- dem
+Übergang vom heuristischen zum informierten Cache-Management, also der Frage, ob telemetrie-getriebene,
+automatisch adaptierte Konfigurationen statisch gewählte übertreffen.
