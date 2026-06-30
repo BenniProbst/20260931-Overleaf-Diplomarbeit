@@ -146,7 +146,86 @@ auf die \emph{statischen und übersetzungszeit-relevanten} Eigenschaften, die sp
 \end{tikzpicture}
 \caption{Cache-Line-Auslastung: eine Cache-Line wird stets vollständig geladen; werden nur wenige ihrer Bytes genutzt, sinkt die effektive Bandbreite --- cache-bewusstes Layout hebt die Auslastung.}\label{fig:cache-line}
 \end{figure}
-\inhaltPH{Hardware aus 02\_fundamentals (sec:cache-basics) + 03\_state\_of\_the\_art (sec:sota-cache)}
+Moderne Prozessoren schalten mehrere Cache-Ebenen (L1, L2 und --- nicht auf jeder Plattform --- L3)
+zwischen die Register und den Hauptspeicher~\cite{hennessy2019architecture}; ein Zugriff, der sein Datum
+nahe findet, ist günstig, während ein Fehlzugriff bis zum Hauptspeicher einige hundert Zyklen
+kostet~\cite{drepper2007memory}, auf Mehr-Sockel-Systemen zusätzlich abhängig vom besitzenden NUMA-Knoten.
+Die Übertragungseinheit zwischen den Ebenen ist die \emph{Cache-Line} (Abbildung~\ref{fig:cache-line});
+ihre Größe ist keine universelle Konstante, sondern je Mikroarchitektur fest verdrahtet --- 64\,Byte auf
+x86-64 und gängigen ARM-Kernen, 128\,Byte etwa auf Apple-Silicon-L2, schmalere 32\,Byte auf älteren oder
+eingebetteten Kernen~\cite{hennessy2019architecture,intel_optimization,amd_sog,apple_optimization}.
+Programme können sie zur Laufzeit \emph{auslesen} --- über \texttt{CPUID} (x86), \texttt{CTR\_EL0} (ARM)
+oder \texttt{riscv\_hwprobe} (RISC-V)~\cite{arm_arm,intel_sdm} ---, aber nicht verändern; auch die Tiefe
+der Hierarchie variiert (einfache RISC-V-Kerne enden bei L2, manche AMD-Prozessoren bringen einen
+gestapelten 3D-V-Cache-L3 mit). Für ein cache-line-bewusstes Layout ist die je Zielplattform ermittelte
+Line-Größe daher ein \emph{Eingabeparameter der Übersetzung}, keine feste Annahme --- der Transfer selbst
+erfolgt dabei nicht streng blockweise am Stück, denn \emph{critical-word-first} liefert zuerst das
+angefragte Wort und DDR5 unterteilt den Speicherkanal in zwei unabhängige Sub-Kanäle~\cite{micron_ddr5}.
+
+Eben dieses cache-line-orientierte Layout ist der historische Leitgedanke der einschlägigen Forschung:
+Der CSS-Baum~\cite{rao1999css} führt den Cache-Line-Knoten ein, der
+CSB\textsuperscript{+}-Baum~\cite{rao2000csb} das zusammenhängende Geschwister-Cluster, Hankins und
+Patel~\cite{hankins2003nodesize} vermessen den Effekt der Knotengröße und Samuel et
+al.~\cite{samuel2005procaware} machen den Knoten prozessor-bewusst; der Adaptive Radix
+Tree~\cite{leis2013art} staffelt mit Node4/16/48/256 die Knotengröße cache-line-orientiert, und Schmidt et
+al.~\cite{schmidt2025hbm} vermessen Stride- gegen Sequenz-Zugriffe auf High-Bandwidth-Memory. Auf der
+Speicher-Layout-Ebene stehen damit konkret das dichte und das cache-line-ausgerichtete Array-of-Structs,
+das spaltenorientierte Struct-of-Arrays, das bit-gepackte LOUDS~\cite{jacobson1989louds} und das
+SIMD-gekachelte AoSoA. Die mehrstufige Hierarchie selbst ist überdies Gegenstand
+software-/hardware-kooperativer Prefetch-Verfahren wie dem hierarchischen Instruktions-Prefetcher von
+Zhang et al.~\cite{zhang2025hierarchical}, der als Prefetching-Instanz und nicht als
+datenstruktur-spezifischer Baum-Datenprefetch eingeht.
+
+Neben der Daten-Cache-Hierarchie existiert eine zweite Lokalitätsgrenze: der \emph{Translation Lookaside
+Buffer} (TLB) cacht Virtuell-zu-Physisch-Abbildungen, und ein TLB-Miss löst einen teuren Page-Walk
+aus~\cite{hennessy2019architecture}. Prozessoren trennen aus Lokalitätsgründen den Instruktions- vom
+Daten-TLB (dTLB) und legen ihn mehrstufig aus~\cite{intel_sdm,drepper2007memory}; für Suchstrukturen ist
+der dTLB die zweite, eigenständige Grenze neben der Cache-Line, denn große oder weit gestreute Knoten
+erhöhen den dTLB-Druck unabhängig von der Cache-Auslastung, weshalb große Seiten (Huge-Pages,
+2\,MiB/1\,GiB) den TLB-Reach vergrößern. Im Stand der Technik tritt der dTLB vorwiegend als \emph{Mess-Ziel}
+auf; algorithmenseitig adressieren ihn Huge-Pages, die mehrere Allokatoren (mimalloc, jemalloc, TCMalloc,
+snmalloc) unterstützen und die Schmidt et al.~\cite{schmidt2025hbm} mit 2-MiB-Seiten empirisch nutzen ---
+eine \emph{eigene} dTLB-Optimierungs-Achse bleibt in den Suchalgorithmus-Papern jedoch unterbelegt, eine
+Beobachtung, auf die die Forschungslücke in Kapitel~\ref{ch:measurement}
+(Abschnitt~\ref{sec:task-concerns}) zurückkommt.
+
+Auch das Schreib- und Update-Verhalten der Caches ist überwiegend mikroarchitektonisch fixiert.
+Schreibzugriffe folgen \emph{Write-Through} oder \emph{Write-Back}, orthogonal dazu legt die
+Allokations-Politik (Write-Allocate bzw.\ No-Write-Allocate) die Behandlung eines Schreib-Fehlzugriffs
+fest; ARMv8 macht diese Wahl über Seiten-Attribute explizit~\cite{arm_arm}, während x86 im Normalfall
+Write-Back mit Write-Allocate verwendet~\cite{intel_sdm}. Welche Line verdrängt wird, entscheidet eine
+heuristische Ersetzungsstrategie von LRU/Pseudo-LRU bis zur zwei-Bit-sparsamen \emph{Re-Reference Interval
+Prediction}~\cite{jaleel2010rrip,qureshi2007adaptive}; wie viele Ebenen eine Line zugleich führen, regelt
+die Inklusions-Politik, und in Mehrkern-Systemen sichert ein invalidierungsbasiertes Kohärenzprotokoll
+(MESI mit den Varianten MOESI und MESIF) die Konsistenz~\cite{hennessy2019architecture}. Als konkrete
+Instanz dieser fixierten Eigenschaften variiert etwa die L3-Inklusions-Politik zwischen den Generationen
+--- inklusiv bei frühen Intel-Client-Kernen, nicht-inklusiv bei Intel-Server ab Skylake-SP und überwiegend
+victim-artig bei AMD~Zen~\cite{intel_optimization,amd_sog}. Da all dies zur Laufzeit nicht frei wählbar
+ist, fließt es als \emph{vermessene} Plattform-Eigenschaft in die systemoptimierte Binary ein; seine
+Wirkung --- insbesondere das \emph{Cache-Line-Ping-Pong} bei konkurrierenden Schreibzugriffen auf dieselbe
+Line --- motiviert die Telemetrie- und Nebenläufigkeits-Achsen (Abschnitt~\ref{sec:software-means},
+Kapitel~\ref{ch:impl}).
+
+Diese Eigenschaften spannen das Spektrum auf, in dem sich eine Datenstruktur verorten lässt:
+\emph{cache-bewusst} (cache-aware), wenn ihr Layout auf konkrete Cache-Parameter abgestimmt ist, und
+\emph{cache-oblivious}, wenn sie über alle Ebenen hinweg gute Lokalität erreicht, ohne sie zu
+kennen~\cite{frigo1999cache}. Beide Philosophien sind im Stand der Technik instanziiert: Bender et
+al.\ begründen den cache-oblivious B-Baum über das van-Emde-Boas-Layout~\cite{bender2005coboblivious},
+aufbauend auf dem Order-Maintenance-/Packed-Memory-Primitiv~\cite{bender2002orderlist}, der
+cache-oblivious Traversierung geordneter Mengen~\cite{bender2002scanning} und dem nahezu optimalen
+Baum-Layout fester Topologie~\cite{bender2002treelayout,bender2000cobtree}; Saikkonen und
+Soisalon-Soininen halten eine cache-sensitive Layout-Invariante auch unter Updates, und
+Graefe/Larson~\cite{graefe2001btree} vergleichen beide Ansätze über die CPU-Cache-Ebenen, während
+sämtliche praktischen Trie- und B\textsuperscript{+}-Indizes cache-bewusst ausgelegt sind. Die vorliegende
+Arbeit verfolgt einen dritten, dazwischenliegenden Weg: Die tatsächlichen Cache-Eigenschaften (Line-Größe,
+Hierarchie-Tiefe, Topologie) werden je Zielplattform \emph{ermittelt} und gehen als feste Größen in eine
+systemoptimierte Binary ein, während die \emph{konfigurierbaren} cache-nahen Einstellungen
+(Prefetch-Distanz, Stapel- und Inline-Schwellen, Pool-Budgets) als Achsen-Parameter gegen eine bereits
+geladene Binary permutiert werden --- abgestuft nach dem, was Hardware und Betriebssystem erlauben, von
+voll laufzeit-konfigurierbar (mutables Linux mit MSR-Zugriff) über übersetzungsstatisch (immutable
+Betriebssysteme) bis fixiert (read-only-Cache-Register auf ARM und RISC-V). So wird cache-oblivious-Verhalten
+um \emph{gemessenes} Lokalitätswissen ergänzt; das \emph{Warum} dieser Konstruktion entwickelt
+Abschnitt~\ref{sec:software-means}.
 
 \section{Software-Mittel und Zusammenführung zur Abstraktion}\label{sec:software-means}
 Mit welchen Software-System-Mitteln --- Übersetzungszeit-Metaprogrammierung, statische Nutzung der Hardware aus
