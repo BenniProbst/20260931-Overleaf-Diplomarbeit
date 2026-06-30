@@ -10,7 +10,34 @@ Aufgabe ein und entwickelt das Mess-System als deren \emph{Lösung} --- demonstr
 Die Aufgabe verlangt, cache-bewusste Suchalgorithmen so zu zerlegen und zu vermessen, dass der Beitrag jeder
 Entwurfsentscheidung isoliert sichtbar wird. Wir machen diese Belange hier vollständig im Text verständlich ---
 ohne Rückgriff auf das Aufgabenblatt --- im Kontext der Grundlagen aus Kapitel~\ref{ch:foundations}.
-\inhaltPH{Belange der Aufgabenstellung verdichten (aufgabenstellung/ + 01\_introduction sec:contributions); cache-aware-Fokus, greift auf alle Belange von Kapitel~\ref{ch:foundations} zurück}
+Im Kern verlangt die Aufgabe vier Schritte: cache-bewusste Suchalgorithmen in austauschbare
+Entwurfsbestandteile zu \emph{zerlegen}, Stand-der-Technik-Entwürfe als explizite Konfigurationen zu
+\emph{rekonstruieren}, ihr cache-line-bewusstes Verhalten je Bestandteil wie für den ganzen Algorithmus
+auf gemeinsamer Basis zu \emph{messen} und daraus den besten Gesamtalgorithmus abzuleiten und
+systemoptimiert \emph{auszuliefern}. Der cache-aware-Fokus ist dabei keine Randbedingung, sondern die
+Leitgröße: Nicht die asymptotische Komplexität, sondern das Cache-Line-Verhalten unter realer Last
+entscheidet über die Leistung (Kapitel~\ref{ch:foundations}), und genau dieses Verhalten soll je Achse
+isoliert messbar werden.
+
+Der Stand der Technik (Kapitel~\ref{ch:foundations}) legt dabei die zentrale Lücke offen: Jede der
+untersuchten Arbeiten optimiert nur wenige Achsen isoliert, und im untersuchten Korpus belegt \emph{kein
+einziges Verfahren alle neunzehn Achsen gemeinsam}. Manche Achsen sind ausschließlich mit Baseline- oder
+Lehrbuch-Varianten besetzt (das Mapping zwischen Algorithmus- und Cache-Traversierung), andere treten nur
+als \emph{Mess-Ziel} auf (der dTLB), die räumliche Such-Klasse fehlt ganz, und Achsen wie Ein-/Ausgabe,
+Migration, Filter und Pufferung sind zwar je einzeln, aber nie gemeinsam mit den Such-Achsen in einem
+Entwurf belegt.
+
+Hinzu kommt eine methodische Lücke: Ergebnisse werden in nicht vergleichbaren Settings berichtet, und die
+häufige Wahl szenariospezifischer, oft günstig zugeschnittener Lastprofile erschwert einen fairen
+Quervergleich. Es fehlt eine bias-reduzierte Vermessung \emph{aller} Lastprofile gegen \emph{alle}
+Verfahren auf einer gemeinsamen Basis. Was fehlt --- und was diese Arbeit beiträgt --- ist daher die
+systematische, orthogonale Achsen-Zerlegung dieser Entwürfe samt einer \emph{permutierten
+Mess-Architektur}, die sie als explizite Konfigurationen rekonstruiert und auf gemeinsamer Basis
+vermisst; denn cache-aware Algorithmen sind ohne eine Aufteilung der das Caching maßgeblich bestimmenden
+Eigenschaften nicht differenzierbar. Welche der katalogisierten Instanzen das Framework übernimmt und
+welche es als überholt ersetzt, entwickelt der folgende Abschnitt~\ref{sec:sota-instances} dialektisch
+(These--Antithese--Synthese); das Mess-System selbst (Abschnitt~\ref{sec:measurement-system}) ist die
+Lösung, die diese Lücke schließt.
 
 \section{Stand der Technik als Achsen-Instanzen}\label{sec:sota-instances}
 Die bekannten Verfahren erscheinen nun systematisch als Achsen-Kompositionen; die vollständigen Kataloge liegen
