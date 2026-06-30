@@ -73,7 +73,7 @@ bit-gepackte \emph{Permutations-Flag}-Struktur identifiziert, die mit der N-Phas
 Bänken (rund 50~Bit) auf einen breiteren, mehrbänkigen \emph{Permutations-Identifier} mit
 Sub-Bank-Bitfeldern für die neunzehn Achsen und ihre Sub-Achsen wächst; ein Constraint-Filter schließt
 ungültige Kombinationen vor jeder Modulerzeugung aus. Über diese Bausteine läuft die
-\emph{Sieben-Phasen-Mess-Pipeline} des \texttt{ExperimentDriver} je Reihe: (1)~\textbf{Enumerate}
+\emph{Sieben-Phasen-Mess-Pipeline} (Abbildung~\ref{fig:pipeline}) des \texttt{ExperimentDriver} je Reihe: (1)~\textbf{Enumerate}
 (XML-Configs parsen, Permutationsliste aufbauen), (2)~\textbf{Codegen} (ein \texttt{comdare\_perm\_<fp>.cpp}
 je Permutation), (3)~\textbf{Compile}, (4)~\textbf{Load} (LoadLibrary/dlopen aller Module),
 (5)~\textbf{Execute} (\texttt{create\_instance} + profilbewusstes \texttt{run\_workload}),
@@ -88,4 +88,24 @@ Mess-Pfad wird nur unter \texttt{-DCOMDARE\_\allowbreak EXPERIMENT\_\allowbreak 
 sodass der Produktiv-Pfad keinen Mess-Overhead trägt, und Continuous Integration (GitLab CI plus
 gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
 % TODO Stufe-2-Massen: AXIS-T0..T18 je Achse das Gesamtkonzept-Bild (19 Achsen) in 4.3
-% TODO Stufe-2-Massen: B12 Sieben-Phasen-Mess-Pipeline (Enumerate->Codegen->Compile->Load->Execute->Measure->Persist) in 4.3
+\begin{figure}[htbp]\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  ph/.style={draw,rounded corners,fill=blue!6,minimum width=1.7cm,minimum height=0.85cm},
+  opt/.style={draw,rounded corners,dashed,fill=orange!8,minimum width=2.1cm,minimum height=0.7cm,font=\scriptsize}]
+  \node[ph] (p1) at (0,0){\textbf{1}\\Enumerate};
+  \node[ph] (p2) at (2,0){\textbf{2}\\Codegen};
+  \node[ph] (p3) at (4,0){\textbf{3}\\Compile};
+  \node[ph] (p4) at (6,0){\textbf{4}\\Load};
+  \node[ph] (p5) at (8,0){\textbf{5}\\Execute};
+  \node[ph] (p6) at (10,0){\textbf{6}\\Measure};
+  \node[ph] (p7) at (12,0){\textbf{7}\\Persist};
+  \foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5,p5/p6,p6/p7}{\draw[->,thick] (\a)--(\b);}
+  \node[opt] (o1) at (3,-1.5){opt-in:\\Hot-Compile};
+  \node[opt] (o2) at (5,-1.5){opt-in:\\ABI-Verify};
+  \draw[->,dashed] (o1)--(p3);
+  \draw[->,dashed] (o2)--(p4);
+\end{tikzpicture}}
+\caption{Die Sieben-Phasen-Mess-Pipeline des \texttt{ExperimentDriver} je Messreihe: Enumerate $\to$ Codegen $\to$ Compile $\to$ Load $\to$ Execute $\to$ Measure $\to$ Persist; zwei opt-in-Phasen kompilieren fehlende Module hot und verifizieren den ABI-Vertrag je Modul.}\label{fig:pipeline}
+\end{figure}
+% TODO Stufe-2-Massen: AXIS-T0..T18 = je Achse das Gesamtkonzept-Bild (19) noch offen (4.3)
