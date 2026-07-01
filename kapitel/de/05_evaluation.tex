@@ -16,6 +16,10 @@ Drei \emph{Hypothesen} leiten die Auswertung:
   ValueHandle-Varianten korreliert mit der Page-Dichte: dichte Pages bevorzugen Inline, spärliche Pages
   External und PRT-ART-Heuristiken ChainRef.
 \end{description}
+Diese \emph{Evaluations-Hypothesen} sind nicht zu verwechseln mit den gleichnamigen
+PRT-ART-Telemetrie-Metriken H1--H3 (Abschnitt~\ref{sec:prtart-demo}): Erstere sind prüfbare Aussagen über
+den Entwurfsraum, Letztere Mess-Organe des Prüflings, die unter anderem die Daten für diese Prüfung
+liefern.
 
 Phase~5 leitet den YCSB-Workload je Permutation aus dem Traversal-Tag des Profils ab
 (Tabelle~\ref{tab:workload-routing}); Module ohne Profil verwenden den globalen Default-Workload. Als
@@ -55,7 +59,7 @@ Vorverarbeitung und Seed-Regel für die synthetischen Miss-, Update- und Delete-
 \end{table}
 
 Die Messungen zielen auf eine lokale Workstation zur Entwicklungs-Verifikation und den
-TU-Dresden-ZIH-Cluster (Barnard CPU, Capella GPU) für die vollständigen Sweeps, plus die
+TU-Dresden-ZIH-Cluster (Barnard-CPU-Knoten mit Intel Sapphire Rapids, Capella GPU) für die vollständigen Sweeps, plus die
 Rang-3-Plattformen (Ryzen~9~9950X3D, Intel~i9~14900KS und eine HBM-Plattform). Ein \texttt{IPlatformProbe}
 (Phase~1) meldet je Plattform die lauffähige Teilmenge der Achsen (etwa AVX-512 nur dort, wo verfügbar, HBM-aware nur auf HBM-Hardware); je
 Plattform werden ein Scalar-, ein
@@ -80,7 +84,10 @@ HDR-Histogramme bestimmten Perzentilen vermessen.
 
 \section{Ergebnisse und Analyse}\label{sec:eval-results}
 Zum Zeitpunkt der Erstellung sind Methodik und Auswertungs-Pipeline vorhanden und auf Beispieldaten
-verifiziert; die Läufe auf realer Hardware stehen aus (Abschnitt~\ref{sec:limitations}). Pro Reihen-Lauf
+verifiziert; eine erste reale Smoke-Messreihe (43 Permutationen, echte DLL-Messung auf der
+Entwicklungsmaschine) dokumentiert Anhang~\ref{app:measurements} samt ihren Limitierungen
+(Abschnitt~\ref{sec:measurements:limitations}), die vollständigen Läufe der Pflicht-Messreihen auf den
+Zielplattformen stehen aus (Abschnitt~\ref{sec:limitations}). Pro Reihen-Lauf
 schreibt der \texttt{messung\_driver} unter \texttt{Code/\_runs/<date>/<spec\_id>/} die Dateien
 \texttt{measurements.csv} (eine Zeile je Permutation: Cycles, L1/L2/L3-Misses, Branches, Durchsatz),
 \texttt{measurements.json} und optionale binäre Records; die Auswertung reichert sie über
@@ -88,8 +95,10 @@ schreibt der \texttt{messung\_driver} unter \texttt{Code/\_runs/<date>/<spec\_id
 \texttt{diagram\_generator}-Diagramme (A4-bewusste TikZ-Balkendiagramme, Scatter-Plots, Heatmaps), die das
 Manuskript über \texttt{\textbackslash input\{tikz/<spec\_id>/\ldots\}} und
 \texttt{\textbackslash input\{tabellen/<spec\_id>\ldots\}} aus den sprachneutralen Verzeichnissen einbindet.
-Die drei Messreihen werden dann ausgewertet: Reihe~A (PRT-ART vs.\ Stand der Technik, mit den Hypothesen
-H1--H3 aus Abschnitt~\ref{sec:eval-method}), Reihe~B (Cache-Engine-Permutationen) und Reihe~C (Full Join).
+Die drei Messreihen werden dann ausgewertet: Reihe~A (PRT-ART vs.\ Stand der Technik, mit den
+Evaluations-Hypothesen H1--H3 aus Abschnitt~\ref{sec:eval-method}), Reihe~B (systematische Variation der
+Cache-Engine-Permutationen, gespeist aus dem Full Join der Stufe~3) und Reihe~C (Merge/Regression alt
+gegen neu, build-übergreifend; Tabelle~\ref{tab:stage-series}).
 
 % Nach dem ersten messung_driver-Lauf hier einfuegen:
 %   \input{tikz/A_full/cycles_per_permutation.tikz}
@@ -110,4 +119,5 @@ Standard-Konfigurationen je Workload-Klasse. Damit schließt sich der Bogen zur 
 Sensitivitätsanalyse liefert genau die getrennte Gewichtung der einzelnen Bestandteile, deren Fehlen das
 Ausgangsproblem war. Die Ergebnisse werden schließlich vor dem Leitmotiv der Arbeit diskutiert --- dem
 Übergang vom heuristischen zum informierten Cache-Management, also der Frage, ob telemetrie-getriebene,
-automatisch adaptierte Konfigurationen statisch gewählte übertreffen.
+automatisch adaptierte Konfigurationen statisch gewählte übertreffen. Kapitel~\ref{ch:conclusion} zieht
+daraus das Fazit.

@@ -9,7 +9,7 @@ einzeln und bildhaft, schließlich die Achsen-Implementierung und die Ebenen des
 \section{Drei-Repository-Architektur}\label{sec:repos}
 Die Implementierung verteilt sich auf drei Git-Repositorien mit klar getrennten Verantwortlichkeiten:
 \begin{itemize}
-  \item \texttt{comdare-cache-engine} --- \textbf{wie} gemessen wird: die Werkzeug-Bibliothek und der
+  \item \texttt{comdare-cache-engine} --- \textbf{wie} gemessen wird: die Bausteine-Bibliothek und der
   Builder (XML-Config-Parser, \texttt{generate\_\allowbreak module\_\allowbreak from\_\allowbreak profile}-Codegenerierung,
   Permutations-Schleife, Modul-Loader und der sieben-phasige \texttt{ExperimentDriver}), die ABI-Header,
   30~SOTA-Profile unter \texttt{algorithm\_profiles/sota} und die Test-Suites; der Quellbaum folgt einem
@@ -21,7 +21,7 @@ Die Implementierung verteilt sich auf drei Git-Repositorien mit klar getrennten 
   \texttt{messung\_driver}, die Experiment-Konfigurationen, die Auswertungs-Pipeline und das Manuskript.
 \end{itemize}
 Quer dazu trennt die Terminologie zwei Engine-Begriffe, die nicht kurzgeschlossen werden dürfen. Die
-\texttt{CacheEngine} (\texttt{cache-engine/libs}) ist die \emph{Werkzeug-Bibliothek der Achsen-Bausteine}:
+\texttt{CacheEngine} (\texttt{cache-engine/libs}) ist die \emph{Bibliothek der Achsen-Bausteine}:
 Sie stellt je Achse die austauschbaren Entwurfsbestandteile als Concept-/CRTP-Komponenten bereit und
 enthält \emph{keine} Mess-Logik. Die \texttt{ExecutionEngine} hingegen ist die quer zu allen Achsen
 liegende \emph{Ausführungs- und Mess-Infrastruktur}: Als abstrakte messbare Wurzel (\texttt{IExecutionEngine},
@@ -63,7 +63,7 @@ von PRT-ART, je an ihrer Achse verortet.
   \node[pa] (p5) at (5.1,-2.85){\textbf{Kohärenz-bewusste Telemetrie}\\{\scriptsize Achse T10}\\[2pt]{\tiny Leaf-Only-Zähler (Haupt), Sampling (jeder $N$-te), Offline-Recompute; Per-Node-Zähler nur als Anti-Pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{DensityTracker $+$ H1/H2/H3}\\{\scriptsize Achse T10 (eigene Organe)}\\[2pt]{\tiny eigene Mess-Organe: Belegungsdichte-Tracker und die drei Hypothesen-Metriken des Prüflings}};
 \end{tikzpicture}}
-\caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die übrigen dreizehn Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
+\caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die übrigen vierzehn Kompositions-Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
 \end{figure}
 
 \section{Achsen-Implementierung und Mess-System-Ebenen}\label{sec:axes-impl}
@@ -143,7 +143,7 @@ Die neunzehn Kompositions-Achsen sind nicht abstrakt, sondern je ein konkretes \
 mit mehreren austauschbaren Bausteinen, aus denen eine konkrete Composition je Slot genau einen wählt.
 Abbildung~\ref{fig:axes-gallery} fasst alle neunzehn als Galerie zusammen --- je Achse der Kurzname, die
 Sub-Achsen-Familie und eine repräsentative Auswahl der Bausteine; die vollständige Bausteine-Matrix mit
-allen Herkunfts-Quellen führt der Anhang, die SOTA-Beiträge je Achse Tabelle~\ref{tab:axes-overview}.
+allen Herkunfts-Quellen führt Anhang~\ref{app:blocks}, die SOTA-Beiträge je Achse Tabelle~\ref{tab:axes-overview}.
 \begin{figure}[htbp]\centering
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,
@@ -169,5 +169,9 @@ allen Herkunfts-Quellen führt der Anhang, die SOTA-Beiträge je Achse Tabelle~\
   \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush-Policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptiv-LSM}\\{\tiny\itshape Std.\ Lazy}};
   \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Lesart}\\{\tiny Jede Achse $=$ ein \texttt{Concept} mit austauschbaren Bausteinen (\emph{Strategy}); eine Composition wählt je Slot genau einen.}};
 \end{tikzpicture}}
-\caption{Galerie der neunzehn Kompositions-Achsen (T0--T18): je Achse das Implementierungs-Konzept --- Kurzname, Sub-Achsen-Familie und eine repräsentative Auswahl der austauschbaren Bausteine. Jede Achse ist ein \texttt{Concept}-Interface mit mehreren Strategie-Bausteinen (\emph{Strategy}-Muster); eine konkrete Composition belegt je Slot genau einen. Der \emph{Standard} (\enquote{Std.}) ist eine abgeleitete Vergleichs-Baseline, kein Code-Flag; bei den großen Achsen T0/T6/T17 ist die Gesamt-Bausteinzahl in Klammern angegeben. Die vollständige Matrix mit Herkunfts-Quellen führt der Anhang (Bausteine-Matrix).}\label{fig:axes-gallery}
+\caption{Galerie der neunzehn Kompositions-Achsen (T0--T18): je Achse das Implementierungs-Konzept --- Kurzname, Sub-Achsen-Familie und eine repräsentative Auswahl der austauschbaren Bausteine. Jede Achse ist ein \texttt{Concept}-Interface mit mehreren Strategie-Bausteinen (\emph{Strategy}-Muster); eine konkrete Composition belegt je Slot genau einen. Der \emph{Standard} (\enquote{Std.}) ist eine abgeleitete Vergleichs-Baseline, kein Code-Flag; bei den großen Achsen T0/T6/T17 ist die Gesamt-Bausteinzahl in Klammern angegeben. Die vollständige Matrix mit Herkunfts-Quellen führt Anhang~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
+
+Damit ist der Apparat vollständig beschrieben --- von den Repositorien über den Prüfling bis zu den
+neunzehn Achsen und ihren Mess-System-Ebenen. Kapitel~\ref{ch:eval} legt die Methodik offen, mit der
+dieser Apparat bewertet wird.

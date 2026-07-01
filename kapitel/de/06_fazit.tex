@@ -2,12 +2,15 @@
 
 % [SKELETT] aus altem 08_conclusion.
 
+Dieses Kapitel zieht Bilanz: Es beantwortet die Forschungsfragen FF0--FF4 aus
+Abschnitt~\ref{sec:rqs}, benennt die Grenzen des erreichten Standes und skizziert die nächsten Schritte.
+
 \section{Beantwortung der Forschungsfragen}\label{sec:answers}
 \paragraph{FF0 (Hauptfrage).} Wie stark aktive, messgetriebene cache-bewusste Entscheidungen ihre
 passiven, statisch ausgelegten Gegenstücke übertreffen, lässt sich abschließend erst nach den
 End-to-End-Läufen je Plattform beziffern (Abschnitt~\ref{sec:outlook}). Vorbereitet ist die Apparatur, die
 genau diese Differenz isoliert: dieselbe achsen-konstante Struktur wird einmal aktiv (messgetriebene
-Layout-, Prefetch- und Value-Ablage-Entscheidung) und einmal passiv (statisch ausgelegt) permutiert und
+Seitentyp-, Layout-, Prefetch- und Value-Ablage-Entscheidung) und einmal passiv (statisch ausgelegt) permutiert und
 unter identischer Compiler- und Flag-Basis auf Hybrid-CPUs und Sapphire-Rapids gegenübergestellt.
 
 \paragraph{FF1 (Komposition).} Die neunzehn Permutations-Achsen (Search-Algorithm, Cache-Traversal,
@@ -19,7 +22,10 @@ Stand-der-Technik-Entwürfe werden über Algorithmus-Profil-XMLs eindeutig rekon
 API-Spezialisierung (1/2/$N$ Parameter auf \texttt{std::vector}/\texttt{std::map}/Tuple) macht sowohl
 algorithmus- als auch container-orientierte Muster auf einer Engine ausdrückbar. Die nicht
 voll-orthogonalen Achsen-Kopplungen (Knotentyp $\times$ SIMD $\times$ Pfadkompression) werden dabei als
-solche markiert und bei der Permutation explizit eingeschränkt.
+solche markiert und bei der Permutation explizit eingeschränkt. Die Teilfrage nach dem Cache-Update- und
+Cache-Line-Füllverhalten unter \emph{allein} variierter ISA-/SIMD-Achse ist methodisch beantwortet ---
+die ISA-Achse (T12) ist bei sonst achsen-konstanter Struktur isoliert permutierbar ---; die empirische
+Antwort folgt mit den End-to-End-Läufen (Abschnitt~\ref{sec:outlook}).
 
 \paragraph{FF2 (Mess-Methodik).} Die Messung ist in einen Produktiv-Modus
 (\texttt{COMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=OFF}, kein Overhead) und einen Experiment-Modus
@@ -30,6 +36,9 @@ erhoben --- Micro-, Makro- und Gesamt-Benchmarking ---, sodass sowohl einzelne E
 auch ganze Algorithmen vergleichbar werden. Widersprüchliche Literaturbefunde zur optimalen
 Knoten-/Cache-Line-Größe (eine gegenüber bis zu sechzehn Cache-Lines) werden so nicht aus inkompatiblen
 Original-Setups übernommen, sondern achsen-isoliert und unter sonst gleichen Bedingungen nachgemessen.
+Als erfolgreich verifiziert gilt eine Plattform dabei erst, wenn das Konformitäts-Gatter den
+\texttt{std::map}-Vertrag je Modul bestätigt und die Plattform-Probe die gemeldete Achsen-Teilmenge
+deckt; die plattform-kalibrierten Schwellwerte selbst werden mit den realen Läufen festgelegt.
 
 \paragraph{FF3 (Prüfling-Vergleich).} Der konkrete Vergleich von PRT-ART gegen die 30 SOTA-Profile steht
 nach den ersten Mess-Läufen aus (Abschnitt~\ref{sec:outlook}). Die Architektur ist vollständig
@@ -40,10 +49,14 @@ Kompaktseite) und ihre plattform-kalibrierten Umschaltregeln sind Teil des PRT-A
 
 \paragraph{FF4 (Compile-Time vs.\ Laufzeit).} Die Trennung ist im Build-System verankert:
 plattform-spezifische Achsen (ISA, Hardware-Konstanten) werden zur Übersetzungszeit fixiert und erzeugen
-provenienz-nachweisbare Binaries je Permutation (SHA256-validierte Original-Bodies,
+provenienz-nachweisbare Binaries je Permutation (SHA256-validierte Original-Bodies ---
+deren Voll-Implementierung Abschnitt~\ref{sec:limitations} als offen ausweist ---,
 \texttt{experiment\_compiler()}-Kennung), während Layout- und Seiten-Selektion über einen bit-codierten
 Permutations-Identifier zur Laufzeit wählbar bleiben, ohne die gemeinsame Compiler- und Flag-Basis zu
-verletzen.
+verletzen. Die vorwärtsgerichtete Teilfrage, ob die Messung selbst ISA- und betriebssystem-optimierte
+Binaries für eine Rekombination zuschneiden kann, greift der Ausblick als Heuristik-Automation auf
+(Abschnitt~\ref{sec:outlook}); die Betriebssystem-Dimension ist über die zwei Mess-Regimes aus
+Kapitel~\ref{ch:eval} bereits im Messplan verankert.
 
 \section{Limitierungen}\label{sec:limitations}
 \begin{itemize}
@@ -53,7 +66,17 @@ verletzen.
   \item \textbf{Hardware-Validierung ausstehend:} die Konfiguration ist lokal grün, aber der vollständige
   \texttt{ctest}-Lauf und die End-to-End-\texttt{messung\_driver}-Läufe über die BlockAO-Plattformen
   (AVX2/AVX-512, ARM NEON/SVE) stehen aus.
-  \item \textbf{Ergebnis-Kapitel:} aktuell methodisch; konkrete Messungen folgen.
+  \item \textbf{Ergebnis-Kapitel:} aktuell methodisch; konkrete Messungen folgen. Eine erste reale
+  Smoke-Messreihe (43 Permutationen) liegt in Anhang~\ref{app:measurements} vor, ersetzt die
+  Pflicht-Messreihen aber nicht.
+  \item \textbf{Hardware-Zähler standardmäßig aus:} die PMC-Erfassung (L1/L2/L3-, dTLB-,
+  Branch-Misses, IPC) ist default-abgeschaltet; in der bisherigen Smoke-Reihe stehen die
+  Hardware-Spalten auf null --- die cache-bewusste Knoten-/Daten-/Index-Messkomponente steht damit noch
+  aus (Abbildung~\ref{fig:measurement-triangle}).
+  \item \textbf{Smoke-Reihe mit Apparat-Vorbehalten:} die bisher realen Messungen variieren nur vier der
+  neunzehn Achsen bei fünfzehn gepinnten und approximieren Achsen-Effekte teils über Wall-Clock-Proxys;
+  einzelne Effekte sind Apparat- statt Organ-Artefakte (\enquote{Beschattung}). Die vollständige
+  Limitierungs-Tabelle führt Abschnitt~\ref{sec:measurements:limitations}.
 \end{itemize}
 
 \section{Ausblick}\label{sec:outlook}
@@ -70,14 +93,15 @@ je Architekturfokus wiederverwendbaren Heuristik-Richtlinien; und (iii) einen \e
 den so ausgewählten Gesamtalgorithmus als eigenständige Binary hinter dem einheitlichen
 Suchalgorithmus-Interface ausliefert. Voraussetzung für alle drei ist, dass die End-to-End-Messreihen zuvor
 vollständig vorliegen --- erst die belastbare Datenbasis über alle Permutationen und Lastprofile macht eine
-messgetriebene, automatisch gesteuerte Auswahl sinnvoll; bis dahin sind die Konfigurations-Empfehlungen aus
-Abschnitt~\ref{sec:eval-results} manuell abgeleitet.
+messgetriebene, automatisch gesteuerte Auswahl sinnvoll; bis dahin werden die Konfigurations-Empfehlungen
+des Auswertungs-Schemas aus Abschnitt~\ref{sec:eval-results} nach Vorliegen der Daten zunächst manuell
+abgeleitet.
 
 \medskip
 Mittel- bis langfristig: ein GPU-Adapter (Grace-Hopper-Cluster, ZIH), die PIM-Allokator-Integration (A16)
 und die formale Verifikation ausgewählter Permutations-Klassen (StarMalloc-Stil, A13). Die
 Drei-Repository-Architektur erlaubt es künftigen Studierenden, weitere Prüfling-Algorithmen analog zu
-PRT-ART einzubringen, ohne die Cache-Engine-Werkzeug-Bibliothek zu modifizieren --- ein zentrales
+PRT-ART einzubringen, ohne die Cache-Engine-Bausteine-Bibliothek zu modifizieren --- ein zentrales
 Designprinzip für die Skalierbarkeit der Forschungsinfrastruktur. Über die hier behandelten baumartigen
 Suchstrukturen hinaus ist das Anatomie-Prinzip über höherwertige Abstraktionen auf die weiteren
 Strukturklassen aus Abschnitt~\ref{sec:overview} erweiterbar --- hash-basierte, räumliche sowie mengen- und

@@ -125,9 +125,9 @@ in ihren Organ-Beiträgen.
     T17 queuing\_q1 & QS1--QS6 & Disruptor, Bw-Tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
     T18 queuing\_q2 & FS1--FS4 & Eager/Lazy/Watermark/Kafka/RocksDB \\
     \midrule
-    Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (26) \\
-    Build simd (09b) & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
-    Build hardware (12) & HW1--HW4 & HW-Strategie je Paper (Tab.~\ref{tab:hw-sched}) \\
+    Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (2026) \\
+    Build simd\_extension & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
+    Build general\_hardware & HW1--HW4 & HW-Strategie je Paper (Tab.~\ref{tab:hw-sched}) \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -154,7 +154,8 @@ Baum~\cite{schmeisser2022b2tree} bis zum bit-gepackten LOUDS~\cite{jacobson1989l
 \emph{Allokator-Achse} (T6) ist mit dem Korpus A01--A23 am dichtesten besetzt und in sieben Sub-Achsen
 verfeinert --- von der Free-List-Topologie über Thread-Lokalität/NUMA-Affinität~\cite{ungethuem2017survey}
 und die Allokationsstrategie bis zur Reklamation (Epoch, RCU~\cite{mckenney2001rcu},
-Hazard-Pointer~\cite{michael2004hazard}, QSBR); der Code stellt 25 Allokator-Implementierungen bereit, von
+Hazard-Pointer~\cite{michael2004hazard}, QSBR); der Code stellt 25 Allokator-Implementierungen zum
+23-Arbeiten-Korpus bereit (einzelne Arbeiten steuern mehrere Varianten bei), von
 denen Tabelle~\ref{tab:allocator-profiles} die zehn lauffähigen Profile mit Lizenz und Workload-Affinität
 listet. Die \emph{Wert-Achse} (T11) unterscheidet Inline-Wert~\cite{leis2013art}, externen
 Pool~\cite{wu2019wormhole}, versionierten Zeiger~\cite{mao2012masstree} und immutable
@@ -386,12 +387,13 @@ vollständige Mess-Architektur entwickeln das folgende Mess-System (Abschnitt~\r
 und Kapitel~\ref{ch:eval}.
 
 \section{Das Mess-System}\label{sec:measurement-system}
-Das Mess-System trennt vier Subsysteme und prüft in drei Stufen, die auf die drei Pflicht-Messreihen abbilden;
+Das Mess-System trennt vier Subsysteme und prüft in drei Stufen, die die drei Pflicht-Messreihen speisen
+(nicht eins-zu-eins, Tabelle~\ref{tab:stage-series});
 den Permutationsraum reduziert es gezielt.
 Vier formal getrennte Subsysteme mit unterschiedlichen Verantwortlichkeiten bilden das Modell: der
 \texttt{messung\_driver} (der Auswertungs-Orchestrator, der je Pflicht-Messreihe A/B/C die Pipeline
 durchläuft), der \texttt{CacheEngineBuilder} (ein autonomes Plattform-Ausmess-System, das die
-Sieben-Phasen-Pipeline ausführt), die \texttt{CacheEngine} (die Achsen-Bausteine-Bibliothek mit den
+Sieben-Phasen-Pipeline über seinen \texttt{ExperimentDriver} ausführt), die \texttt{CacheEngine} (die Achsen-Bausteine-Bibliothek mit den
 Standard-Implementierungen je Achse) und der \texttt{Prüfling} PRT-ART (der einige Achsen-Organe selbst
 stellt und für die übrigen Cache-Engine-Dienste konsumiert). Die \texttt{ExecutionEngine} ist dabei kein
 fünftes Subsystem, sondern die gemeinsame messbare Wurzel (das \texttt{IExecutionEngine}-Interface), über
@@ -407,7 +409,7 @@ mit der Messreihe~A den Prüfling gegen viele SOTA-Adapter in einer einzigen Pip
   \resizebox{0.97\textwidth}{!}{%
   \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt, minimum width=3.3cm},
     bm/.style={draw, rounded corners, align=center, font=\scriptsize, inner sep=3pt, text width=3.7cm, minimum height=1.6cm, fill=orange!13}]
-    \node[comp,fill=blue!7,text width=4.7cm] (driver) at (0,0.6) {\texttt{messung\_driver} --- \textbf{WAS}\\{\scriptsize Diplomarbeit-Code: Konfigs A/B/C $\cdot$ Mikro-Bench $\cdot$ Welch-Statistik}};
+    \node[comp,fill=blue!7,text width=4.7cm] (driver) at (0,0.6) {\texttt{messung\_driver} --- \textbf{WAS}\\{\scriptsize Diplomarbeit-Code: Konfigs A/B/C $\cdot$ Mikro-Bench $\cdot$ Signifikanz-Statistik}};
     \node[draw,thick,rounded corners,minimum width=9.8cm,minimum height=2.4cm,fill=gray!4] (bbox) at (0,-2.5){};
     \node[font=\bfseries\scriptsize,anchor=north] at ([yshift=-2pt]bbox.north){\texttt{CacheEngineBuilder} --- \textbf{WIE}: baut $+$ misst Tier-Binaries je Konfiguration};
     \node[bm] (build) at (-2.5,-2.75) {\textbf{BUILD}\\{\scriptsize \texttt{Build\-Orchestrator} $+$ \texttt{Experiment\-Tree}: baut alle Tier-Binaries je Konfig (resumierbar, RAM-gewahr)}};
@@ -501,7 +503,7 @@ Operations- und Gesamt-Kontext erscheint, werden die Beiträge getrennt und isol
 Gesamtdurchsatz vermengt zu bleiben.
 
 Den so aufgespannten Raum reduziert das System gezielt. Mit der Erweiterung auf neunzehn Achsen plus rund
-vierundsechzig Sub-Achsen wächst er auf etwa $10^{14}$ Permutationen; drei Mechanismen dämpfen die
+vierundsechzig Sub-Achsen wächst er auf über $10^{14}$ Permutationen; drei Mechanismen dämpfen die
 Explosion: der \texttt{<expected\_workload>}-Profil-Filter routet nur kompatible Workloads, der
 \texttt{Defined}-Modus führt nur die deklarierten Tupel aus (rund 100--1000 je Reihe, die ins Manuskript
 einfließen), und der \texttt{Full}- bzw.\ \texttt{Full-Sampled}-Modus (etwa jede tausendste Permutation)
@@ -527,7 +529,7 @@ und ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte SOTA-Verfahre
 \begin{tikzpicture}[font=\footnotesize,align=center,
   prt/.style={draw,rounded corners,fill=orange!15,very thick,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize},
   ce/.style={draw,rounded corners,fill=green!8,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize}]
-  \node[font=\bfseries\footnotesize] at (0,2.35){PRT-ART (Prüfling): ein Lebewesen aus 19 Achsen-Organen};
+  \node[font=\bfseries\footnotesize] at (0,2.35){PRT-ART (Prüfling): ein Lebewesen aus 19 Achsen-Organen $+$ Build-Achse Page-Type};
   \node[prt] at (-3.7,1.55){Page-Type};
   \node[prt] at (-1.23,1.55){Layout};
   \node[prt] at (1.23,1.55){Allocator (4+2)};
@@ -540,12 +542,11 @@ und ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte SOTA-Verfahre
   \node[ce] at (3.7,-0.15){Serialization};
   \node[ce] at (-2.46,-0.85){ISA};
   \node[ce] at (2.46,-0.85){$\ldots$ übrige};
-  \node[font=\scriptsize,align=center] at (0,-1.65){\textcolor{orange}{\textbf{orange}} $=$ PRT-ART-eigenes Organ \quad \textcolor{green!50!black}{\textbf{grün}} $=$ Cache-Engine-Standard (Compile-Time-Fallback)};
+  \node[font=\scriptsize,align=center] at (0,-1.65){\textcolor{orange}{\textbf{orange}} $=$ PRT-ART-eigener Beitrag (inkl.\ Build-Achse Page-Type) \quad \textcolor{green!50!black}{\textbf{grün}} $=$ Cache-Engine-Standard (Compile-Time-Fallback)};
 \end{tikzpicture}
-\caption{PRT-ART als Demonstrator im M-Modell: Der Prüfling überschreibt sechs Organe selbst (Page-Type, Layout, 4+2-Allokator, Prefetch, OLC-Nebenläufigkeit, Telemetrie) und bezieht die übrigen dreizehn Achsen über den Compile-Time-Fallback aus der Cache-Engine --- so entsteht ein vollständiges, mess-fähiges Lebewesen aus wenigen eigenen plus vielen Standard-Organen.}\label{fig:prtart-demo}
+\caption{PRT-ART als Demonstrator im M-Modell: Der Prüfling steuert sechs eigene Schlüsselstellen bei --- die Build-Achse Page-Type sowie die fünf Achsen-Organe Layout, 4+2-Allokator, Prefetch, OLC-Nebenläufigkeit und Telemetrie --- und bezieht die übrigen vierzehn Kompositions-Achsen über den Compile-Time-Fallback aus der Cache-Engine; so entsteht ein vollständiges, mess-fähiges Lebewesen aus wenigen eigenen plus vielen Standard-Organen.}\label{fig:prtart-demo}
 \end{figure}
-% TODO Stufe-2-Massen: B9 PRT-ART-Demonstrator (PRT-ART im M-Modell, ueberschreibt ausgewaehlte Organe) in 3.4
-% TODO Stufe-2-Massen: PRTART-1..N je PRT-ART-Algorithmus ein Bild -> Kap. 4.2
+% B9 PRT-ART-Demonstrator: fig:prtart-demo (3.4) ERLEDIGT; PRTART-Galerie: fig:prtart-gallery (4.2) ERLEDIGT
 
 \section{Schärfung durch Heuristiken}\label{sec:heuristics}
 Aus den Messreihen lässt sich --- als Ausblick-Mechanismus --- je Last- und Datentyp-Profil die beste
@@ -583,4 +584,5 @@ OtterTune~\cite{vanaken2017ottertune} und im Database Tuning Advisor mit Workloa
 die online-laufzeitnahe Variante in Active Harmony~\cite{tapus2002activeharmony}; die Bezeichnung
 \enquote{Software-in-the-Loop} selbst entstammt der X-in-the-Loop-Validierungstaxonomie~\cite{tibba2016xil}.
 Die konkrete Umsetzung dieses Auswahl- und Auslieferungs-Mechanismus
-bleibt zukünftiger Arbeit vorbehalten (Kapitel~\ref{ch:conclusion}).
+bleibt zukünftiger Arbeit vorbehalten (Kapitel~\ref{ch:conclusion}). Zunächst vertieft
+Kapitel~\ref{ch:impl} die konkrete Implementierung der hier eingeführten Bausteine.
