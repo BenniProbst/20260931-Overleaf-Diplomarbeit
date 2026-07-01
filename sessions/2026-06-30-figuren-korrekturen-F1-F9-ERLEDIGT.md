@@ -36,6 +36,20 @@ Statt vieler redundanter Einzelbilder je eine systematische Galerie (übersichtl
 - Codex-cross-model-verifiziert (SOTA-Achsen an Tabelle angeglichen; T13-Subachsen io1–io3 Anhang-D-konform + Tabellen-Fix; DensityTracker-T10-Label).
 - **Git Ende:** Submodul `0aae63f` / BASE `01cabd1`, beide Remotes; DE 146 / EN 136 S., 0 Overfull/undef.
 
+## Voll-Review Struktur+Inhalt (max-effort, Commit `d484cab`) — ERLEDIGT
+4 parallele Review-Slices (je Explore-Agent + Codex-Gegenprüfer mit identischer Aufgabe): S1 roter Faden/FF-Antworten,
+S2 Kanon/T-IDs/Zahlen Kap.2+3, S3 Kap.4–6+Anhänge, S4 DE↔EN-Parität/Bib/Hygiene. **Sauber bestätigt:** 0 tote Refs,
+0 doppelte Bib-Keys, DE↔EN-Parität vollständig (Sections/Labels/Zahlen), T-ID-/P-ID-Kanon wasserdicht, Habich-Kriterien erfüllt.
+**25 verifizierte Befunde behoben** (DE+EN): Reihe-B/C-Full-Join-Widerspruch (Kap.5↔tab:stage-series); prtart-demo/-gallery-Zählung
+(Page-Type=Build-Achse → „übrige vierzehn"); m-model Welch→Signifikanz-Statistik; tab:axes-overview-Build-Zeilen
+(simd_extension/general_hardware, PRT-ART (2026)); 25-vs-23-Allokatoren; „über 10^14"; CacheEngine=Bausteine-Bibliothek;
+FF0+Seitentyp/FF1(b)/FF2-Kriterium/FF4-OS-Teil ehrlich beantwortet; Kap.6-Limitierungen +PMC-aus +Smoke-4/19+Beschattung
++\ref{sec:measurements:limitations}; Anhang-A-Smoke↔Kap.5/6 versöhnt; acht-Schichten↔6-Schlüsselstellen-Mapping (§1.4);
+§1.5+Anhänge; Kapitel-Brücken 2→3→4→5→6 + Kap.6-Intro; H1–H3-Disambiguation; Barnard=Sapphire Rapids; app:blocks/app:measurements
+navigierbar; 9 Quote-Reste→\enquote; 2 stale TODOs. **DE 148 / EN 138 S., beide 0 Fehler/Overfull/undef.**
+
 ## Verbleibend offen
 - Mess-Experiment (reale A/B/C-Läufe) bleibt mehrtägig → Kap. 5 methodisch mit `\input`-Platzhaltern (nicht aktiv pollen).
 - Optional: aus den kompakten Galerien später bei Bedarf einzelne Detailbilder für besonders zentrale Verfahren/Achsen ausgliedern.
+- Nicht übernommene weiche Review-Hinweise (bewusst): Kap.3 §3.2 „übergreifende Strategie-Achsen" (HW/Scheduling) ist gewollt
+  außerhalb T0–T18; Anhang-D-Köpfe mit internen axis_NN-Kürzeln dokumentieren bewusst das T-ID↔axis_NN-Mapping.
