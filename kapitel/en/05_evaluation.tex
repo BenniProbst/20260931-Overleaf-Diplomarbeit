@@ -17,6 +17,11 @@ Three \emph{hypotheses} guide the analysis:
   PRT-ART heuristics ChainRef.
 \end{description}
 
+These \emph{evaluation hypotheses} are not to be confused with the identically named PRT-ART telemetry
+metrics H1--H3 (Section~\ref{sec:prtart-demo}): the former are testable statements about the design
+space, the latter measurement organs of the probe that, among other things, supply the data for this
+test.
+
 Phase~5 derives the YCSB workload per permutation from the profile's traversal tag
 (Table~\ref{tab:workload-routing}); modules without a profile use the global default workload. The data
 basis is real string datasets of differing characteristics (Table~\ref{tab:datasets}), each with a
@@ -55,7 +60,7 @@ miss, update, and delete keys.
 \end{table}
 
 The measurements target a local workstation for development verification and the TU-Dresden ZIH cluster
-(Barnard CPU, Capella GPU) for the full sweeps, plus the Rank-3 platforms (Ryzen~9~9950X3D,
+(Barnard CPU nodes with Intel Sapphire Rapids, Capella GPU) for the full sweeps, plus the Rank-3 platforms (Ryzen~9~9950X3D,
 Intel~i9~14900KS, and an HBM platform). An \texttt{IPlatformProbe} (Phase~1) reports per platform the
 runnable subset of axes (e.g.\ AVX-512 only where available, HBM-aware only on HBM hardware); per platform
 a scalar, an AVX2, and --- on Barnard --- an AVX-512 build are
@@ -77,8 +82,11 @@ library the compiler, flags, ISA path, allocator, and commit hash are logged, an
 measured in several separate runs with percentiles determined over HDR histograms.
 
 \section{Results and Analysis}\label{sec:eval-results}
-At the time of writing, methodology and evaluation pipeline are in place and verified on sample data; the
-runs on real hardware are outstanding (Section~\ref{sec:limitations}). Per series run, the
+At the time of writing, methodology and evaluation pipeline are in place and verified on sample data; a
+first real smoke measurement series (43 permutations, real DLL measurement on the development machine) is
+documented in Appendix~\ref{app:measurements} together with its limitations
+(Section~\ref{sec:measurements:limitations}), the complete runs of the mandatory measurement series on
+the target platforms are pending (Section~\ref{sec:limitations}). Per series run, the
 \texttt{messung\_driver} writes under \texttt{Code/\_runs/<date>/<spec\_id>/} the files
 \texttt{measurements.csv} (one row per permutation: cycles, L1/L2/L3 misses, branches, throughput),
 \texttt{measurements.json}, and optional binary records; the evaluation enriches them via
@@ -86,8 +94,10 @@ runs on real hardware are outstanding (Section~\ref{sec:limitations}). Per serie
 \texttt{diagram\_generator} diagrams (A4-aware TikZ bar charts, scatter plots, heatmaps), which the
 manuscript includes via \texttt{\textbackslash input\{tikz/<spec\_id>/\ldots\}} and
 \texttt{\textbackslash input\{tabellen/<spec\_id>\ldots\}} from the language-neutral directories. The three
-measurement series are then evaluated: series~A (PRT-ART vs.\ state of the art, with the hypotheses H1--H3
-from Section~\ref{sec:eval-method}), series~B (cache-engine permutations), and series~C (full join).
+measurement series are then evaluated: series~A (PRT-ART vs.\ the state of the art, with the evaluation
+hypotheses H1--H3 from Section~\ref{sec:eval-method}), series~B (systematic variation of the cache-engine
+permutations, fed from the full join of stage~3) and series~C (merge/regression of old against new,
+across builds; Table~\ref{tab:stage-series}).
 
 % After the first messung_driver run, insert here:
 %   \input{tikz/A_full/cycles_per_permutation.tikz}
@@ -108,4 +118,4 @@ configurations per workload class. Thus the arc closes back to the task: the sen
 exactly the separated weighting of the individual constituents whose absence was the original problem. The
 results are finally discussed against the thesis's leitmotif --- the transition from heuristic to informed
 cache management, i.e.\ the question whether telemetry-driven, automatically adapted configurations
-outperform statically chosen ones.
+outperform statically chosen ones. Chapter~\ref{ch:conclusion} draws the conclusion from this.

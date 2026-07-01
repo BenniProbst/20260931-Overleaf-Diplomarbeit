@@ -9,7 +9,7 @@ and visually, finally the axis implementation and the levels of the measurement 
 \section{Three-Repository Architecture}\label{sec:repos}
 The implementation is distributed across three Git repositories with clearly separated responsibilities:
 \begin{itemize}
-  \item \texttt{comdare-cache-engine} --- \textbf{how} measurement is done: the tool library and the builder
+  \item \texttt{comdare-cache-engine} --- \textbf{how} measurement is done: the building-block library and the builder
   (XML config parser, \texttt{generate\_\allowbreak module\_\allowbreak from\_\allowbreak profile} code
   generation, permutation loop, module loader, and the seven-phase \texttt{ExperimentDriver}), the ABI
   headers, 30~SOTA profiles under \texttt{algorithm\_profiles/sota}, and the test suites; the source tree
@@ -21,7 +21,7 @@ The implementation is distributed across three Git repositories with clearly sep
   the experiment configurations, the evaluation pipeline, and the manuscript.
 \end{itemize}
 Orthogonally, the terminology separates two engine terms that must not be conflated. The
-\texttt{CacheEngine} (\texttt{cache-engine/libs}) is the \emph{tool library of axis building blocks}: it
+\texttt{CacheEngine} (\texttt{cache-engine/libs}) is the \emph{library of axis building blocks}: it
 provides per axis the interchangeable design constituents as concept/CRTP components and contains \emph{no}
 measurement logic. The \texttt{ExecutionEngine}, by contrast, is the execution and measurement
 infrastructure lying across all axes: as the abstract measurable root (\texttt{IExecutionEngine},
@@ -61,7 +61,7 @@ located at its axis.
   \node[pa] (p5) at (5.1,-2.85){\textbf{Coherence-aware telemetry}\\{\scriptsize axis T10}\\[2pt]{\tiny leaf-only counters (main), sampling (every $N$th), offline recompute; per-node counter only as anti-pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{Density tracker $+$ H1/H2/H3}\\{\scriptsize axis T10 (own organs)}\\[2pt]{\tiny own measurement organs: occupancy density tracker and the probe's three hypothesis metrics}};
 \end{tikzpicture}}
-\caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a multi-level layout (T5), and cache-coherence-aware telemetry (T10) together with the density tracker and the hypothesis metrics H1/H2/H3. The remaining thirteen axes the probe draws via the compile-time fallback from the cache-engine.}\label{fig:prtart-gallery}
+\caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a multi-level layout (T5), and cache-coherence-aware telemetry (T10) together with the density tracker and the hypothesis metrics H1/H2/H3. The remaining fourteen composition axes the probe draws via the compile-time fallback from the cache-engine.}\label{fig:prtart-gallery}
 \end{figure}
 
 \section{Axis Implementation and Measurement-System Levels}\label{sec:axes-impl}
@@ -139,7 +139,7 @@ The nineteen composition axes are not abstract but each a concrete \emph{strateg
 interchangeable building blocks, from which a concrete composition picks exactly one per slot.
 Figure~\ref{fig:axes-gallery} gathers all nineteen as a gallery --- per axis the short name, the sub-axis
 family and a representative selection of the building blocks; the complete building-block matrix with all
-origin sources is given in the appendix, the SOTA contributions per axis in Table~\ref{tab:axes-overview}.
+origin sources is given in Appendix~\ref{app:blocks}, the SOTA contributions per axis in Table~\ref{tab:axes-overview}.
 \begin{figure}[htbp]\centering
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,
@@ -165,5 +165,9 @@ origin sources is given in the appendix, the SOTA contributions per axis in Tabl
   \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptive-LSM}\\{\tiny\itshape Def.\ Lazy}};
   \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Reading}\\{\tiny Each axis $=$ a \texttt{Concept} with interchangeable building blocks (\emph{Strategy}); a composition picks exactly one per slot.}};
 \end{tikzpicture}}
-\caption{Gallery of the nineteen composition axes (T0--T18): per axis the implementation concept --- short name, sub-axis family and a representative selection of the interchangeable building blocks. Each axis is a \texttt{Concept} interface with several strategy building blocks (\emph{Strategy} pattern); a concrete composition occupies exactly one per slot. The \emph{default} (\enquote{Def.}) is a derived comparison baseline, not a code flag; for the large axes T0/T6/T17 the total building-block count is given in parentheses. The complete matrix with origin sources is given in the appendix (building-block matrix).}\label{fig:axes-gallery}
+\caption{Gallery of the nineteen composition axes (T0--T18): per axis the implementation concept --- short name, sub-axis family and a representative selection of the interchangeable building blocks. Each axis is a \texttt{Concept} interface with several strategy building blocks (\emph{Strategy} pattern); a concrete composition occupies exactly one per slot. The \emph{default} (\enquote{Def.}) is a derived comparison baseline, not a code flag; for the large axes T0/T6/T17 the total building-block count is given in parentheses. The complete matrix with origin sources is given in Appendix~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
+
+With this, the apparatus is fully described --- from the repositories through the probe to the nineteen
+axes and their measurement-system levels. Chapter~\ref{ch:eval} lays out the methodology by which this
+apparatus is assessed.

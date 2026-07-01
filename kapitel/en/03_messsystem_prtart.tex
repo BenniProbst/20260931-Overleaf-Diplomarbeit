@@ -121,9 +121,9 @@ contributions.
     T17 queuing\_q1 & QS1--QS6 & Disruptor, Bw-tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
     T18 queuing\_q2 & FS1--FS4 & eager/lazy/watermark/Kafka/RocksDB \\
     \midrule
-    Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (26) \\
-    Build simd (09b) & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
-    Build hardware (12) & HW1--HW4 & HW strategy per paper (Tab.~\ref{tab:hw-sched}) \\
+    Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (2026) \\
+    Build simd\_extension & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV; GPU: CUDA \\
+    Build general\_hardware & HW1--HW4 & HW strategy per paper (Tab.~\ref{tab:hw-sched}) \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -149,7 +149,8 @@ tree~\cite{schmeisser2022b2tree} to the bit-packed LOUDS~\cite{jacobson1989louds
 axis} (T6) is the most densely occupied with the corpus A01--A23 and is refined into seven sub-axes ---
 from free-list topology through thread locality/NUMA affinity~\cite{ungethuem2017survey} and the allocation
 strategy to reclamation (epoch, RCU~\cite{mckenney2001rcu}, hazard pointers~\cite{michael2004hazard},
-QSBR); the code provides 25 allocator implementations, of which Table~\ref{tab:allocator-profiles} lists
+QSBR); the code provides 25 allocator implementations for the 23-work corpus (individual works contribute
+several variants), of which Table~\ref{tab:allocator-profiles} lists
 the ten runnable profiles with license and workload affinity. The \emph{value axis} (T11) distinguishes
 inline value~\cite{leis2013art}, external pool~\cite{wu2019wormhole}, versioned pointer~\cite{mao2012masstree},
 and immutable shared ref~\cite{mckenney2001rcu}, the \emph{serialization axis} (T9) raw binary, succinct
@@ -378,12 +379,13 @@ the complete measurement architecture is developed by the following measurement 
 (Section~\ref{sec:measurement-system}) and Chapter~\ref{ch:eval}.
 
 \section{The Measurement System}\label{sec:measurement-system}
-The measurement system separates four subsystems and tests in three stages that map onto the three mandatory
-measurement series; it reduces the permutation space deliberately.
+The measurement system separates four subsystems and tests in three stages that feed the three mandatory
+measurement series (not one-to-one, Table~\ref{tab:stage-series}); it reduces the permutation space
+deliberately.
 Four formally separated subsystems with distinct responsibilities form the model: the
 \texttt{messung\_driver} (the evaluation orchestrator that runs the pipeline per mandatory measurement
 series A/B/C), the \texttt{CacheEngineBuilder} (an autonomous platform-measurement system that executes the
-seven-phase pipeline), the \texttt{CacheEngine} (the axis building-block library with the default
+seven-phase pipeline via its \texttt{ExperimentDriver}), the \texttt{CacheEngine} (the axis building-block library with the default
 implementations per axis), and the \texttt{probe} PRT-ART (which supplies some axis-organs itself and
 consumes cache-engine services for the rest). The \texttt{ExecutionEngine} is not a fifth subsystem but the
 shared measurable root (the \texttt{IExecutionEngine} interface) through which these four are connected.
@@ -398,7 +400,7 @@ pipeline (Figure~\ref{fig:m-model}).
   \resizebox{0.97\textwidth}{!}{%
   \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt, minimum width=3.3cm},
     bm/.style={draw, rounded corners, align=center, font=\scriptsize, inner sep=3pt, text width=3.7cm, minimum height=1.6cm, fill=orange!13}]
-    \node[comp,fill=blue!7,text width=4.7cm] (driver) at (0,0.6) {\texttt{messung\_driver} --- \textbf{WHAT}\\{\scriptsize thesis code: configs A/B/C $\cdot$ micro-bench $\cdot$ Welch statistics}};
+    \node[comp,fill=blue!7,text width=4.7cm] (driver) at (0,0.6) {\texttt{messung\_driver} --- \textbf{WHAT}\\{\scriptsize thesis code: configs A/B/C $\cdot$ micro-bench $\cdot$ significance statistics}};
     \node[draw,thick,rounded corners,minimum width=9.8cm,minimum height=2.4cm,fill=gray!4] (bbox) at (0,-2.5){};
     \node[font=\bfseries\scriptsize,anchor=north] at ([yshift=-2pt]bbox.north){\texttt{CacheEngineBuilder} --- \textbf{HOW}: builds $+$ measures tier binaries per configuration};
     \node[bm] (build) at (-2.5,-2.75) {\textbf{BUILD}\\{\scriptsize \texttt{Build\-Orchestrator} $+$ \texttt{Experiment\-Tree}: builds all tier binaries per config (resumable, RAM-aware)}};
@@ -490,7 +492,7 @@ methodology is the answer to the separability problem: by measuring each constit
 measurable in isolation instead of remaining blended in the overall throughput.
 
 The system reduces the space thus spanned deliberately. With the extension to nineteen axes plus around
-sixty-four sub-axes it grows to about $10^{14}$ permutations; three mechanisms dampen the explosion: the
+sixty-four sub-axes it grows to over $10^{14}$ permutations; three mechanisms dampen the explosion: the
 \texttt{<expected\_workload>} profile filter routes only compatible workloads, the \texttt{Defined} mode
 runs only the declared tuples (around 100--1000 per series, which enter the manuscript), and the
 \texttt{Full} or \texttt{Full-Sampled} mode (e.g.\ every thousandth permutation) runs only on the ZIH
@@ -515,7 +517,7 @@ probe dock as every reconstructed SOTA method.
 \begin{tikzpicture}[font=\footnotesize,align=center,
   prt/.style={draw,rounded corners,fill=orange!15,very thick,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize},
   ce/.style={draw,rounded corners,fill=green!8,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize}]
-  \node[font=\bfseries\footnotesize] at (0,2.35){PRT-ART (probe): a living being of 19 axis-organs};
+  \node[font=\bfseries\footnotesize] at (0,2.35){PRT-ART (probe): a living being of 19 axis-organs $+$ build axis page type};
   \node[prt] at (-3.7,1.55){Page-Type};
   \node[prt] at (-1.23,1.55){Layout};
   \node[prt] at (1.23,1.55){Allocator (4+2)};
@@ -528,12 +530,11 @@ probe dock as every reconstructed SOTA method.
   \node[ce] at (3.7,-0.15){Serialization};
   \node[ce] at (-2.46,-0.85){ISA};
   \node[ce] at (2.46,-0.85){$\ldots$ others};
-  \node[font=\scriptsize,align=center] at (0,-1.65){\textcolor{orange}{\textbf{orange}} $=$ PRT-ART's own organ \quad \textcolor{green!50!black}{\textbf{green}} $=$ cache-engine default (compile-time fallback)};
+  \node[font=\scriptsize,align=center] at (0,-1.65){\textcolor{orange}{\textbf{orange}} $=$ PRT-ART's own contribution (incl.\ build axis page type) \quad \textcolor{green!50!black}{\textbf{green}} $=$ cache-engine default (compile-time fallback)};
 \end{tikzpicture}
-\caption{PRT-ART as a demonstrator in the M-model: the probe overrides six organs itself (page type, layout, 4+2 allocator, prefetch, OLC concurrency, telemetry) and obtains the remaining thirteen axes via the compile-time fallback from the cache engine --- thus a complete, measurable living being arises from a few own plus many default organs.}\label{fig:prtart-demo}
+\caption{PRT-ART as a demonstrator in the M-model: the probe contributes six own key points --- the build axis page type plus the five axis-organs layout, 4+2 allocator, prefetch, OLC concurrency and telemetry --- and obtains the remaining fourteen composition axes via the compile-time fallback from the cache engine; thus a complete, measurable living being arises from a few own plus many default organs.}\label{fig:prtart-demo}
 \end{figure}
-% TODO Stage-2 masses: B9 PRT-ART demonstrator (PRT-ART in the M-model, overrides selected organs) in 3.4
-% TODO Stage-2 masses: PRTART-1..N one figure per PRT-ART algorithm -> Ch. 4.2
+% B9 PRT-ART demonstrator: fig:prtart-demo (3.4) DONE; PRTART gallery: fig:prtart-gallery (4.2) DONE
 
 \section{Sharpening through Heuristics}\label{sec:heuristics}
 From the measurement series one can derive --- as an outlook mechanism --- the best axis composition per load and
@@ -571,4 +572,5 @@ compression~\cite{agrawal2005autoadmin}, the online runtime-near variant in Acti
 Harmony~\cite{tapus2002activeharmony}; the term \enquote{software-in-the-loop} itself originates from the
 X-in-the-loop validation taxonomy~\cite{tibba2016xil}. The
 concrete realization of this selection and delivery mechanism remains reserved for future work
-(Chapter~\ref{ch:conclusion}).
+(Chapter~\ref{ch:conclusion}). First, however, Chapter~\ref{ch:impl} deepens the concrete implementation
+of the building blocks introduced here.

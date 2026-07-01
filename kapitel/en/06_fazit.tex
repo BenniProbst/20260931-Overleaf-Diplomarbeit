@@ -2,12 +2,15 @@
 
 % [SKELETON] from old 08_conclusion.
 
+This chapter takes stock: it answers the research questions RQ0--RQ4 from Section~\ref{sec:rqs}, names
+the limits of the state reached, and sketches the next steps.
+
 \section{Answering the Research Questions}\label{sec:answers}
 \paragraph{RQ0 (Main question).} By how much active, measurement-driven cache-aware decisions outperform
 their passive, statically dimensioned counterparts can be quantified conclusively only after the
 end-to-end runs per platform (Section~\ref{sec:outlook}). What is prepared is the apparatus that isolates
 exactly this difference: the same axis-constant structure is permuted once actively (measurement-driven
-layout, prefetch, and value-placement decision) and once passively (statically dimensioned) and compared
+page-type, layout, prefetch, and value-placement decision) and once passively (statically dimensioned) and compared
 under an identical compiler and flag basis on hybrid CPUs and Sapphire Rapids.
 
 \paragraph{RQ1 (Composition).} The nineteen permutation axes (search-algorithm, cache-traversal, mapping,
@@ -18,7 +21,10 @@ unambiguously through algorithm-profile XMLs: 30 SOTA profiles (8 Rank-1 + 22 Ra
 the axis decomposition carries P01--P33. The variadic API specialization (1/2/$N$ parameters onto
 \texttt{std::vector}/\texttt{std::map}/tuple) makes both algorithm- and container-oriented patterns
 expressible on one engine. The non-fully-orthogonal axis couplings (node type $\times$ SIMD $\times$ path
-compression) are marked as such and explicitly restricted during permutation.
+compression) are marked as such and explicitly restricted during permutation. The sub-question on
+cache-update and cache-line-fill behaviour under \emph{solely} varied ISA/SIMD axis is answered
+methodically --- the ISA axis (T12) is isolatable and permutable with an otherwise axis-constant
+structure ---; the empirical answer follows with the end-to-end runs (Section~\ref{sec:outlook}).
 
 \paragraph{RQ2 (Measurement methodology).} Measurement is split into a production mode
 (\texttt{COMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=OFF}, no overhead) and an experiment mode (the
@@ -28,7 +34,9 @@ point-lookup-oriented designs. Each series is collected at three granularities -
 whole-system benchmarking ---, making both individual design components and whole algorithms comparable.
 Contradictory findings in the literature on the optimal node/cache-line size (one versus up to sixteen
 cache lines) are thus not adopted from incompatible original setups but re-measured axis-isolated, with all
-else held equal.
+else held equal. A platform counts as successfully verified only once the conformance gate confirms the
+\texttt{std::map} contract per module and the platform probe covers the reported axis subset; the
+platform-calibrated thresholds themselves are fixed with the real runs.
 
 \paragraph{RQ3 (Probe comparison).} The concrete comparison of PRT-ART against the 30 SOTA profiles is
 pending the first measurement runs (Section~\ref{sec:outlook}). The architecture is fully prepared: the
@@ -39,9 +47,14 @@ platform-calibrated switching rules are likewise part of the PRT-ART profile.
 
 \paragraph{RQ4 (Compile time vs.\ run time).} The separation is anchored in the build system:
 platform-specific axes (ISA, hardware constants) are fixed at compile time and produce
-provenance-verifiable binaries per permutation (SHA256-validated original bodies,
+provenance-verifiable binaries per permutation (SHA256-validated original bodies --- whose full implementation Section~\ref{sec:limitations} lists as
+open ---,
 \texttt{experiment\_compiler()} identifier), while layout and page selection remain selectable at run time
-via a bit-encoded permutation identifier, without violating the common compiler and flag basis.
+via a bit-encoded permutation identifier, without violating the common compiler and flag basis. The
+forward-looking sub-question of whether the measurement itself can tailor ISA- and
+operating-system-optimized binaries for a recombination is taken up by the outlook as heuristics
+automation (Section~\ref{sec:outlook}); the operating-system dimension is already anchored in the
+measurement plan via the two measurement regimes from Chapter~\ref{ch:eval}.
 
 \section{Limitations}\label{sec:limitations}
 \begin{itemize}
@@ -50,7 +63,16 @@ via a bit-encoded permutation identifier, without violating the common compiler 
   \item \textbf{Hardware validation pending:} configuration is green locally, but the full \texttt{ctest}
   and end-to-end \texttt{messung\_driver} runs across the BlockAO platforms (AVX2/AVX-512, ARM NEON/SVE)
   are outstanding.
-  \item \textbf{Results chapter:} currently methodological; concrete measurements follow.
+  \item \textbf{Results chapter:} currently methodological; concrete measurements follow. A first real
+  smoke measurement series (43 permutations) is available in Appendix~\ref{app:measurements}, but does
+  not replace the mandatory measurement series.
+  \item \textbf{Hardware counters off by default:} PMC capture (L1/L2/L3, dTLB, branch misses, IPC) is
+  disabled by default; in the smoke series so far the hardware columns are zero --- the cache-aware
+  node/data/index measurement component is thus still pending (Figure~\ref{fig:measurement-triangle}).
+  \item \textbf{Smoke series with apparatus caveats:} the real measurements so far vary only four of the
+  nineteen axes with fifteen pinned, and partly approximate axis effects via wall-clock proxies; single
+  effects are apparatus rather than organ artefacts (\enquote{shadowing}). The complete limitation table
+  is given in Section~\ref{sec:measurements:limitations}.
 \end{itemize}
 
 \section{Outlook}\label{sec:outlook}
@@ -67,13 +89,14 @@ architecture focus; and (iii) a \emph{binary packager} that delivers the thus-se
 as a standalone binary behind the unified search-algorithm interface. A prerequisite for all three is that
 the end-to-end measurement series be fully available beforehand --- only the robust data basis across all
 permutations and load profiles makes a measurement-driven, automatically controlled selection meaningful;
-until then, the configuration recommendations of Section~\ref{sec:eval-results} are derived manually.
+until then, the configuration recommendations of the evaluation scheme from
+Section~\ref{sec:eval-results} will initially be derived manually once the data are available.
 
 \medskip
 In the medium to long term: a GPU adapter (Grace Hopper cluster, ZIH), PIM-allocator integration (A16),
 and formal verification of selected permutation classes (StarMalloc-style, A13). The three-repository
 architecture lets future students add further probe algorithms analogously to PRT-ART without modifying the
-cache-engine tool library --- a key design principle for the scalability of the research infrastructure.
+cache-engine building-block library --- a key design principle for the scalability of the research infrastructure.
 Beyond the tree-like search structures treated here, the anatomy principle extends through higher-level
 abstractions to the further structure classes of Section~\ref{sec:overview} --- hash-based, spatial, as
 well as set- and sequence-oriented structures ---, so that the same measurement and permutation apparatus
