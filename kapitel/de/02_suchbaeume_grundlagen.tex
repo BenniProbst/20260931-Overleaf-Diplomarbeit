@@ -99,11 +99,13 @@ web-verifizierten Provenienz-Map über rund 110~Organ-Algorithmen folgend; die s
 Sezierung erfolgt in Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:sota-instances}). Jeder
 Stand-der-Technik-Algorithmus erscheint so als ein Punkt im kartesischen Produkt der Achsen
 (Abbildung~\ref{fig:design-space}). Dass das Achsen-Gerüst auch nicht-baumartige Verfahren trägt, belegt
-eine reine Hash-Tabelle (SwissTable~\cite{abseil_swisstable}) als Gegenprobe innerhalb der
-SearchAlgorithm-Gattung: Sie erfüllt das Punktanfrage-Subset des \texttt{std::map}-Interface
-(\texttt{find}/\texttt{insert}/\texttt{erase}), belegt ein limitiertes Achsen-Subset --- Allokation,
-Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD bleiben geteilt, die trie-spezifischen Achsen
-entfallen --- und erfordert so keine eigene Gattung.
+eine reine Hash-Tabelle als Gegenprobe innerhalb der SearchAlgorithm-Gattung --- als zwei wählbare
+T0-Bausteine, von denen je Permutation genau einer gewählt wird und die beide permutiert werden: ein
+Open-Addressing-Hash nach Knuth (S14, implementiert) und die SwissTable~\cite{abseil_swisstable}
+(als eigener Baustein vorgesehen). Die Gegenprobe erfüllt das Punktanfrage-Subset des
+\texttt{std::map}-Interface (\texttt{find}/\texttt{insert}/\texttt{erase}), belegt ein limitiertes
+Achsen-Subset --- Allokation, Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD bleiben geteilt,
+die trie-spezifischen Achsen entfallen --- und erfordert so keine eigene Gattung.
 
 Die Veröffentlichungen entstammen sechs thematischen \emph{Herkunfts-Clustern}, die hier nur der
 ganzheitlichen Einordnung jedes Lebewesens dienen, bevor es in seine Organe zerlegt wird. Die
@@ -636,12 +638,12 @@ erhoben (gestrichelt).}\label{fig:measurement-triangle}
   \node[font=\bfseries\scriptsize] at (4.9,4.7){Implementierungs-Muster je Achse ($\times$19)};
   \node[iface] (topic) at (4.9,3.9){TopicConcept $\wedge$ AxisConcept};
   \node[comp] (crtp) at (4.9,2.7){AxisBase<Derived> (CRTP)};
-  \node[comp] (variant) at (4.9,1.5){std::variant<Baustein$_{1..k}$>};
+  \node[comp] (variant) at (4.9,1.5){mp\_list<Baustein$_{1..k}$>};
   \node[iface] (resolve) at (4.9,0.3){resolve\_baustein<Tag>};
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{komponiert 19 Achsen} (topic.west);
 \end{tikzpicture}}
-\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase} und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der neunzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird; rechts das je Achse wiederholte Implementierungs-Muster --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die \texttt{std::variant}-Baustein-Familie und die Übersetzungszeit-Auflösung \texttt{resolve\_baustein}, die je Achse zwischen Prüfling-Slot und Cache-Engine-Standard wählt.}\label{fig:uml-interfaces}
+\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase} und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der neunzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird; rechts das je Achse wiederholte Implementierungs-Muster --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die \texttt{mp\_list}-Baustein-Familie und die Übersetzungszeit-Auflösung \texttt{resolve\_baustein}, die je Achse zwischen Prüfling-Slot und Cache-Engine-Standard wählt.}\label{fig:uml-interfaces}
 \end{figure}
 
 Damit sind die Software-Mittel beisammen: die Achsen als Organe, die \emph{eine} Architektur mit ihrer

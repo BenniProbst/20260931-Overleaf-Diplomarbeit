@@ -10,11 +10,16 @@ Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Be
   führt neunzehn Kompositions-Achsen.
   \item[Adaptiv vs.\ dynamisch vs.\ messgetrieben] Begriffsabgrenzung für die Anpassung des
   Algorithmus-Verhaltens. \emph{Adaptiv}: Anpassung anhand laufzeit-beobachteter Datenmerkmale
-  (z.\,B.\ adaptive Knotengrößen in ART). \emph{Dynamisch}: zur Laufzeit über den
-  Permutations-Identifier wählbar (im Gegensatz zu compile-time-fixierten Achsen).
+  (z.\,B.\ adaptive Knotengrößen in ART). \emph{Dynamisch}: die Laufzeit-Auswahl des fertig
+  kompilierten Permutations-\emph{Moduls} über den Permutations-Identifier (Modul-Ladung) --- alle
+  neunzehn Achsen sind je Binary compile-time-gebacken; hinzu kommen fünf laufzeit-\emph{steuerbare}
+  Resource-Control-Achsen (Concurrency, Prefetch, Allocator, Traversal, Value-Handle), keine
+  Laufzeit-Wahl einzelner Achsen-Strategien.
   \emph{Messgetrieben} (\emph{measurement-driven}): Auswahl der Konfiguration auf Basis empirisch
-  erhobener Messreihen --- das Leitmotiv dieser Arbeit; der zugehörige Auswahl-Mechanismus ist
-  Zielsetzung/Ausblick, noch nicht implementiert.
+  erhobener Messreihen --- das Leitmotiv dieser Arbeit; der zugehörige Auswahl-Mechanismus ist in
+  einem ersten Inkrement implementiert (\texttt{best\_binary\_selector}: Ranking und Auslieferung der
+  besten Permutation je Metrik aus den Mess-CSVs), die vollautomatische, lastprofilübergreifende
+  Auswahl bleibt Ausblick.
   \item[Anatomie] Der \emph{Körper} eines Lebewesens: die feste Komposition seiner neunzehn
   Achsen-Organe und vor allem deren \emph{Verdrahtung} --- die generalisierten Interfaces, über die
   ein Organ die Dienste der übrigen nutzt (etwa das gemeinsame Allokations-Interface). Kein zweites
@@ -26,8 +31,10 @@ Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Be
   (\emph{autonomous profile-driven heuristic evaluation}) Der angestrebte Mechanismus, der aus den
   Messreihen je Lastprofil automatisch die beste Achsen-Konfiguration ableitet und als
   wiederverwendbare Heuristik-Richtlinie ablegt (Ziel-Mechanismus: ML-Klassifikation von
-  Lastprofil-/Achsen-Features auf Konfigurationen). Noch nicht implementiert; Ausblick
-  (vgl.\ Abschnitt~\ref{sec:outlook}).
+  Lastprofil-/Achsen-Features auf Konfigurationen). Erste Bausteine sind implementiert --- die
+  automatische Best-Binary-Auswahl aus Messreihen (\texttt{best\_binary\_selector}) und die
+  Extraktion/Ablage als XML-Lastprofil-Ergebnis ---; die ML-Klassifikation selbst ist weiterhin
+  Ausblick (vgl.\ Abschnitt~\ref{sec:outlook}).
   \item[AVX, AVX-512] x86-SIMD-Erweiterungen (256- bzw.\ 512-Bit).
   \item[CLU] Cache-Line-Utilization --- Anteil genutzter Bytes je geladener Cache-Line.
   \item[CPI, IPC] Cycles per Instruction bzw.\ Instructions per Cycle.
@@ -78,7 +85,9 @@ Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Be
   \item[XML-Lastprofil-Ergebnis] (\emph{XML load-profile result}) Das in der Aufgabenstellung
   (Teilaufgabe~7) geforderte Persistenz-Format, in dem die für einen Gesamtalgorithmus extrahierte,
   je Architekturfokus wiederverwendbare Heuristik-Richtlinie unter Referenz der angewendeten
-  Lastprofile abgelegt wird; dient als Eingabe der autonomen Heuristik-Profil-Auswertung. Der
-  zugehörige XML-Parser ist noch zu implementieren (Ausblick).
+  Lastprofile abgelegt wird; dient als Eingabe der autonomen Heuristik-Profil-Auswertung.
+  Import-Parser und Export-Writer samt Extraktor sind implementiert (round-trip-fähiges Schema
+  \texttt{comdare\_load\_profile}); als Ausblick verbleibt die darauf aufsetzende autonome
+  Heuristik-Auswertung (ML-Klassifikation).
   \item[YCSB] Yahoo!\ Cloud Serving Benchmark~\cite{cooper2010ycsb}.
 \end{description}

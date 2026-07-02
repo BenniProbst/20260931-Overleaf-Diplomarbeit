@@ -187,7 +187,12 @@ comparison operators behave as for \texttt{std::map}.
 
 \section{Composite Functions and the Conformance Subset}\label{asec:if-decomp}
 Several interface functions are ``under the hood'' compositions of more primitive operations
-(Table~\ref{tab:if-decomp}). For this thesis that is the central observation: all map accessors and
+(Table~\ref{tab:if-decomp}); the table describes the ISO standard contract. The measurement wrapper of
+this work deliberately deviates in two places, because the ABI conformance contract demands
+\texttt{noexcept} and a throwing wrapper counts as non-conformant: there, \texttt{operator[]} is a
+non-mutating \texttt{std::optional} read (the write path goes through
+\texttt{set()}/\texttt{insert\_or\_assign}), and \texttt{at} does not throw (\texttt{optional}/status
+return). For this thesis that is the central observation: all map accessors and
 modifiers rest on a single ordered-search primitive (\texttt{lower\_bound}/\texttt{find}); an axis
 implementation therefore only needs to provide a correct ordered search plus node linking, and the
 rest follows as a fixed composition --- exactly the substitutability whose comparison is the central
