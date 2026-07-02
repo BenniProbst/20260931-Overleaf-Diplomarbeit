@@ -65,3 +65,11 @@ Fließtext 03:~519 + 04-§4.2 an Audit 1.12 angleichen (Layout/Allocator sind pr
 Repo-Baustein vs. Apparat-Slot sauber einziehen; nach E6/AP-2-Landung erneut prüfen. (b) 02:~485 `std::conditional_t`-Nennung
 an 1.7-Mechanik (concept-geprüftes if constexpr) angleichen. (c) FF3 „Adapter mit allen std::map-Operationen + Notify-Hooks"
 bleibt bewusst Soll (Code-TODO 2.13/AP-15 + 2.1/AP-2). (d) Nach AP-7-Landung T0-Zählungen 21→22 nachziehen.
+
+**Restpunkte-Abarbeitung (2026-07-02, Folge-Session): (a)+(b)+(c) ERLEDIGT.** (a) Ebenen-Trennung Slot↔Repo-Baustein in
+fig:prtart-demo/-gallery + 03/04-Fließtext eingezogen (Wert-Handle/ChainRef + Pfadkompression = überschriebene Slots;
+Layout/Allokator = Repo-Bausteine via CE-Standard, E6), §1.4 war bereits konsistent; (b) concept-geprüftes if constexpr;
+(c) FF3 präzisiert: std::map-Kernvertrag (Konformitäts-Teilmenge, Anhang F), Vollausbau 17 Ops + Notify-Hooks als
+Folgeschritt; dazu 04-Steckbriefe „je Permutations-ID" (1.16-Angleichung). Codex-reviewed (EN-resizebox-Parität,
+T10-Doppelkachel). **Verbleibend NUR code-wartend:** (d) T0 21→22 nach AP-7; Ebenen-Darstellung nach E6/AP-2-Landung
+erneut prüfen; Kap.-5-„Erhebungspfad folgt"-Stellen nach AP-1-Landung auf „erhoben" heben.
