@@ -8,10 +8,15 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   loads the permutation modules (living beings).
   \item[Adaptive vs.\ dynamic vs.\ measurement-driven] Distinction of terms for adapting the
   algorithm behaviour. \emph{Adaptive}: adaptation based on run-time-observed data characteristics
-  (e.g.\ adaptive node sizes in ART). \emph{Dynamic}: selectable at run time via the permutation
-  identifier (as opposed to compile-time-fixed axes). \emph{Measurement-driven}: selection of the
+  (e.g.\ adaptive node sizes in ART). \emph{Dynamic}: the run-time selection of the fully compiled
+  permutation \emph{module} via the permutation identifier (module loading) --- all nineteen axes are
+  baked in per binary at compile time; in addition there are five run-time-\emph{controllable}
+  resource-control axes (concurrency, prefetch, allocator, traversal, value handle), no run-time
+  choice of individual axis strategies. \emph{Measurement-driven}: selection of the
   configuration based on empirically collected measurement series --- the leitmotif of this thesis;
-  the corresponding selection mechanism is an objective/outlook, not yet implemented.
+  the corresponding selection mechanism is implemented in a first increment
+  (\texttt{best\_binary\_selector}: ranking and delivery of the best permutation per metric from the
+  measurement CSVs), while the fully automatic, load-profile-spanning selection remains outlook.
   \item[Anatomy] The \emph{body} of a living being: the fixed composition of its nineteen axis
   organs and, above all, their \emph{wiring} --- the generalized interfaces through which one organ
   draws on the services of the others (e.g.\ the shared allocation interface). Not a second model
@@ -21,7 +26,10 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   \item[Autonomous profile-driven heuristic evaluation] The intended mechanism that automatically
   derives, per load profile, the best axis configuration from the measurement series and stores it
   as a reusable heuristic policy (target mechanism: ML classification of load-profile/axis features
-  onto configurations). Not yet implemented; outlook (cf.\ Section~\ref{sec:outlook}).
+  onto configurations). First building blocks are implemented --- the automatic best-binary selection
+  from measurement series (\texttt{best\_binary\_selector}) and the extraction/storage as an XML
+  load-profile result ---; the ML classification itself remains outlook
+  (cf.\ Section~\ref{sec:outlook}).
   \item[AVX, AVX-512] x86 SIMD extensions (256- and 512-bit, respectively).
   \item[Axis] An orthogonal partial decision (``organ'') of a search algorithm; the framework
   maintains nineteen composition axes.
@@ -73,7 +81,8 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   \item[XML load-profile result] The persistence format demanded by the thesis assignment
   (sub-task~7) in which the heuristic policy extracted for an overall algorithm --- reusable per
   architecture focus --- is stored under reference to the applied load profiles; it serves as input
-  to the autonomous profile-driven heuristic evaluation. The corresponding XML parser remains to be
-  implemented (outlook).
+  to the autonomous profile-driven heuristic evaluation. Import parser and export writer including
+  the extractor are implemented (round-trip-capable schema \texttt{comdare\_load\_profile}); what
+  remains as outlook is the autonomous heuristic evaluation built on top (ML classification).
   \item[YCSB] Yahoo!\ Cloud Serving Benchmark~\cite{cooper2010ycsb}.
 \end{description}

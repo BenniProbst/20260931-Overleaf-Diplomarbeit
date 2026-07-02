@@ -94,8 +94,11 @@ brief reference to the originating living being, following a web-verified proven
 110~organ algorithms; the systematic, axis-wise dissection takes place in Chapter~\ref{ch:measurement}
 (Section~\ref{sec:sota-instances}). Every state-of-the-art algorithm thereby appears as a point in the
 Cartesian product of the axes (Figure~\ref{fig:design-space}). That the axis framework also carries
-non-tree-like methods is shown by a pure hash table (SwissTable~\cite{abseil_swisstable}) as a
-counter-check within the SearchAlgorithm genus: it satisfies the point-query subset of the
+non-tree-like methods is shown by a pure hash table as a counter-check within the SearchAlgorithm
+genus --- as two selectable T0 building blocks, of which exactly one is chosen per permutation and
+both of which are permuted: an open-addressing hash after Knuth (S14, implemented) and the
+SwissTable~\cite{abseil_swisstable} (envisioned as a building block of its own). The counter-check
+satisfies the point-query subset of the
 \texttt{std::map} interface (\texttt{find}/\texttt{insert}/\texttt{erase}), occupies a limited axis subset
 --- allocation, prefetch, concurrency, memory layout, and ISA-SIMD remain shared, the trie-specific axes
 drop out --- and thus requires no genus of its own.
@@ -617,12 +620,12 @@ performance counters --- is not yet collected in the current implementation stat
   \node[font=\bfseries\scriptsize] at (4.9,4.7){per-axis implementation pattern ($\times$19)};
   \node[iface] (topic) at (4.9,3.9){TopicConcept $\wedge$ AxisConcept};
   \node[comp] (crtp) at (4.9,2.7){AxisBase<Derived> (CRTP)};
-  \node[comp] (variant) at (4.9,1.5){std::variant<Baustein$_{1..k}$>};
+  \node[comp] (variant) at (4.9,1.5){mp\_list<Baustein$_{1..k}$>};
   \node[iface] (resolve) at (4.9,0.3){resolve\_baustein<Tag>};
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{composes 19 axes} (topic.west);
 \end{tikzpicture}}
-\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase} and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the nineteen axes) and its ABI-runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), measured and driven through the \texttt{IDriveableTier}/\texttt{IObservableTier} contracts; on the right the per-axis implementation pattern repeated for each axis --- a two-layer \texttt{Concept}, a \texttt{requires}-guarded CRTP base, the \texttt{std::variant} building-block family, and the compile-time resolution \texttt{resolve\_baustein}, which chooses per axis between the probe slot and the cache-engine default.}\label{fig:uml-interfaces}
+\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase} and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the nineteen axes) and its ABI-runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), measured and driven through the \texttt{IDriveableTier}/\texttt{IObservableTier} contracts; on the right the per-axis implementation pattern repeated for each axis --- a two-layer \texttt{Concept}, a \texttt{requires}-guarded CRTP base, the \texttt{mp\_list} building-block family, and the compile-time resolution \texttt{resolve\_baustein}, which chooses per axis between the probe slot and the cache-engine default.}\label{fig:uml-interfaces}
 \end{figure}
 
 With this, the software means are assembled: the axes as organs, the \emph{one} architecture with its

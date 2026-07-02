@@ -28,8 +28,10 @@ die ISA-Achse (T12) ist bei sonst achsen-konstanter Struktur isoliert permutierb
 Antwort folgt mit den End-to-End-Läufen (Abschnitt~\ref{sec:outlook}).
 
 \paragraph{FF2 (Mess-Methodik).} Die Messung ist in einen Produktiv-Modus
-(\texttt{COMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=OFF}, kein Overhead) und einen Experiment-Modus
-(der ResultAggregator ist integraler ExecutionEngine-Member) geteilt. Profil-bewusstes Workload-Routing
+(\texttt{COMDARE\_\allowbreak MEASUREMENT\_\allowbreak ON} abgeschaltet, kein Overhead) und einen
+Experiment-Modus geteilt: Der \texttt{ResultAggregator} wird host-seitig im \texttt{ExperimentDriver}
+geführt (Phasen~5--7), und der Experiment-Modus aktiviert die Mess-Hooks und die Observer-Kopplung im
+ABI-Adapter. Profil-bewusstes Workload-Routing
 wählt den Workload je Permutation aus dem Traversal-Tag und sichert so faire Vergleiche zwischen
 bereichsabfrage- und punktzugriffsorientierten Entwürfen. Jede Messreihe wird in drei Granularitäten
 erhoben --- Micro-, Makro- und Gesamt-Benchmarking ---, sodass sowohl einzelne Entwurfsbestandteile als
@@ -51,7 +53,7 @@ Kompaktseite) und ihre plattform-kalibrierten Umschaltregeln sind Teil des PRT-A
 plattform-spezifische Achsen (ISA, Hardware-Konstanten) werden zur Übersetzungszeit fixiert und erzeugen
 provenienz-nachweisbare Binaries je Permutation (SHA256-validierte Original-Bodies ---
 deren Voll-Implementierung Abschnitt~\ref{sec:limitations} als offen ausweist ---,
-\texttt{experiment\_compiler()}-Kennung), während Layout- und Seiten-Selektion über einen bit-codierten
+\texttt{get\_compiler()}-Kennung), während Layout- und Seiten-Selektion über einen bit-codierten
 Permutations-Identifier zur Laufzeit wählbar bleiben, ohne die gemeinsame Compiler- und Flag-Basis zu
 verletzen. Die vorwärtsgerichtete Teilfrage, ob die Messung selbst ISA- und betriebssystem-optimierte
 Binaries für eine Rekombination zuschneiden kann, greift der Ausblick als Heuristik-Automation auf
@@ -60,35 +62,41 @@ Kapitel~\ref{ch:eval} bereits im Messplan verankert.
 
 \section{Limitierungen}\label{sec:limitations}
 \begin{itemize}
-  \item \textbf{Modul-Bodies sind derzeit Stubs:} die Codegenerierungs-Pipeline erzeugt ABI-konforme
-  Skelett-Module je Profil; die eigentliche Such-Algorithmus-Implementierung je Permutation bleibt für eine
-  Folge-Phase offen.
+  \item \textbf{Modul-Bodies:} der adhoc-Codegen des aktiven Mess-Pfads emittiert je Permutation
+  reale Achsen-Library-Bodies (die siebzehn voll qualifizierten Achsen-Typen samt Umbrella-Include);
+  nur der Legacy-Profil-Codegen erzeugt weiterhin ABI-konforme Skelett-Module, und als Lücken bleiben
+  der PRT-ART-Prüfling-Stub sowie die ehrlich auf null gesetzten Storage-/Prefetch-Achsen der
+  Pool-Familien offen.
   \item \textbf{Hardware-Validierung ausstehend:} die Konfiguration ist lokal grün, aber der vollständige
   \texttt{ctest}-Lauf und die End-to-End-\texttt{messung\_driver}-Läufe über die BlockAO-Plattformen
   (AVX2/AVX-512, ARM NEON/SVE) stehen aus.
   \item \textbf{Ergebnis-Kapitel:} aktuell methodisch; konkrete Messungen folgen. Eine erste reale
   Smoke-Messreihe (43 Permutationen) liegt in Anhang~\ref{app:measurements} vor, ersetzt die
   Pflicht-Messreihen aber nicht.
-  \item \textbf{Hardware-Zähler standardmäßig aus:} die PMC-Erfassung (L1/L2/L3-, dTLB-,
-  Branch-Misses, IPC) ist default-abgeschaltet; in der bisherigen Smoke-Reihe stehen die
-  Hardware-Spalten auf null --- die cache-bewusste Knoten-/Daten-/Index-Messkomponente steht damit noch
+  \item \textbf{Hardware-Zähler standardmäßig aus:} die PMC-Erfassung (L1-/L2-/L3-, dTLB-Misses,
+  Kohärenz-Invalidierungen, Energie/RAPL; Branch-Misses und IPC sind als Erweiterung des Zähler-Satzes
+  geplant, werden derzeit nicht erfasst) ist default-abgeschaltet; in der bisherigen Smoke-Reihe stehen
+  die Hardware-Spalten auf null --- die cache-bewusste Knoten-/Daten-/Index-Messkomponente steht damit noch
   aus (Abbildung~\ref{fig:measurement-triangle}).
-  \item \textbf{Smoke-Reihe mit Apparat-Vorbehalten:} die bisher realen Messungen variieren nur vier der
-  neunzehn Achsen bei fünfzehn gepinnten und approximieren Achsen-Effekte teils über Wall-Clock-Proxys;
+  \item \textbf{Smoke-Reihe mit Apparat-Vorbehalten:} die bisher realen Messungen variieren sieben der
+  neunzehn Achsen in zwei Teilblöcken (27 SIMD$\times$Layout$\times$Allokator-Kombinationen plus 16
+  Kombinationen über Node-Breite, Pfadkompression, interne Suche und Telemetrie) und approximieren
+  Achsen-Effekte teils über Wall-Clock-Proxys;
   einzelne Effekte sind Apparat- statt Organ-Artefakte (\enquote{Beschattung}). Die vollständige
   Limitierungs-Tabelle führt Abschnitt~\ref{sec:measurements:limitations}.
 \end{itemize}
 
 \section{Ausblick}\label{sec:outlook}
 Kurzfristig: der End-to-End-Lauf der drei Pflicht-Messreihen auf realer Hardware, die Generierung der
-Mess-Diagramme und die Vervollständigung der Modul-Bodies je Permutation.
+Mess-Diagramme und die Schließung der verbleibenden Modul-Body-Lücken (PRT-ART-Stub,
+honest-0-Storage-/Prefetch-Achsen der Pool-Familien).
 
 \paragraph{Heuristik-Automation und Binary-Delivery.} Der in der Aufgabenstellung (Teilaufgabe~7)
 geforderte Mechanismus, der aus den Messergebnissen automatisch die beste Konfiguration ableitet, ist
-bewusst noch \emph{nicht} implementiert und bleibt einer Folge-Phase vorbehalten. Er setzt drei noch zu
-bauende Komponenten voraus: (i) einen \emph{Heuristik-/ML-Klassifikator}, der aus den Lastprofil- und
+bewusst noch \emph{nicht} implementiert und bleibt einer Folge-Phase vorbehalten. Er setzt drei
+Komponenten voraus, von denen die zweite bereits vorliegt: (i) einen \emph{Heuristik-/ML-Klassifikator}, der aus den Lastprofil- und
 Achsen-Features (Operationsmix, Schlüssel-Charakteristik, Hardware-Kennung) auf die empfohlene
-Achsen-Konfiguration abbildet; (ii) einen \emph{XML-Parser} für die als XML-Lastprofil-Ergebnis abgelegten,
+Achsen-Konfiguration abbildet; (ii) den bereits implementierten \emph{XML-Parser} (Import und Export samt Extraktor) für die als XML-Lastprofil-Ergebnis abgelegten,
 je Architekturfokus wiederverwendbaren Heuristik-Richtlinien; und (iii) einen \emph{Binary-Packager}, der
 den so ausgewählten Gesamtalgorithmus als eigenständige Binary hinter dem einheitlichen
 Suchalgorithmus-Interface ausliefert. Voraussetzung für alle drei ist, dass die End-to-End-Messreihen zuvor

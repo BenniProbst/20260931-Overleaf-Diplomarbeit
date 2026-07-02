@@ -192,7 +192,12 @@ Vergleichsoperatoren verhalten sich wie bei \texttt{std::map}.
 
 \section{Zusammengesetzte Funktionen und Konformitäts-Teilmenge}\label{asec:if-decomp}
 Mehrere Schnittstellen-Funktionen sind \enquote{unter der Haube} Kompositionen primitiverer Operationen
-(Tabelle~\ref{tab:if-decomp}). Für diese Arbeit ist das die zentrale Beobachtung: Sämtliche
+(Tabelle~\ref{tab:if-decomp}); die Tabelle beschreibt den ISO-Standardvertrag. Die eigene Mess-Hülle
+weicht an zwei Stellen bewusst davon ab, weil der ABI-Konformitätsvertrag \texttt{noexcept} verlangt
+und eine werfende Hülle als nicht-konform gilt: \texttt{operator[]} ist dort ein nicht-mutierendes
+\texttt{std::optional}-Lesen (der Schreibpfad läuft über \texttt{set()}/\texttt{insert\_or\_assign}),
+und \texttt{at} wirft nicht (\texttt{optional}-/Status-Rückgabe). Für diese Arbeit ist das die zentrale
+Beobachtung: Sämtliche
 Map-Zugriffe und -Modifikatoren ruhen auf einem einzigen Ordnungs-Such-Primitiv
 (\texttt{lower\_bound}/\texttt{find}); eine Achsen-Implementierung muss daher nur eine korrekte
 Ordnungs-Suche samt Knoten-Verkettung bereitstellen, der Rest ergibt sich als feste Komposition ---

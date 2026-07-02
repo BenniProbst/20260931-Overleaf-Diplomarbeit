@@ -27,8 +27,9 @@ methodically --- the ISA axis (T12) is isolatable and permutable with an otherwi
 structure ---; the empirical answer follows with the end-to-end runs (Section~\ref{sec:outlook}).
 
 \paragraph{RQ2 (Measurement methodology).} Measurement is split into a production mode
-(\texttt{COMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=OFF}, no overhead) and an experiment mode (the
-result aggregator is an integral execution-engine member). Profile-aware workload routing selects the
+(\texttt{COMDARE\_\allowbreak MEASUREMENT\_\allowbreak ON} disabled, no overhead) and an experiment
+mode: the \texttt{ResultAggregator} is kept host-side in the \texttt{ExperimentDriver} (phases~5--7),
+and the experiment mode activates the measurement hooks and the observer coupling in the ABI adapter. Profile-aware workload routing selects the
 workload per permutation from the traversal tag, ensuring fair comparison between range-query- and
 point-lookup-oriented designs. Each series is collected at three granularities --- micro-, macro-, and
 whole-system benchmarking ---, making both individual design components and whole algorithms comparable.
@@ -49,7 +50,7 @@ platform-calibrated switching rules are likewise part of the PRT-ART profile.
 platform-specific axes (ISA, hardware constants) are fixed at compile time and produce
 provenance-verifiable binaries per permutation (SHA256-validated original bodies --- whose full implementation Section~\ref{sec:limitations} lists as
 open ---,
-\texttt{experiment\_compiler()} identifier), while layout and page selection remain selectable at run time
+\texttt{get\_compiler()} identifier), while layout and page selection remain selectable at run time
 via a bit-encoded permutation identifier, without violating the common compiler and flag basis. The
 forward-looking sub-question of whether the measurement itself can tailor ISA- and
 operating-system-optimized binaries for a recombination is taken up by the outlook as heuristics
@@ -58,33 +59,41 @@ measurement plan via the two measurement regimes from Chapter~\ref{ch:eval}.
 
 \section{Limitations}\label{sec:limitations}
 \begin{itemize}
-  \item \textbf{Module bodies are currently stubs:} the code-generation pipeline produces ABI-conformant
-  skeleton modules per profile; the actual per-permutation algorithm body remains for a follow-up phase.
+  \item \textbf{Module bodies:} the ad-hoc codegen of the active measurement path emits real
+  axis-library bodies per permutation (the seventeen fully qualified axis types plus the umbrella
+  include); only the legacy profile codegen still produces ABI-conformant skeleton modules, and the
+  remaining gaps are the PRT-ART probe stub and the honestly zero-reported storage/prefetch axes of
+  the pool families.
   \item \textbf{Hardware validation pending:} configuration is green locally, but the full \texttt{ctest}
   and end-to-end \texttt{messung\_driver} runs across the BlockAO platforms (AVX2/AVX-512, ARM NEON/SVE)
   are outstanding.
   \item \textbf{Results chapter:} currently methodological; concrete measurements follow. A first real
   smoke measurement series (43 permutations) is available in Appendix~\ref{app:measurements}, but does
   not replace the mandatory measurement series.
-  \item \textbf{Hardware counters off by default:} PMC capture (L1/L2/L3, dTLB, branch misses, IPC) is
-  disabled by default; in the smoke series so far the hardware columns are zero --- the cache-aware
-  node/data/index measurement component is thus still pending (Figure~\ref{fig:measurement-triangle}).
-  \item \textbf{Smoke series with apparatus caveats:} the real measurements so far vary only four of the
-  nineteen axes with fifteen pinned, and partly approximate axis effects via wall-clock proxies; single
+  \item \textbf{Hardware counters off by default:} PMC capture (L1/L2/L3 and dTLB misses, coherence
+  invalidations, energy/RAPL; branch misses and IPC are planned as an extension of the counter set and
+  are currently not captured) is disabled by default; in the smoke series so far the hardware columns
+  are zero --- the cache-aware node/data/index measurement component is thus still pending
+  (Figure~\ref{fig:measurement-triangle}).
+  \item \textbf{Smoke series with apparatus caveats:} the real measurements so far vary seven of the
+  nineteen axes in two sub-blocks (27 SIMD$\times$layout$\times$allocator combinations plus 16
+  combinations over node width, path compression, internal search, and telemetry), and partly
+  approximate axis effects via wall-clock proxies; single
   effects are apparatus rather than organ artefacts (\enquote{shadowing}). The complete limitation table
   is given in Section~\ref{sec:measurements:limitations}.
 \end{itemize}
 
 \section{Outlook}\label{sec:outlook}
 In the short term: the end-to-end run of the three mandatory series on real hardware, the generation of
-the measurement diagrams, and the completion of the per-permutation module bodies.
+the measurement diagrams, and the closing of the remaining module-body gaps (PRT-ART stub,
+honest-0 storage/prefetch axes of the pool families).
 
 \paragraph{Heuristic automation and binary delivery.} The mechanism demanded by the thesis assignment
 (sub-task~7), which automatically derives the best configuration from the measurement results, is
 deliberately \emph{not yet} implemented and is reserved for a follow-up phase. It presupposes three
-components still to be built: (i) a \emph{heuristic/ML classifier} that maps the load-profile and axis
+components, of which the second is already implemented: (i) a \emph{heuristic/ML classifier} that maps the load-profile and axis
 features (operation mix, key characteristics, hardware identifier) to the recommended axis configuration;
-(ii) an \emph{XML parser} for the heuristic policies stored as an XML load-profile result and reusable per
+(ii) the already implemented \emph{XML parser} (import and export including the extractor) for the heuristic policies stored as an XML load-profile result and reusable per
 architecture focus; and (iii) a \emph{binary packager} that delivers the thus-selected overall algorithm
 as a standalone binary behind the unified search-algorithm interface. A prerequisite for all three is that
 the end-to-end measurement series be fully available beforehand --- only the robust data basis across all

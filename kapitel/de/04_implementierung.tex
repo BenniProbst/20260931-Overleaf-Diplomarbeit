@@ -15,8 +15,11 @@ Die Implementierung verteilt sich auf drei Git-Repositorien mit klar getrennten 
   30~SOTA-Profile unter \texttt{algorithm\_profiles/sota} und die Test-Suites; der Quellbaum folgt einem
   Pitchfork-Layout (\texttt{apps/}, \texttt{libs/}, \texttt{libs/common}).
   \item \texttt{comdare-prt-art} --- der \textbf{Prüfling}: die hybride \texttt{PrtArtSearchEngine}
-  (Vector/Map/Tuple-API), ihre ABI-Adapter und ihre Bausteine (4+2-Allokator-Pools, OLC mit reservierten
-  Blöcken, MultiLevel-Layout, pfadorientiertes Prefetch, DensityTracker, Hypothesen-Metriken H1/H2/H3).
+  (Vector/Map/Tuple-API), ihre ABI-Adapter und ihre Bausteine (4+1+2-Allokator-Pools --- sieben Pools:
+  vier Größenklassen-Pools A--D, ein Rest-Pool R und zwei reservierte Wert-Pools ---, OLC mit
+  reservierten Blöcken, MultiLevel-Layout, pfadorientiertes Prefetch, DensityTracker,
+  Hypothesen-Metriken H1/H2/H3); Pool-, Prefetch- und Layout-Komponenten sind dabei derzeit
+  Deskriptor-Skelette ohne echte Speicheranbindung.
   \item \texttt{probst-Diplomarbeit-cache-engine} --- \textbf{was} getestet wird: der
   \texttt{messung\_driver}, die Experiment-Konfigurationen, die Auswertungs-Pipeline und das Manuskript.
 \end{itemize}
@@ -25,18 +28,22 @@ Quer dazu trennt die Terminologie zwei Engine-Begriffe, die nicht kurzgeschlosse
 Sie stellt je Achse die austauschbaren Entwurfsbestandteile als Concept-/CRTP-Komponenten bereit und
 enthält \emph{keine} Mess-Logik. Die \texttt{ExecutionEngine} hingegen ist die quer zu allen Achsen
 liegende \emph{Ausführungs- und Mess-Infrastruktur}: Als abstrakte messbare Wurzel (\texttt{IExecutionEngine},
-Abschnitt~\ref{sec:measurement-system}) liefert die konkrete \texttt{execution\_engine<Strategy>} die
+Abschnitt~\ref{sec:measurement-system}) liefert der konkrete Laufzeit-Adapter
+\texttt{SearchAlgorithmAbiAdapter<A>} über die \texttt{SearchAlgorithmAnatomy} die
 OS-Primitiven (cache-line-ausgerichtete Allokation, NUMA-konformes Read-Pinning, kohärenz-bewusstes
-Schreiben) und --- ausschließlich im Experiment-Modus (\texttt{-DCOMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=ON})
---- den Mess-Aggregator. Kurz: Die \texttt{CacheEngine} liefert die \emph{Bausteine}, die
+Schreiben); die Mess- und Observer-Kopplungen des Adapters sind über
+\texttt{COMDARE\_\allowbreak MEASUREMENT\_\allowbreak ON} gegated, und den Mess-Aggregator führt der
+\texttt{ExperimentDriver} host-seitig (eine CMake-Option
+\texttt{COMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE} existiert, verdrahtet dieses Gating derzeit
+aber nicht). Kurz: Die \texttt{CacheEngine} liefert die \emph{Bausteine}, die
 \texttt{ExecutionEngine} die \emph{Werkzeuge}; diese Trennung hält den Produktiv-Pfad mess-frei.
 
 \section{PRT-ART im Detail}\label{sec:prtart-impl}
 Aufbauend auf dem bekannten Stand der Technik beschreiben wir jede Schlüsselstelle von PRT-ART einzeln und
 bildhaft.
 PRT-ART steuert mehrere eigene Schlüsselstellen bei, jede an einer anderen Achse. Auf der
-\emph{Allokator-Achse} ersetzt ein \emph{4+2-Pool-Allokator} (vier Größenklassen-Pools plus zwei
-reservierte) die algorithmus-fest verdrahtete Allokation durch eine cache-line-ausgerichtete,
+\emph{Allokator-Achse} ersetzt ein \emph{4+1+2-Pool-Allokator} (vier Größenklassen-Pools, ein Rest-Pool
+plus zwei reservierte Wert-Pools) die algorithmus-fest verdrahtete Allokation durch eine cache-line-ausgerichtete,
 fragmentierungsarme Free-List. Auf der \emph{Nebenläufigkeits-Achse} --- selbst gegliedert in Pattern
 (8.1) und Locking-Mode (8.2) --- trägt PRT-ART \emph{optimistisches Lock-Coupling (OLC) mit reservierten
 Wert-Blöcken} bei, koordiniert über einen Concurrency-Manager, der die Disziplinen OLC, HTM, STM,
@@ -56,14 +63,14 @@ von PRT-ART, je an ihrer Achse verortet.
 \resizebox{0.97\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,
   pa/.style={draw,rounded corners,fill=orange!10,minimum width=4.7cm,minimum height=2.25cm,text width=4.4cm,align=center,inner sep=3pt}]
-  \node[pa] (p1) at (0,0){\textbf{4+2-Pool-Allokator}\\{\scriptsize Achse T6}\\[2pt]{\tiny vier Größenklassen-Pools $+$ zwei reservierte; cache-line-ausgerichtete, fragmentierungsarme Free-List statt fest verdrahteter Allokation}};
+  \node[pa] (p1) at (0,0){\textbf{4+1+2-Pool-Allokator}\\{\scriptsize Achse T6}\\[2pt]{\tiny vier Größenklassen-Pools $+$ Rest-Pool $+$ zwei reservierte; cache-line-ausgerichtete, fragmentierungsarme Free-List statt fest verdrahteter Allokation}};
   \node[pa] (p2) at (5.1,0){\textbf{OLC $+$ reservierte Wert-Blöcke}\\{\scriptsize Achse T8}\\[2pt]{\tiny optimistisches Lock-Coupling; Concurrency-Manager über OLC/HTM/STM/Lock-Free/RCU/Hazard; Reclamation als Allokator-Sub-Achse}};
   \node[pa] (p3) at (10.2,0){\textbf{Pfad-orient.\ Bundle-Prefetch}\\{\scriptsize Achse T7}\\[2pt]{\tiny lädt die heißen Suchpfade als Bundle vorab; Einstiegspunkte aus dem Subtree-Footprint (\texttt{p27\_bundle\_finder})}};
   \node[pa] (p4) at (0,-2.85){\textbf{MultiLevel-Layout}\\{\scriptsize Achse T5}\\[2pt]{\tiny mehrstufiges Speicher-Layout über die Knotenebenen; layout-getriebener Stride (CLA 64-Byte vs.\ AoS 16-Byte)}};
   \node[pa] (p5) at (5.1,-2.85){\textbf{Kohärenz-bewusste Telemetrie}\\{\scriptsize Achse T10}\\[2pt]{\tiny Leaf-Only-Zähler (Haupt), Sampling (jeder $N$-te), Offline-Recompute; Per-Node-Zähler nur als Anti-Pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{DensityTracker $+$ H1/H2/H3}\\{\scriptsize Achse T10 (eigene Organe)}\\[2pt]{\tiny eigene Mess-Organe: Belegungsdichte-Tracker und die drei Hypothesen-Metriken des Prüflings}};
 \end{tikzpicture}}
-\caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die übrigen vierzehn Kompositions-Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
+\caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+1+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die übrigen vierzehn Kompositions-Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
 \end{figure}
 
 \section{Achsen-Implementierung und Mess-System-Ebenen}\label{sec:axes-impl}
@@ -71,21 +78,27 @@ Jede Achse wird als generalisiertes Interface implementiert; daneben liegen die 
 Codegenerierung bis zur Sieben-Phasen-Pipeline.
 Jede Achse ist ein Topic-Verzeichnis, das ein zweischichtiges \emph{Concept} (ein breites Topic-Concept
 und ein enges Achsen-Concept) sowie eine durch eine \texttt{requires}-Klausel abgesicherte
-\emph{CRTP-Basisklasse} enthält. Die Prüfling-gegen-Standard-Auswahl je Achse wird zur Übersetzungszeit
-über \texttt{resolve\_baustein.hpp} (\texttt{std::conditional\_t} über Tag-Spezialisierungen) aufgelöst,
+\emph{CRTP-Basisklasse} enthält. Die Prüfling-gegen-Standard-Auswahl wird für die elf
+PRT-ART-Fallback-Achsen zur Übersetzungszeit über \texttt{resolve\_baustein.hpp} (Concept-geprüftes
+\texttt{if constexpr} über Tag-Spezialisierungen) aufgelöst,
 sodass der Hot-Path weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches enthält --- die zero-cost
 abstraction aus Abschnitt~\ref{sec:software-means}. Jeder SOTA-Entwurf und jeder Allokator wird über einen
-dünnen \emph{Adapter} integriert, der die Original-Implementierung hinter dem Engine-ABI bereitstellt: Ein
-\texttt{COMDARE\_HAVE\_<X>}-Compile-Flag schützt einen \texttt{\#if defined}-Block mit sicherem Fallback
-(etwa \texttt{std::malloc}), sodass der Build eigenständig lauffähig bleibt; die Integration des
+dünnen \emph{Adapter} integriert, der die Original-Implementierung hinter dem Engine-ABI bereitstellt:
+Allokator-Vendors werden über per-Vendor-Include-Shims (\texttt{\#if COMDARE\_AXIS\_06\_USE\_<X>} mit
+Forward-Stubs), SOTA-Bausteine über constexpr-Enable-Flags samt \texttt{mp\_filter}
+(\texttt{COMDARE\_AXIS\_*\_USE\_}-/\texttt{ENABLE\_}-Flag-Familie) übersetzungszeitlich zu- oder
+abgeschaltet, jeweils mit sicherem Fallback (etwa \texttt{std::malloc} oder einer Re-Implementierung),
+sodass der Build eigenständig lauffähig bleibt --- \texttt{COMDARE\_HAVE\_<X>} besteht nur noch als
+historisches Detektions-Define; die Integration des
 hierarchischen Prefetching~\cite{zhang2025hierarchical} liefert zusätzlich einen Call-Graph-Analyzer zur
 Übersetzungszeit (\texttt{p27\_bundle\_finder}, ein C++23-Port des Original-Werkzeugs \texttt{hp\_soft},
 der Funktionen mit Subtree-Footprint oberhalb eines Schwellwerts als Bundle-Einstiegspunkte identifiziert).
 
 Der Builder überführt jedes Profil in ein vorkompiliertes C++23-Modul; jede Permutation ist durch eine
 bit-gepackte \emph{Permutations-Flag}-Struktur identifiziert, die mit der N-Phasen-Verfeinerung von neun
-Bänken (rund 50~Bit) auf einen breiteren, mehrbänkigen \emph{Permutations-Identifier} mit
-Sub-Bank-Bitfeldern für die neunzehn Achsen und ihre Sub-Achsen wächst; ein Constraint-Filter schließt
+Bänken (rund 50~Bit) auf einen breiteren \emph{Permutations-Identifier} mit vierzehn Bänken (82~Bit)
+und Sub-Bank-Bitfeldern wächst; die neunzehn Kompositions-Achsen identifiziert der aktive Mess-Pfad
+über den string-serialisierten Achsen-Pfad samt Fingerprint, und ein Constraint-Filter schließt
 ungültige Kombinationen vor jeder Modulerzeugung aus. Über diese Bausteine läuft die
 \emph{Sieben-Phasen-Mess-Pipeline} (Abbildung~\ref{fig:pipeline}) des \texttt{ExperimentDriver} je Reihe: (1)~\textbf{Enumerate}
 (XML-Configs parsen, Permutationsliste aufbauen), (2)~\textbf{Codegen} (ein \texttt{comdare\_perm\_<fp>.cpp}
@@ -97,9 +110,9 @@ verifizieren den ABI-Vertrag je Modul. Die nachgelagerte Auswertungs-Werkzeugket
 Programme --- \texttt{sample\_data\_generator} (deterministische Testdaten ohne reale Hardware) $\to$
 \texttt{messung\_driver} (steuert die Reihen) $\to$ \texttt{binary\_to\_csv} (deserialisiert die binären
 Mess-Records) $\to$ \texttt{csv\_to\_latex} (booktabs-Tabellen mit Algorithmus-Steckbriefen je Profil)
-$\to$ \texttt{diagram\_generator} (A4-bewusste TikZ-Plots) $\to$ \texttt{latex\_to\_pdf} ---; der
-Mess-Pfad wird nur unter \texttt{-DCOMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE=ON} mitkompiliert,
-sodass der Produktiv-Pfad keinen Mess-Overhead trägt, und Continuous Integration (GitLab CI plus
+$\to$ \texttt{diagram\_generator} (A4-bewusste TikZ-Plots) $\to$ \texttt{latex\_to\_pdf} ---; die
+Mess-Kopplungen sind über das \texttt{COMDARE\_\allowbreak MEASUREMENT\_\allowbreak ON}-Gating vom
+Produktiv-Pfad getrennt, sodass dieser keinen Mess-Overhead trägt, und Continuous Integration (GitLab CI plus
 gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
 % AXIS-T0..T18-Galerie: fig:axes-gallery (4.3) ERLEDIGT
 \begin{figure}[htbp]\centering
@@ -148,7 +161,7 @@ allen Herkunfts-Quellen führt Anhang~\ref{app:blocks}, die SOTA-Beiträge je Ac
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,
   ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt}]
-  \node[ax] (t0) at (0,0){\textbf{T0 Suchalgorithmus}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(17)}\\{\tiny\itshape Std.\ Array256}};
+  \node[ax] (t0) at (0,0){\textbf{T0 Suchalgorithmus}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(21: 17 Basis $+$ 4 per-K)}\\{\tiny\itshape Std.\ Array256}};
   \node[ax] (t1) at (3.6,0){\textbf{T1 Cache-Travers.}\\{\tiny CT1--CT2}\\{\tiny Linear-Fanout, Hash-Lookup, Binär-Fanout}\\{\tiny\itshape Std.\ Linear}};
   \node[ax] (t2) at (7.2,0){\textbf{T2 Slot-Mapping}\\{\tiny MP1--MP2}\\{\tiny Direkt-Platzierung, Pool-relativ}\\{\tiny\itshape Std.\ Direkt}};
   \node[ax] (t3) at (10.8,0){\textbf{T3 Pfadkompression}\\{\tiny PC1--PC3}\\{\tiny Keine, Byte-weise (ART), Patricia}\\{\tiny\itshape Std.\ Keine}};
