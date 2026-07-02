@@ -41,7 +41,7 @@ aber nicht). Kurz: Die \texttt{CacheEngine} liefert die \emph{Bausteine}, die
 \section{PRT-ART im Detail}\label{sec:prtart-impl}
 Aufbauend auf dem bekannten Stand der Technik beschreiben wir jede Schlüsselstelle von PRT-ART einzeln und
 bildhaft.
-PRT-ART steuert mehrere eigene Schlüsselstellen bei, jede an einer anderen Achse. Auf der
+PRT-ART steuert mehrere eigene Schlüsselstellen bei, je an ihrer Achse verortet (zwei davon auf T10). Auf der
 \emph{Allokator-Achse} ersetzt ein \emph{4+1+2-Pool-Allokator} (vier Größenklassen-Pools, ein Rest-Pool
 plus zwei reservierte Wert-Pools) die algorithmus-fest verdrahtete Allokation durch eine cache-line-ausgerichtete,
 fragmentierungsarme Free-List. Auf der \emph{Nebenläufigkeits-Achse} --- selbst gegliedert in Pattern
@@ -57,6 +57,11 @@ cache-kohärenz-bewusste Strategien --- \emph{Leaf-Only-Zähler} (Hauptvariante)
 $N$-te Blattzugriff) und \emph{Offline-Recompute} (Bottom-up-Aggregation vor dem Reordering) ---, während
 der klassische Per-Node-Zähler nur als gekennzeichnetes Anti-Pattern erhalten bleibt. Den DensityTracker
 und die Hypothesen-Metriken H1/H2/H3 ergänzt der Prüfling als eigene Telemetrie-Organe.
+Diese Schlüsselstellen sind \emph{Bausteine des Prüfling-Repos}; im Mess-Apparat überschrieben sind davon
+derzeit Prefetch, Nebenläufigkeit und Telemetrie (zusammen mit der Build-Achse Seitentyp,
+Pfadkompressions-Redirect und ChainRef-Wert-Handle), während 4+1+2-Pool-Allokator und MultiLevel-Layout
+im Mess-Pfad über den Cache-Engine-Standard laufen, bis ihre Anbindung (Folgeschritt~E6) landet
+(Abschnitt~\ref{sec:prtart-demo}).
 Auf eine Galerie verdichtet zeigt Abbildung~\ref{fig:prtart-gallery} die sechs eigenen Schlüsselstellen
 von PRT-ART, je an ihrer Achse verortet.
 \begin{figure}[htbp]\centering
@@ -70,7 +75,7 @@ von PRT-ART, je an ihrer Achse verortet.
   \node[pa] (p5) at (5.1,-2.85){\textbf{Kohärenz-bewusste Telemetrie}\\{\scriptsize Achse T10}\\[2pt]{\tiny Leaf-Only-Zähler (Haupt), Sampling (jeder $N$-te), Offline-Recompute; Per-Node-Zähler nur als Anti-Pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{DensityTracker $+$ H1/H2/H3}\\{\scriptsize Achse T10 (eigene Organe)}\\[2pt]{\tiny eigene Mess-Organe: Belegungsdichte-Tracker und die drei Hypothesen-Metriken des Prüflings}};
 \end{tikzpicture}}
-\caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+1+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die übrigen vierzehn Kompositions-Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
+\caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+1+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die Kacheln zeigen die \emph{Bausteine des Prüfling-Repos}; im Apparat überschrieben sind derzeit T7/T8/T10, die Bausteine zu T5/T6 laufen dort noch über den Cache-Engine-Standard (E6). Die übrigen vierzehn Kompositions-Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
 \end{figure}
 
 \section{Achsen-Implementierung und Mess-System-Ebenen}\label{sec:axes-impl}

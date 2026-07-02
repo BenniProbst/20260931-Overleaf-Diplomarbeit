@@ -40,7 +40,7 @@ gating). In short: the \texttt{CacheEngine} provides the \emph{building blocks},
 
 \section{PRT-ART in Detail}\label{sec:prtart-impl}
 Building on the known state of the art, we describe each key point of PRT-ART individually and visually.
-PRT-ART contributes several key points of its own, each at a different axis. On the \emph{allocator axis}, a
+PRT-ART contributes several key points of its own, each located at its axis (two of them on T10). On the \emph{allocator axis}, a
 \emph{4+1+2 pool allocator} (four size-class pools, one rest pool, plus two reserved value pools) replaces the algorithm-hardwired
 allocation with a cache-line-aligned, low-fragmentation free list. On the \emph{concurrency axis} --- itself
 split into pattern (8.1) and locking mode (8.2) --- PRT-ART contributes \emph{optimistic lock coupling (OLC)
@@ -55,6 +55,11 @@ the Kuehn research line~\cite{kuehn2023bplustree}, PRT-ART therefore offers cach
 \emph{offline recompute} (bottom-up aggregation before reordering) ---, while the classical per-node counter
 remains only as a labelled anti-pattern. The density tracker and the hypothesis metrics H1/H2/H3 the probe
 adds as its own telemetry organs.
+These key points are \emph{building blocks of the probe repo}; of these, currently prefetch, concurrency,
+and telemetry are overridden in the measurement apparatus (together with the build axis page type, the
+path-compression redirect, and the ChainRef value handle), while the 4+1+2 pool allocator and the
+multi-level layout run via the cache-engine default in the measurement path until their binding
+(follow-up step~E6) lands (Section~\ref{sec:prtart-demo}).
 Condensed into a gallery, Figure~\ref{fig:prtart-gallery} shows the six own key points of PRT-ART, each
 located at its axis.
 \begin{figure}[htbp]\centering
@@ -68,7 +73,7 @@ located at its axis.
   \node[pa] (p5) at (5.1,-2.85){\textbf{Coherence-aware telemetry}\\{\scriptsize axis T10}\\[2pt]{\tiny leaf-only counters (main), sampling (every $N$th), offline recompute; per-node counter only as anti-pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{Density tracker $+$ H1/H2/H3}\\{\scriptsize axis T10 (own organs)}\\[2pt]{\tiny own measurement organs: occupancy density tracker and the probe's three hypothesis metrics}};
 \end{tikzpicture}}
-\caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a multi-level layout (T5), and cache-coherence-aware telemetry (T10) together with the density tracker and the hypothesis metrics H1/H2/H3. The remaining fourteen composition axes the probe draws via the compile-time fallback from the cache-engine.}\label{fig:prtart-gallery}
+\caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a multi-level layout (T5), and cache-coherence-aware telemetry (T10) together with the density tracker and the hypothesis metrics H1/H2/H3. The tiles show the \emph{building blocks of the probe repo}; currently T7/T8/T10 are overridden in the apparatus, while the building blocks for T5/T6 still run there via the cache-engine default (E6). The remaining fourteen composition axes the probe draws via the compile-time fallback from the cache-engine.}\label{fig:prtart-gallery}
 \end{figure}
 
 \section{Axis Implementation and Measurement-System Levels}\label{sec:axes-impl}

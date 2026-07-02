@@ -516,35 +516,38 @@ PRT-ART ist ein \emph{Prüfling}: ein abstraktes Lebewesen, das einige Achsen-Or
 die übrigen über einen Compile-Time-Fallback (\texttt{resolve\_baustein.hpp}) auf die
 Cache-Engine-Standardbausteine zurückgreift, wo es eine Achse nicht überschreibt; die hybride
 \texttt{PrtArtSearchEngine<Ts\ldots>}-API bleibt davon unberührt, und die Laufzeit-Anbindung erfolgt über
-den Execution-Engine-Adapter, nicht über eine eigene Such-Engine-Schicht. Konkret steuert PRT-ART eigene
-Implementierungen in der Build-Achse Page-Type sowie den Organen Layout, Allocator, Prefetch,
-Concurrency-Pattern und Telemetry bei --- den 4+1+2-Pool-Allokator in der Free-List-Sub-Achse,
-Path-Oriented-(Bundle-)Prefetch, optimistisches Lock-Coupling mit reservierten Wert-Blöcken sowie die
-Hypothesen-Metriken H1/H2/H3 ---; für die übrigen Achsen verwendet er bestehende SOTA-Bausteine über die
+den Execution-Engine-Adapter, nicht über eine eigene Such-Engine-Schicht. Konkret überschreibt PRT-ART im Mess-Apparat
+die Build-Achse Page-Type sowie die Organe Pfadkompression (Redirect), Wert-Handle (ChainRef-Slot),
+Prefetch, Concurrency-Pattern und Telemetry --- Path-Oriented-(Bundle-)Prefetch, optimistisches
+Lock-Coupling mit reservierten Wert-Blöcken sowie die Hypothesen-Metriken H1/H2/H3 ---; seine weiteren
+eigenen Bausteine, der 4+1+2-Pool-Allokator (Free-List-Sub-Achse) und das MultiLevel-Layout, liegen im
+Prüfling-Repo und laufen im Mess-Pfad derzeit über den Cache-Engine-Standard (Anbindung als
+Folgeschritt~E6); für die übrigen Achsen verwendet er bestehende SOTA-Bausteine über die
 Permutations-Konfiguration wieder. So zeigt der Prüfling, dass das Mess-System trägt: Ein neuartiges
 Lebewesen entsteht aus wenigen eigenen Organen plus dem Standard-Baukasten (Abbildung~\ref{fig:prtart-demo})
 und ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte SOTA-Verfahren.
 
 \begin{figure}[htbp]\centering
+\resizebox{0.98\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,align=center,
   prt/.style={draw,rounded corners,fill=orange!15,very thick,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize},
   ce/.style={draw,rounded corners,fill=green!8,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize}]
   \node[font=\bfseries\footnotesize] at (0,2.35){PRT-ART (Prüfling): ein Lebewesen aus 19 Achsen-Organen $+$ Build-Achse Page-Type};
   \node[prt] at (-3.7,1.55){Page-Type};
-  \node[prt] at (-1.23,1.55){Layout};
-  \node[prt] at (1.23,1.55){Allocator (4+1+2)};
+  \node[prt] at (-1.23,1.55){Path-Compr.\ (Redirect)};
+  \node[prt] at (1.23,1.55){Value-Handle (ChainRef)};
   \node[prt] at (3.7,1.55){Prefetch};
   \node[prt] at (-2.46,0.85){Concurrency (OLC)};
   \node[prt] at (2.46,0.85){Telemetry};
   \node[ce] at (-3.7,-0.15){Search-Algo};
   \node[ce] at (-1.23,-0.15){Node-Type};
-  \node[ce] at (1.23,-0.15){Value-Handle};
+  \node[ce] at (1.23,-0.15){Layout};
   \node[ce] at (3.7,-0.15){Serialization};
-  \node[ce] at (-2.46,-0.85){ISA};
+  \node[ce] at (-2.46,-0.85){Allocator};
   \node[ce] at (2.46,-0.85){$\ldots$ übrige};
-  \node[font=\scriptsize,align=center] at (0,-1.65){\textcolor{orange}{\textbf{orange}} $=$ PRT-ART-eigener Beitrag (inkl.\ Build-Achse Page-Type) \quad \textcolor{green!50!black}{\textbf{grün}} $=$ Cache-Engine-Standard (Compile-Time-Fallback)};
-\end{tikzpicture}
-\caption{PRT-ART als Demonstrator im M-Modell: Der Prüfling steuert sechs eigene Schlüsselstellen bei --- die Build-Achse Page-Type sowie die fünf Achsen-Organe Layout, 4+1+2-Allokator, Prefetch, OLC-Nebenläufigkeit und Telemetrie --- und bezieht die übrigen vierzehn Kompositions-Achsen über den Compile-Time-Fallback aus der Cache-Engine; so entsteht ein vollständiges, mess-fähiges Lebewesen aus wenigen eigenen plus vielen Standard-Organen.}\label{fig:prtart-demo}
+  \node[font=\scriptsize,align=center] at (0,-1.65){\textcolor{orange}{\textbf{orange}} $=$ im Apparat überschriebener PRT-ART-Slot (inkl.\ Build-Achse Page-Type) \quad \textcolor{green!50!black}{\textbf{grün}} $=$ Cache-Engine-Standard (Compile-Time-Fallback)};
+\end{tikzpicture}}
+\caption{PRT-ART als Demonstrator im M-Modell: Der Prüfling überschreibt im Mess-Apparat sechs Slots --- die Build-Achse Page-Type sowie die fünf Achsen-Organe Pfadkompression (Redirect), Wert-Handle (ChainRef), Prefetch, OLC-Nebenläufigkeit und Telemetrie --- und bezieht die übrigen vierzehn Kompositions-Achsen über den Compile-Time-Fallback aus der Cache-Engine; seine weiteren eigenen Bausteine (4+1+2-Pool-Allokator, MultiLevel-Layout) laufen im Mess-Pfad derzeit über den Cache-Engine-Standard (Anbindung: Folgeschritt~E6). So entsteht ein vollständiges, mess-fähiges Lebewesen aus wenigen eigenen plus vielen Standard-Organen.}\label{fig:prtart-demo}
 \end{figure}
 % B9 PRT-ART-Demonstrator: fig:prtart-demo (3.4) ERLEDIGT; PRTART-Galerie: fig:prtart-gallery (4.2) ERLEDIGT
 
