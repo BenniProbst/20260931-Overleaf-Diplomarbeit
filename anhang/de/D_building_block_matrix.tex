@@ -21,7 +21,7 @@ Systematische Permutation von 21 konkreten Suchalgorithmen und Such-Strukturen (
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 SA1 & Direkt-adressiert hohe Dichte (Dense Access) & Array-Familie: direkt-adressiert (O(1) lookup), hohe Füllungsdichte >= 50 \%. Umfasst \texttt{Array256\allowbreak{}Search\allowbreak{}Algo} (256-Slot compact array, ART Node256 Re-Impl) und \texttt{Array65535\allowbreak{}Search\allowbreak{}Algo} (uint16-basiert, mid-density 25-50 \% direkt-adressiert). \\
 SA2 & Sparse/\allowbreak{}Geordnet (Sparse Access) & Sortierte Vektoren, geordnete Such-Methoden und tree/\allowbreak{}hash-Strukturen: niedrige Füllungsdichte, Range-Scan-Support, variable O(log n)-O(1) Lookup. Umfasst \texttt{Vector\allowbreak{}U8\allowbreak{}U8\allowbreak{}Search\allowbreak{}Algo}, Original-Paper-Wrapper (ART/\allowbreak{}HOT/\allowbreak{}START/\allowbreak{}Wormhole/\allowbreak{}Su\allowbreak{}RF), Such-Methoden (k-ary, Interpolation, Eytzinger, Hash), sowie Strukturen (Skip\allowbreak{}List, BST, B-Baum). \\
 SA3 & Multi-Byte-Diskriminatoren (Multilevel Access) & Mehrbyteige Such-Strukturen mit indizierten Sub-Diskriminatoren (z.B. START mit Cost-DP-Mehrebenen). \texttt{Vector\allowbreak{}U16\allowbreak{}U16\allowbreak{}Search\allowbreak{}Algo} (u16-Keys, sorted lower\_\allowbreak{}bound) und \texttt{Original\allowbreak{}Start\allowbreak{}Search\allowbreak{}Algo} (Paper P05) gehören hier. \\
@@ -37,7 +37,7 @@ SA4 & Direkt-adressiert mittlere Dichte (Direct Multibyte) & Teilt die Direkt-Ad
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 Array256\allowbreak{}Search\allowbreak{}Algo (S01) & ART Node256 direkt-adressierte Re-Implementierung: \texttt{std::array<std::optional<u64>, 256>} mit O(1) Lookup/\allowbreak{}Insert/\allowbreak{}Erase. Cache-Line-aligned, SIMD-fähig, kein Heap-Allocation. Baseline für dichte Zugriffe. & Code/\allowbreak{}Baseline (Leis ICDE 2013 ART Paper P01) \\
 Vector\allowbreak{}U8\allowbreak{}U8\allowbreak{}Search\allowbreak{}Algo (S02) & Sparse sortiertes Key-Value-Vektor-Paar: \texttt{std::vector<u8> keys} + \texttt{std::vector<u64> values} mit \texttt{std::lower\_\allowbreak{}bound}. O(log n) Lookup, O(n) Insert/\allowbreak{}Erase. Konzept-äquivalent zu HOT-k-Constrained. SIMD-fähig (Bitmask-Scan). & Code/\allowbreak{}Baseline (Binna SIGMOD 2018 HOT Paper P02) \\
 Vector\allowbreak{}U16\allowbreak{}U16\allowbreak{}Search\allowbreak{}Algo (S03) & Sparse sortiertes u16-Vektor-Paar: \texttt{std::vector<u16> keys} + \texttt{std::vector<u64> values}. Vereinfachtes START-Konzept (Multi-Byte-Diskriminatoren ohne Cost-DP). O(log n) Lookup, O(n) Insert/\allowbreak{}Erase. & Code/\allowbreak{}Baseline (Fent ICDEW 2020 START Paper P05) \\
@@ -73,7 +73,7 @@ Die Achse \texttt{axis\_\allowbreak{}03b} definiert drei distinkte Strategien zu
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 CT1 & Lineare Zugriffe & Linear-scan-basierte Lookup-Methoden auf kleinen, unsortierten Fanout-Arrays. Charakterisiert durch O(N)-Auflösung mit einfachen Vergleichen, typisch für Nodes mit Fanout $<$ 32 in B+-Trees. Sub-Achse für \texttt{Linear\allowbreak{}Fanout} und \texttt{Binary\allowbreak{}Search\allowbreak{}Fanout} (beide: \texttt{axis\_\allowbreak{}tag} = \texttt{linear\_\allowbreak{}access\_\allowbreak{}tag}). \\
 CT2 & Hash-basierte Zugriffe & Hash-Lookup mit Open-Addressing und linearem Probing. O(1) amortisierte Auflösung, charakterisiert durch Fibonacci-Multiplikator (11400714819323198485 $\approx$ $2^{64}/\allowbreak{}\varphi$), Power-of-2 Bucket-Count, dynamisches Rehashing bei Load-Factor $>$ 0.7. Nur \texttt{Hash\allowbreak{}Lookup}-Wrapper. Sub-Achse: \texttt{axis\_\allowbreak{}tag} = \texttt{hash\_\allowbreak{}access\_\allowbreak{}tag}. \\
 \bottomrule
@@ -86,7 +86,7 @@ CT2 & Hash-basierte Zugriffe & Hash-Lookup mit Open-Addressing und linearem Prob
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Linear\allowbreak{}Fanout} & Unsortierte Fanout-Traversal via \texttt{std::find\_\allowbreak{}if} und linearem Scan. O(N) Lookup, kein Hash-Overhead, cache-freundlich für kleine N ($<$ 32). Klassische B-Tree-Baseline (Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972). Gehört zu Sub-Achse CT1. & Code/\allowbreak{}Baseline --- Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972 (Acta Informatica) \\
 \texttt{Hash\allowbreak{}Lookup} & Fibonacci-Hash open-addressing mit linearem Probing (Knuth TAOCP Vol. 3, §6.4). O(1) amortisiert, dynamisches Rehashing (verdoppelt Capacity bei load $\geq$ 0.7), iterable Laufzeit-Kapazität (\texttt{k\allowbreak{}Iterable\allowbreak{}Initial\allowbreak{}Capacities}: \{8, 16, 64, 256, 1024\}). Standalone C++23-Re-Impl, keine Original-Code-Bindung. Gehört zu Sub-Achse CT2. & Code/\allowbreak{}Baseline --- Knuth 1998 (The Art of Computer Programming Vol.3) \\
 \texttt{Binary\allowbreak{}Search\allowbreak{}Fanout} & Sortierte Fanout-Traversal via \texttt{std::lower\_\allowbreak{}bound}. O(log N) Lookup bei sortierter Ordnung, bewahrt Schlüssel-Sequenzierung für Range-fähige Routing-Layer. Klassische B+-Tree-Inner-Node-Suche (Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972), dritte distinkte Strategie der Achse. C++23-Re-Impl (R7.2, 2026-05-29), \texttt{is\_\allowbreak{}original}=false. Gehört zu Sub-Achse CT1. & Code/\allowbreak{}Baseline --- Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972 (Acta Informatica) \\
@@ -110,7 +110,7 @@ Vermittlung zwischen logischen Slot-Indizes und physischen Speicher-Offsets in T
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 MP1 & Direct-Access-Mapping (MP1) & Direkter Slot-zu-Absolute-Offset-Mapping ohne Indirection. Wrapper-Familie für klassisches Array-of-Pointers-Layout wie in B-Tree Inner-Nodes (Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972). Einfache Cache-Locality, O(N) Lookup per \texttt{std::find\_\allowbreak{}if}. \\
 MP2 & Pool-Relative-Mapping (MP2) & Slot-zu-Pool-Relativem-Offset-Mapping mit Based-Pointer-Arena-Pattern. Alle Offsets relativ zu dynamischem \texttt{pool\_\allowbreak{}base\_\allowbreak{}address} gespeichert. Ermöglicht O(1) Rebase bei Speicher-Umallokation --- zentrale Eigenschaft für Persistent-Data-Structures (Driscoll et al. 1989) und Custom\allowbreak{}Aligned\allowbreak{}Structure-Pattern in prt-art. \\
 \bottomrule
@@ -123,7 +123,7 @@ MP2 & Pool-Relative-Mapping (MP2) & Slot-zu-Pool-Relativem-Offset-Mapping mit Ba
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 Direct\allowbreak{}Placement & Wrapper für direktes Slot-zu-Absolute-Offset-Mapping (lineares Packing). \texttt{std::vector<pair<slot\_\allowbreak{}index\_\allowbreak{}type, offset\_\allowbreak{}type>>}; \texttt{resolve\_\allowbreak{}offset}/\allowbreak{}\texttt{register\_\allowbreak{}slot} via linear \texttt{std::find\_\allowbreak{}if}. Verwendungskontext: prt-art \texttt{INode::placement\_\allowbreak{}page\_\allowbreak{}} + Mapping-Table. Speicher: 16-bit Slot-Index + \texttt{size\_\allowbreak{}t} Offset pro Entry. Keine Pool-Basis-Abhängigkeit. & CE-Baseline \\
 Pool\allowbreak{}Relative & Wrapper für Pool-Relatives-Offset-Mapping mit O(1)-Rebase-Fähigkeit. \texttt{std::vector<pair<slot\_\allowbreak{}index\_\allowbreak{}type, relative\_\allowbreak{}offset>>} + mutable \texttt{pool\_\allowbreak{}base\_\allowbreak{}address}. Bei Pool-Umallokation: \texttt{rebase(new\_\allowbreak{}pool\_\allowbreak{}base)} setzt nur \texttt{pool\_\allowbreak{}base\_\allowbreak{}} neu --- alle relativen Offsets bleiben gültig. Verwendet bei prt-art Custom\allowbreak{}Aligned\allowbreak{}Structure + Versioning-Szenarien (Persistent Data Structures nach Driscoll/\allowbreak{}Sarnak/\allowbreak{}Sleator/\allowbreak{}Tarjan 1989). & CE-Baseline \\
 \bottomrule
@@ -147,7 +147,7 @@ Definiert die Kompressions-Granularität und -Strategie für Schlüsselpfade in 
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 pc1 & Kompressions-Granularität (PC1) & Definiert die minimale Einheit der Pfad-Kompression: Bit-weise (Patricia), Byte-weise (ART) oder keine Kompression (raw path). Bestimmt die Trie-Höhe und navigationsoptimale Codeblöcke im Traversal. \\
 pc2 & Sprung-Strategie (PC2) & Definiert das Navigations-Pattern bei inneren Knoten: Linear über 8 Bytes (Byte\allowbreak{}Wise), Single-Bit-Vergleich (Patricia) oder direkter Sprung ohne Zwischenschritte. Beeinflusst Branch-Dichte und Prefetch-Verhalten. \\
 pc3 & Decode-Komplexität (PC3) & Klassifiziert die Laufzeit-Komplexität beim Extrahieren von Präfix-Informationen: O(1) für direkte Extraktion, O(log n) für struktur-basierte Suche, O(n) für sequenzielle Prüfung. Wichtig für Operationen wie \texttt{common\_\allowbreak{}prefix\_\allowbreak{}len()} und Schlüssel-Vergleiche. \\
@@ -162,7 +162,7 @@ pc3 & Decode-Komplexität (PC3) & Klassifiziert die Laufzeit-Komplexität beim E
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Path\allowbreak{}Compression\allowbreak{}None} & Keine Pfad-Kompression; rohe Schlüsselpfade werden vollständig und unkomprimiert in Knoten gespeichert. Dient als Mess-Baseline mit \texttt{compression\_\allowbreak{}ratio=1.0}. Verwendet als Kontrollfall zur Quantifizierung der Speicher- und Höhen-Einsparungen komprimierender Strategien. & Code/\allowbreak{}Baseline \\
 \texttt{Byte\allowbreak{}Wise\allowbreak{}Path\allowbreak{}Compression} & Byte-für-Byte-Kompression (ART-Stil); speichert bis zu 7 Präfix-Bytes pro Knoten in einem kompakten \texttt{u64}-Wort mit Längenetikett im High-Byte. Reduktion der Trie-Höhe um typischerweise Faktor 2 (\texttt{compression\_\allowbreak{}ratio=0.5}). Ursprung: Leis et al., ART ICDE 2013 (P01). Verwendet Goldstandard-Operationen \texttt{common\_\allowbreak{}prefix\_\allowbreak{}len()} und \texttt{cut()} für Navigations-Optimierung. & P01 \\
 \texttt{Patricia\allowbreak{}Path\allowbreak{}Compression} & Single-Bit-Split-Pfadkompression (Patricia-Trie); navigiert bitweise statt byteweise, reduziert Trie-Höhe um typischerweise Faktor 3 (\texttt{compression\_\allowbreak{}ratio=0.3}). Ursprung: Morrison PATRICIA JACM 1968; modern implementiert in HOT (Binna SIGMOD 2018, P02) und Wormhole (Wu Euro\allowbreak{}Sys 2019, P07). F15-operative Primitiven: \texttt{key\_\allowbreak{}split\_\allowbreak{}bit()} für MSB-first Bit-Extraktion, \texttt{path\_\allowbreak{}descend\_\allowbreak{}scan()} für goldstandard-konforme \texttt{\_\allowbreak{}scan}-Signatur mit schlüssel-abhängiger variabler Tiefe. & P02 \\
@@ -187,7 +187,7 @@ Die Achse \texttt{axis\_\allowbreak{}04\_\allowbreak{}node\_\allowbreak{}type} d
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 NT1 & Kapazitätsklasse (NT1) & Klassifizierung nach Fanout-Größe und Slotanzahl: klein (Node4 mit 4 Slots, linear search), mittel (Node16 mit 16 Slots, SIMD-binary-search) bis maximal (Node256 mit 256 Slots, direct-addressed). \\
 NT2 & Zugriffsmuster (NT2) & Art der Schlüsselsuche innerhalb eines Knotens: linearer Scan (Node4), binäre Suche mit SIMD (Node16), indirekte Indizierung (Node48) oder direkte Adressierung (Node256). \\
 NT3 & Kompaktheit (NT3) & Speicherlayout und Dichte: spärlich und cache-aligned (Node4), dicht mit Indirection (Node48) oder maximal direkt (Node256), mit Auswirkungen auf Speicherverbrauch und Cache-Line-Misses. \\
@@ -202,7 +202,7 @@ NT3 & Kompaktheit (NT3) & Speicherlayout und Dichte: spärlich und cache-aligned
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Node4\allowbreak{}Node\allowbreak{}Type} & Kleiner ART-Knoten mit 4 Slots und linearer Suche. Ideal für spärlich besetzte obere Baumebenen, passt komplett in eine Cache-Line (64 Byte). Implementiert als CE-Reimplementierung der ART-Spezifikation mit \texttt{node\_\allowbreak{}find\_\allowbreak{}scan()} als linear scan über sortierte Schlüssel. & P01 \\
 \texttt{Node16\allowbreak{}Node\allowbreak{}Type} & Mittlerer ART-Knoten mit 16 Slots, optimiert für SIMD-basierte binäre Suche (SSE2 PCMPESTRM /\allowbreak{} AVX2 VPCMPESTRM). Balance zwischen Speicher und Suchgeschwindigkeit; größte Kapazität ohne Indirection. CE-Re-Impl der Leis-ICDE-2013-Spezifikation. & P01 \\
 \texttt{Node48\allowbreak{}Node\allowbreak{}Type} & Großer ART-Knoten mit 48 Slots, nutzt Indirection: 256-Byte Child\allowbreak{}Index (Byte→Slot-Mapping, 0=leer) plus 48er Child\allowbreak{}Array. Trade-off zwischen Speicher (vs Node256 direct) und Cache-Misses (vs Node4 linear). Doppelter Indirektions-Zugriffsmuster (Index + Child). & P01 \\
@@ -231,7 +231,7 @@ Diese Achse klassifiziert die räumliche Organisation von Datensätzen im Speich
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 HM1 & Alignment-Strategie & Entscheidung zwischen Cache-Line-gepaddetem Layout (False-Sharing-Vermeidung) und Strict-Packing (Speicherkompaktheit). Bestimmt Stride-Overhead bei sequenzieller Traversal. \\
 HM2 & Daten-Organisation & Grundlegende Speicher-Ordnung: Array-of-Structs (Ao\allowbreak{}S, zeilenorientiert), Struct-of-Arrays (So\allowbreak{}A, spaltenorientiert), oder Hybrid Ao\allowbreak{}So\allowbreak{}A (Block-basierte Mischung). Kritisch für Cache-Line-Ausnutzung bei Feld-selektiven Scans. \\
 HM3 & Packing-Dichte & Dichtegrad der Speichernutzung: von Standard-Records (8--64 Byte) bis zu kompaktem Bit-Packing (z.B. LOUDS-Bitmaps mit \textasciitilde{}1 Bit pro Slot). Beeinflusst Decode-Latenz und L1/\allowbreak{}L2-Auslastung. \\
@@ -247,7 +247,7 @@ HM4 & Stride-Muster & Muster der Speicheradressierung bei Traversal: Sequenziell
 \toprule
 ID & Parameter & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 Cache\allowbreak{}Line\allowbreak{}Size & Cache-Line-Größe (Unterachse KF-5) & Runtime-Parameter für die Zielplattform-Cache-Zeile: 64 Byte (Standard x86-64/\allowbreak{}ARM64), 128 Byte (Azure, manche Power ISAs) oder 32 Byte (embedded). Wird zur Compile-Time über \texttt{Cache\allowbreak{}Line\allowbreak{}Config}-NTTP gewählt und beeinflusst Alignment/\allowbreak{}Padding-Overhead aller alignierten Layouts. \\
 \bottomrule
 \end{longtable}
@@ -260,7 +260,7 @@ Cache\allowbreak{}Line\allowbreak{}Size & Cache-Line-Größe (Unterachse KF-5) &
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Ao\allowbreak{}SStrict\allowbreak{}Memory\allowbreak{}Layout} & Array-of-Structs, kompakt gepackt ohne Cache-Line-Alignment. Vorteil: minimale Speichernutzung (record\_\allowbreak{}size-Strides, kompakt). Nachteil: False-Sharing bei concurrent Writes, schlechte Cache-Hit-Quote bei schmalen Feldscans. Typisch für Wormhole-Index. & Code/\allowbreak{}Baseline \\
 \texttt{Cache\allowbreak{}Line\allowbreak{}Aligned\allowbreak{}Memory\allowbreak{}Layout} & Ao\allowbreak{}S mit 64-Byte-Alignment per Record. Vermeidet False-Sharing durch Padding (Stride = round\_\allowbreak{}up(record\_\allowbreak{}size, 64)). Standard für ART/\allowbreak{}HOT/\allowbreak{}Masstree/\allowbreak{}START\@. Operativ: Bei record\_\allowbreak{}size=48 (Mess-Build) entsteht 16-Byte-Overhead pro Record $\rightarrow$ messbar höhere Latenz als aos\_\allowbreak{}strict, echter Cache-Effekt. & Code/\allowbreak{}Baseline \\
 \texttt{So\allowbreak{}AMemory\allowbreak{}Layout} & Struct-of-Arrays: Alle Felder spaltenweise hintereinander. Vorteil: Kontiguierliche Feldscans (z.B. nur Keys ohne Values) nutzen maximal Cache-Lines (16$\times$ weniger Cache-Lines als Ao\allowbreak{}S bei Einfeld-Scan). Ideal für SIMD-Vectorization und OLAP-Indizes. Vorteil beschrieben in Abadi et al. SIGMOD 2008. & Abadi et al.\ 2008~\cite{abadi2008columnrow} \\
@@ -287,7 +287,7 @@ Diese Achse stellt die Speicherverwaltungsstrategie für die Cache-Engine bereit
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 AA1 & Free-List-Topologie & Wie sind freie Speicherblöcke organisiert? Beispiele: Per-Page-Sharding (mimalloc A04), Per-Thread-Caching (snmalloc A07), Buddy-Tree (A19), Single-Global-Free-List (dlmalloc A20), Spans (scalloc A08), hybride Strategien (hmalloc A15). \\
 AA2 & Size-Class-Schema & Wie werden Block-Größen klassifiziert? Beispiele: Slab pro Objektgröße (A02), dlmalloc Bins (A20), jemalloc Größenklassen (A05), scalloc Spans (A08), Buddy Power-of-2 (A19), formal verifizierte Bins (Star\allowbreak{}Malloc A13), std::pmr pools (A22). \\
 AA3 & Thread-Lokalität & Wie lokal pro Thread/\allowbreak{}Core ist die Allokation? Beispiele: tcmalloc thread-local-caches (A06), rpmalloc thread-heaps (A10), snmalloc message-passing (A07), tcmalloc-warehouse hyperscale (A14), Hoard per-heap-locks (A01). \\
@@ -306,7 +306,7 @@ AA7 & Fragmentierungsstrategie & Wie wird Fragmentierung vermieden? Beispiele: d
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Hoard\allowbreak{}Allocator} (A01) & Per-Heap Free-Lists mit SMP-Skalierbarkeit. Berger et al. (PPo\allowbreak{}PP 2000). Synchronisierungskonzept via Per-Heap-Locks + lokale Heap-Caches pro Thread. & P— (OSS, Apache-2.0) \\
 \texttt{Slab\allowbreak{}Allocator} (A02) & Object-Caching-Kernel-Allokator mit Magazine-Cache-Strategie. Bonwick (USENIX 1994, 2001). Klassisches Lehrbuch-Paradigma ohne eigenständigen OSS-Code. & P— (Baseline/\allowbreak{}Textbook) \\
 \texttt{Michael\allowbreak{}Lock\allowbreak{}Free\allowbreak{}Allocator} (A03) & Lock-Free CAS-Allocator mit Hazard-Pointers. Maged Michael (PLDI 2004). Re-Implementierung mit IBM-Patent-Hintergrund. & P— (MIT Re-Impl) \\
@@ -351,7 +351,7 @@ Die Prefetch-Achse bestimmt die Strategie zum vorausschauenden Laden von Knoten 
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 PF1 & Triggermechanismus & Art der Kontrolle über den Prefetch-Moment: ob kein Mechanismus (Baseline), durch Compiler-Hinweise via Distance-Estimator, durch explizite Hardware-Prefetch-Instruktionen oder durch pfadorientierte Vorhersage \\
 PF2 & Distance-Heuristik & Berechnungsweise für die Prefetch-Distanz (wie weit voraus geladen wird): linear, adaptiv basierend auf Knoten-Dichte und Tier-Latenz, oder keine Heuristik \\
 PF3 & Granularität & Prefetch-Größe pro Trigger: Cache-Line (64 Byte, einzeln), Page (4\allowbreak{}K, Betriebssystem-Fenster) oder Bundle (mehrere Cache-Lines, Trie-pfadorientiert) \\
@@ -366,7 +366,7 @@ PF3 & Granularität & Prefetch-Größe pro Trigger: Cache-Line (64 Byte, einzeln
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{None\allowbreak{}Prefetch} & Keine Prefetch-Strategie (Baseline). Dient als Vergleichs-Referenz für Mess-Reihen. Trigger: keine; Heuristik: keine; Granularität: N/\allowbreak{}A. \texttt{is\_\allowbreak{}active()} gibt false zurück. & Code/\allowbreak{}Baseline \\
 \texttt{Distance\allowbreak{}Estimator\allowbreak{}Prefetch} & Distanzgeschätzte Software-Prefetch (ART-Standard nach Leis ICDE 2013). Schätzt Cache-Distance zur nächsten Node basierend auf Knoten-Dichte [\%] und Tier-Latenz [cycles] mit Heuristik: estimate = clamp(1 + sparseness*8 + latency\_\allowbreak{}factor, [1,16]). Trigger: Compiler-Hinweise via \texttt{\_\allowbreak{}\_\allowbreak{}builtin\_\allowbreak{}prefetch}; Heuristik: adaptiv (Dichte + Latenz); Granularität: Cache-Line. Setzt auf ART-Pattern (unodb/\allowbreak{}libart). & P01 (ART/\allowbreak{}unodb, Leis ICDE 2013) \\
 \texttt{Hardware\allowbreak{}Prefetch} & Explizite Hardware-Prefetch-Instruktionen (Wormhole-Standard nach Wu Euro\allowbreak{}Sys 2019). Nutzt PREFETCHT0/\allowbreak{}T1/\allowbreak{}T2/\allowbreak{}NTA auf Hash-Anchor-Chain ohne Software-Heuristik; CPU schätzt Distance autonom. Trigger: explizite Hardware-Instruktion; Heuristik: Hardware-managed; Granularität: Hardware-bestimmt. Lizenz GPL-3.0 blockiert \texttt{is\_\allowbreak{}original}-Linking. & P07 (Wormhole, Wu Euro\allowbreak{}Sys 2019) \\
@@ -392,7 +392,7 @@ Diese Achse regelt Synchronisationsmuster und sichere Speicherreclamation für n
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 CC1 & Synchronisations-Pattern (CC1) & Compile-time Varianten-Familie der Synchronisationsmuster: None (single-threaded Baseline), Blocking (pessimistic Mutex), Reader\allowbreak{}Writer (shared\_\allowbreak{}mutex), Optimistic (lock-free Versionsvalidierung), Lock\allowbreak{}Free (CAS-Loops), Wait\allowbreak{}Free (gebundene Schritte). Jede Familie hat distinkte Laufzeit-Charakteristiken (0-Overhead bis Mutex-Overhead). \\
 CC2 & Reclamation-Schema (CC2) & Orthogonale Compile-time Varianten-Familie für sichere Speicherfreigabe in lock-freien Strukturen: RCU (deferred grace-period, via userspace-rcu), Hazard-Pointer (per-thread in-use-Marken). Kombinierbar mit lock-freien Patterns, optional bei Blocking/\allowbreak{}Optimistic. \\
 \bottomrule
@@ -406,7 +406,7 @@ CC2 & Reclamation-Schema (CC2) & Orthogonale Compile-time Varianten-Familie für
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{None\allowbreak{}Concurrency} & Keine Synchronisation, single-threaded Baseline. Beide acquire() und release() sind no-ops (volatile Dummy). Vergleichs-Nullpunkt für Concurrency-Overhead-Messung (F15). & Code/\allowbreak{}Baseline \\
 \texttt{Blocking\allowbreak{}Concurrency} & Pessimistisches Mutex-Locking mit std::mutex. Globaler coarse-grained Lock. Serialisiert alle Zugriffe. Obergrenze des Locking-Overheads. Paper: Dijkstra CACM 1965. & Code/\allowbreak{}Baseline \\
 \texttt{Reader\allowbreak{}Writer\allowbreak{}Concurrency} & Single-Writer/\allowbreak{}Multi-Reader via std::shared\_\allowbreak{}mutex. Lock-Sharing bei read-lastigen Workloads. Mittelgewicht zwischen pessimistischen und optimistischen Mustern. Paper: Courtois et al. CACM 1971. & Code/\allowbreak{}Baseline \\
@@ -434,7 +434,7 @@ Achse 10 bestimmt, wie Daten innerhalb des Cache-Engine-Systems kodiert und komp
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 SR1 & Byte-Order und Wortformat & Wie werden Bytes innerhalb eines Datensatzes angeordnet? Raw (memcpy Roh-Layout), Varlen (LEB128-Varint mit Signalisierungsbits), oder Packed (Bit-für-Bit-Packing)? \\
 SR2 & Dichte (Speicherauslastung) & Speicher-Overhead pro Datensatz: Sparse (vollständige Records), Dense (mit Padding), oder Succinct (Information-theoretisch dicht, n*H + o(n) bits)? \\
 SR3 & Kompression und Vorverarbeitung & Block-Kompression (LZ4/\allowbreak{}Snappy, LZ77-basiert) oder Delta-Encoding (Zigzag-Transform für negative Deltas)? Oder keine Kompression? \\
@@ -448,7 +448,7 @@ SR3 & Kompression und Vorverarbeitung & Block-Kompression (LZ4/\allowbreak{}Snap
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Raw\allowbreak{}Binary\allowbreak{}Serialization} & Roh-Byte-Speicherlayout (memcpy). Baseline ohne Transformation. Minimaler CPU-Aufwand. Typ.\ für In-Memory-Workloads ohne Kompression. Variante: \texttt{serialisierte\_\allowbreak{}scan()} liest 32-Bit Felder + Order-sensitive Checksum. & Code/\allowbreak{}Baseline \\
 \texttt{Var\allowbreak{}Len\allowbreak{}Serialization} & Variable-Längen-Kodierung mit Signalisierungsbits (LEB128-Var\allowbreak{}Int). Standard für ART (Leis ICDE 2013 P01). Kleine Werte = wenige Bytes. Signalisierungsbits markieren Byte-Länge. Datenabhängige Schleife (1-5 Bytes). FNV-1a-Mix der Varint-Bytes. & P01 \\
 \texttt{Succinct\allowbreak{}Serialization} & Bit-für-Bit-Packing mit minimaler Bitbreite (LOUDS/\allowbreak{}Su\allowbreak{}RF). Erreicht Information-theoretisches Minimum n*H + o(n) bits. Read-Only nach Build. Optimal für Approx-Filter + Read-Heavy. Höchster Per-Element-CPU-Aufwand (echte Bit-Manipulation). Variante: \texttt{serialize\_\allowbreak{}scan()} mit 64-Bit Akkumulator. & P10,P09 \\
@@ -472,7 +472,7 @@ Definiert Strategien zur Messung von Index-Operationen (Insert, Lookup, Erase) m
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 TM1 & Scope (Geltungsbereich) & Gültigkeitsbereich der Zählerverwaltung: leaf-only (nur Blatt-Knoten), per-node (alle Knoten), oder global (einzelner Akkumulator für die ganze Struktur). Compile-Time-Wahl, beeinflusst Overhead durch Konkurrenz-Druck auf gemeinsame Cache-Linien. \\
 TM2 & Metrik-Typ (Messgröße) & Art der gemessenen Metrik: counter (Zähler für Ereignisse), histogram (Verteilung mit Quantilen), oder density (Slot-Belegung pro Knoten). Beeinflusst den Speicher-Footprint und die Mess-Granularität. \\
 TM3 & Overhead-Level (Messlast) & Größenordnung des Mess-Overheads: low (atomare Operationen), medium (per-node-Datenstrukturen), high (Histogramm-Logging). Bestimmt die Eignung für verschiedene Workload-Szenarien (Benchmarking vs. Produktion). \\
@@ -487,7 +487,7 @@ TM3 & Overhead-Level (Messlast) & Größenordnung des Mess-Overheads: low (atoma
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Zähler NUR in Blatt-Knoten (vermeidet Cache-Line-Ping-Pong durch Verzicht auf Inner-Node-Updates). Niedriger Overhead bei leaf-only Scope. Entspricht dem kohärenz-schonenden Zähler-Konzept aus Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, obwohl das Original-Paper kein Leaf-Counter-Algorithmus ist --- CE-Baseline für False-Sharing-Vermeidung. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, Kontext; Code/\allowbreak{}Baseline) \\
 \texttt{Density\allowbreak{}Tracker} & Per-Node Density/\allowbreak{}Slot-Occupancy-Tracking für adaptive Node-Type-Wahl (4→16→48→256). Kontextuelle Telemetrie zur ART-Struktur (Leis ICDE 2013), misst Slot-Belegung aller Knoten. Höherer Overhead als Leaf\allowbreak{}Only, liefert aber Adaption-Signal für dynamische Rebalancing-Entscheidungen. & P01 (ART/\allowbreak{}Leis ICDE 2013, Kontext; Code/\allowbreak{}Baseline) \\
 \texttt{Insert\allowbreak{}Counter} & Globaler atomarer Insert-Zähler mit minimalem Overhead (1 atomic increment pro Insert). Kontextuelle Telemetrie zur HOT-Struktur (Binna SIGMOD 2018), global Scope. Ausreichend für Durchsatz-Mess-Reihen, keine Laten-Granularität. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, Kontext; Code/\allowbreak{}Baseline) \\
@@ -512,7 +512,7 @@ Die Wert-Handle-Achse definiert, wie Datenwerte (Values) im Cache-Index gespeich
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 VH1 & Speicherort (Storage-Location) & Compile-Time Varianten für die physische Platzierung des Value: inline im Node-Slot (kombiniert Key/\allowbreak{}Value in einem Slot ohne Indirektion) oder extern in einem separaten Pool (Node hält nur Offset/\allowbreak{}Pointer). \\
 VH2 & Eigentümer-Semantik (Ownership) & Compile-Time Varianten für Ownership und Sharing-Strategie: owned (exclusive per Key), shared (immutable reference-counted via RCU-style), weak (borrowing ohne Increment). \\
 VH3 & Versionierung (Versioning) & Compile-Time Varianten für Concurrency-Kontrolle: keine Versionierung (simple Ownership), Version-Tags in Pointer (MVCC für Reader-Snapshot-Isolierung). \\
@@ -526,7 +526,7 @@ VH3 & Versionierung (Versioning) & Compile-Time Varianten für Concurrency-Kontr
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Inline\allowbreak{}Value\allowbreak{}Handle} & Value wird direkt im Node-Slot eingebettet (keine Indirektion). Standard für kleine Values wie uint64\_\allowbreak{}t. Minimale Zugriffslatenz (1 direkter Read), aber Node-Speicher wird durch größere Values beansprucht. Quelle: ART (Leis ICDE 2013, P01). & P01 \\
 \texttt{External\allowbreak{}Pool\allowbreak{}Value\allowbreak{}Handle} & Value extern in Pool gespeichert; Node hält nur Pool-Offset. Ermöglicht variable Value-Größen und kompaktere Nodes, kostet aber 1 zusätzlichen Cache-Miss pro Lookup (Pointer-Chasing). Quelle: Wormhole (Wu Euro\allowbreak{}Sys 2019, P07). & P07 \\
 \texttt{Immutable\allowbreak{}Shared\allowbreak{}Ref\allowbreak{}Value\allowbreak{}Handle} & Value via reference-counted Pointer (RCU-Style Snapshot-Sharing). Optimal für Reader-Concurrency: Leser sehen stabile Snapshots, Writer erstellen neue immutable Snapshots. Requires Ref\allowbreak{}Count-Acquire/\allowbreak{}Release pro Zugriff. Quelle: RCU (Mc\allowbreak{}Kenney OLS 2001, P29). & P29 \\
@@ -551,7 +551,7 @@ Achse T12 spezifiziert die Ziel-CPU-Instruktionssatz-Architektur als Compile-Tim
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 IS1 & Wortbreite (Word-Size) & CPU-Datenpfadbreite: 32-bit, 64-bit oder 128-bit. In der Cache-Engine auf 64-bit standardisiert für alle vier ISA-Profile. \\
 IS2 & CPU-Hersteller/\allowbreak{}Familie (Vendor) & Instruktionssatz-Familie: \texttt{intel\_\allowbreak{}amd} (x86-64), \texttt{arm} (AArch64), \texttt{ibm} (Power-ISA), \texttt{open} (RISC-V). Bestimmt SIMD-Extension-Kompatibilität: SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 (x86-64), NEON/\allowbreak{}SVE/\allowbreak{}SVE2 (AArch64), VSX (Power), RVV (RISC-V). \\
 IS3 & ZIH-Cluster-Zugehörigkeit & Produktionsmaschinen an TU Dresden: Barnard (AMD EPYC 7763 Zen 3, x86-64), Capella (Intel Xeon, x86-64), Grace\allowbreak{}Hopper (NVIDIA Grace Hopper ARMv9 Neoverse V2, AArch64), N/\allowbreak{}A (Forschungsboards, RISC-V/\allowbreak{}Power). Ermöglicht Hardware-spezifische Experimente mit echten Produktionscluster-Profilen. \\
@@ -566,7 +566,7 @@ IS3 & ZIH-Cluster-Zugehörigkeit & Produktionsmaschinen an TU Dresden: Barnard (
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Amd64\allowbreak{}Isa} & x86-64 /\allowbreak{} Intel 64 ISA (AMD/\allowbreak{}Intel Server+Desktop). Dominante Serverplattform mit SSE2-SIMD-Baseline (4 uint32-Lanes pro 128-bit-Register). Implementiert echte SSE2-Vektorisierung via \texttt{\_\allowbreak{}mm\_\allowbreak{}loadu\_\allowbreak{}si128} + \texttt{\_\allowbreak{}mm\_\allowbreak{}add\_\allowbreak{}epi32} auf nativen x86-64-Hosts; skalarer Fallback auf Nicht-x86-Build-Hosts. ZIH-Präsenz: Barnard (AMD EPYC 7763 Zen 3), Capella (Intel Xeon). & Vendor-Spec (AMD 2000 /\allowbreak{} Intel fortlaufend) \\
 \texttt{Aarch64\allowbreak{}Isa} & ARMv8-A 64-bit ISA (ARM Holdings). Wachsende Serverrelevanz (Apple M-Series, AWS Graviton, Ampere Altra). SIMD-Baseline: NEON (128-bit, 4 uint32-Lanes). Cache-Engine-Implementierung: 4-fach entrollter Skalar-Fallback (modelliert NEON-Breite ohne ARM-Intrinsics auf x86-Build-Hosts); echte NEON-Vektorisierung auf nativen ARMv8-Hosts. ZIH-Präsenz: Grace\allowbreak{}Hopper (NVIDIA Grace Hopper, Neoverse V2 + Hopper GPU). & Vendor-Spec (ARM Ltd., ab 2011/\allowbreak{}2013) \\
 \texttt{Power\allowbreak{}Pc\allowbreak{}Isa} & Power ISA (POWER9/\allowbreak{}10, ppc64le Little-Endian). IBM Power Systems (AC922, IC922, S1022). SIMD-Baseline: VSX (Vector-Scalar Extension, 128-bit, 4 uint32-Lanes). Cache-Engine-Implementierung: 4-fach entrollter Skalar-Fallback (modelliert VSX-Breite ohne Power-Intrinsics auf x86-Build-Hosts). Relevant für HPC-Workloads mit NVLink-GPU-Anbindung (AC922). ZIH-Präsenz: nicht primär, aber für Forschungs-Vergleiche verfügbar. & Vendor/\allowbreak{}Standards-Spec (IBM/\allowbreak{}Open\allowbreak{}POWER, v3.0 2017, v3.1 2020) \\
@@ -590,7 +590,7 @@ Klassifizierung der Datenspeicherung und Indexstrukturierung nach drei orthogona
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 \texttt{io1\_\allowbreak{}storage\_\allowbreak{}order} & Storage-Order & Anordnung der Datensätze im Speicher: ungeordnet (Insert-Order im Heap), sortiert nach Primary-Key (Clustered), oder mit Pointer-Indirektion (Non\allowbreak{}Clustered). Definiert die sequenzielle oder zufällige Zugriffsmuster bei Range-Scans. \\
 \texttt{io2\_\allowbreak{}index\_\allowbreak{}count} & Index-Multiplizität & Anzahl unterstützter Indizes pro Tabelle: keine (Heap-Baseline), Single-Index (Clustered, My\allowbreak{}SQL Inno\allowbreak{}DB Primärschlüssel), oder Multiple Secondary-Indizes (Non\allowbreak{}Clustered, SQL Server NONCLUSTERED INDEX). \\
 \texttt{io3\_\allowbreak{}data\_\allowbreak{}embedding} & Daten-Einbettung & Speicherplatzierung der Daten relativ zum Index: getrennt im Row-Store (Clustered/\allowbreak{}Non\allowbreak{}Clustered mit Pointer-Hop), oder direkt in Index-Leaf-Pages eingebettet (IOT/\allowbreak{}Trie-Style wie ART/\allowbreak{}HOT). \\
@@ -605,7 +605,7 @@ ID & Name & Beschreibung \\
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Clustered\allowbreak{}Index\allowbreak{}Organization} & Speicher-Reihenfolge entspricht Index-Reihenfolge (1 Primary-Key). Optimiert für Range-Scans entlang des Primary-Key mit sequenziellen Disk-Reads (cache-freundlich). Standard: My\allowbreak{}SQL Inno\allowbreak{}DB, Postgre\allowbreak{}SQL CLUSTER, SQL Server CLUSTERED INDEX\@. Zugriffsmuster: sequenzielle Forward-Iteration ohne Predicate-Evaluation, O(n) Summen-Scan. & Bayer \& Mc\allowbreak{}Creight, Acta Informatica 1972 (10.1007/\allowbreak{}BF00288683) \\
 \texttt{Heap\allowbreak{}Index\allowbreak{}Organization} & Storage-Reihenfolge = Insert-Order, KEIN Index (Baseline). Lookup mittels O(n) Full-Scan mit Predicate-Evaluation pro Record (datenabhängiger Branch, kein früher Abbruch). Standard: Postgre\allowbreak{}SQL Heap-Tabellen, HBase. Zugriffsmuster: ungeordneter sequenzieller Scan mit Vergleichslast und Branch-Misprediction. & Garcia-Molina, Ullman \& Widom, Database Systems (Textbook Baseline) \\
 \texttt{Iot\allowbreak{}Index\allowbreak{}Organization} & Daten direkt in Index-Leaf-Pages eingebettet (Oracle IOT, SQL Server CLUSTERED INDEX style). Spart Pointer-Indirektion vs. Non\allowbreak{}Clustered. Äquivalent zu B+Tree-Leaves mit eingebetteten Daten oder Trie-Knoten (ART/\allowbreak{}HOT/\allowbreak{}Wormhole). Zugriffsmuster: sequenziell wie Clustered, aber mit Zusatzlast durch Daten im Leaf (zwei Felder pro Record). & Srinivasan et al., VLDB 2000 (Oracle8i IOT)~\cite{srinivasan2000oracle8iiot} \\
@@ -630,7 +630,7 @@ Modellierung und Auswahl von I/\allowbreak{}O-Strategien für die Persistierung 
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 IO1 & Persistierungsmodell & Klassifiziert die Speicherart: RAM-only (keine Persistierung, reine Mess-Baseline), oder Disk/\allowbreak{}Persistent-Memory (Datei-gesicherte Indizes mit verschiedenen Caching-Strategien). \\
 IO2 & Caching-Strategie & Charakterisiert die OS-Puffer-Nutzung: Buffered (OS Page-Cache, read-ahead + write-back, Standard), Direct I/\allowbreak{}O (\texttt{O\_\allowbreak{}DIRECT}, Page-Cache-Bypass, 512\allowbreak{}B/\allowbreak{}4\allowbreak{}KB-Alignment), oder Memory-Mapped (file-backed \texttt{mmap} mit automatischer OS-Pagination und page-fault-getriebenem Zugriff). \\
 IO3 & Schreib-Dauerhaftigkeit & Legt die Konsistenz-Garantien fest: keine \texttt{fsync} (höchste Performance, keine Absicherung), \texttt{fsync} nach Batch (Kompromiss, Batch-Commits), oder atomare Schreibvorgänge (höchste Sicherheit, niedrigste Performance). In dieser Implementierung hauptsächlich als konzeptionelle Sub-Achse vorhanden; operative Umsetzung erfolgt über die Caching-Strategie. \\
@@ -645,7 +645,7 @@ IO3 & Schreib-Dauerhaftigkeit & Legt die Konsistenz-Garantien fest: keine \textt
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{In\allowbreak{}Memory\allowbreak{}Only} & Rein RAM-basierter Index ohne Persistierung. Direkter, sequentieller Record-Zugriff ohne Dispatch-Overhead. Schnellster Pfad und Vergleichs-Nullpunkt der Achse. Verwendet für Mess-Baseline und Performance-Referenzierung unter Bedingungen ohne I/\allowbreak{}O-Latenz. & Code/\allowbreak{}Baseline \\
 \texttt{Buffered\allowbreak{}Io} & Standard \texttt{read()}/\allowbreak{}\texttt{write()} via OS-Page-Cache mit automatischem read-ahead und write-back. Default für allzweck-DBMS\@. Trade-off: bequem, aber Double-Buffering (App-Cache + OS-Cache führt zu erhöhter Speichernutzung). Papier-Anker: Stonebraker CACM 1981 (Konzept-/\allowbreak{}Position-Paper Operating System Support for Database Management, DOI 10.1145/\allowbreak{}358699.358703). Confidence: medium (Engineering-Pattern, kein Algo-Code). & P-Stonebraker-1981 \\
 \texttt{Direct\allowbreak{}Io} & Bypass des OS-Page-Cache mittels \texttt{O\_\allowbreak{}DIRECT}-Flag (\texttt{open(2)}), NVMe-SSD-optimal. 512\allowbreak{}B/\allowbreak{}4\allowbreak{}KB-Alignment erforderlich. Ermöglicht DBMS-eigene Cache-Strategien (Rocks\allowbreak{}DB, My\allowbreak{}SQL). Höhere CPU-Kosten, aber keine Cache-Pollution durch Background-Activity. Keine dedizierte Papier-Quelle (Linux-API seit 2.4.10); wird als bewusste Engineering-Baseline behandelt. & Code/\allowbreak{}Baseline \\
@@ -669,7 +669,7 @@ Die Migrations-Strategie-Achse (T15, \texttt{axis\_\allowbreak{}migration}) kaps
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 MG1 & Trigger-Mechanismus (MG1) & Bestimmt, wann eine Migrations-Entscheidung auslöst wird: keine (static), Schwellwert-basiert (Threshold), beobachtungsgesteuert (Observation). Compile-Time Variante pro Strategy. \\
 MG2 & Migrations-Richtung (MG2) & Bestimmt die Richtung von Daten-Bewegung: keine (static), aufwärts (RAM→SSD), abwärts (SSD→RAM), bidirektional. Compile-Time Variante. \\
 MG3 & Migrations-Granularität (MG3) & Spezifiziert die Skalierungseinheit für Migrations-Entscheidungen: keine (static), Page (4\allowbreak{}KB), Block (64\allowbreak{}KB), Object (einzelnes Item). Compile-Time Kategorie. \\
@@ -684,7 +684,7 @@ MG3 & Migrations-Granularität (MG3) & Spezifiziert die Skalierungseinheit für 
 \toprule
 ID & Parameter & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 D1 & Entscheidungs-Schwellwert (Decision Threshold) & Laufzeit-Parameter: Hot/\allowbreak{}Cold-Klassifikations-Grenzwert (z.B. Recency-Counter-Limit für LRU-basierte Promotions/\allowbreak{}Demotions). Benutzer-konfigurierbar. \\
 D2 & Gewichtungen für Feature-Scoring & Laufzeit-Parameter für Adaptive\allowbreak{}Migration: Gewichte (w\_\allowbreak{}freq, w\_\allowbreak{}rec) für Häufigkeits- und Recency-Features in der ML-Linearkombination. Self-tuning möglich. \\
 D3 & Tier-Konfiguration & Laufzeit: Anzahl Speicher-Tiers (z.B. k\allowbreak{}Tiers=3 für RAM/\allowbreak{}SSD/\allowbreak{}HDD in Tier\allowbreak{}Based\allowbreak{}Migration), Kapazitäten pro Tier, Promotions/\allowbreak{}Demotion-Schwellen. \\
@@ -699,7 +699,7 @@ D3 & Tier-Konfiguration & Laufzeit: Anzahl Speicher-Tiers (z.B. k\allowbreak{}Ti
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{No\allowbreak{}Migration} & Statische Platzierung ohne Migration (Baseline). Daten werden einmalig positioniert, keine Bewegung zwischen Tiers. Benchmark-Nullpunkt für Vergleich mit aktiven Strategien. & Code/\allowbreak{}Baseline \\
 \texttt{Hot\allowbreak{}Cold\allowbreak{}Migration} & Heat/\allowbreak{}Cold-Separation via LRU + probabilistisches Recency-Counting. Häufig zugegriffene Daten (hot) werden zu schnellerem Cache promoviert, selten zugegriffene (cold) zu langsamem Storage demoviert. Standard für LRU-K und LFU-Cache-Systeme. & Anti-Caching (PVLDB 2013)~\cite{debrabant2013anticaching} \\
 \texttt{Tier\allowbreak{}Based\allowbreak{}Migration} & Multi-Ebenen-Migration RAM→NVM→SSD→HDD mit Modulo-basiertem Tier-Mapping. Jedes Datenitem wird anhand eines Feldwertes modulo-auf Ziel-Tier gemappt. Standard für Rocks\allowbreak{}DB, LSM-Trees und Tiered-Cache-Systeme mit konfigurierbaren Schwellwerten. & Managing NVM in DBMSs (SIGMOD 2018)~\cite{vanrenen2018nvm} \\
@@ -723,7 +723,7 @@ Die Filter-Achse T16 bietet wählbare probabilistische und deterministische Memb
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 FT1 & Abfrage-Typ & Unterscheidung zwischen Punkt-Abfragen (membership: key enthalten?) und Bereichs-Abfragen (range: keys in [a,b]?). Punkt-Filter sind Bloom/\allowbreak{}Cuckoo/\allowbreak{}Xor; nur Range\allowbreak{}Surf\allowbreak{}Filter unterstützt Range-Semantik. \\
 FT2 & Mutierbarkeit & Unterteilung in unveränderbare Filter (Bloom, Range\allowbreak{}Surf, Xor nach Build immutable) vs. Mutable (Cuckoo mit delete-Operation). Bestimmt Design des Wrapper und Cachingmöglichkeiten während Laufzeit. \\
 FT3 & Fehler-Profil & Charakterisierung der fehlertoleranten Semantik: False-Positive-Only (Bloom, Cuckoo, Xor --- Filter sagt 'ja' falsch), vs.\ lossless (theoretisch deterministische Antwort). Bloom: approx.\ k*n Hash-Tests; Xor: exakt 3 XOR-Operationen (branch-frei). \\
@@ -738,7 +738,7 @@ FT3 & Fehler-Profil & Charakterisierung der fehlertoleranten Semantik: False-Pos
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Bloom\allowbreak{}Filter} & Klassischer Bloom-Filter nach Bloom 1970: m-Bit-Bitmap, k unabhängige Hash-Funktionen (double-hashing nach Kirsch/\allowbreak{}Mitzenmacher 2006). Punkt-Abfragen nur; False-Positives möglich, keine Deletes. Implementierung mit echter persistenter m-Bit-Bitmap (8~KiB, m=65536, k=4 double-hashing), die im Mess-Pfad~B über die tatsächlich eingefügten Schlüssel geprobt wird; die ehrlich deklarierte Pseudo-Bitmap-Probe (k=4 Hash-Tests pro Query, charakteristische early-exit-Latenz bei Mismatch) verbleibt nur im Pfad-A-Segment-Timing-Scan. & Bloom 1970 (CACM 13:422-426) \\
 \texttt{Cuckoo\allowbreak{}Filter} & Cuckoo Filter nach Fan et al. Co\allowbreak{}NEXT 2014: Bucketed Cuckoo-Hashing mit 1-Byte-Fingerprints. Unterstützt Deletes und Lookup-Counting (Vorteil vs Bloom). Probe-Charakteristik: 2 Bucket-Lookups + Fingerprint-Vergleich (partielle-Schlüssel-Cuckoo nach Co\allowbreak{}NEXT 2014 \S3: i2 = i1 XOR hash(fp)). Höhere Insert-Kosten, aber flexible Mutierbarkeit. & Fan et al. Co\allowbreak{}NEXT 2014 (DOI:10.1145/\allowbreak{}2674005.2674994) \\
 \texttt{Range\allowbreak{}Surf\allowbreak{}Filter} & Su\allowbreak{}RF (Succinct Range Filter) nach Zhang et al. SIGMOD 2018: LOUDS-Bitmap-Trie für Range-Abfragen. Einziger Filter mit Range-Semantik (lower\_\allowbreak{}bound/\allowbreak{}upper\_\allowbreak{}bound auf Byte-Prefix-Ebene). Probe-Charakteristik: mehrstufiger Trie-Abstieg mit succinct-LOUDS-Navigation (bis k\allowbreak{}Max\allowbreak{}Depth=6), nicht exakt 1 Hash-Test, daher latenz-variabel je Prefix-Länge. Praktisch in Rocks\allowbreak{}DB SST-Optimierungen. & P10 (Zhang et al. SIGMOD 2018) \\
@@ -762,7 +762,7 @@ Die Achse \texttt{axis\_\allowbreak{}q1\_\allowbreak{}queuing} realisiert versch
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 QS1 & Sequenzieller Zugriff & FIFO/\allowbreak{}LIFO/\allowbreak{}Append-Only: Zugriff am Anfang oder Ende, typisch Write-Coalescing + Mem\allowbreak{}Table-Pufferung \\
 QS2 & Sortierter Zugriff & Skip-List/\allowbreak{}Priority-Heap: Sortierter Drain, typisch LSM-Compact und Hot-Key-Eviction \\
 QS3 & Zyklischer Zugriff & Bounded Ring-Buffer: Feste Kapazität, Disruptor-Pattern, wrap-around mit Overflow-Handling \\
@@ -780,7 +780,7 @@ QS6 & Lock-Free Concurrent & SPSC/\allowbreak{}MPMC\@: CAS-Loop oder wait-free L
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{No\allowbreak{}Buffer} & Passthrough/\allowbreak{}Identität (Baseline): \texttt{put()} ist no-op, \texttt{get()} liefert immer \texttt{std::nullopt}. Sinnvoll als Vergleichspunkt und in klassischen B+/\allowbreak{}ART-Szenarien mit direktem Leaf-Zugriff. Family Q01, QS1 \texttt{sequential\_\allowbreak{}access}. & Code/\allowbreak{}Baseline \\
 \texttt{Append\allowbreak{}Only\allowbreak{}Buffer} & Append-Only Linear Buffer (LSM-Mem\allowbreak{}Table, Bw-Tree-Delta): monoton wachsendes \texttt{std::vector} ohne mittiges Löschen. Optimiert für reine Append + Bulk-Drain. Family Q02, QS1 \texttt{sequential\_\allowbreak{}access}. Literatur: Levandoski/\allowbreak{}Lomet/\allowbreak{}Sengupta Bw-Tree ICDE 2013, O'Neil LSM 1996. & Code/\allowbreak{}Baseline \\
 \texttt{FIFOQueue\allowbreak{}Buffer} & FIFO-Queue (\texttt{std::deque}): First-In-First-Out via \texttt{deque::push\_\allowbreak{}back} /\allowbreak{} \texttt{deque::pop\_\allowbreak{}front}. Unbounded, kann mittig effizient wachsen. Lehrbuch-ADT, typisch für Write-Coalescing. Family Q03, QS1 \texttt{sequential\_\allowbreak{}access}. & Code/\allowbreak{}Baseline \\
@@ -814,7 +814,7 @@ Die Achse Q2 definiert automatische Spülstrategien für Schreibpuffer. Sie ents
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 FS1 & Ereignisgetriggert (Event-Triggered) & Flush wird durch explizite Ereignisse (put/\allowbreak{}get-Operation oder Eviction) ausgelöst. Umfasst Eager\allowbreak{}Flush (nach jeder Operation) und Lazy\allowbreak{}Flush (nur bei Eviction). \\
 FS2 & Schwellwertgetriggert (Threshold-Triggered) & Flush wird ausgelöst, wenn die Pufferfüllung einen Schwellwert (Default 75\%) überschreitet. Reduziert unnötige Spülungen bei sparsem Traffic. \\
 FS3 & Zeitgetriggert (Time-Triggered) & Flush wird periodisch nach einem Zeitfenster (Micro-Batching) ausgelöst, unabhängig von Pufferfüllung. Klassisches Hadoop/\allowbreak{}Spark/\allowbreak{}Kafka-Pattern für bounded-latency Guarantees. \\
@@ -829,7 +829,7 @@ FS4 & Adaptiv (Adaptive-Triggered) & Flush-Schwellwert wird adaptiv aus Workload
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Eager\allowbreak{}Flush} & Pessimistische Write-Through-Policy: spült nach JEDER \texttt{put()}-Operation vollständig (Full\allowbreak{}Flush). Niedrigste Latenz, aber maximale Spülfrequenz und höchster Durchsatzaufwand --- klassisches Synchronous-Write-Pattern. & Lehrbuch Write-Through Policy /\allowbreak{} Code Baseline \\
 \texttt{Lazy\allowbreak{}Flush} & Optimistische Write-Back-Policy: spült NIE automatisch, nur bei expliziter Eviction aus dem Buffer. Maximales Batching, minimale Spülfrequenz --- klassisches Deferred-Write-Pattern. \texttt{should\_\allowbreak{}flush()} gibt IMMER No\allowbreak{}Flush zurück. & Lehrbuch Write-Back Policy /\allowbreak{} Code Baseline \\
 \texttt{Watermark\allowbreak{}Flush} & Schwellwert-gesteuerte Flush-Policy (Default 75\% Kapazität). Iterable Aspekt mit 5 Varianten (50\%, 65\%, 75\%, 85\%, 95\%) für Laufzeit-Permutation. Verwandt mit LSM-Tree Memtable-Trigger (O'Neil 1996). & LSM-Tree O'Neil 1996 (verwandt) /\allowbreak{} Code Implementation \\
@@ -852,7 +852,7 @@ Die Seitentyp-Achse definiert die Struktur- und Indexierungsstrategien von Branc
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 PG1 & Struktur-Rolle (Branching) & Klassifizierung der Verzweigungsseiten-Architektur: Branch-Seite mit voller Verzweigung, kollabierter Single-Path-Knoten (Redirect) oder spezielle Cache-optimierte Variante. \\
 PG2 & Dichte-Klasse (Density) & Grad der Slot-Auslastung und daraus resultierende Indexierungsstrategie: dicht besiedelt (0-256 Slots), erweitert (>256 Slots) oder sparse mit Patricia-Kompression. \\
 PG3 & Pfad-Kollaps-Strategie & Handhabung eindeutiger eindeutiger Restpfade: keine Kompression (Standard), oder Kollaps durch Redirect/\allowbreak{}Co\allowbreak{}Co-Technik zur Speicherminimierung. \\
@@ -867,7 +867,7 @@ PG3 & Pfad-Kollaps-Strategie & Handhabung eindeutiger eindeutiger Restpfade: kei
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Dense\allowbreak{}Byte\allowbreak{}Page\allowbreak{}Type} & Dichte byte-indizierte Verzweigungsseite mit direkter 256-Slot-Adressierung (direct-addressed). Seitentyp 1: direkte Abbildung von Schlüssel-Byte auf Slot-Index ohne Umleitung. Quelle: Adaptive Radix Tree (ART), Leis et al. 2013. & P01 \\
 \texttt{Extended\allowbreak{}Dense\allowbreak{}Page\allowbreak{}Type} & Erweiterte dichte Seite für >256 Einträge mit mehrstufigem Indexierungsschema (z.B. 2-Level-Lookup oder variable k-Byte-Span). Seitentyp 2: Dichte-Klasse für komplexere Slot-Anordnungen. Quelle: Adaptive Radix Tree Erweiterungen, PRT-ART\@. & P01 (extended) \\
 \texttt{Sparse\allowbreak{}Patricia\allowbreak{}Page\allowbreak{}Type} & Spärlich besetzte Seite mit Patricia-Pfadkompression (Single-Bit-Split). Seitentyp 3: Dichte-Klasse mit Bit-Vektor-Traversal für niedrige Branchingness. Quelle: HOT (Height Optimized Trie, Binna et al. 2018, basierend auf Patricia-Trie, Morrison 1968). & P02 \\
@@ -893,7 +893,7 @@ Die Achse \texttt{axis\_\allowbreak{}09b\_\allowbreak{}simd\_\allowbreak{}extens
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 SE1 & Vector-Width (Vektorbreite) & Compile-Time-bekannte maximale Vektorbreite der SIMD-Extension in Bits: 0 (keine), 128, 256, 512, oder -1 (skalierbar). Bestimmt Lane-Breite und Parallelisierungsgrad. \\
 SE2 & Accelerator-Type (Beschleuniger-Typ) & Kategorisiert die Beschleuniger-Klasse: none (Baseline), simd (Vektor-SIMD), matrix (Matrix-Engine), gpu (GPU), npu (Neural Processing Unit). Influenziert Komposition mit hardware-Topologie (\texttt{axis\_\allowbreak{}12}). \\
 SE3 & Compat-Family (Kompatibilitäts-Familie) & Constraint zur Haupt-ISA (\texttt{axis\_\allowbreak{}09}): none (universell), x86, arm, riscv, cuda. Sichert Compile-Time-Validierung: z.B. \texttt{Sse2\allowbreak{}Simd\allowbreak{}Extension} kompatibel nur mit \texttt{Amd64\allowbreak{}Isa}. \\
@@ -908,7 +908,7 @@ SE3 & Compat-Family (Kompatibilitäts-Familie) & Constraint zur Haupt-ISA (\text
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{No\allowbreak{}Simd\allowbreak{}Extension} & Baseline-Variante ohne SIMD-Beschleunigung. Skalare Fallback-Strategie für alle Permutationen ohne Accelerator. Universal kompatibel zu allen Haupt-ISAs (x86/\allowbreak{}ARM/\allowbreak{}RISC-V/\allowbreak{}Power\allowbreak{}PC). Pflicht-Vergleichspunkt. & Code/\allowbreak{}Baseline \\
 \texttt{Sse2\allowbreak{}Simd\allowbreak{}Extension} & Intel SSE2 128-bit Vektor-Extension (x86\_\allowbreak{}64 ABI-Pflicht seit 2003). Nur kompatibel mit \texttt{Amd64\allowbreak{}Isa}. Baseline auf x86\_\allowbreak{}64; bietet 4× uint32-Lanes/\allowbreak{}Iteration. Standard auf Cluster-Knoten Barnard/\allowbreak{}Capella. & Intel ISA Ext Ref 319433-060 \\
 \texttt{Avx2\allowbreak{}Simd\allowbreak{}Extension} & Intel AVX2 256-bit Vektor-Extension (Haswell+ 2013). Nur x86\_\allowbreak{}64. Rückwärts-kumulativ: umfasst alle SSE+AVX\@. Default-Optimierungs-Stufe für Server-DBMS\@. 2 AVX2-Units/\allowbreak{}Sockel. ZIH-Standard auf Barnard (AMD EPYC Zen 3) und Capella (Intel Xeon). & Intel ISA Ext Ref 319433 \\
@@ -934,7 +934,7 @@ Definiert die Plattform-Hardware-Familie (CPU-Architektur, SIMD-Capabilities, Ca
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 \texttt{hw1\_\allowbreak{}simd\_\allowbreak{}family} & 12.1 SIMD-Familie & Welche Vector-Instruction-Set wird aktiv genutzt? (AVX2, AVX-512, NEON, SVE2, scalar/\allowbreak{}none). Bestimmt die maximale Vektorbreite für parallele Operationen innerhalb eines Algorithmus. \\
 \texttt{hw2\_\allowbreak{}cache\_\allowbreak{}level\_\allowbreak{}targeting} & 12.2 Cache-Level-Targeting & Welcher Cache-Level wird optimiert (L1-aware, L2-aware, L3-aware, HBM-aware)? Entscheidend für Prefetch-Strategien und Speicher-Layout-Entscheidungen. \\
 \texttt{hw3\_\allowbreak{}numa\_\allowbreak{}strategy} & 12.3 NUMA-Strategie & Wie wird NUMA-Topologie berücksichtigt (single-node, multi-node, NUMA-aware-pinning, NUMA-balanced)? Beeinflusst die Allocator-Lokalität und Thread-Pinning-Strategie. \\
@@ -951,7 +951,7 @@ ID & Name & Beschreibung \\
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{X86\_\allowbreak{}64\allowbreak{}Hardware\allowbreak{}Profile} & Moderne x86-64 Desktop/\allowbreak{}Server-Plattform (Intel/\allowbreak{}AMD). Build-Time-Konstanten: \texttt{cache\_\allowbreak{}line\_\allowbreak{}size}=64, \texttt{memory\_\allowbreak{}page\_\allowbreak{}size}=4096, \texttt{simd\_\allowbreak{}width\_\allowbreak{}bits}=256 (AVX2 konservativ), \texttt{numa\_\allowbreak{}capable}=true, \texttt{huge\_\allowbreak{}page\_\allowbreak{}capable}=true. Basis für desktop- und server-seitige Experimente. & Code/\allowbreak{}Baseline \\
 \texttt{Aarch64\allowbreak{}Hardware\allowbreak{}Profile} & ARM64/\allowbreak{}AArch64 Server und Mobile Plattformen (Ampere Altra, Apple Silicon M-Serie, Linux ARM). Build-Time-Konstanten: \texttt{cache\_\allowbreak{}line\_\allowbreak{}size}=64, \texttt{memory\_\allowbreak{}page\_\allowbreak{}size}=4096, \texttt{simd\_\allowbreak{}width\_\allowbreak{}bits}=128 (NEON Standard), \texttt{numa\_\allowbreak{}capable}=true, \texttt{huge\_\allowbreak{}page\_\allowbreak{}capable}=true. Ermöglicht Cross-Platform-Vergleiche. & Code/\allowbreak{}Baseline \\
 \texttt{Generic\allowbreak{}Hardware\allowbreak{}Profile} & Konservatives Fallback-Profil für plattform-agnostische Konfigurationen. Build-Time-Konstanten: \texttt{cache\_\allowbreak{}line\_\allowbreak{}size}=64, \texttt{memory\_\allowbreak{}page\_\allowbreak{}size}=4096, \texttt{simd\_\allowbreak{}width\_\allowbreak{}bits}=0 (scalar-only), \texttt{numa\_\allowbreak{}capable}=false, \texttt{huge\_\allowbreak{}page\_\allowbreak{}capable}=false. Lowest-Common-Denominator wenn kein spezialisierter Adapter passt. & Code/\allowbreak{}Baseline \\
@@ -972,7 +972,7 @@ Die Allokator-Achse dokumentiert 25 speicherverwaltungs-Strategien (Kennungen A0
 \toprule
 ID & Name & Beschreibung \\
 \midrule
-\endhead
+\endhead%
 AA1 & Free-List-Topologie & Struktur der freien Speicher-Blöcke: Per-Page-Sharding (mimalloc), Per-Thread-Caching (snmalloc, rpmalloc, TCMalloc), Buddy-Baum (Buddy-Allocator), Single-Global-Free-List (dlmalloc), Per-Heap-Locks (Hoard). \\
 AA2 & Size-Class-Schema & Klassifizierung von Block-Größen: Slab-pro-Objektgröße (Slab), dlmalloc Bins, jemalloc Size-Classes, scalloc Spans, Buddy-Power-of-2. \\
 AA3 & Thread-Lokalität & Grad der Thread-Isolation: tcmalloc thread-local-caches, rpmalloc per-thread-spanning, snmalloc message-passing, Hoard per-heap-locks. \\
@@ -991,7 +991,7 @@ AA7 & Fragmentierungsstrategie & Vermeidung von Fragmentierung: dlmalloc Coalesc
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
-\endhead
+\endhead%
 \texttt{Hoard\allowbreak{}Allocator} (A01) & Per-Heap Free-Lists mit SMP-Skalierung. Drei-Ebenen-Struktur: Thread-lokale Heaps, globale Heap für Cross-Thread-Migration, False-Sharing-Reduktion durch segregierte Allocations-Anfragen. & A01~\cite{berger2000hoard} (Berger/\allowbreak{}Mc\allowbreak{}Kinley/\allowbreak{}Blumofe/\allowbreak{}Wilson, ASPLOS 2000, 10.1145/\allowbreak{}378993.379232) + Code/\allowbreak{}Baseline \\
 \texttt{Slab\allowbreak{}Allocator} (A02) & Object-Caching Kernel-Allocator. Slab-pro-Objektgröße mit Magazine-Cache pro CPU (Bonwick 1994/\allowbreak{}2001). Klassische Solaris-Kernel-Implementierung für vorallokierte Objekt-Pools. & A02~\cite{bonwick1994slab} (Bonwick, USENIX 1994) + Code/\allowbreak{}Baseline \\
 \texttt{Michael\allowbreak{}Lock\allowbreak{}Free\allowbreak{}Allocator} (A03) & Lock-Free CAS-Allocator nach Michael 2004. Hazard-Pointer-geschützte Lock-Free-Datenstrukturen, MIT-Re-Implementierung mit IBM-Patent-Hintergrund. & A03~\cite{michael2004lockfree} (Michael, PLDI 2004, 10.1145/\allowbreak{}996841.996848) + Code/\allowbreak{}Baseline \\
