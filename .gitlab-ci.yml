@@ -34,12 +34,14 @@ lint:secrets:
   extends: .lint-secrets
   tags: [baremetal]
 
-# ── LaTeX-Lint (chktex) — TeXLive = Infra-Voraussetzung; advisory (wie clang-format/cppcheck) ──
+# ── LaTeX-Lint (chktex) — TeXLive = Infra-Voraussetzung ──
+# HART seit 2026-07-06 (User-Auftrag „strikt gruen, Fehler echt beheben"): 964 Warnungen in 4 Wellen
+# auf 0 (W8/W36 -> Konvention .chktexrc + 8 Jahresspannen; W13/W12 -> 203 \@-/Abkuerzungs-Markierungen;
+# W1 -> 242 Command-Space-Praezisierungen; Rest -> echte Mikro-Fixes + 42 dokumentierte Suppressions).
 lint:latex:
   stage: lint
   tags: [baremetal]
   needs: []
-  allow_failure: true
   rules:
     - if: '$COMDARE_TEXLIVE_AVAILABLE == "true"'
   script:
@@ -50,7 +52,11 @@ lint:latex:
     # -n36 (Space vor/nach Klammer): alle 251 Befunde klassifiziert (2026-07-06) = ausnahmslos
     # False-Positives auf Code-Identifiern (create_anatomy(), zipfian(.99), \allowbreak-Namen)
     # und deutschen Klammer-Komposita ((Bundle-)Prefetch) — 0 echte Prosa-Spacing-Fehler.
-    - 'find . -name "*.tex" -not -path "./_*" -print0 | xargs -0 -r chktex -q -n36'
+    # -n17 (Klammer-Bilanz je Datei): einzige Quelle sind die enumitem-Labels `label=\alph*)` /
+    # `label=\arabic*)` (gewolltes a)-b)-c)-Layout, 4 ungpaarte `)`); W17 ist weder zeilen- noch
+    # kommentar-supprimierbar (Pseudo-Zeilen > EOF, Kommentare zaehlen nicht). Echte Klammer-Fehler
+    # faengt weiterhin der thesis:pdf-Compile (halt-on-error).
+    - 'find . -name "*.tex" -not -path "./_*" -print0 | xargs -0 -r chktex -q -n36 -n17'
 
 # ── thesis-PDF (latexmk) — TeXLive = Infra-Voraussetzung ──
 thesis:pdf:
