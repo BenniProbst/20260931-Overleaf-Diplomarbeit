@@ -45,8 +45,12 @@ lint:latex:
   script:
     - 'command -v chktex >/dev/null 2>&1 || { echo "chktex (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
     - 'echo "== chktex ueber alle .tex =="'
-    # REV2 (Codex-Befund): KEIN `|| true` mehr — chktex-Befunde bleiben als allow_failure-Job sichtbar (advisory, nicht blockierend)
-    - 'find . -name "*.tex" -not -path "./_*" -print0 | xargs -0 -r chktex -q'
+    # REV2 (Codex-Befund): KEIN `|| true` mehr — chktex-Befunde bleiben sichtbar.
+    # Dash-/Identifier-Konventionen des Dokuments: .chktexrc (Repo-Root, wird via CWD gelesen).
+    # -n36 (Space vor/nach Klammer): alle 251 Befunde klassifiziert (2026-07-06) = ausnahmslos
+    # False-Positives auf Code-Identifiern (create_anatomy(), zipfian(.99), \allowbreak-Namen)
+    # und deutschen Klammer-Komposita ((Bundle-)Prefetch) — 0 echte Prosa-Spacing-Fehler.
+    - 'find . -name "*.tex" -not -path "./_*" -print0 | xargs -0 -r chktex -q -n36'
 
 # ── thesis-PDF (latexmk) — TeXLive = Infra-Voraussetzung ──
 thesis:pdf:
