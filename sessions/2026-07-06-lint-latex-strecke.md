@@ -31,3 +31,15 @@ In-Zeilen-Edits. PDF-Bauprobe lokal mit ALLEN CI-Gates: EXIT=0, Warnings=1 (=erl
 2. **W1 (284)** Command-Space (`\foo Text` → `\foo{} Text` bzw. `{\foo}`) — mechanisch, aber Policy klären (viele in Tabellen/Makros).
 3. Rest-Klassen: W31 (22), W24 (20), W11 (16), W27 (12), W6/W32/W17 (je 5), Kleinstmengen.
 4. DANN: `allow_failure: true` aus lint:latex entfernen (.gitlab-ci.yml Z. 42) + Grün-Beweis.
+
+## Welle 3+4 (FINAL): W1 284→0 + Restklassen 99→0 — lint:latex HART
+- W1: \endhead-Klasse 160x %-terminiert, \allowbreak{}/\textbackslash{} 74x praezisiert, Sprachschalter 8x space-frei.
+- Echte Mikro-Fixes: W6 italic correction 3x (\/), W2 ~\cite 2x, W32 \enquote 4x ('ja'/'yes'/'Old is Gold'),
+  W26 != -> $\neq$ 2x, W24 caption%-Zeilenende 10x (GENERATOR-Klasse: gleicher Fix gehoert in den
+  ce-LaTeX-Export-Emitter, sonst kehrt W24 bei Regeneration zurueck!), W11 URL-Auslassungen -> \ldots 12x
+  + catch(...) -> \texttt + Suppression 2x.
+- 42 dokumentierte Zeilen-Suppressions (W31 tikz-Verschachtelung, W27 \thesislang-\include-Mechanik,
+  W29 Produktnamen, W9/W10 Intervall-/Label-Syntax) + -n17 im CI-Aufruf (enumitem-\alph*)-Labels,
+  nicht zeilen-supprimierbar — echte Klammer-Fehler faengt thesis:pdf/halt-on-error).
+- chktex GESAMT = 0 (CI-identischer Aufruf), PDF-Bauprobe je Welle: EXIT=0, Warnings=1 (=erlaubt), blg=0.
+- lint:latex allow_failure ENTFERNT (Streckenziel erreicht).
