@@ -12,6 +12,14 @@ Baseline 964 Warnungen (Job 213722 == lokal identisch) → **589** (CI-Job 21495
 | W8 Dash-Länge | 138 | **0** | `.chktexrc`-Konvention (HyphDash {1 2}, WordDash {2 3}, NumDash {1 2}) + 8 echte Jahresspannen manuell auf en-dash (Lea 1987--2012 ×4, Vyukov 2010--11 ×4). chktex 1.7.9 kennt für Ziffern-Dashes KEINE DashExcpt-Ausnahmen (empirisch bewiesen) — darum NumDash {1 2} für die Identifier-Population (x86-64, ISBN 978-3-…, ISO-Daten, CC0-1.0, Intel-Doc-Nummern). |
 | W36 Klammer-Spacing | 251 | **0** | ALLE 251 klassifiziert (Skript + manuelle Stichproben jedes Nicht-CODE-Falls): ausnahmslos False-Positives auf Code-Identifiern (`create_anatomy()`, `zipfian(.99)`, `\allowbreak`-Namen Anhang D), Options-Syntax (`\alph*)`), deutschen Klammer-Komposita (`(Bundle-)Prefetch`). → `-n36` im CI-Aufruf, dokumentiert in `.gitlab-ci.yml`. |
 
+## Welle 2 (Commit 4936e97): W13 105→0, W12 101→0 — gesamt 589→379
+203 Spacing-Markierungen: Caret-genaue Ernte (chktex-Standardformat geparst — `%c`-Formatstring ist
+UNBRAUCHBAR, zeigt Wipe-Buffer-Spalten; `\input`-Duplikate dedupliziert), 174 automatisch klassifiziert
+(3 Caret-Lagen: auf Satzzeichen / auf Space danach / auf Folgewort), 29 manuell einzeln entschieden.
+Fixe: `\@` vor Satzzeichen nach Großbuchstaben/Ziffern/Klammern (Satzende-Markierung, layout-korrekt bei
+babel-ngerman OHNE frenchspacing); `.\ ` nach echten Abkürzungen (vs./bzw.). Diff-Audit 180/180 nur
+In-Zeilen-Edits. PDF-Bauprobe lokal mit ALLEN CI-Gates: EXIT=0, Warnings=1 (=erlaubt), blg=0.
+
 ## Nächste Wellen (Reihenfolge)
 1. **W13 (105) + W12 (101)** — ECHTE kontextgenaue Fixes, KEINE Policy:
    - W13: `\@` vor Punkt nach GROSSBUCHSTABEN-Abkürzung am Satzende (`PRT-ART\@.` , `…-API\@.`) — TeX setzt sonst nur Wortabstand.
