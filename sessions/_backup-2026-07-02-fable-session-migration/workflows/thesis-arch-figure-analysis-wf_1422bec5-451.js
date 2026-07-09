@@ -1,0 +1,52 @@
+export const meta = {
+  name: 'thesis-arch-figure-analysis',
+  description: 'Investigate cache-engine/prt-art/Diplomarbeit code architecture to ground thesis figure corrections',
+  phases: [
+    { title: 'Investigate', detail: '7 parallel readers: anatomy/tier, axes, inter-axis usage, build+measure pipeline, measurement gap, arch state, + web SiL' },
+    { title: 'Synthesize', detail: 'write code-grounded figure-correction analysis to sessions/' },
+  ],
+}
+
+const BASE = 'C:/Users/benja/OneDrive/Desktop/Diplomarbeit - Datenbanken'
+const CE   = BASE + '/Code/external/comdare-cache-engine'
+const PRT  = BASE + '/Code/external/comdare-prt-art'
+const DCODE = BASE + '/Code'
+const SESS = BASE + '/thesis/diplomarbeit/sessions'
+
+const FIG_FEEDBACK = `Prof. Habich figure feedback on the thesis (DE/EN), by figure LABEL (printed numbers approximate, VERIFY against PDF):
+- fig:design-space (~2.1): axes labelled generically (i/j/k) need a LEGEND with the REAL axis names; could be more dimensions but keep 3 for illustration. ALSO add a NEW figure: a Latency/Throughput/Memory trade-off TRIANGLE spanning the whole axis-permutation against these 3 measurement components (the search-tree trade-off). NOTE: this measurement component (node/data/index + cache-aware behaviour) is MISSING in the implementation.
+- (some figure ~2.2) renders EMPTY (only caption) -> find which (candidates fig:search-map or fig:cache-line).
+- fig:axis-organ + fig:usage (~2.6/2.7): axes CAN (optionally) use the interfaces of other axes but MUST NOT; current depiction is incomplete -> needs thorough CODE analysis for an accurate inter-axis usage graph.
+- fig:genera (~2.9): INCORRECT. Each tier-binary of a search algorithm is its OWN tier; the hierarchy goes much DEEPER. Containers house e.g. only "reptiles"; SearchAlgorithms only "mammals" under a std::map hull. Need the REAL genus->tier->concrete-binary hierarchy.
+- fig:patterns (~2.10): correct but must be checked fine-grained against the code; the 19 axes were dissected from the code -> trace the conceptual breakdown multi-stage at code level.
+- fig:one-architecture (~2.11) + fig:uml-interfaces (~2.13): need finer breakdown of the abstraction classes; an "anatomy" (per old thesis text) describes the relationships BETWEEN all components, and IExecutionEngine is the DRIVER of the measurement.
+- fig:m-model (~3.1): correct that the pipeline has 7 phases, but the INTERESTING phases are the BUILD+MEASURE phases of the Diplomarbeit code and the CacheEngineBuilder, which builds TIER-BINARIES by configuration and measures them.
+- fig:heuristic-loop (~3.4): perfect; RESEARCH whether known "Software-in-the-Loop" systems use this measure->profile->config->filter cycle, to cite external sources.
+- fig:pipeline (~4.1): coincides with the m-model pipeline changes and must ALSO be extended (build+measure emphasis, CacheEngineBuilder tier-binary build+measure).`
+
+phase('Investigate')
+const tasks = [
+  { key: 'anatomy_tier', prompt: `Read-only investigation for the thesis figure corrections fig:genera and fig:one-architecture. Explore the ANATOMY / genus / tier hierarchy in ${CE} (look especially in anatomy/ and any anatomy_base.hpp, plus libs/, for AnatomyGattung, AnatomyGenus, IAnatomyBase, IExecutionEngine, the tier-subclass enum, SearchAlgorithmAnatomy, the ABI adapter). REPORT the REAL hierarchy with file:line: (a) the genera (level 1) and their tier-subclasses (level 2); (b) whether a concrete search-algorithm BINARY is itself a distinct "tier/animal" and how the hierarchy goes deeper than the current 3-level figure; (c) whether the Container genus houses only "reptile"-type tiers and SearchAlgorithm only "mammal"-type under a std::map hull; (d) the exact role of IExecutionEngine (is it the measurement DRIVER over everything measurable?). Be concrete.` },
+  { key: 'axes_dissection', prompt: `Read-only investigation for the thesis (fig:patterns and the planned per-axis AXIS-T0..T18 figures). Explore the 19 composition axes + sub-axes in ${CE} (axis_<nn>_<name> directories under topics/ or libs/, the sub-axis families, the Concept + CRTP + std::variant pattern, resolve_baustein). REPORT with file:line: the real axis list T0-T18 (+ the 3 build axes) and their sub-axes (e.g. SA1-SA4 for search, AA1-AA7 for allocator), how each axis is structured in code (TopicConcept/AxisConcept/CRTP-base/variant), and how the 19-axis dissection is organized. This grounds a faithful multi-stage conceptual breakdown.` },
+  { key: 'inter_axis_usage', prompt: `Read-only investigation for thesis figures fig:axis-organ and fig:usage (the inter-organ usage graph). In ${CE}, find which axes EXPOSE a generalized interface that OTHER axes CAN use (optionally, not mandatorily) -- e.g. the allocation axis providing a shared allocation interface consumed by layout/value/serialization, prefetch using layout, concurrency wrapping node-type, etc. REPORT with file:line the REAL directed inter-axis usage relationships and clearly mark which are OPTIONAL (can-use) vs the canonical documented ones, so the figure can show the true graph.` },
+  { key: 'build_measure', prompt: `Read-only investigation for thesis figures fig:m-model and fig:pipeline. Explore the BUILD + MEASURE pipeline: in ${CE}/apps (the CacheEngineBuilder and the ExperimentDriver and its seven phases Enumerate/Codegen/Compile/Load/Execute/Measure/Persist) AND in ${DCODE}/02_messung_driver and ${DCODE} (the Diplomarbeit measurement orchestrator, experiment_config). REPORT with file:line: the REAL build+measure flow, WHICH subsystem builds the TIER-BINARIES by configuration and WHICH measures them, and which phases are the substantively interesting ones (the Diplomarbeit-code measure phase + the CacheEngineBuilder per-config tier-binary build+measure) vs the mechanical ones. This will extend both figures.` },
+  { key: 'measurement_gap', prompt: `Read-only investigation for a NEW thesis figure (a Latency/Throughput/Memory trade-off triangle) and a noted implementation gap. In ${CE} and ${DCODE}, find the measurement categories/records actually collected (ResultAggregator, measurement records, the metric set -- cache-line utilization, cache/dTLB/branch misses, IPC/CPI, latency percentiles, throughput, memory footprint, energy). REPORT with file:line: which of Latency / Throughput / Memory-consumption are measured today, and whether there is a node/data/index-level and cache-aware measurement component -- the user says this measurement component is MISSING. Confirm what exists vs the gap.` },
+  { key: 'arch_state', prompt: `Read-only investigation: summarize the CURRENT architecture state and OPEN implementation projects across the three repos. Read the docs/sessions and architecture docs: ${CE}/docs (INDEX.md, architektur/, architecture/, sessions/, status/, ERWEITERUNGS-LEITFADEN.md), ${PRT}/docs and ${PRT}/FINDINGS_REV7_6_prt_art.md and ${PRT}/STRUCTURAL_CORRECTION_prt_art.md, ${BASE}/docs, ${BASE}/PROJECT_LAYER_MAP.md, ${BASE}/FINDINGS_REV7_6_diplomarbeit.md, ${BASE}/STRUCTURAL_CORRECTION_diplomarbeit.md. REPORT: the current state (what is implemented, what is stub/skeleton, what is in progress), the major open implementation projects, and anything where the thesis TEXT may diverge from the code reality. Cite doc paths.` },
+  { key: 'sil_research', prompt: `Web research for a thesis citation. The thesis has a "heuristic loop" (fig:heuristic-loop): measurement -> XML load-profile -> best axis configuration -> workload filter -> back to measurement; i.e. a measurement-driven, automatically-tuned configuration-selection feedback loop. Search the web for ESTABLISHED "Software-in-the-Loop" (SiL) and related autotuning / measurement-driven configuration-selection systems that use such a feedback cycle, that we should cite as external software-technology prior art. Candidates to check: OpenTuner, ATLAS/auto-tuned libraries, active harmony, MLIR/compiler autotuners, ML-based index/config advisors, X-in-the-loop (MiL/SiL/HiL) testing. REPORT concrete citable works with authors, year, venue, and a one-line relevance note.` },
+]
+const findings = await parallel(tasks.map(t => () =>
+  agent(t.prompt, { label: 'inv:' + t.key, phase: 'Investigate', agentType: 'Explore' }).then(r => ({ key: t.key, text: r }))
+))
+
+phase('Synthesize')
+const bundle = findings.filter(Boolean).map(f => '### FINDING: ' + f.key + '\n' + f.text).join('\n\n')
+const summary = await agent(
+  'You are the synthesis writer for a TU-Dresden diploma thesis. Using the FIGURE FEEDBACK and the INVESTIGATION FINDINGS below, write an ELABORATE, code-grounded analysis document that, PER flagged figure, ties the real architecture to the concrete correction needed, plus an architecture-state section and the SiL citation candidates.\n\n' +
+  'WRITE the document with the Write tool to this absolute path:\n' + SESS + '/2026-06-30-architektur-analyse-bild-korrekturen.md\n\n' +
+  'Required sections: (0) summary + how to use; (1) per-figure correction guidance grounded in code (fig:design-space legend + NEW Latency/Throughput/Memory triangle + the missing node/data/index cache-aware measurement component; the empty-figure check; fig:axis-organ/fig:usage real OPTIONAL inter-axis usage graph; fig:genera the REAL deeper genus->tier->concrete-binary hierarchy with Container=reptile-only / SearchAlgorithm=mammal-under-std::map; fig:patterns code-grounding; fig:one-architecture + fig:uml-interfaces finer abstraction-class breakdown with anatomy=relationships-between-all and IExecutionEngine=measurement driver; fig:m-model + fig:pipeline build+measure emphasis with CacheEngineBuilder building tier-binaries by config and measuring); (2) the REAL genus/tier hierarchy (concrete, file:line); (3) the REAL build+measure pipeline (concrete); (4) the measurement categories + gap; (5) SiL citation candidates (author/year/venue); (6) current architecture state + open implementation projects + any text-vs-code divergences. Use file:line citations wherever the findings provide them. Be concrete and exhaustive; this drives the next work session.\n\n' +
+  'FIGURE FEEDBACK:\n' + FIG_FEEDBACK + '\n\n' +
+  'INVESTIGATION FINDINGS:\n' + bundle + '\n\n' +
+  'After writing the file, return a concise 6-line summary of the most important findings and the file path.',
+  { label: 'synthesize+write', phase: 'Synthesize', agentType: 'general-purpose' }
+)
+return { wrote: SESS + '/2026-06-30-architektur-analyse-bild-korrekturen.md', summary }
