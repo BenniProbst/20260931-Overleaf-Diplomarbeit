@@ -10,7 +10,7 @@ einzeln und bildhaft, schließlich die Achsen-Implementierung und die Ebenen des
 Die Implementierung verteilt sich auf drei Git-Repositorien mit klar getrennten Verantwortlichkeiten:
 \begin{itemize}
   \item \texttt{comdare-cache-engine} --- \textbf{wie} gemessen wird: die Bausteine-Bibliothek und der
-  Builder (XML-Config-Parser, \texttt{generate\_\allowbreak module\_\allowbreak from\_\allowbreak profile}-Codegenerierung,
+  Builder (XML-Config-Parser, \texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile}-Codegenerierung,
   Permutations-Schleife, Modul-Loader und der sieben-phasige \texttt{ExperimentDriver}), die ABI-Header,
   30~SOTA-Profile unter \texttt{algorithm\_profiles/sota} und die Test-Suites; der Quellbaum folgt einem
   Pitchfork-Layout (\texttt{apps/}, \texttt{libs/}, \texttt{libs/common}).
@@ -32,9 +32,9 @@ Abschnitt~\ref{sec:measurement-system}) liefert der konkrete Laufzeit-Adapter
 \texttt{SearchAlgorithmAbiAdapter<A>} über die \texttt{SearchAlgorithmAnatomy} die
 OS-Primitiven (cache-line-ausgerichtete Allokation, NUMA-konformes Read-Pinning, kohärenz-bewusstes
 Schreiben); die Mess- und Observer-Kopplungen des Adapters sind über
-\texttt{COMDARE\_\allowbreak MEASUREMENT\_\allowbreak ON} gegated, und den Mess-Aggregator führt der
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gegated, und den Mess-Aggregator führt der
 \texttt{ExperimentDriver} host-seitig (eine CMake-Option
-\texttt{COMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE} existiert, verdrahtet dieses Gating derzeit
+\texttt{COMDARE\_\allowbreak{}EXPERIMENT\_\allowbreak{}MODE} existiert, verdrahtet dieses Gating derzeit
 aber nicht). Kurz: Die \texttt{CacheEngine} liefert die \emph{Bausteine}, die
 \texttt{ExecutionEngine} die \emph{Werkzeuge}; diese Trennung hält den Produktiv-Pfad mess-frei.
 
@@ -74,7 +74,7 @@ von PRT-ART, je an ihrer Achse verortet.
   \node[pa] (p4) at (0,-2.85){\textbf{MultiLevel-Layout}\\{\scriptsize Achse T5}\\[2pt]{\tiny mehrstufiges Speicher-Layout über die Knotenebenen; layout-getriebener Stride (CLA 64-Byte vs.\ AoS 16-Byte)}};
   \node[pa] (p5) at (5.1,-2.85){\textbf{Kohärenz-bewusste Telemetrie}\\{\scriptsize Achse T10}\\[2pt]{\tiny Leaf-Only-Zähler (Haupt), Sampling (jeder $N$-te), Offline-Recompute; Per-Node-Zähler nur als Anti-Pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{DensityTracker $+$ H1/H2/H3}\\{\scriptsize Achse T10 (eigene Organe)}\\[2pt]{\tiny eigene Mess-Organe: Belegungsdichte-Tracker und die drei Hypothesen-Metriken des Prüflings}};
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+1+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die Kacheln zeigen die \emph{Bausteine des Prüfling-Repos}; im Apparat überschrieben sind derzeit T7/T8/T10, die Bausteine zu T5/T6 laufen dort noch über den Cache-Engine-Standard (E6). Die übrigen vierzehn Kompositions-Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
 \end{figure}
 
@@ -116,7 +116,7 @@ Programme --- \texttt{sample\_data\_generator} (deterministische Testdaten ohne 
 \texttt{messung\_driver} (steuert die Reihen) $\to$ \texttt{binary\_to\_csv} (deserialisiert die binären
 Mess-Records) $\to$ \texttt{csv\_to\_latex} (booktabs-Tabellen mit Algorithmus-Steckbriefen je Permutations-ID)
 $\to$ \texttt{diagram\_generator} (A4-bewusste TikZ-Plots) $\to$ \texttt{latex\_to\_pdf} ---; die
-Mess-Kopplungen sind über das \texttt{COMDARE\_\allowbreak MEASUREMENT\_\allowbreak ON}-Gating vom
+Mess-Kopplungen sind über das \texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}-Gating vom
 Produktiv-Pfad getrennt, sodass dieser keinen Mess-Overhead trägt, und Continuous Integration (GitLab CI plus
 gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
 % AXIS-T0..T18-Galerie: fig:axes-gallery (4.3) ERLEDIGT
@@ -146,7 +146,7 @@ gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
   \node[pb] (b1) at (2.0,-3.95){\textbf{BUILD} \texttt{Build\-Orchestrator}: baut \emph{alle} Tier-Binaries zuerst (resumierbar, RAM-gewahr)};
   \node[pb] (b2) at (8.0,-3.95){\textbf{MEASURE} \texttt{perm\_runner}: laedt $+$ misst jede Tier-Binary einzeln (1 DLL/Prozess, via \texttt{IObservableTier})};
   \draw[->,very thick] (b1)--node[above,font=\scriptsize]{Tier-Binaries} (b2);
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{Die Mess-Pipeline in zwei Ausprägungen. \textbf{Pfad~A} (oben) ist die in-process
 Sieben-Phasen-Pipeline des \texttt{ExperimentDriver} je Messreihe (Enumerate $\to$ Codegen $\to$ Compile
 $\to$ Load $\to$ Execute $\to$ Measure $\to$ Persist; zwei opt-in-Phasen kompilieren fehlende Module hot
@@ -186,7 +186,7 @@ allen Herkunfts-Quellen führt Anhang~\ref{app:blocks}, die SOTA-Beiträge je Ac
   \node[ax] (t17) at (7.2,-7.2){\textbf{T17 Op.-Puffer}\\{\tiny QS1--QS6}\\{\tiny Kein, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Std.\ Kein-Puffer}};
   \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush-Policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptiv-LSM}\\{\tiny\itshape Std.\ Lazy}};
   \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Lesart}\\{\tiny Jede Achse $=$ ein \texttt{Concept} mit austauschbaren Bausteinen (\emph{Strategy}); eine Composition wählt je Slot genau einen.}};
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{Galerie der neunzehn Kompositions-Achsen (T0--T18): je Achse das Implementierungs-Konzept --- Kurzname, Sub-Achsen-Familie und eine repräsentative Auswahl der austauschbaren Bausteine. Jede Achse ist ein \texttt{Concept}-Interface mit mehreren Strategie-Bausteinen (\emph{Strategy}-Muster); eine konkrete Composition belegt je Slot genau einen. Der \emph{Standard} (\enquote{Std.}) ist eine abgeleitete Vergleichs-Baseline, kein Code-Flag; bei den großen Achsen T0/T6/T17 ist die Gesamt-Bausteinzahl in Klammern angegeben. Die vollständige Matrix mit Herkunfts-Quellen führt Anhang~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
 

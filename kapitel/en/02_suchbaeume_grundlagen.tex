@@ -44,13 +44,13 @@ abstraction is already located conceptually: every algorithm is a point in a sha
 \caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it. For illustration, three of the nineteen axes are chosen --- the real storage organ of node type~(T4), memory layout~(T5) and allocator~(T6); the full design space has nineteen dimensions.}\label{fig:design-space}
 \end{figure}
 Search structures can be classified by the mechanism with which they map a key to a
-record~\cite{knuth1998taocp3}. \emph{Comparison-based} structures locate the key via order comparisons
+record~\cite{knuth1998taocp3}\@. \emph{Comparison-based} structures locate the key via order comparisons
 and presuppose a total order --- from the self-balancing AVL~\cite{adelsonvelsky1962avl} and red-black
 trees~\cite{bayer1972symmetric,guibas1978redblack} through the block- and external-memory-oriented
 B/B\textsuperscript{+} trees~\cite{bayer1972btree,comer1979btree}, whose nodes typically correspond to a
 cache or memory block size~\cite{graefe2001btree,hankins2003nodesize}, to the main-memory-oriented
 T-tree~\cite{lehman1986ttree}, which combines node-local value ranges with AVL balancing and thereby
-reduces the number of pointer indirections per search step. \emph{Digital} structures, by contrast, branch on the bytes of the key
+reduces the number of pointer indirections per search step.\ \emph{Digital} structures, by contrast, branch on the bytes of the key
 rather than by comparison, so that the search-path length depends on the key length and not on the
 number of keys: the \emph{trie}~\cite{delabriandais1959trie,fredkin1960trie} as the basic form, in which every root
 path spells out a key and common prefixes are shared, the
@@ -62,7 +62,7 @@ this thesis as the reference design.
 Beyond the tree-like methods, \emph{hashing} maps keys directly via a hash function and has no inherent
 order, which makes range queries expensive~\cite{knuth1998taocp3}; cuckoo hashing~\cite{pagh2004cuckoo}
 and SIMD-accelerated tables such as SwissTable~\cite{abseil_swisstable} stand alongside this work as a
-non-tree-like baseline. \emph{Spatial} structures (k-d tree~\cite{bentley1975kdtree},
+non-tree-like baseline.\ \emph{Spatial} structures (k-d tree~\cite{bentley1975kdtree},
 quadtree~\cite{finkel1974quadtree}, R-tree~\cite{guttman1984rtree}) partition a multidimensional key
 space and lie outside the scope, as do the theoretical \enquote{exotics} --- the van Emde Boas
 tree~\cite{vanemdeboas1975} and the y-fast trie~\cite{willard1983yfast} with $O(\log\log u)$ over a
@@ -150,7 +150,7 @@ contribution; all thus appear as points in the common design space.
   \node[so] (c2) at (4.3,-4.8){\textbf{CSS-Tree} {\scriptsize(P11)}\\{\tiny cache-sensitive}\\[1pt]{\tiny pointerless implicit tree, arithmetic navigation}\\{\tiny\itshape axes T4, T5}};
   \node[so] (c3) at (8.6,-4.8){\textbf{CSB\textsuperscript{+}-Tree} {\scriptsize(P12)}\\{\tiny cache-sensitive}\\[1pt]{\tiny B\textsuperscript{+} with \emph{one} child-group pointer}\\{\tiny\itshape axes T4, T5}};
   \node[draw,rounded corners,fill=blue!8,minimum width=4.0cm,minimum height=2.0cm,text width=3.75cm,align=center,inner sep=2pt] (c4) at (12.9,-4.8){\textbf{SwissTable}\\{\tiny Hash (control)}\\[1pt]{\tiny SIMD control bytes; non-tree, in the same axis system}\\{\tiny\itshape axes T0, T12}};
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{Gallery of the most important reconstructed search structures: per method (with paper ID) its origin class, the characteristic structural idea and the axes at which it makes its main contribution. Trie, hybrid, succinct and cache-sensitive methods stand next to a non-tree hash control (SwissTable) --- all as points in the same axis design space. The complete axis dissection is given in Table~\ref{tab:axes-overview}.}\label{fig:sota-gallery}
 \end{figure}
 
@@ -358,10 +358,10 @@ Composing these pairwise couplings across all organs yields a directed inter-org
   \draw[->,dashed,gray] (store)--(prefetch) node[midway,above,font=\scriptsize]{can};
   \draw[->,dashed,gray] (store)--(obs);
   \draw[->,dotted,gray] (conc)--(store);
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{Inter-organ usage graph (\enquote{which axis uses which}): there is exactly \emph{one} canonical
 hub --- the storage organ \texttt{LayoutAwareChunkedStore}, which composes node type~(T4), layout~(T5) and
-allocator~(T6). \emph{Mandatorily} (solid) the store consumes these three axes, and the search~(T0) runs
+allocator~(T6)\@. \emph{Mandatorily} (solid) the store consumes these three axes, and the search~(T0) runs
 over it. All remaining couplings are \emph{optional} (dashed): prefetch~(T7) and telemetry~(T10) read the
 store only via \texttt{requires}-gated observer hooks --- an axis \emph{can} use foreign interfaces, but
 \emph{need} not. The coupling of concurrency~(T8) to the store is not (yet) wired in the code
@@ -423,8 +423,8 @@ restricted axis subset of the same genus.
   \node[drill] (l4) at (-1.6,-4.25){\textbf{Level 4 --- concrete animal:} one assignment of \emph{all} axes $=$ one individual (ART, HOT, Masstree, SuRF, START, Wormhole; $+$5 paper bindings)};
   \node[drill,fill=orange!20,very thick] (l5) at (-1.6,-5.65){\textbf{Level 5 --- animal binary:} compiled per permutation to \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, refined by 3 build axes (page type, SIMD, hardware)};
   \draw[->,thick] (s1)--(l3); \draw[->,thick] (l3)--(l4); \draw[->,thick] (l4)--(l5);
-\end{tikzpicture}}
-\caption[The three genera and the tier hierarchy down to the compiled binary]{The genus/tier hierarchy across five levels. \texttt{SearchAlgorithm}, \texttt{Container} and \texttt{Graph} are the three \emph{genera} (level~1, outer interface). Each genus hosts its \emph{own} tier subclasses (level~2): \texttt{SearchAlgorithm} exclusively the \enquote{mammal} (\texttt{map} hull, full nineteen-axis anatomy), \texttt{Container} every \emph{non}-mammal subclass (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} still-open ones. The mammal branch is drawn out here down to the individual: the nineteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone animal binary (level~5, additionally identity-refined by three build axes). \emph{Every animal binary is thus an animal of its own}; the hierarchy reaches from the genus down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
+\end{tikzpicture}} % chktex 31
+\caption[The three genera and the tier hierarchy down to the compiled binary]{The genus/tier hierarchy across five levels. \texttt{SearchAlgorithm}, \texttt{Container} and \texttt{Graph} are the three \emph{genera} (level~1, outer interface). Each genus hosts its \emph{own} tier subclasses (level~2): \texttt{SearchAlgorithm} exclusively the \enquote{mammal} (\texttt{map} hull, full nineteen-axis anatomy), \texttt{Container} every \emph{non}-mammal subclass (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} still-open ones. The mammal branch is drawn out here down to the individual: the nineteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone animal binary (level~5, additionally identity-refined by three build axes)\@. \emph{Every animal binary is thus an animal of its own}; the hierarchy reaches from the genus down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
 \end{figure}
 
 The actual contribution thus lies less in a single structure than in a \emph{tool}: instead of solving the
@@ -509,7 +509,7 @@ beneath the same root but carry no anatomy.
     \draw[->] (sa) -- (abi);
     \draw[->] (body) -- (comp);
     \draw[->] (comp) -- (bin);
-  \end{tikzpicture}}
+  \end{tikzpicture}} % chktex 31
   \caption{The \emph{one} architecture as a single hierarchy without parallel trees. At the root stands
   \texttt{IExecutionEngine} as the \emph{driver of measurement} --- the universal measurable contract
   (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) across all three engine kinds Anatomy,
@@ -537,7 +537,7 @@ extern "C" IAnatomyBase* comdare_create_anatomy();
 //   N > 2        ->  std::map<K,std::tuple<V1,...,VN>>
 template<class... Ts> class SearchEngine; // ABI-runtime view of the being
 \end{lstlisting}
-  \caption{The ABI-stable C module boundary and the variadic hybrid API. Complex keys are reduced by a
+  \caption{The ABI-stable C module boundary and the variadic hybrid API\@. Complex keys are reduced by a
   fingerprint component to 16-byte binary strings of fixed length.}\label{fig:abi}
 \end{figure}
 To compare structurally different search algorithms \emph{fairly}, the thesis maps them all onto a single,
@@ -624,10 +624,10 @@ performance counters --- is not yet collected in the current implementation stat
   \node[iface] (resolve) at (4.9,0.3){resolve\_baustein<Tag>};
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{composes 19 axes} (topic.west);
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase} and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the nineteen axes) and its ABI-runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), measured and driven through the \texttt{IDriveableTier}/\texttt{IObservableTier} contracts; on the right the per-axis implementation pattern repeated for each axis --- a two-layer \texttt{Concept}, a \texttt{requires}-guarded CRTP base, the \texttt{mp\_list} building-block family, and the compile-time resolution \texttt{resolve\_baustein}, which chooses per axis between the probe slot and the cache-engine default.}\label{fig:uml-interfaces}
 \end{figure}
 
 With this, the software means are assembled: the axes as organs, the \emph{one} architecture with its
 measurable root, and the scientific measurement patterns. Chapter~\ref{ch:measurement} composes exactly
-these building blocks into the measurement system and demonstrates it on the probe PRT-ART.
+these building blocks into the measurement system and demonstrates it on the probe PRT-ART\@.

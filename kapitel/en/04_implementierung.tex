@@ -10,7 +10,7 @@ and visually, finally the axis implementation and the levels of the measurement 
 The implementation is distributed across three Git repositories with clearly separated responsibilities:
 \begin{itemize}
   \item \texttt{comdare-cache-engine} --- \textbf{how} measurement is done: the building-block library and the builder
-  (XML config parser, \texttt{generate\_\allowbreak module\_\allowbreak from\_\allowbreak profile} code
+  (XML config parser, \texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile} code
   generation, permutation loop, module loader, and the seven-phase \texttt{ExperimentDriver}), the ABI
   headers, 30~SOTA profiles under \texttt{algorithm\_profiles/sota}, and the test suites; the source tree
   follows a Pitchfork layout (\texttt{apps/}, \texttt{libs/}, \texttt{libs/common}).
@@ -32,9 +32,9 @@ Section~\ref{sec:measurement-system}) the concrete runtime adapter
 \texttt{SearchAlgorithmAbiAdapter<A>} provides, via the \texttt{SearchAlgorithmAnatomy}, the OS
 primitives (cache-line-aligned allocation, NUMA-conformant read pinning, coherence-aware writing); the
 adapter's measurement and observer couplings are gated by
-\texttt{COMDARE\_\allowbreak MEASUREMENT\_\allowbreak ON}, and the measurement aggregator is kept
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}, and the measurement aggregator is kept
 host-side by the \texttt{ExperimentDriver} (a CMake option
-\texttt{COMDARE\_\allowbreak EXPERIMENT\_\allowbreak MODE} exists but does not currently wire this
+\texttt{COMDARE\_\allowbreak{}EXPERIMENT\_\allowbreak{}MODE} exists but does not currently wire this
 gating). In short: the \texttt{CacheEngine} provides the \emph{building blocks}, the
 \texttt{ExecutionEngine} the \emph{tools}; this separation keeps the production path measurement-free.
 
@@ -72,7 +72,7 @@ located at its axis.
   \node[pa] (p4) at (0,-2.85){\textbf{Multi-level layout}\\{\scriptsize axis T5}\\[2pt]{\tiny multi-level memory layout across the node levels; layout-driven stride (CLA 64-byte vs.\ AoS 16-byte)}};
   \node[pa] (p5) at (5.1,-2.85){\textbf{Coherence-aware telemetry}\\{\scriptsize axis T10}\\[2pt]{\tiny leaf-only counters (main), sampling (every $N$th), offline recompute; per-node counter only as anti-pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{Density tracker $+$ H1/H2/H3}\\{\scriptsize axis T10 (own organs)}\\[2pt]{\tiny own measurement organs: occupancy density tracker and the probe's three hypothesis metrics}};
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a multi-level layout (T5), and cache-coherence-aware telemetry (T10) together with the density tracker and the hypothesis metrics H1/H2/H3. The tiles show the \emph{building blocks of the probe repo}; currently T7/T8/T10 are overridden in the apparatus, while the building blocks for T5/T6 still run there via the cache-engine default (E6). The remaining fourteen composition axes the probe draws via the compile-time fallback from the cache-engine.}\label{fig:prtart-gallery}
 \end{figure}
 
@@ -85,7 +85,7 @@ is resolved for the eleven PRT-ART fallback axes at compile time via \texttt{res
 (concept-checked \texttt{if constexpr} over
 tag specializations), so that the hot path contains neither \texttt{virtual} calls nor runtime switches ---
 the zero-cost abstraction from Section~\ref{sec:software-means}. Every SOTA design and every allocator is
-integrated via a thin \emph{adapter} that provides the original implementation behind the engine ABI:
+integrated via a thin \emph{adapter} that provides the original implementation behind the engine ABI\@:
 allocator vendors are switched on or off at compile time via per-vendor include shims
 (\texttt{\#if COMDARE\_AXIS\_06\_USE\_<X>} with forward stubs), SOTA building blocks via constexpr
 enable flags plus \texttt{mp\_filter} (the \texttt{COMDARE\_AXIS\_*\_USE\_}/\texttt{ENABLE\_} flag
@@ -113,7 +113,7 @@ programs --- \texttt{sample\_data\_generator} (deterministic test data without r
 measurement records) $\to$ \texttt{csv\_to\_latex} (booktabs tables with per-permutation-ID algorithm fact sheets)
 $\to$ \texttt{diagram\_generator} (A4-aware TikZ plots) $\to$ \texttt{latex\_to\_pdf} ---; the
 measurement couplings are separated from the production path by the
-\texttt{COMDARE\_\allowbreak MEASUREMENT\_\allowbreak ON} gating,
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gating,
 so that the latter carries no measurement overhead, and continuous integration (GitLab CI plus a
 mirrored GitHub workflow) runs across all three repositories.
 % AXIS-T0..T18 gallery: fig:axes-gallery (4.3) DONE
@@ -143,7 +143,7 @@ mirrored GitHub workflow) runs across all three repositories.
   \node[pb] (b1) at (2.0,-3.95){\textbf{BUILD} \texttt{Build\-Orchestrator}: builds \emph{all} tier binaries first (resumable, RAM-aware)};
   \node[pb] (b2) at (8.0,-3.95){\textbf{MEASURE} \texttt{perm\_runner}: loads $+$ measures each tier binary individually (1 DLL/process, via \texttt{IObservableTier})};
   \draw[->,very thick] (b1)--node[above,font=\scriptsize]{tier binaries} (b2);
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{The measurement pipeline in two forms. \textbf{Path~A} (top) is the in-process seven-phase pipeline
 of the \texttt{ExperimentDriver} per measurement series (Enumerate $\to$ Codegen $\to$ Compile $\to$ Load
 $\to$ Execute $\to$ Measure $\to$ Persist; two opt-in phases hot-compile missing modules and verify the ABI
@@ -183,7 +183,7 @@ origin sources is given in Appendix~\ref{app:blocks}, the SOTA contributions per
   \node[ax] (t17) at (7.2,-7.2){\textbf{T17 Op. buffer}\\{\tiny QS1--QS6}\\{\tiny None, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Def.\ No-buffer}};
   \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptive-LSM}\\{\tiny\itshape Def.\ Lazy}};
   \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Reading}\\{\tiny Each axis $=$ a \texttt{Concept} with interchangeable building blocks (\emph{Strategy}); a composition picks exactly one per slot.}};
-\end{tikzpicture}}
+\end{tikzpicture}} % chktex 31
 \caption{Gallery of the nineteen composition axes (T0--T18): per axis the implementation concept --- short name, sub-axis family and a representative selection of the interchangeable building blocks. Each axis is a \texttt{Concept} interface with several strategy building blocks (\emph{Strategy} pattern); a concrete composition occupies exactly one per slot. The \emph{default} (\enquote{Def.}) is a derived comparison baseline, not a code flag; for the large axes T0/T6/T17 the total building-block count is given in parentheses. The complete matrix with origin sources is given in Appendix~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
 
