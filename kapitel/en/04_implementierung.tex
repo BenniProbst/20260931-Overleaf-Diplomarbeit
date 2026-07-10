@@ -84,7 +84,7 @@ axis concept) and a CRTP base class secured by a \texttt{requires} clause. The p
 is resolved for the eleven PRT-ART fallback axes at compile time via \texttt{resolve\_baustein.hpp}
 (concept-checked \texttt{if constexpr} over
 tag specializations), so that the hot path contains neither \texttt{virtual} calls nor runtime switches ---
-the zero-cost abstraction from Section~\ref{sec:software-means}. Every SOTA design and every allocator is
+the zero-cost abstraction from Section~\ref{sec:anatomy-model}. Every SOTA design and every allocator is
 integrated via a thin \emph{adapter} that provides the original implementation behind the engine ABI\@:
 allocator vendors are switched on or off at compile time via per-vendor include shims
 (\texttt{\#if COMDARE\_AXIS\_06\_USE\_<X>} with forward stubs), SOTA building blocks via constexpr
@@ -95,6 +95,96 @@ detection define; the integration of hierarchical
 prefetching~\cite{zhang2025hierarchical} additionally provides a compile-time call-graph analyzer
 (\texttt{p27\_bundle\_finder}, a C++23 port of the original tool \texttt{hp\_soft} that identifies
 functions whose subtree footprint exceeds a threshold as bundle entry points).
+
+The \emph{one} architecture from Section~\ref{sec:anatomy-model} is made visible to the outside at code level through an ABI-stable \emph{hull}. The living being
+\texttt{SearchAlgorithm} and its ABI-runtime view --- the \enquote{SearchEngine} --- are merely two views
+of the same entity across the module boundary, not a parallel construct: the layering
+\texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} separates the roles (cf.\ Section~\ref{sec:repos}) ---
+the \texttt{CacheEngine} as the axis building-block library, the \texttt{ExecutionEngine} as the root of
+the execution and measurement tooling (OS primitives; in experiment mode the measurement aggregator over
+exactly one observer interface), and the \texttt{SearchEngine} as the search-API view measured over
+precisely that interface (Figure~\ref{fig:one-architecture}). Axis-less \emph{viruses} stand as siblings
+beneath the same root but carry no anatomy.
+
+\begin{figure}[!htbp]
+  \centering
+  \resizebox{0.95\textwidth}{!}{%
+  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=3pt, text width=3.5cm}]
+    \node[box,fill=blue!8,text width=5.3cm] (root) at (0,0) {\texttt{IExecutionEngine} --- \textbf{driver of measurement}\\{\scriptsize \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown}; measurable contract: Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
+    \node[box] (ana) at (-4.4,-2.1) {\texttt{IAnatomyBase}\\{\scriptsize living being (anatomy genera)}};
+    \node[box] (vir) at (4.4,-2.1) {\texttt{IVirus\-Execution\-Engine}\\{\scriptsize virus (axis-less, yet measurable)}};
+    \node[box] (sa) at (-6.2,-4.1) {SearchAlgorithm genus\\{\scriptsize $\equiv$ \enquote{living being} (mammal)}};
+    \node[box] (cont) at (-2.0,-4.1) {Container genus\\{\scriptsize Set/Sequence/Adapter/View}};
+    \node[box] (graph) at (2.2,-4.1) {Graph genus\\{\scriptsize own organ set}};
+    \node[box] (body) at (-7.4,-6.1) {\texttt{Search\-Algorithm\-Anatomy<C>}\\{\scriptsize \emph{body}: composition $+$ \emph{wiring} of the 19 organs}};
+    \node[box] (abi) at (-3.4,-6.1) {\texttt{Search\-Algorithm\-Abi\-Adapter<A>}\\{\scriptsize ABI-runtime view (\enquote{SearchEngine})}};
+    \node[box,fill=orange!8] (comp) at (-7.4,-7.9) {concrete composition (e.g.\ \texttt{ArtComposition})\\{\scriptsize level 4: assignment of \emph{all} 19 axes $=$ one animal}};
+    \node[box,fill=orange!16] (bin) at (-7.4,-9.9) {animal binary \texttt{comdare\_perm\_\-<fp>.dll}\\{\scriptsize level 5: compiled per permutation $+$ 3 build axes}};
+    \draw[->] (root) -- (ana);
+    \draw[->] (root) -- (vir);
+    \draw[->] (ana) -- (sa);
+    \draw[->] (ana) -- (cont);
+    \draw[->] (ana) -- (graph);
+    \draw[->] (sa) -- (body);
+    \draw[->] (sa) -- (abi);
+    \draw[->] (body) -- (comp);
+    \draw[->] (comp) -- (bin);
+  \end{tikzpicture}} % chktex 31
+  \caption{The \emph{one} architecture as a single hierarchy without parallel trees. At the root stands
+  \texttt{IExecutionEngine} as the \emph{driver of measurement} --- the universal measurable contract
+  (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) across all three engine kinds Anatomy,
+  Virus and Hybrid; beneath it branch the anatomy-bearing \emph{genera} (SearchAlgorithm, Container, Graph)
+  and the axis-less \emph{viruses}. \texttt{SearchAlgorithm} \emph{is} the focal living being (mammal); its
+  anatomy is its \emph{body} --- the fixed composition \emph{and wiring} of the 19 organs ---, and
+  \enquote{SearchEngine} only its ABI-runtime view. The mammal branch is drawn out down to the individual:
+  a concrete axis composition (level~4) is compiled per permutation into a standalone animal binary
+  (level~5). Container (keyless storage) and Graph carry their own organ sets.}\label{fig:one-architecture}
+\end{figure}
+
+Concretely, the module boundary is a C-stable interface that exports exactly one living being per
+permutation; its variadic hybrid API specializes by parameter count, and complex keys are reduced by a
+fingerprint component to 16-byte binary strings of fixed length (Figure~\ref{fig:abi}). How these and the
+remaining code interfaces relate in detail is summarized by the UML map in Figure~\ref{fig:uml-interfaces}.
+
+\begin{figure}[!htbp]
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
+// C-stable module boundary: exports one living being per permutation
+extern "C" IAnatomyBase* comdare_create_anatomy();
+
+// Variadic hybrid API by parameter count (key K, values V):
+//   1 parameter  ->  std::vector<V>
+//   2 parameters ->  std::map<K, V>
+//   N > 2        ->  std::map<K,std::tuple<V1,...,VN>>
+template<class... Ts> class SearchEngine; // ABI-runtime view of the being
+\end{lstlisting}
+  \caption{The ABI-stable C module boundary and the variadic hybrid API\@. Complex keys are reduced by a
+  fingerprint component to 16-byte binary strings of fixed length.}\label{fig:abi}
+\end{figure}
+
+\begin{figure}[htbp]\centering
+\resizebox{0.96\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  iface/.style={draw,rounded corners,fill=blue!7,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize},
+  comp/.style={draw,fill=green!8,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize}]
+  \node[font=\bfseries\scriptsize] at (-4.9,4.7){engine/anatomy hierarchy};
+  \node[iface,minimum height=1.0cm] (exec) at (-4.9,3.95){IExecutionEngine\\{\normalfont\scriptsize driver of measurement}};
+  \node[iface] (anat) at (-4.9,2.55){IAnatomyBase};
+  \node[iface] (virus) at (-0.6,3.95){IVirusExecutionEngine};
+  \node[comp] (body) at (-4.9,1.4){SearchAlgorithmAnatomy<C>};
+  \node[comp] (abi) at (-4.9,0.25){SearchAlgorithmAbiAdapter<A>};
+  \node[iface,fill=orange!10] (drive) at (-4.9,-0.95){IDriveableTier / IObservableTier};
+  \draw[->] (exec)--(anat); \draw[->] (exec.east) to[bend left=10] (virus.west);
+  \draw[->] (anat)--(body); \draw[->] (body)--(abi); \draw[->] (abi)--(drive);
+  \node[font=\bfseries\scriptsize] at (4.9,4.7){per-axis implementation pattern ($\times$19)};
+  \node[iface] (topic) at (4.9,3.9){TopicConcept $\wedge$ AxisConcept};
+  \node[comp] (crtp) at (4.9,2.7){AxisBase<Derived> (CRTP)};
+  \node[comp] (variant) at (4.9,1.5){mp\_list<Baustein$_{1..k}$>};
+  \node[iface] (resolve) at (4.9,0.3){resolve\_baustein<Tag>};
+  \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
+  \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{composes 19 axes} (topic.west);
+\end{tikzpicture}} % chktex 31
+\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase} and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the nineteen axes) and its ABI-runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), measured and driven through the \texttt{IDriveableTier}/\texttt{IObservableTier} contracts; on the right the per-axis implementation pattern repeated for each axis --- a two-layer \texttt{Concept}, a \texttt{requires}-guarded CRTP base, the \texttt{mp\_list} building-block family, and the compile-time resolution \texttt{resolve\_baustein}, which chooses per axis between the probe slot and the cache-engine default.}\label{fig:uml-interfaces}
+\end{figure}
 
 The builder transforms each profile into a pre-compiled C++23 module; each permutation is identified by a
 bit-packed \emph{permutation flag} structure that grows, with the N-phase refinement, from nine banks
