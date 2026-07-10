@@ -1,4 +1,4 @@
-\chapter{Mess-System mit PRT-ART als Demonstration}\label{ch:measurement}
+\chapter{Konzepte eines cache-aware Mess-Systems}\label{ch:measurement}
 
 % [SKELETT] cache-aware-Fokus. Die Aufgabenstellung wird hier SELBST-ERKLÄREND gemacht (niemand liest sie)
 % und greift auf ALLE Belange von Kapitel 2 zurück. ALLE Tabellen liegen in diesem Kapitel.
@@ -92,7 +92,11 @@ Abschnitt~\ref{sec:task-concerns} --- gemessenes Lokalitätswissen statt fest ve
 ignorierter Cache-Bewusstheit ---, der jede Achse als orthogonales, permutierbares und einzeln messbares
 Organ explizit macht. Bei vielen Achsen ist die Antithese keine überholte Fremd-Instanz, sondern die
 implizite Annahme, die Entscheidung gar nicht als wählbar zu betrachten; die Synthese besteht dann darin,
-sie überhaupt als Achse explizit zu machen (in der Ersetzen-Spalte als \enquote{---} markiert).
+sie überhaupt als Achse explizit zu machen (in der Ersetzen-Spalte als \enquote{---} markiert). Zwei
+Cluster-Zuordnungen sind dabei bewusst Näherungen: Die Cache-Traversal-Achse~(T1) bezieht ihre
+Anregungen sowohl aus der Layout-Theorie als auch aus dem Prefetching, und die Reklamations-Unterachse
+des Allokators~(T6) teilt ihre Quellen mit der Synchronisation~(T8) --- eine Inter-Organ-Verdrahtung,
+keine Cluster-Verletzung.
 Tabelle~\ref{tab:dialectic} fasst diese Aneignung je Kompositions-Achse zusammen.
 
 {\footnotesize
@@ -236,11 +240,16 @@ hierarchischem Bündel-Prefetch~\cite{zhang2025hierarchical}; die explizite Hard
 stammt aus Wormhole~\cite{wu2019wormhole}. Die \emph{ISA-Achse} (T12) und die Build-SIMD-Erweiterung führen
 die Vendor-Spezifikationen (x86-64, AArch64, Power, RISC-V mit SSE2/AVX2/AVX-512, NEON/SVE2, RVV). Zwei
 übergreifende Strategie-Achsen halten fest, was ein Algorithmus aktiv \emph{nutzt} bzw.\ wie er Arbeit
-\emph{verteilt} --- die Hardware-Strategie und die Scheduling-Strategie ---, die Tabelle~\ref{tab:hw-sched}
+\emph{verteilt} --- die \emph{Hardware-Strategie} (SIMD-Familie, Cache-Level-Targeting, NUMA,
+Prefetch-Hardware, Atomic-Familie) und die \emph{Scheduling-Strategie} (Worker-Pool-Layout,
+SIMD-Worker-Limit --- hardwarebedingt typisch zwei von $N$ Kernen ---, heterogener P-/E-Kern-Dispatch,
+Co-Routinen und Batch-Granularität) ---, die Tabelle~\ref{tab:hw-sched}
 je Paper zuordnet. Die \emph{Telemetrie-Achse} (T10) instanziiert Density-Tracker~\cite{leis2013art},
 Insert-Zähler~\cite{binna2018hot}, HdrHistogramm und Pfad-Lese-Zähler~\cite{zhang2024pathprefix}; die
-kohärenz-schonenden Leaf-Only-Varianten gehen auf Kuehn~\cite{kuehn2023bplustree} zurück, während der
-Zähler in allen Knoten als \emph{Anti-Pattern} (Cache-Line-Ping-Pong) gilt.
+kohärenz-schonenden Leaf-Only-Varianten gehen auf Kuehn zurück (P28~\cite{kuehn2023bplustree};
+persönliche Kommunikation 2023, über den publizierten DaMoN-2023-Stand zum cache- und
+verteilungsbewussten B\textsuperscript{+}-Layout hinaus), während der
+Zähler in allen (auch inneren) Knoten als \emph{Anti-Pattern} (Cache-Line-Ping-Pong) gilt.
 
 \begin{table}[!htbp]
   \centering\small
@@ -286,7 +295,8 @@ TPC-Familie~\cite{tpc_benchmarks}, die CPU-Suite SPEC~CPU~\cite{spec_cpu2017}, d
 CloudSuite~\cite{ferdman2012cloudsuite} sowie --- für den Allokator-Korpus ---
 mimalloc-bench~\cite{mimalloc_bench} und die Klassiker Larson, threadtest und shbench auf. Da diese
 Frameworks unvergleichbare Lasten erzeugen, abstrahiert die Arbeit sie zu einem gemeinsamen Satz von
-Lastprofilen.
+Lastprofilen; die noch nicht im eigenen Mess-Apparat realisierten Frameworks (TPC, SOSD, SPEC~CPU,
+CloudSuite und die Allokator-Suiten) werden über einen \emph{Datensatz-Lader} angebunden.
 
 \begin{table}[!htbp]
   \caption{Benchmark-Frameworks und nutzende Veröffentlichungen}\label{tab:wl-frameworks}
@@ -465,6 +475,11 @@ VAMPIR~\cite{berthold2023vampir} als Mess-Technologie; die übrigen 30 tragen je
   {\footnotesize \texttt{expected\_workload} = YCSB-Workload-Klasse (A/B/C/E/F).\par}
 \end{table}
 
+Über die Profile hinweg verteilen sich diese Affinitäten auf 13$\times$~YCSB\_C (leselastig),
+9$\times$~YCSB\_A (Zipf-verteiltes Lesen und Aktualisieren), 6$\times$~YCSB\_E (Bereichs-Scans) und
+2$\times$~YCSB\_B (95/5 Lesen/Aktualisieren); PRT-ART selbst ist mit YCSB\_F (Read-Modify-Write, für
+die DensityTracker-Aktualisierungen) getaggt.
+
 Der Kern-Befund dieser Lastprofil-Analyse ist ein systematischer \emph{Bias}: Jede Veröffentlichung wählt
 das Lastprofil, unter dem ihr eigener Entwurf am besten abschneidet. Statische, read-only-orientierte
 Tries und Filter rahmen \enquote{build-once, 100\,\% positive Lookups} und meiden Aktualisierungen;
@@ -490,9 +505,12 @@ Messmethodik der TU Dresden (Habich-Gruppe): Ungethüm et al.~\cite{ungethuem201
 Hardware-Optimierungen für Datenbank-Maschinen, Schmidt et al.~\cite{schmidt2025hbm} vermessen Stride- gegen
 Sequenz-Zugriffe auf HBM, und VAMPIR~\cite{berthold2023vampir} profiliert nicht-funktionale Eigenschaften
 heterogener Speicher. Aus all diesen Technologien ergibt sich der Satz der Mess-Kategorien ---
-Cache-Line-Auslastung, Cache-Misses, dTLB-Misses, Speicher-Fußabdruck, Branch-Misses, IPC/CPI, Latenz,
-Durchsatz und Energie ---, deren zeit- und observer-basierte Teilmenge die eigene Apparatur bereits
-auflöst, während die zählerbasierten PMC-Kategorien an Hardware-Zähler-Zugriff gebunden bleiben; die
+Cache-Line-Auslastung, Cache-Misses (L1/L2/L3), dTLB-Misses, Speicher-Fußabdruck, Branch-Misses,
+IPC/CPI, Latenz (Mittel und Perzentile p50--p999), Durchsatz, Energie und Fill-Buffer-Auslastung ---,
+deren zeit- und observer-basierte Teilmenge die eigene Apparatur bereits auflöst (Wall-Clock,
+HdrHistogramm, Per-Achsen-Observer, die Statistik-Triade aus Median/Perzentilen, Signifikanztest und
+Effektmaß, die Zwei-Phasen-Operationsschleife und das Konformitäts-Gatter gegen \texttt{std::map}),
+während die zählerbasierten PMC-Kategorien an Hardware-Zähler-Zugriff gebunden bleiben; die
 vollständige Mess-Architektur entwickeln das Mess-System (Abschnitt~\ref{sec:measurement-system})
 und Kapitel~\ref{ch:eval}.
 
@@ -739,7 +757,7 @@ eigenständiges Modul über die ABI-Grenze lädt --- so wird der Prüfling PRT-A
 Matrix-Schichten gegen die Cache-Engine kompiliert.
 
 Wie diese \emph{eine} Architektur über eine ABI-stabile Hülle im Code sichtbar wird, vertieft
-Kapitel~\ref{ch:impl} (Abschnitt~\ref{sec:axes-impl}); zuvor ordnet der folgende Unterabschnitt den
+Kapitel~\ref{ch:impl} (Abschnitt~\ref{sec:impl-architecture}); zuvor ordnet der folgende Unterabschnitt den
 Apparat als Ganzes: in welchen Schichten er von der Experiment-Definition bis zur Auswertung organisiert
 ist und wie er fertiggestellt wird.
 
@@ -798,7 +816,7 @@ Dieses Prinzip korrespondiert mit der Matrix-Programmierweise des Apparats
 (Abschnitt~\ref{sec:anatomy-patterns}): So wie der Prüfling in Matrix-Schichten gegen die Cache-Engine
 kompiliert wird, wird der Apparat selbst in Interface-Schichten gegen eingefrorene Verträge entwickelt;
 wie jede Schicht dabei einzeln --- gegen einen Ersatz ihrer Nachbar-Ebene --- geprüft wird, zeigt
-Kapitel~\ref{ch:impl}.
+Abschnitt~\ref{sec:impl-contracts}.
 
 Die E-Schichten sind ausdrücklich vom Drei-Ebenen-Modell (Abschnitt~\ref{sec:anatomy-levels}) zu
 unterscheiden, so ähnlich beide auf den ersten Blick wirken: Das Drei-Ebenen-Modell ist die
@@ -858,7 +876,8 @@ stehen nicht im Permutationsbaum; und sie berühren niemals die Binary-Identitä
 darf verändern, \emph{was} gebaut wird. Umgekehrt dürfen die Effekte der Organ-Achsen nie mit den
 Effekten der Mess-Instrumente vermengt werden. Konzeptionell verlangen die System-Achsen deshalb eine
 eigene, gemeinsame Wurzel getrennt von der Anatomie-Hierarchie; die Zusammenführung der heute noch
-verstreuten Mess-Bestandteile unter dieser Wurzel ist Teil der Umsetzung (Kapitel~\ref{ch:impl}).
+verstreuten Mess-Bestandteile unter dieser Wurzel ist Teil der Umsetzung
+(Abschnitt~\ref{sec:impl-system-axes}).
 
 Unter dieser Wurzel ordnen sich die Mess-Kategorien (Abschnitt~\ref{sec:sota-instances}) --- im Apparat
 zu sechzehn Kategorien ausdifferenziert --- in eine \emph{Regime-Zweiteilung}: das zeit- und
@@ -1014,11 +1033,13 @@ gebunden, sondern läuft build-übergreifend über aufeinanderfolgende Stände d
 \end{table}
 
 Die drei Messreihen --- alle vom \texttt{messung\_driver} über die \texttt{ExperimentDriver}-Bibliothek
-ausgeführt --- sind damit: \emph{Reihe~A} (PRT-ART vs.\ Stand der Technik) mit den Modi A\_defined (8
+ausgeführt, konfiguriert entweder als drei feste Reihen oder über eine externe
+\texttt{messreihen.xml} --- sind damit: \emph{Reihe~A} (PRT-ART vs.\ Stand der Technik) mit den Modi A\_defined (8
 Rang-1-Profile) und A\_full (alle 30 SOTA-Profile); \emph{Reihe~B} (systematische Variation der
 Achsen-Entscheidungen unter sonst gleichen Bedingungen, um den Beitrag jeder Achse zu isolieren); und
 \emph{Reihe~C} (konkrete Merge-Punkte zwischen PRT-ART-Bausteinen und Cache-Engine-Permutationen, etwa
-PRT-ART-OLC + tcmalloc + ART-Page). Jede Reihe wird in drei Granularitäten erhoben: \emph{Micro-Benchmarking}
+das PRT-ART-OLC mit tcmalloc und ART-Page, der 4+1+2-Pool mit der HOT-Page, das Path-Prefetch mit der
+B\textsuperscript{2}-Baum-Page oder das MultiLevel-Layout mit der Wormhole-Page). Jede Reihe wird in drei Granularitäten erhoben: \emph{Micro-Benchmarking}
 vergleicht jeden Entwurfsbestandteil isoliert über das gemeinsame Kategorie-Interface,
 \emph{Makro-Benchmarking} misst die einzelnen \texttt{std::map}-Operationen, und \emph{Gesamt-Benchmarking}
 fährt die YCSB-Lastprofile über jede Rekombination. Genau diese drei-granulare Methodik ist die Antwort auf
@@ -1026,10 +1047,12 @@ das Trennbarkeits-Problem: Indem jeder Bestandteil zunächst isoliert (Micro) ve
 Operations- und Gesamt-Kontext erscheint, werden die Beiträge getrennt und isoliert messbar, statt im
 Gesamtdurchsatz vermengt zu bleiben.
 
-Den so aufgespannten Raum reduziert das System gezielt. Mit der Erweiterung auf neunzehn Achsen plus rund
-vierundsechzig Sub-Achsen wächst er auf über $10^{14}$ Permutationen; drei Mechanismen dämpfen die
+Den so aufgespannten Raum reduziert das System gezielt. Mit der N-Phasen-Erweiterung von elf auf
+neunzehn Achsen plus rund vierundsechzig Sub-Achsen wächst er von rund 5,5~Milliarden auf über
+$10^{14}$ Permutationen; drei Mechanismen dämpfen die
 Explosion: der \texttt{<expected\_workload>}-Profil-Filter routet nur kompatible Workloads, der
-\texttt{Defined}-Modus führt nur die deklarierten Tupel aus (rund 100--1000 je Reihe, die ins Manuskript
+\texttt{Defined}-Modus (\texttt{MessreihenMode::Defined}) führt nur die deklarierten Tupel aus (rund
+100--1000 je Reihe, die ins Manuskript
 einfließen), und der \texttt{Full}- bzw.\ \texttt{Full-Sampled}-Modus (etwa jede tausendste Permutation)
 läuft nur auf dem ZIH-Cluster unter Beachtung der vom Plattform-Probe gemeldeten Achsen-Kompatibilität.
 
