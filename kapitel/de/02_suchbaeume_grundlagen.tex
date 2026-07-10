@@ -40,10 +40,14 @@ Kapitel~\ref{ch:measurement}.
 Suchstrukturen lassen sich danach einordnen, mit welchem Mechanismus sie einen Schlüssel auf einen
 Datensatz abbilden~\cite{knuth1998taocp3}\@. \emph{Vergleichsbasierte} Strukturen lokalisieren den
 Schlüssel über Ordnungsvergleiche und setzen eine totale Ordnung voraus --- von den
-selbstbalancierenden AVL-~\cite{adelsonvelsky1962avl} und
-Rot-Schwarz-Bäumen~\cite{bayer1972symmetric,guibas1978redblack} über die block- und
+selbstbalancierenden AVL-Bäumen~\cite{adelsonvelsky1962avl}, deren Geschwister-Teilbäume sich in der
+Höhe um höchstens eins unterscheiden, und den
+Rot-Schwarz-Bäumen~\cite{bayer1972symmetric,guibas1978redblack}, die dieselbe logarithmische Höhe über
+eine Knotenfärbung mit lockereren, günstiger zu wartenden Invarianten sichern, über die block- und
 externspeicherorientierten B-/B\textsuperscript{+}-Bäume~\cite{bayer1972btree,comer1979btree}, deren
-Knoten typischerweise einer Cache- oder Speicherblock-Größe entsprechen~\cite{graefe2001btree,hankins2003nodesize},
+Knoten typischerweise einer Cache- oder Speicherblock-Größe entsprechen~\cite{graefe2001btree,hankins2003nodesize}
+und die in der B\textsuperscript{+}-Variante alle Nutzdaten in den Blättern halten und innere Knoten auf
+Wegweiser reduzieren,
 bis zum hauptspeicher-nahen T-Baum~\cite{lehman1986ttree}, der knotenlokale Wertebereiche mit der
 AVL-Balance verbindet und so die Zahl der Zeiger-Indirektionen je Suchschritt senkt.\ \emph{Digitale} Strukturen verzweigen dagegen
 nach den Bytes des Schlüssels statt durch Vergleich, sodass die Suchpfadlänge von der Schlüssellänge und
@@ -56,7 +60,9 @@ Verzweigungsgrad anpasst und dieser Arbeit durchgängig als Referenzentwurf dien
 
 Jenseits der baumartigen Verfahren bildet \emph{Hashing} Schlüssel direkt über eine Hashfunktion ab und
 kennt keine inhärente Ordnung, weshalb Bereichsabfragen teuer sind~\cite{knuth1998taocp3};
-Cuckoo-Hashing~\cite{pagh2004cuckoo} und SIMD-beschleunigte Tabellen wie SwissTable~\cite{abseil_swisstable}
+Cuckoo-Hashing~\cite{pagh2004cuckoo}, das im Gegensatz zu offener und verketteter Adressierung konstante
+Worst-Case-Lookups garantiert, und Tabellen wie SwissTable~\cite{abseil_swisstable}, die dank
+SIMD-Gruppen-Probing hohe praktische Dichte erzielen,
 treten dieser Arbeit als nicht-baumartige Vergleichsgröße zur Seite\@. \emph{Räumliche} Strukturen
 (k-d-Baum~\cite{bentley1975kdtree}, Quadtree~\cite{finkel1974quadtree}, R-Baum~\cite{guttman1984rtree})
 partitionieren einen mehrdimensionalen Schlüsselraum und liegen außerhalb des Umfangs, ebenso wie die
@@ -64,8 +70,9 @@ theoretischen \enquote{Exoten} --- der van-Emde-Boas-Baum~\cite{vanemdeboas1975}
 Trie~\cite{willard1983yfast} mit $O(\log\log u)$ über einem Universum der Größe~$u$ oder der die
 Vergleichsschranke unterschreitende Fusion Tree~\cite{fredman1993fusion} --- sowie das flache, sortierte
 Array mit Binär- oder Interpolationssuche~\cite{knuth1998taocp3} --- streng genommen das einzelne Blatt
-eines Baumes --- und seine String-Verallgemeinerung, das
-Suffix-Array~\cite{manzini2002suffixarray}. Diese Arbeit konzentriert sich auf die baumartigen Strukturen
+eines Baumes --- und das Suffix-Array, das dieses Layout auf String-Schlüsseln zu einem platzsparenden
+Volltext-Index verallgemeinert und dessen leichtgewichtige, speicher-budgetierte Konstruktion als
+Musterbeispiel des Algorithm-Engineerings gilt~\cite{manzini2002suffixarray}. Diese Arbeit konzentriert sich auf die baumartigen Strukturen
 der vergleichs- und der digitalbasierten Klasse (Abbildung~\ref{fig:search-map}); so verschieden die
 Klassen äußerlich wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen ---
 wie sich diese systematisch zerlegen lassen, entwickelt Kapitel~\ref{ch:measurement}.
@@ -86,7 +93,10 @@ Laufzeit\@. \emph{Database Cracking}~\cite{idreos2007cracking} baut den Index al
 Anfrageverarbeitung adaptiv auf --- jede Anfrage partitioniert die Daten ein Stück weiter ---, und
 \emph{Stochastic Cracking}~\cite{halim2012stochastic} macht dieses Vorgehen gegen ungünstige
 Anfragefolgen robust; \emph{gelernte Indizes}~\cite{kraska2018learned} ersetzen die Suchstruktur durch
-ein Modell der Schlüsselverteilung, das die Position eines Schlüssels näherungsweise vorhersagt. Diese
+ein Modell der Schlüsselverteilung, das die Position eines Schlüssels näherungsweise vorhersagt. Jüngere
+Arbeiten führen diese Linie aktiv-tunend fort: VEGA justiert einen gelernten Index zur Laufzeit mit
+gruppenweiser Lern-Granularität nach~\cite{li2025vega}, und AirIndex entwirft die Hierarchie eines Index
+automatisch aus dem Daten- und Speicher-I/O-Profil des Zielsystems~\cite{chockchowwat2023airindex}. Diese
 Ansätze zeigen einen gemeinsamen Trend: weg von der fest verdrahteten Einzelstruktur, hin zu
 konfigurierbaren, sich anpassenden Entwürfen. Für die vorliegende Arbeit sind sie die nächstverwandten
 bekannten Ansätze, denn sie belegen, dass die Entwurfsentscheidungen einer Suchstruktur veränderlich
@@ -108,18 +118,24 @@ auf die \emph{statischen und übersetzungszeit-relevanten} Eigenschaften, die sp
 Moderne Prozessoren schalten mehrere Cache-Ebenen (L1, L2 und --- nicht auf jeder Plattform --- L3)
 zwischen die Register und den Hauptspeicher~\cite{hennessy2019architecture}; ein Zugriff, der sein Datum
 nahe findet, ist günstig, während ein Fehlzugriff bis zum Hauptspeicher einige hundert Zyklen
-kostet~\cite{drepper2007memory}, auf Mehr-Sockel-Systemen zusätzlich abhängig vom besitzenden NUMA-Knoten.
+kostet~\cite{drepper2007memory}, auf Mehr-Sockel- und Chiplet-Systemen zusätzlich abhängig vom besitzenden NUMA-Knoten.
 Die Übertragungseinheit zwischen den Ebenen ist die \emph{Cache-Line} (Abbildung~\ref{fig:cache-line});
 ihre Größe ist keine universelle Konstante, sondern je Mikroarchitektur fest verdrahtet --- 64\,Byte auf
-x86-64 und gängigen ARM-Kernen, 128\,Byte etwa auf Apple-Silicon-L2, schmalere 32\,Byte auf älteren oder
-eingebetteten Kernen~\cite{hennessy2019architecture,intel_optimization,amd_sog,apple_optimization}.
+x86-64 und gängigen ARM-Kernen (etwa Cortex-A76 oder Neoverse~V2), 128\,Byte etwa auf Apple-Silicon-L2
+und System-Level-Cache~\cite{apple_optimization}, schmalere 32\,Byte auf älteren oder
+eingebetteten Kernen~\cite{hennessy2019architecture,intel_optimization,amd_sog}.
 Programme können sie zur Laufzeit \emph{auslesen} --- über \texttt{CPUID} (x86), \texttt{CTR\_EL0} (ARM)
-oder \texttt{riscv\_hwprobe} (RISC-V)~\cite{arm_arm,intel_sdm} ---, aber nicht verändern; auch die Tiefe
-der Hierarchie variiert (einfache RISC-V-Kerne enden bei L2, manche AMD-Prozessoren bringen einen
+oder \texttt{riscv\_hwprobe} (RISC-V; eingeschränkt, u.\,a.\ CBO-Blockgrößen)~\cite{arm_arm,intel_sdm} ---,
+aber nicht verändern; auch die Tiefe
+der Hierarchie variiert (einfache RISC-V-Kerne wie der SiFive~U74 enden bei L2, manche AMD-Prozessoren
+bringen einen
 gestapelten 3D-V-Cache-L3 mit). Für ein cache-line-bewusstes Layout ist die je Zielplattform ermittelte
 Line-Größe daher ein \emph{Eingabeparameter der Übersetzung}, keine feste Annahme --- der Transfer selbst
 erfolgt dabei nicht streng blockweise am Stück, denn \emph{critical-word-first} liefert zuerst das
-angefragte Wort und DDR5 unterteilt den Speicherkanal in zwei unabhängige Sub-Kanäle~\cite{micron_ddr5}.
+angefragte Wort, DDR5 unterteilt den Speicherkanal in zwei unabhängige
+32-Bit-Sub-Kanäle~\cite{micron_ddr5}, und nicht-temporale bzw.\ Write-Combining-Schreibzugriffe umgehen
+den normalen Write-Allocate-Pfad, statt die betroffene Cache-Line in die Cache-Hierarchie zu
+holen~\cite{intel_sdm}.
 
 Eben dieses cache-line-orientierte Layout ist der historische Leitgedanke der einschlägigen Forschung:
 Der CSS-Baum~\cite{rao1999css} führt den Cache-Line-Knoten ein, der
@@ -131,14 +147,16 @@ al.~\cite{schmidt2025hbm} vermessen Stride- gegen Sequenz-Zugriffe auf High-Band
 Speicher-Layout-Ebene stehen damit konkret das dichte und das cache-line-ausgerichtete Array-of-Structs,
 das spaltenorientierte Struct-of-Arrays, das bit-gepackte LOUDS~\cite{jacobson1989louds} und das
 SIMD-gekachelte AoSoA. Die mehrstufige Hierarchie selbst ist überdies Gegenstand
-software-/hardware-kooperativer Prefetch-Verfahren wie dem hierarchischen Instruktions-Prefetcher von
+software-/hardware-kooperativer Prefetch-Verfahren wie dem hierarchischen Instruktions-Prefetcher für
+Server-Anwendungen von
 Zhang et al.~\cite{zhang2025hierarchical}, der als Prefetching-Instanz und nicht als
 datenstruktur-spezifischer Baum-Datenprefetch eingeht.
 
 Neben der Daten-Cache-Hierarchie existiert eine zweite Lokalitätsgrenze: der \emph{Translation Lookaside
 Buffer} (TLB) cacht Virtuell-zu-Physisch-Abbildungen, und ein TLB-Miss löst einen teuren Page-Walk
 aus~\cite{hennessy2019architecture}. Prozessoren trennen aus Lokalitätsgründen den Instruktions- vom
-Daten-TLB (dTLB) und legen ihn mehrstufig aus~\cite{intel_sdm,drepper2007memory}; für Suchstrukturen ist
+Daten-TLB (dTLB) --- da Instruktionszugriffe deutlich lokaler sind als Datenzugriffe --- und legen ihn
+mehrstufig aus (L1-dTLB plus gemeinsamer L2-STLB)~\cite{intel_sdm,drepper2007memory}; für Suchstrukturen ist
 der dTLB die zweite, eigenständige Grenze neben der Cache-Line, denn große oder weit gestreute Knoten
 erhöhen den dTLB-Druck unabhängig von der Cache-Auslastung, weshalb große Seiten (Huge-Pages,
 2\,MiB/1\,GiB) den TLB-Reach vergrößern. Im Stand der Technik tritt der dTLB vorwiegend als \emph{Mess-Ziel}
@@ -149,16 +167,28 @@ Beobachtung, auf die die Forschungslücke in Kapitel~\ref{ch:measurement}
 (Abschnitt~\ref{sec:task-concerns}) zurückkommt.
 
 Auch das Schreib- und Update-Verhalten der Caches ist überwiegend mikroarchitektonisch fixiert.
-Schreibzugriffe folgen \emph{Write-Through} oder \emph{Write-Back}, orthogonal dazu legt die
-Allokations-Politik (Write-Allocate bzw.\ No-Write-Allocate) die Behandlung eines Schreib-Fehlzugriffs
-fest; ARMv8 macht diese Wahl über Seiten-Attribute explizit~\cite{arm_arm}, während x86 im Normalfall
+Schreibzugriffe folgen \emph{Write-Through}, das unmittelbar bis in die nächste Ebene durchschreibt,
+oder \emph{Write-Back}, das die Änderung zunächst nur in der Cache-Line vermerkt (\emph{dirty}) und erst
+bei deren Verdrängung zurückschreibt --- was Bus-Verkehr spart und die Schreiblatenz senkt; orthogonal
+dazu legt die
+Allokations-Politik (Write-Allocate, typisch bei Write-Back, bzw.\ No-Write-Allocate, typisch bei
+Write-Through) die Behandlung eines Schreib-Fehlzugriffs
+fest; ARMv8 macht diese Wahl über Seiten-Attribute --- Write-Through, Write-Back oder Non-Cacheable
+samt Read- bzw.\ Read-Write-Allocate-Hinweisen --- explizit~\cite{arm_arm}, während x86 im Normalfall
 Write-Back mit Write-Allocate verwendet~\cite{intel_sdm}. Welche Line verdrängt wird, entscheidet eine
-heuristische Ersetzungsstrategie von LRU/Pseudo-LRU bis zur zwei-Bit-sparsamen \emph{Re-Reference Interval
-Prediction}~\cite{jaleel2010rrip,qureshi2007adaptive}; wie viele Ebenen eine Line zugleich führen, regelt
-die Inklusions-Politik, und in Mehrkern-Systemen sichert ein invalidierungsbasiertes Kohärenzprotokoll
-(MESI mit den Varianten MOESI und MESIF) die Konsistenz~\cite{hennessy2019architecture}. Als konkrete
+heuristische Ersetzungsstrategie von LRU/Pseudo-LRU bis zur zwei-Bit-sparsamen, scan- und
+thrash-resistenten \emph{Re-Reference Interval
+Prediction} (dynamische Variante DRRIP)~\cite{jaleel2010rrip}, die auf der adaptiven
+Insertions-Politik~\cite{qureshi2007adaptive} aufbaut; wie viele Ebenen eine Line zugleich führen, regelt
+die Inklusions-Politik --- ein \emph{inklusiver} Cache hält jede Line der höheren Ebenen redundant, ein
+\emph{exklusiver} (Victim-Cache) schließt sie aus, ein \emph{nicht-inklusiver} lässt beides zu ---, und
+in Mehrkern-Systemen sichert ein invalidierungsbasiertes Kohärenzprotokoll die Konsistenz: das
+verbreitete MESI führt jede Line in einem der Zustände \emph{Modified}, \emph{Exclusive}, \emph{Shared}
+oder \emph{Invalid}, herstellerseitig um Varianten wie MOESI (AMD~\cite{amd_sog}) oder MESIF
+(Intel~\cite{intel_optimization}) erweitert~\cite{hennessy2019architecture}. Als konkrete
 Instanz dieser fixierten Eigenschaften variiert etwa die L3-Inklusions-Politik zwischen den Generationen
---- inklusiv bei frühen Intel-Client-Kernen, nicht-inklusiv bei Intel-Server ab Skylake-SP und überwiegend
+--- inklusiv bei früheren Intel-Client-Generationen (etwa Nehalem), nicht-inklusiv bei Intel-Servern ab
+Skylake-SP/Xeon~Scalable und überwiegend
 victim-artig bei AMD~Zen~\cite{intel_optimization,amd_sog}. Da all dies zur Laufzeit nicht frei wählbar
 ist, sind diese Eigenschaften je Zielplattform gegeben und nur durch Messung zugänglich; ihre
 Wirkung --- insbesondere das \emph{Cache-Line-Ping-Pong} bei konkurrierenden Schreibzugriffen auf dieselbe
@@ -170,8 +200,11 @@ Diese Eigenschaften spannen das Spektrum auf, in dem sich eine Datenstruktur ver
 kennen~\cite{frigo1999cache}. Beide Philosophien sind im Stand der Technik instanziiert: Bender et
 al.\ begründen den cache-oblivious B-Baum über das van-Emde-Boas-Layout~\cite{bender2005coboblivious},
 aufbauend auf dem Order-Maintenance-/Packed-Memory-Primitiv~\cite{bender2002orderlist}, der
-cache-oblivious Traversierung geordneter Mengen~\cite{bender2002scanning} und dem nahezu optimalen
-Baum-Layout fester Topologie~\cite{bender2002treelayout,bender2000cobtree}; Saikkonen und
+cache-oblivious Traversierung geordneter Mengen mit lokalitätserhaltender
+$O(k/B)$-Schranke~\cite{bender2002scanning} und dem
+Baum-Layout fester Topologie, das die erwartete Zahl der Blocktransfers in einem mehrstufigen
+Speicher-Modell auch bei unbekannter Block-Größe nahezu optimal
+minimiert~\cite{bender2002treelayout,bender2000cobtree}; Saikkonen und
 Soisalon-Soininen halten eine cache-sensitive Layout-Invariante auch unter Updates, und
 Graefe/Larson~\cite{graefe2001btree} vergleichen beide Ansätze über die CPU-Cache-Ebenen, während
 sämtliche praktischen Trie- und B\textsuperscript{+}-Indizes cache-bewusst ausgelegt sind. Beide
@@ -195,7 +228,8 @@ Die verbreitetste Workload-Konvention ist der Yahoo!\ Cloud Serving Benchmark
 Lesen/Aktualisieren, Zipf-verteilt), YCSB-B (95/5 Lesen/Aktualisieren), YCSB-C (nur Lesen), YCSB-D
 (jüngste Werte), YCSB-E (kurze Bereichs-Scans) und YCSB-F (Read-Modify-Write). Daneben stützt sich die
 Literatur auf weitere etablierte Familien: den Index-Benchmark \emph{SOSD}~\cite{kipf2019sosd}, die
-Transaktions-Benchmarks der \emph{TPC}-Familie (TPC-C, TPC-DS)~\cite{tpc_benchmarks}, reale
+Transaktions-Benchmarks der \emph{TPC}-Familie (TPC-C, TPC-DS)~\cite{tpc_benchmarks}, die Integration
+in reale Systeme (etwa SuRF~\cite{zhang2018surf} als Bloom-Filter-Ersatz in RocksDB), reale
 String-Korpora (URLs, DNA, Wörterbuch-Terme) sowie --- bei den hardware-nahen Arbeiten ---
 \emph{SPEC~CPU}~\cite{spec_cpu2017} und \emph{CloudSuite}~\cite{ferdman2012cloudsuite}. Diese
 Frameworks erzeugen unterschiedliche, untereinander nicht unmittelbar vergleichbare Lasten.
