@@ -1,17 +1,19 @@
 \chapter{Suchbäume und Grundlagen}\label{ch:foundations}
 
-% [SKELETT] REIN KONZEPTIONELL + VISUELL, KEINE Katalog-Tabellen. Dreischritt Konzept->Hardware->Software:
-% Abstraktions-Verantwortlichkeiten in 2.1 konzeptionell verorten, in 2.3 mit den statischen Hardware-/
-% Compile-Time-Mitteln aus 2.2 umsetzen. Alle Tabellen liegen NICHT hier, sondern in Kapitel 3.
+% [HABICH-R2] NUR BEKANNTES: Begriffe, etablierte Konzepte, existierende Paper. KEINE Katalog-Tabellen,
+% keine eigene Begriffswelt. Fünfschritt Landschaft (2.1) -> Hardware (2.2) -> Workloads/Benchmarks (2.3)
+% -> Software-Mittel (2.4) -> Heuristik-Begriff (2.5). Alle Kataloge und Eigenkonzepte liegen in Kapitel 3.
 
 Dieses Kapitel führt vom vertrauten Gegenstand --- den Suchbäumen --- über die Hardware, die ihre Leistung
-prägt, zu den Software-Mitteln, mit denen sich ihre Entwurfsentscheidungen abstrahieren lassen. Alles bleibt
-\emph{bildhaft und konzeptionell}; die systematischen Kataloge folgen in Kapitel~\ref{ch:measurement}.
+prägt, und die Workloads, unter denen sie verglichen werden, zu den Software-Mitteln und zum
+Heuristik-Begriff, mit denen sich ihre Entwurfsentscheidungen abstrahieren und auswählen lassen. Alles
+bleibt bei \emph{bekannten} Begriffen, Konzepten und Veröffentlichungen; die systematischen Kataloge und
+das eigene Begriffsgerüst folgen in Kapitel~\ref{ch:measurement}.
 
 \section{Konzept und Überblick über den Stand der Technik}\label{sec:overview}
 Wir kartieren zunächst die Landschaft der Suchstrukturen --- vergleichsbasierte Bäume, digitale und
-präfixbasierte Verfahren, Hashing, räumliche und flache Strukturen --- und stellen \emph{jeden} bekannten
-Algorithmus bildhaft im Detail dar. Hier deutet sich bereits an, dass sich jeder Algorithmus in einem
+präfixbasierte Verfahren, Hashing, räumliche und flache Strukturen --- und ordnen die bekannten Vertreter
+mit ihren Kernideen und Belegstellen ein. Hier deutet sich bereits an, dass sich jeder Algorithmus in einem
 gemeinsamen Entwurfsraum verorten lässt; wie sich dieser Entwurfsraum systematisch aufspannt, entwickelt
 Kapitel~\ref{ch:measurement}.
 \begin{figure}[htbp]\centering
@@ -74,6 +76,19 @@ einheitlich vermessen lassen --- die geordnete Map als gemeinsamer Nenner vergle
 digitalbasierter Suchstrukturen, der \texttt{std::vector} als Sequenz-Sicht und die Hash-Tabelle als
 ungeordnete Gegenprobe; ihre Einordnung in das Begriffsgerüst dieser Arbeit entwickelt
 Kapitel~\ref{ch:measurement}.
+
+Alle bisher genannten Verfahren sind \emph{fest entworfene} Strukturen: ihr innerer Aufbau steht fest,
+bevor die erste Anfrage eintrifft. Eine etablierte Forschungslinie verlagert den Entwurf dagegen in die
+Laufzeit\@. \emph{Database Cracking}~\cite{idreos2007cracking} baut den Index als Nebenprodukt der
+Anfrageverarbeitung adaptiv auf --- jede Anfrage partitioniert die Daten ein Stück weiter ---, und
+\emph{Stochastic Cracking}~\cite{halim2012stochastic} macht dieses Vorgehen gegen ungünstige
+Anfragefolgen robust; \emph{gelernte Indizes}~\cite{kraska2018learned} ersetzen die Suchstruktur durch
+ein Modell der Schlüsselverteilung, das die Position eines Schlüssels näherungsweise vorhersagt. Diese
+Ansätze zeigen einen gemeinsamen Trend: weg von der fest verdrahteten Einzelstruktur, hin zu
+konfigurierbaren, sich anpassenden Entwürfen. Für die vorliegende Arbeit sind sie die nächstverwandten
+bekannten Ansätze, denn sie belegen, dass die Entwurfsentscheidungen einer Suchstruktur veränderlich
+gehalten werden können; wie sich solche Entscheidungen systematisch zerlegen und einzeln vermessen
+lassen, entwickelt Kapitel~\ref{ch:measurement}.
 
 \section{Hardware: historische Anpassung an die Suchleistung}\label{sec:hardware-history}
 Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Wir führen die historische
@@ -162,9 +177,38 @@ Zielplattform --- deren Cache-Eigenschaften überwiegend fest verdrahtet und nur
 konfigurierbar sind --- systematisch mit den tatsächlich wählbaren cache-nahen Einstellungen verbinden?
 Diese Frage nimmt Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:task-concerns}) wieder auf.
 
+\section{Workloads und Benchmark-Konventionen}\label{sec:workload-basics-known}
+Ob eine Suchstruktur die Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} gut nutzt,
+zeigt sich erst unter Last; dafür haben sich feste Begriffe und Benchmark-Konventionen etabliert. Eine
+\emph{Last} (Operation) ist ein einzelner Aufruf der Such-Schnittstelle --- eine Punktanfrage, ein
+Einfügen, ein Löschen oder ein Bereichs-Scan. Ein \emph{Workload} ist ein strukturiertes Profil solcher
+Operationen: ein Operations-Mix (etwa 50\,\% Lesen / 50\,\% Aktualisieren) über einer
+Schlüssel-Zugriffsverteilung (gleichverteilt, Zipf-verteilt, jüngste Werte) auf einem Datensatz
+definierter Größe und Schlüssel-Charakteristik. Realistische Workloads sind dabei \emph{Playbooks} aus
+vielen aufeinanderfolgenden Interface-Aufrufen --- nicht isolierte, unrealistische Einzelzugriffe.
+
+Die verbreitetste Workload-Konvention ist der Yahoo!\ Cloud Serving Benchmark
+(YCSB)~\cite{cooper2010ycsb}. Er definiert eine Familie von Schlüssel-Wert-Workloads: YCSB-A (50/50
+Lesen/Aktualisieren, Zipf-verteilt), YCSB-B (95/5 Lesen/Aktualisieren), YCSB-C (nur Lesen), YCSB-D
+(jüngste Werte), YCSB-E (kurze Bereichs-Scans) und YCSB-F (Read-Modify-Write). Daneben stützt sich die
+Literatur auf weitere etablierte Familien: den Index-Benchmark \emph{SOSD}~\cite{kipf2019sosd}, die
+Transaktions-Benchmarks der \emph{TPC}-Familie (TPC-C, TPC-DS)~\cite{tpc_benchmarks}, reale
+String-Korpora (URLs, DNA, Wörterbuch-Terme) sowie --- bei den hardware-nahen Arbeiten ---
+\emph{SPEC~CPU}~\cite{spec_cpu2017} und \emph{CloudSuite}~\cite{ferdman2012cloudsuite}. Diese
+Frameworks erzeugen unterschiedliche, untereinander nicht unmittelbar vergleichbare Lasten.
+
+Das \emph{Ziel der Workload-Variation} ist der Bruch eines methodischen Bias: jede Veröffentlichung
+wählt typischerweise das Lastprofil, unter dem ihr eigener Algorithmus am besten abschneidet. Erst wenn
+alle Lastprofile gegen alle Vergleichskandidaten laufen, lässt sich bias-reduzierte Vergleichbarkeit
+gewinnen. Für diese Arbeit liefern die genannten Konventionen das Rohmaterial eines gemeinsamen
+Lastprofil-Satzes; wie dieser Satz aufgebaut ist und über alle Kandidaten gefahren wird, entwickelt
+Kapitel~\ref{ch:measurement}, die zugehörige Mess-Matrix gehört zur Evaluationsmethodik
+(Kapitel~\ref{ch:eval}).
+
 \section{Software-Mittel und Zusammenführung zur Abstraktion}\label{sec:software-means}
-Mit welchen Software-System-Mitteln --- Übersetzungszeit-Metaprogrammierung, statische Nutzung der Hardware
-aus Abschnitt~\ref{sec:hardware-history} --- lässt sich eine solche Abstraktion \emph{umsetzen}? Zur
+Mit welchen Software-System-Mitteln --- Übersetzungszeit-Metaprogrammierung, statische Nutzung der
+Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} --- lässt sich die dort offen gebliebene
+Abstraktion \emph{umsetzen}? Zur
 Verfügung stehen die etablierten Mittel des software-technischen Entwurfs: die benannten
 Entwurfsmuster~\cite{gamma1994patterns}, der statische Polymorphismus des \emph{Curiously Recurring
 Template Pattern} samt \emph{Policy-based Design}~\cite{alexandrescu2001modern} sowie die Komposition aus
@@ -172,8 +216,49 @@ austauschbaren Bausteinen, wie sie die invasive Software-Komposition aus
 Gray-Box-Komponenten~\cite{assmann2003invasive}, die generative Programmierung~\cite{czarnecki2000generative}
 und die feature-orientierten Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}
 beschreiben; C++23-Module strukturieren die Übersetzungseinheiten, garantieren für sich genommen aber noch
-keine portable ABI-Stabilität~\cite{wg21_modules_abi}. Damit sind die Grundlagen beisammen: die Landschaft
-der Suchstrukturen, die Hardware-Eigenschaften, die ihre Leistung prägen, und die Software-Mittel, sie zu
-abstrahieren. Wie sich mit genau diesen Mitteln ein Suchalgorithmus in orthogonale, einzeln vermessbare
-Entwurfsentscheidungen zerlegen lässt, entwickelt Kapitel~\ref{ch:measurement}; die konkrete Umsetzung der
-dort eingeführten Bausteine zeigt Kapitel~\ref{ch:impl}.
+keine portable ABI-Stabilität~\cite{wg21_modules_abi}. Für diese Arbeit bilden die genannten Mittel den
+Werkzeugkasten, mit dem sich die je Zielplattform gemessenen Hardware-Eigenschaften zur Übersetzungszeit
+in ein konkretes Layout umsetzen lassen; wie sie dafür kombiniert werden, entwickelt
+Kapitel~\ref{ch:measurement}.
+
+\section{Heuristiken als Entscheidungsregeln}\label{sec:heuristics-basics}
+Sowohl die adaptiven und gelernten Indizes (Abschnitt~\ref{sec:overview}) als auch die
+Ersetzungsstrategien der Caches (Abschnitt~\ref{sec:hardware-history}) treffen ihre Entscheidungen
+\emph{heuristisch}. Eine \emph{Heuristik} ist eine Entscheidungsregel ohne Optimalitätsgarantie: Sie
+bildet beobachtbare Merkmale --- etwa die je Zielplattform ermittelten Cache-Eigenschaften
+(Abschnitt~\ref{sec:hardware-history}) oder das gemessene Lastprofil
+(Abschnitt~\ref{sec:workload-basics-known}) --- auf eine konkrete Konfiguration ab, ohne deren
+Bestmöglichkeit zu beweisen. Sie tritt überall dort an die Stelle einer exakten Lösung, wo diese
+unbekannt oder zu teuer zu bestimmen ist; die heuristischen Ersetzungsstrategien des Caches selbst (LRU,
+RRIP\@; Abschnitt~\ref{sec:hardware-history}) sind das hardwareseitige Vorbild dieser
+Denkweise~\cite{jaleel2010rrip}.
+
+Heuristiken lassen sich danach unterscheiden, \emph{wann} ihre Entscheidung fällt. Eine
+\emph{statische Heuristik} ist zur Übersetzungszeit fixiert: Die gewählte Konfiguration wird fest in das
+übersetzte Programm einkompiliert und ändert sich zur Laufzeit nicht mehr. Eine \emph{dynamische
+Heuristik} wählt die Konfiguration hingegen zur Laufzeit, abhängig vom tatsächlich beobachteten
+Verhalten, und kann sie im Betrieb anpassen. Beide Spielarten setzen dieselbe \emph{Heuristik-Funktion}
+voraus, verschieben aber den Zeitpunkt ihrer Auswertung.
+
+Formal ist diese Heuristik-Funktion ein \emph{Mapping} von einem Messergebnis beziehungsweise
+Lastprofil auf eine Konfiguration: $h: \mathcal{M} \rightarrow \mathcal{K}$, wobei $\mathcal{M}$ den
+Raum der erhobenen Merkmale (Messwerte, Lastprofil-Kennzahlen) und $\mathcal{K}$ den Raum der
+zulässigen Konfigurationen bezeichnet. Die vorliegende Arbeit misst diesen Zusammenhang zunächst
+systematisch aus (Kapitel~\ref{ch:measurement}); die \emph{automatisierte} Bestimmung von $h$ selbst ---
+der Mechanismus, der aus den Messergebnissen die jeweils beste Konfiguration ableitet --- ist
+Zielsetzung und Ausblick dieser Arbeit (Abschnitt~\ref{sec:outlook}).
+
+Schließlich sind die in der Literatur teils synonym gebrauchten Begriffe abzugrenzen\@. \emph{Adaptiv}
+heißt eine Heuristik, die ihre Entscheidung an veränderliche Bedingungen anpasst; \emph{dynamisch}
+bezieht sich enger auf den Zeitpunkt --- die Auswertung zur Laufzeit statt zur Übersetzungszeit; und
+\emph{messwertgetrieben} (\emph{measurement-driven}) betont die Datenquelle --- die Entscheidung
+gründet auf erhobenen Messwerten und nicht auf festen Modellannahmen. Eine adaptive Heuristik ist
+somit stets dynamisch, eine dynamische nicht notwendig adaptiv, und beide können, müssen aber nicht
+messwertgetrieben sein.
+
+Damit sind die Grundlagen beisammen: die Landschaft der Suchstrukturen, die Hardware-Eigenschaften, die
+ihre Leistung prägen, die Workload-Konventionen, unter denen sie verglichen werden, die Software-Mittel
+der Abstraktion und der Heuristik-Begriff, der Messwissen mit Konfigurationswahl verbindet. Wie sich mit
+genau diesen Mitteln ein Suchalgorithmus in orthogonale, einzeln vermessbare Entwurfsentscheidungen
+zerlegen lässt, entwickelt Kapitel~\ref{ch:measurement}; die konkrete Umsetzung der dort eingeführten
+Bausteine zeigt Kapitel~\ref{ch:impl}.
