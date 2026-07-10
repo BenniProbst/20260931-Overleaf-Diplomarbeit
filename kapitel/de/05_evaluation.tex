@@ -64,14 +64,17 @@ Rang-3-Plattformen (Ryzen~9~9950X3D, Intel~i9~14900KS und eine HBM-Plattform). E
 (Phase~1) meldet je Plattform die lauffähige Teilmenge der Achsen (etwa AVX-512 nur dort, wo verfügbar, HBM-aware nur auf HBM-Hardware); je
 Plattform werden ein Scalar-, ein
 AVX2- und --- auf Barnard --- ein AVX-512-Build vorbereitet, und auf Hybrid-CPUs werden P- und E-Cores
-getrennt vermessen. Auf den Produktions-Zielmaschinen wird zudem jede Messung unter \emph{zwei
+getrennt vermessen (über die eigenen Zähler-Domänen \texttt{cpu\_core} und \texttt{cpu\_atom}) statt
+zusammenaggregiert. Auf den Produktions-Zielmaschinen wird zudem jede Messung unter \emph{zwei
 Betriebssystem-Regimes} erhoben, um Produktions-Treue von Mess-Tiefe zu trennen: Ein \emph{immutables}
 Betriebssystem (Talos) spiegelt den Produktiv-Einsatz und erzwingt boot-/übersetzungsstatische
 Cache-Einstellungen (Abschnitt~\ref{sec:hardware-history}); ein \emph{root-Linux mit vollem
 Hardware-Zähler-Zugriff} (\texttt{perf}/MSR) macht hingegen die zählerbasierten Mess-Kategorien (Cache-,
 dTLB- und Branch-Misses, IPC/CPI, Abschnitt~\ref{sec:sota-instances}) und die laufzeit-konfigurierbaren
 cache-nahen Achsen-Parameter (Prefetch-Distanz, Hardware-Prefetcher) überhaupt erst zugänglich. Die zeit- und observer-basierten Kategorien laufen
-unter beiden Regimes identisch und sichern die Vergleichbarkeit.
+unter beiden Regimes identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
+privilegierten Regime erhoben und je Plattform mit Betriebssystem, Kernel und Zähler-Domäne
+protokolliert.
 
 Faire Vergleichbarkeit ist über feste Regeln gesichert: Jeder Vergleich trennt einen gemeinsamen
 Minimalmodus (Common-Denominator: externe Werte-Handles, keine PRT-ART-Spezialpfade) vom

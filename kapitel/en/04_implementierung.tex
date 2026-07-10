@@ -4,7 +4,9 @@
 % then axis implementation (one overall-concept figure per axis) and all levels of the measurement system.
 
 This chapter descends into detail: first the repository architecture, then each key point of PRT-ART individually
-and visually, finally the axis implementation and the levels of the measurement system.
+and visually, next the axis implementation together with the \emph{one} architecture in code and the levels of the
+measurement system, and finally the quality assurance via contract tests per layer and the measurement
+cross-cutting concern of the system axes in code.
 
 \section{Three-Repository Architecture}\label{sec:repos}
 The implementation is distributed across three Git repositories with clearly separated responsibilities:
@@ -96,6 +98,45 @@ prefetching~\cite{zhang2025hierarchical} additionally provides a compile-time ca
 (\texttt{p27\_bundle\_finder}, a C++23 port of the original tool \texttt{hp\_soft} that identifies
 functions whose subtree footprint exceeds a threshold as bundle entry points).
 
+The nineteen composition axes are here not abstract but each a concrete \emph{strategy concept} with several
+interchangeable building blocks, from which a concrete composition picks exactly one per slot.
+Figure~\ref{fig:axes-gallery} gathers all nineteen as a gallery --- per axis the short name, the sub-axis
+family and a representative selection of the building blocks; the complete building-block matrix with all
+origin sources is given in Appendix~\ref{app:blocks}, the SOTA contributions per axis in Table~\ref{tab:axes-overview}.
+That no composition omits an organ is enforced by the \texttt{IsComposition} concept: it demands per
+algorithm the assignment of exactly these nineteen organs --- the seventeen search axes plus the two
+queuing axes ---, so that no composition compiles that leaves an axis open; the complete organ set is
+thus not a convention but a compile-time-checked condition.
+% AXIS-T0..T18 gallery: fig:axes-gallery (4.3) DONE
+\begin{figure}[htbp]\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,
+  ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt}]
+  \node[ax] (t0) at (0,0){\textbf{T0 Search algorithm}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(21: 17 base $+$ 4 per-K)}\\{\tiny\itshape Def.\ Array256}};
+  \node[ax] (t1) at (3.6,0){\textbf{T1 Cache traversal}\\{\tiny CT1--CT2}\\{\tiny Linear-fanout, Hash-lookup, Binary-fanout}\\{\tiny\itshape Def.\ Linear}};
+  \node[ax] (t2) at (7.2,0){\textbf{T2 Slot mapping}\\{\tiny MP1--MP2}\\{\tiny Direct-placement, Pool-relative}\\{\tiny\itshape Def.\ Direct}};
+  \node[ax] (t3) at (10.8,0){\textbf{T3 Path compression}\\{\tiny PC1--PC3}\\{\tiny None, Byte-wise (ART), Patricia}\\{\tiny\itshape Def.\ None}};
+  \node[ax] (t4) at (14.4,0){\textbf{T4 Node type}\\{\tiny NT1--NT3}\\{\tiny Node4 / 16 / 48 / 256}\\{\tiny\itshape Def.\ Node256}};
+  \node[ax] (t5) at (0,-2.4){\textbf{T5 Memory layout}\\{\tiny HM1--HM4}\\{\tiny AoS, Cache-line-aligned, SoA, Bitmap (LOUDS), AoSoA}\\{\tiny\itshape Def.\ Cache-line}};
+  \node[ax] (t6) at (3.6,-2.4){\textbf{T6 Allocator}\\{\tiny AA1--AA7}\\{\tiny Hoard, Slab, Mimalloc, Jemalloc, TCMalloc, Buddy \dots\,(25)}\\{\tiny\itshape Def.\ Std-malloc}};
+  \node[ax] (t7) at (7.2,-2.4){\textbf{T7 Prefetch}\\{\tiny PF1--PF3}\\{\tiny None, Distance-estimator (ART), Hardware, Path-orient.}\\{\tiny\itshape Def.\ None}};
+  \node[ax] (t8) at (10.8,-2.4){\textbf{T8 Concurrency}\\{\tiny CC1--CC2}\\{\tiny None, Blocking, R/W, OLC, Lock-free, RCU, Hazard}\\{\tiny\itshape Def.\ None}};
+  \node[ax] (t9) at (14.4,-2.4){\textbf{T9 Serialization}\\{\tiny SR1--SR3}\\{\tiny Raw-binary, VarLen (LEB128), Succinct, LZ4/Delta}\\{\tiny\itshape Def.\ Raw-binary}};
+  \node[ax] (t10) at (0,-4.8){\textbf{T10 Telemetry}\\{\tiny TM1--TM3}\\{\tiny Leaf-only counter, Density-tracker, HDR-histogram}\\{\tiny\itshape Def.\ Leaf-only}};
+  \node[ax] (t11) at (3.6,-4.8){\textbf{T11 Value handle}\\{\tiny VH1--VH3}\\{\tiny Inline, External-pool, RCU-shared, MVCC, Chain-ref}\\{\tiny\itshape Def.\ Inline}};
+  \node[ax] (t12) at (7.2,-4.8){\textbf{T12 ISA}\\{\tiny IS1--IS3}\\{\tiny Amd64 (SSE2), AArch64 (NEON), PowerPC, RISC-V}\\{\tiny\itshape Def.\ Amd64}};
+  \node[ax] (t13) at (10.8,-4.8){\textbf{T13 Index org.}\\{\tiny io1--io3}\\{\tiny Clustered, Heap, IOT (embedded), Non-clustered}\\{\tiny\itshape Def.\ Heap}};
+  \node[ax] (t14) at (14.4,-4.8){\textbf{T14 I/O dispatch}\\{\tiny IO1--IO3}\\{\tiny In-memory, Buffered, Direct (O\_DIRECT), Mmap}\\{\tiny\itshape Def.\ In-memory}};
+  \node[ax] (t15) at (0,-7.2){\textbf{T15 Migration}\\{\tiny MG1--MG3}\\{\tiny None, Hot/Cold, Tier-based, Adaptive (ML)}\\{\tiny\itshape Def.\ None}};
+  \node[ax] (t16) at (3.6,-7.2){\textbf{T16 Filter}\\{\tiny FT1--FT3}\\{\tiny Bloom, Cuckoo, Range-SuRF (LOUDS), Xor}\\{\tiny\itshape (no None)}};
+  \node[ax] (t17) at (7.2,-7.2){\textbf{T17 Op. buffer}\\{\tiny QS1--QS6}\\{\tiny None, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Def.\ No-buffer}};
+  \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptive-LSM}\\{\tiny\itshape Def.\ Lazy}};
+  \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Reading}\\{\tiny Each axis $=$ a \texttt{Concept} with interchangeable building blocks (\emph{Strategy}); a composition picks exactly one per slot.}};
+\end{tikzpicture}} % chktex 31
+\caption{Gallery of the nineteen composition axes (T0--T18): per axis the implementation concept --- short name, sub-axis family and a representative selection of the interchangeable building blocks. Each axis is a \texttt{Concept} interface with several strategy building blocks (\emph{Strategy} pattern); a concrete composition occupies exactly one per slot. The \emph{default} (\enquote{Def.}) is a derived comparison baseline, not a code flag; for the large axes T0/T6/T17 the total building-block count is given in parentheses. The complete matrix with origin sources is given in Appendix~\ref{app:blocks}.}\label{fig:axes-gallery}
+\end{figure}
+
+\subsection{The One Architecture in Code}\label{sec:impl-architecture}
 The \emph{one} architecture from Section~\ref{sec:anatomy-model} is made visible to the outside at code level through an ABI-stable \emph{hull}. The living being
 \texttt{SearchAlgorithm} and its ABI-runtime view --- the \enquote{SearchEngine} --- are merely two views
 of the same entity across the module boundary, not a parallel construct: the layering
@@ -186,6 +227,7 @@ template<class... Ts> class SearchEngine; // ABI-runtime view of the being
 \caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase} and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the nineteen axes) and its ABI-runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), measured and driven through the \texttt{IDriveableTier}/\texttt{IObservableTier} contracts; on the right the per-axis implementation pattern repeated for each axis --- a two-layer \texttt{Concept}, a \texttt{requires}-guarded CRTP base, the \texttt{mp\_list} building-block family, and the compile-time resolution \texttt{resolve\_baustein}, which chooses per axis between the probe slot and the cache-engine default.}\label{fig:uml-interfaces}
 \end{figure}
 
+\subsection{From Profile to Tier Binary: Builder and Measurement Pipeline}\label{sec:impl-pipeline}
 The builder transforms each profile into a pre-compiled C++23 module; each permutation is identified by a
 bit-packed \emph{permutation flag} structure that grows, with the N-phase refinement, from nine banks
 (around 50~bits) to a wider \emph{permutation identifier} with fourteen banks (82~bits) and sub-bank
@@ -206,7 +248,6 @@ measurement couplings are separated from the production path by the
 \texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gating,
 so that the latter carries no measurement overhead, and continuous integration (GitLab CI plus a
 mirrored GitHub workflow) runs across all three repositories.
-% AXIS-T0..T18 gallery: fig:axes-gallery (4.3) DONE
 \begin{figure}[htbp]\centering
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
@@ -244,39 +285,121 @@ plumbing. \textbf{Path~B} (bottom, the recommended route) separates the two task
 \texttt{perm\_runner} loads and measures each binary individually (one DLL per process) through the observer
 interface \texttt{IObservableTier}.}\label{fig:pipeline}
 \end{figure}
-The nineteen composition axes are not abstract but each a concrete \emph{strategy concept} with several
-interchangeable building blocks, from which a concrete composition picks exactly one per slot.
-Figure~\ref{fig:axes-gallery} gathers all nineteen as a gallery --- per axis the short name, the sub-axis
-family and a representative selection of the building blocks; the complete building-block matrix with all
-origin sources is given in Appendix~\ref{app:blocks}, the SOTA contributions per axis in Table~\ref{tab:axes-overview}.
-\begin{figure}[htbp]\centering
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}[font=\footnotesize,
-  ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt}]
-  \node[ax] (t0) at (0,0){\textbf{T0 Search algorithm}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(21: 17 base $+$ 4 per-K)}\\{\tiny\itshape Def.\ Array256}};
-  \node[ax] (t1) at (3.6,0){\textbf{T1 Cache traversal}\\{\tiny CT1--CT2}\\{\tiny Linear-fanout, Hash-lookup, Binary-fanout}\\{\tiny\itshape Def.\ Linear}};
-  \node[ax] (t2) at (7.2,0){\textbf{T2 Slot mapping}\\{\tiny MP1--MP2}\\{\tiny Direct-placement, Pool-relative}\\{\tiny\itshape Def.\ Direct}};
-  \node[ax] (t3) at (10.8,0){\textbf{T3 Path compression}\\{\tiny PC1--PC3}\\{\tiny None, Byte-wise (ART), Patricia}\\{\tiny\itshape Def.\ None}};
-  \node[ax] (t4) at (14.4,0){\textbf{T4 Node type}\\{\tiny NT1--NT3}\\{\tiny Node4 / 16 / 48 / 256}\\{\tiny\itshape Def.\ Node256}};
-  \node[ax] (t5) at (0,-2.4){\textbf{T5 Memory layout}\\{\tiny HM1--HM4}\\{\tiny AoS, Cache-line-aligned, SoA, Bitmap (LOUDS), AoSoA}\\{\tiny\itshape Def.\ Cache-line}};
-  \node[ax] (t6) at (3.6,-2.4){\textbf{T6 Allocator}\\{\tiny AA1--AA7}\\{\tiny Hoard, Slab, Mimalloc, Jemalloc, TCMalloc, Buddy \dots\,(25)}\\{\tiny\itshape Def.\ Std-malloc}};
-  \node[ax] (t7) at (7.2,-2.4){\textbf{T7 Prefetch}\\{\tiny PF1--PF3}\\{\tiny None, Distance-estimator (ART), Hardware, Path-orient.}\\{\tiny\itshape Def.\ None}};
-  \node[ax] (t8) at (10.8,-2.4){\textbf{T8 Concurrency}\\{\tiny CC1--CC2}\\{\tiny None, Blocking, R/W, OLC, Lock-free, RCU, Hazard}\\{\tiny\itshape Def.\ None}};
-  \node[ax] (t9) at (14.4,-2.4){\textbf{T9 Serialization}\\{\tiny SR1--SR3}\\{\tiny Raw-binary, VarLen (LEB128), Succinct, LZ4/Delta}\\{\tiny\itshape Def.\ Raw-binary}};
-  \node[ax] (t10) at (0,-4.8){\textbf{T10 Telemetry}\\{\tiny TM1--TM3}\\{\tiny Leaf-only counter, Density-tracker, HDR-histogram}\\{\tiny\itshape Def.\ Leaf-only}};
-  \node[ax] (t11) at (3.6,-4.8){\textbf{T11 Value handle}\\{\tiny VH1--VH3}\\{\tiny Inline, External-pool, RCU-shared, MVCC, Chain-ref}\\{\tiny\itshape Def.\ Inline}};
-  \node[ax] (t12) at (7.2,-4.8){\textbf{T12 ISA}\\{\tiny IS1--IS3}\\{\tiny Amd64 (SSE2), AArch64 (NEON), PowerPC, RISC-V}\\{\tiny\itshape Def.\ Amd64}};
-  \node[ax] (t13) at (10.8,-4.8){\textbf{T13 Index org.}\\{\tiny io1--io3}\\{\tiny Clustered, Heap, IOT (embedded), Non-clustered}\\{\tiny\itshape Def.\ Heap}};
-  \node[ax] (t14) at (14.4,-4.8){\textbf{T14 I/O dispatch}\\{\tiny IO1--IO3}\\{\tiny In-memory, Buffered, Direct (O\_DIRECT), Mmap}\\{\tiny\itshape Def.\ In-memory}};
-  \node[ax] (t15) at (0,-7.2){\textbf{T15 Migration}\\{\tiny MG1--MG3}\\{\tiny None, Hot/Cold, Tier-based, Adaptive (ML)}\\{\tiny\itshape Def.\ None}};
-  \node[ax] (t16) at (3.6,-7.2){\textbf{T16 Filter}\\{\tiny FT1--FT3}\\{\tiny Bloom, Cuckoo, Range-SuRF (LOUDS), Xor}\\{\tiny\itshape (no None)}};
-  \node[ax] (t17) at (7.2,-7.2){\textbf{T17 Op. buffer}\\{\tiny QS1--QS6}\\{\tiny None, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Def.\ No-buffer}};
-  \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptive-LSM}\\{\tiny\itshape Def.\ Lazy}};
-  \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Reading}\\{\tiny Each axis $=$ a \texttt{Concept} with interchangeable building blocks (\emph{Strategy}); a composition picks exactly one per slot.}};
-\end{tikzpicture}} % chktex 31
-\caption{Gallery of the nineteen composition axes (T0--T18): per axis the implementation concept --- short name, sub-axis family and a representative selection of the interchangeable building blocks. Each axis is a \texttt{Concept} interface with several strategy building blocks (\emph{Strategy} pattern); a concrete composition occupies exactly one per slot. The \emph{default} (\enquote{Def.}) is a derived comparison baseline, not a code flag; for the large axes T0/T6/T17 the total building-block count is given in parentheses. The complete matrix with origin sources is given in Appendix~\ref{app:blocks}.}\label{fig:axes-gallery}
-\end{figure}
 
-With this, the apparatus is fully described --- from the repositories through the probe to the nineteen
-axes and their measurement-system levels. Chapter~\ref{ch:eval} lays out the methodology by which this
-apparatus is assessed.
+\section{Quality Assurance: Contract Tests per Layer}\label{sec:impl-contracts}
+The layer model E4--E0 with its frozen interface contracts was developed as a concept in
+Section~\ref{sec:anatomy-layers}; this section describes its realization as test infrastructure. The
+occasion is a concrete project experience: two implementation increments that changed several layers
+at once had to be rolled back completely because their defects arose from interactions between the
+levels that neither local tests nor line-by-line review made visible. For a system with a product
+space of more than $10^{14}$ combinations, multi-level changes are thus practically not acceptable
+for sign-off; the consequence is to complete each layer individually --- with an explicitly frozen
+interface contract to the neighbouring level, its own test harness, and its own definition of done.
+
+The carrying test principle reads: \emph{each layer is tested against a compile-time substitute of
+its neighbouring level.} The contract tests are ordinary test targets of the build pipeline; the
+neighbouring level is replaced by a \emph{fake} --- a template- and concept-based stand-in in the
+test scope, no runtime switch in production code. A layer can therefore be finished and signed off
+before the deeper level even consumes its values, and the test question of every boundary --- does
+the layer pass its definition on to the next one \emph{without loss}?
+(Section~\ref{sec:anatomy-layers}) --- turns from a design principle into an executable acceptance
+test.
+
+Per layer this concretizes as follows: for the definition and evaluation layer~E4 the harness checks
+the translation of the declarative XML profiles into the axis-level structure --- golden fixtures
+compare the axis levels emitted from a profile structurally against an expected reference, with a
+fake~E3 replacing the permutation tree; neither tree construction nor build orders are needed to
+sign off the E4$\to$E3 boundary. For the permutation B\textsuperscript{+} tree~E3 the harness checks
+the bijection of the binary identity: from axis-level fixtures the permutation enumeration is run
+and, per path, the mixed-radix-encoded binary identifier is translated back and forth (counting plus
+signature round trip) --- against a fake~E2 that builds not a single binary; added to this is a
+conformity gate in the full-run path that checks every imported binary against the frozen contract
+before measurement. For the tier binaries~E2 the contract is the ABI itself: an emitted reference
+DLL is loaded and must satisfy the frozen interface sequence --- \texttt{IAnatomyBase},
+\texttt{IObservableTier}, and \texttt{IResourceControllableTier} including a correct capability
+report ---, and a control request above the reported capabilities must be answered deterministically
+with the frozen error value of the apply response (\texttt{apply}\,$==$\,5) instead of being
+silently accepted; the accompanying fake~E1 creates and applies the runtime controls but does not
+demand any consumption effect --- that belongs to the acceptance of E1. For the runtime
+configuration~E1, finally, edge tests check the corner cases of the dynamic regime: that a reused
+tier is fully reset between two runs, that a pool budget below the live data set is handled honestly
+instead of silently violated, and that every applied control becomes visible as a named column in
+the persisted result file --- checked against the CSV output, not the in-process state ---, plus the
+preservation of the two-phase operation loop (discarded warm-up, measured run) as an invariant.
+
+Completion follows the layering top-down --- E4, E3, E2, then the measurement cross-cutting
+concern~M immediately before E1 ---, and the infrastructure~E0 is deliberately consolidated last
+(Section~\ref{sec:anatomy-layers}); the E3$\to$E2 boundary is already golden-tested in the current
+state, the remaining harnesses are fixed as the acceptance definition of the ongoing layer
+completion. The cross-cutting concern~M has its own harness that gets by without any tier binary: a
+synthetic measurement source is driven through the system-axis root and its values traced into the
+result columns; its code shape is described in the following section.
+
+\section{Measurement Cross-Cutting Concern: System Axes in Code}\label{sec:impl-system-axes}
+The system axes --- conceptually the \emph{blood} of the apparatus, permeating all layers without
+ever touching the binary identity (Section~\ref{sec:measurement-system}) --- have their own common
+root in code, separate from the anatomy hierarchy: the CRTP base \texttt{SystemAxis} (file
+\texttt{system\_axis.hpp}). It is built as a zero-cost abstraction --- an empty, non-polymorphic
+base without virtual calls in the hot path, whose conformance is enforced by a dedicated concept ---
+and translates the concept invariants into compile-time completeness gates: a \texttt{consteval}
+gate checks that each of the sixteen measurement categories is assigned to exactly one of the two
+regimes (nine time- and observer-based, seven counter-based PMC categories,
+Section~\ref{sec:measurement-system}), and a second one rejects any system axis that mixes
+categories of both regimes --- the regime-mixing ban thus breaks compilation rather than, later, the
+evaluation.
+
+The sixteen measurement categories are carried by a single \texttt{constexpr} registry
+(\texttt{measurement\_\allowbreak axis\_\allowbreak registry.hpp}): per category the name and the regime derived from the
+one source. A static gate enforces that the table index matches the category value, that no name is
+empty, and that no regime deviates from the root assignment --- a seventeenth category or a silent
+index drift thereby becomes a compilation error. The registry names are at the same time the
+reporting vocabulary of the evaluation layer (the column names of the E4 reports), and a
+compile-time iteration over all entries makes the registry available to metaprogramming.
+
+The acquisition is abstracted by a vendor-neutral measurement-source interface
+(\texttt{i\_\allowbreak measurement\_\allowbreak source.hpp}). \texttt{IMeasurementSource} describes a source by its
+\emph{structural} capabilities --- which of the ten event semantics (cycles, instructions,
+L1/L2/L3 cache, dTLB and branch misses, memory stalls, coherence invalidations, energy) it can
+express at all --- and delivers per measurement interval a \texttt{MeasuredDelta} with
+\emph{per-event validity}: the value zero with the validity flag set is a genuine zero measurement;
+an unset flag means \emph{not measured}. The capability report never promises a measurement
+guarantee --- the truth per measurement is carried by the validity flags alone. As a guaranteed,
+explicitly \emph{degraded} fallback there is the wall-clock source (\texttt{WallClockSource}): it
+delivers only a nanosecond proxy for the cycles and leaves all hardware events honestly invalid;
+the existing PMC family is attached by an adapter that advertises only the seven structurally
+expressible channels.
+
+The honest-0 doctrine (Section~\ref{sec:measurement-system}) is programmed into these building
+blocks rather than merely documented. The wall-clock system axis refuses to label its mean as a
+percentile: requests for p50 through p999 are answered as invalid, since the total time divided by
+the operation count is a mean, and a mean reported as a percentile would be a phantom value ---
+genuine percentiles are only delivered by the HDR histogram. The cache-line utilization is collected
+as a genuine utilization ratio --- used payload bytes against occupied cache lines times line
+width ---, not as a raw line counter, which would be precisely the \emph{inverse} metric. Memory
+footprint and fill-buffer occupancy remain invalid until a genuine peak column or a hardware source
+exists (the software operation buffer of the queuing axis is no proxy for the hardware line-fill
+buffer), and IPC/CPI remains invalid as long as the counter POD carries no instruction and cycle
+columns.
+
+At the evaluation end of the cross-cutting concern lies the germ of the curve fitting from
+Section~\ref{sec:heuristics-curves} as a skeleton (\texttt{curve\_fit.hpp}): a measurement-axis
+curve over the working-set size is fitted by least squares to the model $y = a\log_2 x + b$ --- the
+form expected for cache-hierarchy curves. Here too, honest emptiness replaces a phantom fit: the fit
+status distinguishes \emph{no data}, \emph{underdetermined} (fewer than two points or no spread of
+the x values), and \emph{invalid data} (undefined logarithm, non-finite values) explicitly from the
+success case --- never an \emph{Ok} with NaN coefficients ---, and the result reader accepts only
+strictly numeric cells and counts skipped rows as a diagnostic instead of silently turning them into
+phantom points.
+
+Completed with this are the root including its gates, the registry, the source abstraction with a
+degraded fallback, and the fit germ; the wiring of these cross-cutting building blocks into runner
+and probe dock as well as the mapping of the registry names onto the existing columns of the result
+files are the next layer increments (Section~\ref{sec:impl-contracts}). The three concept
+invariants --- system axes are not permutable, do not stand in the permutation tree, and never touch
+the binary identity --- are preserved by the construction itself: the root docks onto the host-side
+result structures in a read-only fashion and remains invisible to the ABI boundary.
+
+With this, the apparatus is fully described --- from the repositories through the probe and the
+nineteen axes to the measurement-system levels, their layer-wise quality assurance, and the
+measurement cross-cutting concern in code. Chapter~\ref{ch:eval} lays out the methodology by which
+this apparatus is assessed.
