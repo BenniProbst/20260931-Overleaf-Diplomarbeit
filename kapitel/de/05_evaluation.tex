@@ -85,6 +85,51 @@ als N/A ausgewiesen statt verdeckt emuliert; für jede Fremdbibliothek werden Co
 Allokator und Commit-Hash mitgeloggt, und jede Konfiguration wird in mehreren getrennten Läufen mit über
 HDR-Histogramme bestimmten Perzentilen vermessen.
 
+Über die drei Hypothesen hinaus erhält die Auswertung eine vierte, eigenständige
+\emph{Evaluations-Dimension}: den heuristischen Gegenbeweis. Sein Konzept ist in
+Kapitel~\ref{ch:measurement} entwickelt --- der Hybrid-Modus kompiliert die heuristisch geschätzte
+Rekombination der Tier-Binaries selbst zu einer Tier-Binary und dockt sie am Prüf-Dock an
+(Abschnitt~\ref{sec:heuristics-modes}); das Messkurven-Typsystem liefert die Schätzgrundlage, und
+seine Messfehler-Erkennung formuliert Abschnitt~\ref{sec:heuristics-curves}. Die Bewertungsfrage
+dieser Dimension lautet: \enquote{Ist die heuristisch geschätzte Rekombination der Tier-Binaries
+schneller als die existierenden Paper-Algorithmen?} Anders als H1--H3, die Aussagen über den
+Entwurfsraum prüfen, prüft der Gegenbeweis den Apparat der Arbeit selbst: ob die aus den Messkurven
+geschätzte Rekombination im realen Wall-Clock-Verhalten hält, was die Kurven versprechen.
+
+Der Prüfplan hierfür ist zweistufig festgelegt; da die zugehörigen Messläufe noch ausstehen, ist er
+--- wie das Zielbild in Abschnitt~\ref{sec:heuristics-curves} --- im Futur formuliert. Die erste
+Stufe wird den Messfehler quantifizieren, den die Mess-Instanzen selbst eintragen, denn die
+Schätzgrundlage der Heuristik sind \emph{beobachtete} Kurven, ihr Anspruch aber gilt dem
+unbeobachteten Produktions-Verhalten. Dazu wird dasselbe Experiment in drei Bau-Varianten aufgelegt:
+\begin{enumerate}
+  \item Beobachter in \emph{allen} Tier-Binaries \emph{und} im Heuristik-Hybrid-Tier,
+  \item Beobachter \emph{nur} im Heuristik-Tier-Binary,
+  \item Beobachter in \emph{keinem} Kompilat --- gemessen wird nur die Wall-Clock.
+\end{enumerate}
+Die Differenzen zwischen den drei Varianten beziffern den Beobachter-Overhead getrennt nach seinem
+Ursprung --- Mess-Organe der untergebenen Tiere (Differenz von Variante~1 zu~2) gegen Mess-Kommandos
+des Hybrid-Tiers (Differenz von Variante~2 zu~3) --- und ergeben je Workload und Plattform ein
+\emph{Unsicherheitsband}, unterhalb dessen zwei Konfigurationen als nicht unterscheidbar gelten.
+
+Die zweite Stufe wird der komplementäre \emph{vierte Schritt} der finalen heuristischen
+Zusammenstellung sein: Die dem Heuristik-Tier untergebenen Tier-Binaries --- nicht die final
+optimierte Haupt-Binary --- werden ohne Mikro- und Makro-Benchmarks und ohne Beobachter neu gebaut,
+sodass kein Mess-Artefakt im Kompilat verbleibt. Verglichen wird dann rein an der Wall-Clock, in
+zwei Vergleichsmengen mit festgelegtem Vorrang: primär gegen die rekonstruierten Paper-Algorithmen
+--- der Paper-Vergleich geht vor, denn er beantwortet die Bewertungsfrage wörtlich ---, sekundär
+gegen alle bekannten Tier-Binary-Permutationen, insbesondere das beste Einzel-Binary; dieser zweite
+Vergleich ordnet ein, ob ein etwaiger Vorsprung der Heuristik als Ganzer oder schlicht einer einzeln
+überlegenen Permutation zuzuschreiben ist.
+
+Daraus folgt die Entscheidungsregel: Der Gegenbeweis gilt je Workload-Klasse als \emph{erbracht},
+wenn die beobachterfrei neu gebaute Rekombination die schnellste Paper-Rekonstruktion in der
+Wall-Clock schlägt und der Abstand das Unsicherheitsband der Bau-Varianten übersteigt; er gilt als
+\emph{verfehlt}, wenn ein Paper-Algorithmus oder das beste Einzel-Binary vorn liegt --- auch dieses
+Ergebnis wäre ein Resultat, denn es bezifferte erstmals, wie viel Schätzfehler zwischen
+Kurven-Prognose und realem Verhalten liegt. Die Messdaten dieser Dimension stehen aus; sie werden
+nach den ersten vollständigen Messläufen zusammen mit den Reihen A--C in
+Abschnitt~\ref{sec:eval-results} eingespeist.
+
 \section{Ergebnisse und Analyse}\label{sec:eval-results}
 Zum Zeitpunkt der Erstellung sind Methodik und Auswertungs-Pipeline vorhanden und auf Beispieldaten
 verifiziert; eine erste reale Smoke-Messreihe (43 Permutationen, echte DLL-Messung auf der
