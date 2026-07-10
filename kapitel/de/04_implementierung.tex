@@ -87,7 +87,7 @@ und ein enges Achsen-Concept) sowie eine durch eine \texttt{requires}-Klausel ab
 PRT-ART-Fallback-Achsen zur Übersetzungszeit über \texttt{resolve\_baustein.hpp} (Concept-geprüftes
 \texttt{if constexpr} über Tag-Spezialisierungen) aufgelöst,
 sodass der Hot-Path weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches enthält --- die zero-cost
-abstraction aus Abschnitt~\ref{sec:software-means}. Jeder SOTA-Entwurf und jeder Allokator wird über einen
+abstraction aus Abschnitt~\ref{sec:anatomy-model}. Jeder SOTA-Entwurf und jeder Allokator wird über einen
 dünnen \emph{Adapter} integriert, der die Original-Implementierung hinter dem Engine-ABI bereitstellt:
 Allokator-Vendors werden über per-Vendor-Include-Shims (\texttt{\#if COMDARE\_AXIS\_06\_USE\_<X>} mit
 Forward-Stubs), SOTA-Bausteine über constexpr-Enable-Flags samt \texttt{mp\_filter}
@@ -98,6 +98,98 @@ historisches Detektions-Define; die Integration des
 hierarchischen Prefetching~\cite{zhang2025hierarchical} liefert zusätzlich einen Call-Graph-Analyzer zur
 Übersetzungszeit (\texttt{p27\_bundle\_finder}, ein C++23-Port des Original-Werkzeugs \texttt{hp\_soft},
 der Funktionen mit Subtree-Footprint oberhalb eines Schwellwerts als Bundle-Einstiegspunkte identifiziert).
+
+Die \emph{eine} Architektur aus Abschnitt~\ref{sec:anatomy-model} wird auf Code-Ebene über eine ABI-stabile \emph{Hülle} nach außen sichtbar. Das Lebewesen
+\texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind nur zwei
+Sichten desselben Gegenstands über die Modulgrenze, kein paralleles Konstrukt: Die Schichtung
+\texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} trennt die Rollen (vgl.\ Abschnitt~\ref{sec:repos}) ---
+die \texttt{CacheEngine} als Achsen-Bausteine-Bibliothek, die \texttt{ExecutionEngine} als Wurzel der
+Ausführungs- und Mess-Werkzeuge (OS-Primitiven; im Experiment-Modus der Mess-Aggregator über genau eine
+Beobachter-Schnittstelle) und die \texttt{SearchEngine} als die über genau diese Schnittstelle vermessene
+Such-API-Sicht (Abbildung~\ref{fig:one-architecture}). Achsenlose \emph{Viren} stehen als Geschwister
+unter derselben Wurzel, tragen aber keine Anatomie.
+
+\begin{figure}[!htbp]
+  \centering
+  \resizebox{0.95\textwidth}{!}{%
+  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=3pt, text width=3.5cm}]
+    \node[box,fill=blue!8,text width=5.3cm] (root) at (0,0) {\texttt{IExecutionEngine} --- \textbf{Treiber der Messung}\\{\scriptsize \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown}; messbarer Vertrag: Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
+    \node[box] (ana) at (-4.4,-2.1) {\texttt{IAnatomyBase}\\{\scriptsize Lebewesen (Anatomie-Gattungen)}};
+    \node[box] (vir) at (4.4,-2.1) {\texttt{IVirus\-Execution\-Engine}\\{\scriptsize Virus (achsenlos, dennoch messbar)}};
+    \node[box] (sa) at (-6.2,-4.1) {SearchAlgorithm-Gattung\\{\scriptsize $\equiv$ \enquote{Lebewesen} (Säugetier)}};
+    \node[box] (cont) at (-2.0,-4.1) {Container-Gattung\\{\scriptsize Set/Sequence/Adapter/View}};
+    \node[box] (graph) at (2.2,-4.1) {Graph-Gattung\\{\scriptsize eigener Organsatz}};
+    \node[box] (body) at (-7.4,-6.1) {\texttt{Search\-Algorithm\-Anatomy<C>}\\{\scriptsize \emph{Körper}: Komposition $+$ \emph{Verdrahtung} der 19 Organe}};
+    \node[box] (abi) at (-3.4,-6.1) {\texttt{Search\-Algorithm\-Abi\-Adapter<A>}\\{\scriptsize ABI-Laufzeit-Sicht (\enquote{SearchEngine})}};
+    \node[box,fill=orange!8] (comp) at (-7.4,-7.9) {konkrete Composition (z.\,B.\ \texttt{ArtComposition})\\{\scriptsize Ebene 4: Belegung \emph{aller} 19 Achsen $=$ ein Tier}};
+    \node[box,fill=orange!16] (bin) at (-7.4,-9.9) {Tier-Binary \texttt{comdare\_perm\_\-<fp>.dll}\\{\scriptsize Ebene 5: je Permutation kompiliert $+$ 3 Build-Achsen}};
+    \draw[->] (root) -- (ana);
+    \draw[->] (root) -- (vir);
+    \draw[->] (ana) -- (sa);
+    \draw[->] (ana) -- (cont);
+    \draw[->] (ana) -- (graph);
+    \draw[->] (sa) -- (body);
+    \draw[->] (sa) -- (abi);
+    \draw[->] (body) -- (comp);
+    \draw[->] (comp) -- (bin);
+  \end{tikzpicture}} % chktex 31
+  \caption{Die \emph{eine} Architektur als einzige Hierarchie ohne Parallel-Bäume. An der Wurzel steht
+  \texttt{IExecutionEngine} als \emph{Treiber der Messung} --- der universelle messbare Vertrag
+  (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) über alle drei Engine-Arten Anatomy,
+  Virus und Hybrid; unter ihm verzweigen die anatomie-tragenden \emph{Gattungen} (SearchAlgorithm,
+  Container, Graph) und die achsenlosen \emph{Viren}. \texttt{SearchAlgorithm} \emph{ist} das fokale
+  Lebewesen (Säugetier); seine Anatomie ist sein \emph{Körper} --- die feste Komposition \emph{und
+  Verdrahtung} der 19 Organe ---, und \enquote{SearchEngine} nur dessen ABI-Laufzeit-Sicht. Der
+  Säugetier-Ast ist bis zum Individuum ausgezogen: eine konkrete Achsen-Composition (Ebene~4) wird je
+  Permutation als eigenständige Tier-Binary kompiliert (Ebene~5). Container (schlüsselloser Speicher) und
+  Graph tragen eigene Organsätze.}\label{fig:one-architecture}
+\end{figure}
+
+Konkret ist die Modulgrenze eine C-stabile Schnittstelle, die je Permutation genau ein Lebewesen
+exportiert; ihre variadische Hybrid-API spezialisiert sich nach Parameterzahl, und komplexe Schlüssel
+werden von einer Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert
+(Abbildung~\ref{fig:abi}). Wie diese und die übrigen Code-Interfaces im Detail zusammenhängen, fasst die
+UML-Landkarte in Abbildung~\ref{fig:uml-interfaces} zusammen.
+
+\begin{figure}[!htbp]
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
+// C-stabile Modulgrenze: exportiert genau EIN Lebewesen je Permutation
+extern "C" IAnatomyBase* comdare_create_anatomy();
+
+// Variadische Hybrid-API je Parameterzahl (Schluessel K, Werte V):
+//   1 Parameter  ->  std::vector<V>
+//   2 Parameter  ->  std::map<K, V>
+//   N > 2        ->  std::map<K,std::tuple<V1,...,VN>>
+template<class... Ts> class SearchEngine;   // ABI-Laufzeit-Sicht des Lebewesens
+\end{lstlisting}
+  \caption{Die ABI-stabile C-Modulgrenze und die variadische Hybrid-API\@. Komplexe Schlüssel werden
+  von einer Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert.}\label{fig:abi}
+\end{figure}
+
+\begin{figure}[htbp]\centering
+\resizebox{0.96\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  iface/.style={draw,rounded corners,fill=blue!7,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize},
+  comp/.style={draw,fill=green!8,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize}]
+  \node[font=\bfseries\scriptsize] at (-4.9,4.7){Engine-/Anatomie-Hierarchie};
+  \node[iface,minimum height=1.0cm] (exec) at (-4.9,3.95){IExecutionEngine\\{\normalfont\scriptsize Treiber der Messung}};
+  \node[iface] (anat) at (-4.9,2.55){IAnatomyBase};
+  \node[iface] (virus) at (-0.6,3.95){IVirusExecutionEngine};
+  \node[comp] (body) at (-4.9,1.4){SearchAlgorithmAnatomy<C>};
+  \node[comp] (abi) at (-4.9,0.25){SearchAlgorithmAbiAdapter<A>};
+  \node[iface,fill=orange!10] (drive) at (-4.9,-0.95){IDriveableTier / IObservableTier};
+  \draw[->] (exec)--(anat); \draw[->] (exec.east) to[bend left=10] (virus.west);
+  \draw[->] (anat)--(body); \draw[->] (body)--(abi); \draw[->] (abi)--(drive);
+  \node[font=\bfseries\scriptsize] at (4.9,4.7){Implementierungs-Muster je Achse ($\times$19)};
+  \node[iface] (topic) at (4.9,3.9){TopicConcept $\wedge$ AxisConcept};
+  \node[comp] (crtp) at (4.9,2.7){AxisBase<Derived> (CRTP)};
+  \node[comp] (variant) at (4.9,1.5){mp\_list<Baustein$_{1..k}$>};
+  \node[iface] (resolve) at (4.9,0.3){resolve\_baustein<Tag>};
+  \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
+  \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{komponiert 19 Achsen} (topic.west);
+\end{tikzpicture}} % chktex 31
+\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase} und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der neunzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird; rechts das je Achse wiederholte Implementierungs-Muster --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die \texttt{mp\_list}-Baustein-Familie und die Übersetzungszeit-Auflösung \texttt{resolve\_baustein}, die je Achse zwischen Prüfling-Slot und Cache-Engine-Standard wählt.}\label{fig:uml-interfaces}
+\end{figure}
 
 Der Builder überführt jedes Profil in ein vorkompiliertes C++23-Modul; jede Permutation ist durch eine
 bit-gepackte \emph{Permutations-Flag}-Struktur identifiziert, die mit der N-Phasen-Verfeinerung von neun

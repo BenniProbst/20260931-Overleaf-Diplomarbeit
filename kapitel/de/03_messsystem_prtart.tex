@@ -4,7 +4,8 @@
 % und greift auf ALLE Belange von Kapitel 2 zurück. ALLE Tabellen liegen in diesem Kapitel.
 
 Auf den Grundlagen aus Kapitel~\ref{ch:foundations} aufbauend führt dieses Kapitel die eigentlichen Belange der
-Aufgabe ein und entwickelt das Mess-System als deren \emph{Lösung} --- demonstriert am Prüfling PRT-ART\@.
+Aufgabe ein und entwickelt als deren \emph{Lösung} das Anatomie-Modell als Lösungskonzept und das darauf
+aufbauende Mess-System --- demonstriert am Prüfling PRT-ART\@.
 
 \section{Belange der Aufgabenstellung}\label{sec:task-concerns}
 Die Aufgabe verlangt, cache-bewusste Suchalgorithmen so zu zerlegen und zu vermessen, dass der Beitrag jeder
@@ -19,6 +20,24 @@ Leitgröße: Nicht die asymptotische Komplexität, sondern das Cache-Line-Verhal
 entscheidet über die Leistung (Kapitel~\ref{ch:foundations}), und genau dieses Verhalten soll je Achse
 isoliert messbar werden.
 
+Diesen Zerlegungs-Anspruch veranschaulicht der \emph{Entwurfsraum}: Jede dieser Teilentscheidungen ---
+etwa Knotentyp, Speicher-Layout oder Allokator --- spannt eine eigene Achse auf, und jeder
+Stand-der-Technik-Algorithmus ist ein Punkt im kartesischen Produkt dieser Achsen
+(Abbildung~\ref{fig:design-space}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick]
+  \draw[->] (0,0) -- (4.8,0) node[right,font=\scriptsize,align=left]{Knoten-\\typ (T4)};
+  \draw[->] (0,0) -- (0,3.3) node[above,font=\scriptsize]{Layout (T5)};
+  \draw[->] (0,0) -- (-1.7,-1.3) node[below left,font=\scriptsize]{Allokator (T6)};
+  \foreach \x in {1,2,3}\foreach \y in {1,2,3}{\fill[black!35] (\x,\y) circle (1.6pt);}
+  \fill[red] (2,2) circle (3.2pt);
+  \node[red,right] at (2.15,2.25){ART $=$ ein Punkt};
+  \node[draw,rounded corners,fill=blue!5,align=left,font=\scriptsize] at (3.5,2.95){\textbf{Legende:} 3 von\\19 Achsen (T0--T18)};
+  \node[align=center,font=\scriptsize] at (1.6,-2.2){Jeder Stand-der-Technik-Algorithmus\\$=$ ein Punkt im kartesischen Produkt der Achsen};
+\end{tikzpicture}
+\caption{Der Entwurfsraum: die Achsen spannen ein kartesisches Produkt auf; ein konkreter Algorithmus ist ein Punkt darin. Zur Veranschaulichung sind drei der neunzehn Achsen gewählt --- das reale Speicherorgan aus Knotentyp~(T4), Speicher-Layout~(T5) und Allokator~(T6); der volle Entwurfsraum hat neunzehn Dimensionen.}\label{fig:design-space}
+\end{figure}
+
 Der Stand der Technik (Kapitel~\ref{ch:foundations}) legt dabei die zentrale Lücke offen: Jede der
 untersuchten Arbeiten optimiert nur wenige Achsen isoliert, und im untersuchten Korpus belegt \emph{kein
 einziges Verfahren alle neunzehn Achsen gemeinsam}. Manche Achsen sind ausschließlich mit Baseline- oder
@@ -26,6 +45,16 @@ Lehrbuch-Varianten besetzt (das Mapping zwischen Algorithmus- und Cache-Traversi
 als \emph{Mess-Ziel} auf (der dTLB), die räumliche Such-Klasse fehlt ganz, und Achsen wie Ein-/Ausgabe,
 Migration, Filter und Pufferung sind zwar je einzeln, aber nie gemeinsam mit den Such-Achsen in einem
 Entwurf belegt.
+
+Aus der Gegenüberstellung cache-bewusster und cache-oblivious Entwürfe (Abschnitt~\ref{sec:hardware-history})
+leitet die Arbeit einen dritten, dazwischenliegenden Weg ab: Die tatsächlichen Cache-Eigenschaften (Line-Größe,
+Hierarchie-Tiefe, Topologie) werden je Zielplattform \emph{ermittelt} und gehen als feste Größen in eine
+systemoptimierte Binary ein, während die \emph{konfigurierbaren} cache-nahen Einstellungen
+(Prefetch-Distanz, Stapel- und Inline-Schwellen, Pool-Budgets) als Achsen-Parameter gegen eine bereits
+geladene Binary permutiert werden --- abgestuft nach dem, was Hardware und Betriebssystem erlauben, von
+voll laufzeit-konfigurierbar (mutables Linux mit MSR-Zugriff) über übersetzungsstatisch (immutable
+Betriebssysteme) bis fixiert (read-only-Cache-Register auf ARM und RISC-V). So wird cache-oblivious-Verhalten
+um \emph{gemessenes} Lokalitätswissen ergänzt.
 
 Hinzu kommt eine methodische Lücke: Ergebnisse werden in nicht vergleichbaren Settings berichtet, und die
 häufige Wahl szenariospezifischer, oft günstig zugeschnittener Lastprofile erschwert einen fairen
@@ -36,8 +65,8 @@ Mess-Architektur}, die sie als explizite Konfigurationen rekonstruiert und auf g
 vermisst; denn cache-aware Algorithmen sind ohne eine Aufteilung der das Caching maßgeblich bestimmenden
 Eigenschaften nicht differenzierbar. Welche der katalogisierten Instanzen das Framework übernimmt und
 welche es als überholt ersetzt, entwickelt der folgende Abschnitt~\ref{sec:sota-instances} dialektisch
-(These--Antithese--Synthese); das Mess-System selbst (Abschnitt~\ref{sec:measurement-system}) ist die
-Lösung, die diese Lücke schließt.
+(These--Antithese--Synthese); das Lösungskonzept (Abschnitt~\ref{sec:anatomy-model}) und das darauf
+aufbauende Mess-System (Abschnitt~\ref{sec:measurement-system}) sind die Lösung, die diese Lücke schließt.
 
 \section{Stand der Technik als Achsen-Instanzen}\label{sec:sota-instances}
 Die bekannten Verfahren erscheinen nun systematisch als Achsen-Kompositionen; die vollständigen Kataloge liegen
@@ -45,7 +74,7 @@ hier.
 Diese Aneignung verläuft \emph{dialektisch} (These--Antithese--Synthese): je Achse wird ein fremdes Organ
 \emph{übernommen} (These) oder eine überholte Annahme \emph{ersetzt} (Antithese), woraus der eigene
 Beitrag als Synthese hervorgeht. Leitend ist der \enquote{dritte Weg} aus
-Abschnitt~\ref{sec:hardware-history} --- gemessenes Lokalitätswissen statt fest verdrahteter oder
+Abschnitt~\ref{sec:task-concerns} --- gemessenes Lokalitätswissen statt fest verdrahteter oder
 ignorierter Cache-Bewusstheit ---, der jede Achse als orthogonales, permutierbares und einzeln messbares
 Organ explizit macht. Bei vielen Achsen ist die Antithese keine überholte Fremd-Instanz, sondern die
 implizite Annahme, die Entscheidung gar nicht als wählbar zu betrachten; die Synthese besteht dann darin,
@@ -303,6 +332,73 @@ abgeleitet.
   {\footnotesize Op-Mix = Anteile von Einfügen/Lookup/Löschen/Scan/RMW\@; neg\% = Anteil negativer Lookups.\par}
 \end{table}
 
+Der hier sezierte Stand der Technik beruht auf einem festen Korpus: Die Analyse stützt sich
+auf 33~tiefenanalysierte Suchalgorithmus-Veröffentlichungen (P01--P33) und einen parallelen
+Allokator-Korpus aus 23~Arbeiten (A01--A23), deren Achsen-Belegung jeweils als XML-Profil in der
+\texttt{comdare-cache-engine} persistiert ist; die vollständigen Bausteine- und Allokator-Matrizen führt
+der Anhang. Die achsenweise Sezierung dieses Korpus folgt einer web-verifizierten Provenienz-Map über
+rund 110~Organ-Algorithmen; jeder
+Stand-der-Technik-Algorithmus erscheint so als ein Punkt im kartesischen Produkt der Achsen
+(Abbildung~\ref{fig:design-space}). Dass das Achsen-Gerüst auch nicht-baumartige Verfahren trägt, belegt
+eine reine Hash-Tabelle als Gegenprobe innerhalb der SearchAlgorithm-Gattung --- als zwei wählbare
+T0-Bausteine, von denen je Permutation genau einer gewählt wird und die beide permutiert werden: ein
+Open-Addressing-Hash nach Knuth (S14, implementiert) und die SwissTable~\cite{abseil_swisstable}
+(als eigener Baustein vorgesehen). Die Gegenprobe erfüllt das Punktanfrage-Subset des
+\texttt{std::map}-Interface (\texttt{find}/\texttt{insert}/\texttt{erase}), belegt ein limitiertes
+Achsen-Subset --- Allokation, Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD bleiben geteilt,
+die trie-spezifischen Achsen entfallen --- und erfordert so keine eigene Gattung.
+
+Die Veröffentlichungen entstammen sechs thematischen \emph{Herkunfts-Clustern}, die hier nur der
+ganzheitlichen Einordnung jedes Lebewesens dienen, bevor es in seine Organe zerlegt wird. Die
+\emph{Trie-Familie} umfasst ART (P01)~\cite{leis2013art}, HOT (P02)~\cite{binna2018hot}, Masstree
+(P03)~\cite{mao2012masstree}, CoCo-Trie (P04)~\cite{boffa2024coco}, START (P05)~\cite{fent2020start}
+sowie die succinct-Tries LOUDS (P09)~\cite{jacobson1989louds} und SuRF (P10)~\cite{zhang2018surf}. Die
+\emph{Hybrid- und B\textsuperscript{+}-Familie} vereint den B\textsuperscript{2}-Baum
+(P06)~\cite{schmeisser2022b2tree}, Wormhole (P07)~\cite{wu2019wormhole} und die cache-sensitiven CSS-,
+CSB\textsuperscript{+}- und Hankins-Bäume (P11--P13)~\cite{rao1999css,rao2000csb,hankins2003nodesize}.
+Die \emph{Layout-Theorie} reicht von Samuel (P14)~\cite{samuel2005procaware} und Graefe/Larson
+(P15)~\cite{graefe2001btree} über die cache-oblivious Entwürfe von Bender et
+al.\ (P16/P17)~\cite{bender2000cobtree,bender2005coboblivious,bender2002treelayout,bender2002scanning,bender2002orderlist}
+bis zu den layout-invarianten Bäumen von Saikkonen/Soisalon-Soininen
+(P18/P19)~\cite{saikkonen2008multilevel,saikkonen2016layout}. Das \emph{Prefetching} umfasst \emph{B-Trees
+Are Back} (P20)~\cite{mueller2025btreesback}, die Prefetching-B\textsuperscript{+}-Bäume von Chen et
+al.\ (P21/P22)~\cite{chen2001prefetch,chen2002fractal}, Khan (P23)~\cite{khan2010adaptive}, Naderan-Tahan
+(P24)~\cite{naderan2016adaptivefilter}, Mahling (P25)~\cite{mahling2025hotpath} sowie Zhang
+(P26/P27)~\cite{zhang2024pathprefix,zhang2025hierarchical} und Kuehn (P28)~\cite{kuehn2023bplustree}. Die
+\emph{Synchronisation} trägt das optimistische Lock-Coupling von ART (P08)~\cite{leis2016olc}, RCU
+(P29)~\cite{mckenney2001rcu} und Hazard-Pointer (P30)~\cite{michael2004hazard}; die hardware-nahe
+\emph{TU-Dresden-Linie} schließlich Ungethüm (P31)~\cite{ungethuem2017survey}, Schmidt
+(P32)~\cite{schmidt2025hbm} und VAMPIR (P33)~\cite{berthold2023vampir}. Der parallele
+\emph{Allokator-Korpus} (A01--A23) spannt von den Klassikern dlmalloc~\cite{lea1996dlmalloc},
+Hoard~\cite{berger2000hoard}, Slab~\cite{bonwick1994slab,bonwick2001vmem} und Michaels lock-freier
+Allokation~\cite{michael2004lockfree} über die mehrkern-skalierbaren mimalloc~\cite{leijen2019mimalloc},
+jemalloc~\cite{evans2006jemalloc}, TCMalloc~\cite{ghemawat2005tcmalloc}, snmalloc~\cite{lietar2019snmalloc},
+scalloc~\cite{aigner2015scalloc}, rpmalloc~\cite{jansson2017rpmalloc} und lrmalloc~\cite{leite2018lrmalloc}
+bis zu den cache-aware/vorhersagbaren CAMA~\cite{herter2011cama}, NUMAlloc~\cite{yang2023numalloc},
+StarMalloc~\cite{starmalloc2024} und PIM-malloc~\cite{pimmalloc2026}.
+Abbildung~\ref{fig:sota-gallery} verdichtet die wichtigsten rekonstruierten Suchstrukturen zu einer
+Galerie --- je Verfahren seine Herkunfts-Klasse, die charakteristische Struktur-Idee und die Achsen, an
+denen es seinen Hauptbeitrag leistet; alle erscheinen so als Punkte im gemeinsamen Entwurfsraum.
+\begin{figure}[htbp]\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,
+  so/.style={draw,rounded corners,fill=orange!8,minimum width=4.0cm,minimum height=2.0cm,text width=3.75cm,align=center,inner sep=2pt}]
+  \node[so] (a1) at (0,0){\textbf{ART} {\scriptsize(P01)}\\{\tiny Trie}\\[1pt]{\tiny adaptive Knoten 4/16/48/256, byte-weise Verzweigung, Pfadkompression}\\{\tiny\itshape Achsen T4, T3}};
+  \node[so] (a2) at (4.3,0){\textbf{HOT} {\scriptsize(P02)}\\{\tiny Trie}\\[1pt]{\tiny höhenoptimierter dynamischer Span, kompakte SIMD-Knoten}\\{\tiny\itshape Achsen T4, T0}};
+  \node[so] (a3) at (8.6,0){\textbf{Masstree} {\scriptsize(P03)}\\{\tiny Trie $+$ B\textsuperscript{+}}\\[1pt]{\tiny Trie aus B\textsuperscript{+}-Bäumen, 8-Byte-Slices, B\textsuperscript{+}-Blattknoten}\\{\tiny\itshape Achsen T4, T11}};
+  \node[so] (a4) at (12.9,0){\textbf{CoCo-Trie} {\scriptsize(P04)}\\{\tiny Succinct}\\[1pt]{\tiny kompakt-kollabierter Trie, succinct kodierte Pfade}\\{\tiny\itshape Achsen T3, T4}};
+  \node[so] (b1) at (0,-2.4){\textbf{START} {\scriptsize(P05)}\\{\tiny Trie}\\[1pt]{\tiny selbstoptimierender adaptiver Radix-Span}\\{\tiny\itshape Achsen T0, T4}};
+  \node[so] (b2) at (4.3,-2.4){\textbf{B\textsuperscript{2}-Tree} {\scriptsize(P06)}\\{\tiny Hybrid}\\[1pt]{\tiny B\textsuperscript{+} mit binären In-Knoten, cache-bewusst}\\{\tiny\itshape Achsen T4, T5}};
+  \node[so] (b3) at (8.6,-2.4){\textbf{Wormhole} {\scriptsize(P07)}\\{\tiny Hybrid}\\[1pt]{\tiny Trie $+$ Hash $+$ B\textsuperscript{+}-Leaf, $O(\log L)$ Punktsuche}\\{\tiny\itshape Achsen T0, T2}};
+  \node[so] (b4) at (12.9,-2.4){\textbf{LOUDS} {\scriptsize(P09)}\\{\tiny Succinct}\\[1pt]{\tiny unäre Grad-Sequenz, Bitmap-kodierter Trie}\\{\tiny\itshape Achsen T9, T5}};
+  \node[so] (c1) at (0,-4.8){\textbf{SuRF} {\scriptsize(P10)}\\{\tiny Succinct}\\[1pt]{\tiny succinct Range-Filter über LOUDS}\\{\tiny\itshape Achsen T16, T9}};
+  \node[so] (c2) at (4.3,-4.8){\textbf{CSS-Tree} {\scriptsize(P11)}\\{\tiny cache-sensitiv}\\[1pt]{\tiny zeigerloser impliziter Baum, arithmetische Navigation}\\{\tiny\itshape Achsen T4, T5}};
+  \node[so] (c3) at (8.6,-4.8){\textbf{CSB\textsuperscript{+}-Tree} {\scriptsize(P12)}\\{\tiny cache-sensitiv}\\[1pt]{\tiny B\textsuperscript{+} mit \emph{einem} Kind-Gruppen-Zeiger}\\{\tiny\itshape Achsen T4, T5}};
+  \node[draw,rounded corners,fill=blue!8,minimum width=4.0cm,minimum height=2.0cm,text width=3.75cm,align=center,inner sep=2pt] (c4) at (12.9,-4.8){\textbf{SwissTable}\\{\tiny Hash (Gegenprobe)}\\[1pt]{\tiny SIMD-Control-Bytes; nicht-baumartig, im selben Achsen-System}\\{\tiny\itshape Achsen T0, T12}};
+\end{tikzpicture}} % chktex 31
+\caption{Galerie der wichtigsten rekonstruierten Suchstrukturen: je Verfahren (mit Paper-ID) seine Herkunfts-Klasse, die charakteristische Struktur-Idee und die Achsen, an denen es seinen Hauptbeitrag leistet. Trie-, Hybrid-, succinct- und cache-sensitive Verfahren stehen neben einer nicht-baumartigen Hash-Gegenprobe (SwissTable) --- alle als Punkte im selben Achsen-Entwurfsraum. Die vollständige Achsen-Sezierung führt Tabelle~\ref{tab:axes-overview}.}\label{fig:sota-gallery}
+\end{figure}
+
 Für jeden SOTA-Algorithmus und jeden Allokator hält ein Profil-XML die Achsen-Belegung, eine
 Schlüssel-Wert-Signatur und einen optionalen \texttt{<expected\_workload>}-Tag fest, der die
 Mess-Heuristik überschreibt (Tabelle~\ref{tab:sota-profiles}). Drei der 33 Korpus-Arbeiten besitzen bewusst
@@ -365,7 +461,7 @@ kein eigenes Index-Lastprofil. Erst wenn \emph{alle} Lastprofile gegen \emph{all
 laufen --- der Workload als dynamische Achse (Kapitel~\ref{ch:eval}) ---, lässt sich der \enquote{Sieger
 nur im selbstgewählten Heimprofil} sichtbar machen und bias-reduzierte Vergleichbarkeit gewinnen.
 
-Schließlich erscheinen auch die Güte-Kriterien wissenschaftlichen Messens (Abschnitt~\ref{sec:software-means})
+Schließlich erscheinen auch die Güte-Kriterien wissenschaftlichen Messens (vgl.\ die Definitions-Klassen in Abschnitt~\ref{sec:measurement-system})
 als konkrete Technologien.\ \emph{Hardware-Performance-Zähler} (PMC, über \texttt{perf})~\cite{demelo2010perf}
 sind nahezu universell und liefern Cache-Miss-Raten, dTLB-Misses, Branch-Misses und IPC/CPI\@; \emph{Profiler}
 wie OTF2/VAMPIR~\cite{berthold2023vampir} und VTune~\cite{reinders2005vtune} erheben trace-basierte
@@ -383,11 +479,322 @@ heterogener Speicher. Aus all diesen Technologien ergibt sich der Satz der Mess-
 Cache-Line-Auslastung, Cache-Misses, dTLB-Misses, Speicher-Fußabdruck, Branch-Misses, IPC/CPI, Latenz,
 Durchsatz und Energie ---, deren zeit- und observer-basierte Teilmenge die eigene Apparatur bereits
 auflöst, während die zählerbasierten PMC-Kategorien an Hardware-Zähler-Zugriff gebunden bleiben; die
-vollständige Mess-Architektur entwickeln das folgende Mess-System (Abschnitt~\ref{sec:measurement-system})
+vollständige Mess-Architektur entwickeln das Mess-System (Abschnitt~\ref{sec:measurement-system})
 und Kapitel~\ref{ch:eval}.
 
+\section{Lösungskonzept: das Anatomie-Modell}\label{sec:anatomy-model}
+Aus der dialektischen Aneignung des Standes der Technik ergibt sich das Lösungskonzept dieser Arbeit;
+dieser Abschnitt entwickelt es als \emph{Anatomie-Modell} und definiert dabei die Begrifflichkeiten und
+konzeptionellen Spezialkonstrukte, die die folgenden Abschnitte tragen.
+
+\subsection{Achsen-Komposition und die Lebewesen-Metapher}\label{sec:anatomy-metaphor}
+Die zentrale Idee ist, einen Algorithmus nicht als Monolith zu behandeln, sondern als \emph{Komposition
+orthogonaler Achsen} --- jede Achse eine Teilentscheidung eines cache-bewussten Index (wie Seiten
+angeordnet werden, wie Knoten verzweigen, wie Speicher alloziert wird). Ein konkreter Algorithmus ist dann
+ein Punkt im kartesischen Produkt aller Achsen, ein Stand-der-Technik-Entwurf eine explizite
+Konfiguration. Entscheidend ist die \emph{modulare Austauschbarkeit}: Eine neue Achsen-Variante lässt sich
+isoliert untersuchen --- ihr Effekt je Achse \emph{und} für den ganzen Algorithmus messen ---, ohne die
+übrigen neu zu implementieren; genau das löst das Trennbarkeits-Problem, da der Beitrag jedes Bestandteils
+bei sonst fixierten Achsen isoliert messbar wird. Eine anschauliche Metapher fasst dies zusammen: ein
+Suchalgorithmus als \emph{Lebewesen}, dessen \emph{Organe} die Achsen sind, und das Mess-System als seine
+medizinische Diagnostik (Abbildung~\ref{fig:anatomy-bridge}).
+
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
+  organism/.style={draw, rounded corners, minimum width=2.8cm, minimum height=3.4cm, fill=red!4},
+  org/.style={draw, circle, fill=red!15, minimum size=0.78cm, inner sep=0pt, font=\scriptsize},
+  axis/.style={draw, rounded corners, fill=green!10, minimum width=2.2cm, minimum height=0.55cm, font=\scriptsize}]
+  \node[organism] (body) at (0,-0.1){};
+  \node[font=\scriptsize] at (0,1.95){\textbf{Lebewesen} (Anatomie)};
+  \node[org] (o1) at (0,0.9){Herz};
+  \node[org] (o2) at (-0.65,-0.1){Lunge};
+  \node[org] (o3) at (0.65,-0.1){Leber};
+  \node[org] (o4) at (0,-1.1){Niere};
+  \draw[->,very thick] (1.7,-0.1) -- (3.0,-0.1) node[midway,above,font=\scriptsize]{Organ $\equiv$ Achse};
+  \node[font=\scriptsize] at (5.4,1.95){\textbf{Suchalgorithmus} (Achsen)};
+  \node[axis] (a1) at (5.4,0.9){Traversal};
+  \node[axis] (a2) at (5.4,0.2){Layout};
+  \node[axis] (a3) at (5.4,-0.5){Allokator};
+  \node[axis] (a4) at (5.4,-1.2){Prefetch};
+  \node[draw, fill=blue!8, font=\scriptsize, align=center] (mess) at (8.3,-0.15){Mess-System\\(\enquote{Diagnostik})};
+  \draw[->,blue] (mess) -- (a1); \draw[->,blue] (mess) -- (a2);
+  \draw[->,blue] (mess) -- (a3); \draw[->,blue] (mess) -- (a4);
+\end{tikzpicture}
+\caption{Die Anatomie-Brücke: wie ein Lebewesen aus zusammenwirkenden Organen besteht, ist ein Suchalgorithmus eine Komposition von Achsen-Organen; das Mess-System übernimmt die Rolle der medizinischen Diagnostik und vermisst jedes Organ einzeln.}\label{fig:anatomy-bridge}
+\end{figure}
+
+Die Permutation der Achsen gleicht dann einem genetischen Experiment: Der Austausch von Organen zwischen
+Lebewesen erzeugt neue Komposit-Algorithmen mit bisher unbekanntem Cache-Line-Verhalten. Die Organe selbst
+werden aus dem Stand der Technik gewonnen --- die Entwurfsbausteine der bekannten Verfahren
+(Abschnitt~\ref{sec:overview}) werden in orthogonale Achsen zerlegt und in einer gemeinsamen
+Achsen-Matrix gesammelt, sodass jede Achse die Beiträge des gesamten Korpus erntet
+(Abbildung~\ref{fig:synth}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  paper/.style={draw,rounded corners,fill=orange!12,minimum width=1.8cm,minimum height=0.52cm},
+  ax/.style={draw,fill=green!12,minimum width=2.2cm,minimum height=0.5cm,font=\scriptsize}]
+  \node[font=\scriptsize,text=gray] at (0,2.95){Stand der Technik};
+  \node[paper] (p1) at (0,2.2){ART};
+  \node[paper] (p2) at (0,1.5){HOT};
+  \node[paper] (p3) at (0,0.8){SuRF};
+  \node[paper] (p4) at (0,0.1){Masstree};
+  \node[paper] (p5) at (0,-0.6){Bw-Baum};
+  \node[font=\scriptsize,text=gray] at (5.6,2.95){unsere Achsen-Matrix};
+  \node[ax] (x1) at (5.6,2.2){Knotentyp};
+  \node[ax] (x2) at (5.6,1.5){Layout};
+  \node[ax] (x3) at (5.6,0.8){Allokator};
+  \node[ax] (x4) at (5.6,0.1){Prefetch};
+  \node[ax] (x5) at (5.6,-0.6){Nebenläufigkeit};
+  \foreach \p in {p1,p2,p3,p4,p5}{\foreach \x in {x1,x2,x3,x4,x5}{\draw[gray!22,->] (\p.east)--(\x.west);}}
+  \node[align=center,font=\scriptsize] at (2.8,-1.7){jeder Algorithmus zerfällt in Achsen-Belegungen ---\\die Matrix erntet die Bausteine des gesamten Korpus};
+\end{tikzpicture}
+\caption{Synthese Stand der Technik $\to$ Achsen: die Entwurfsbausteine der bekannten Verfahren werden in orthogonale Achsen zerlegt; jede Achse sammelt die Beiträge des gesamten Korpus --- die Umkehrung von Abbildung~\ref{fig:design-space} (dort ist ein Algorithmus ein Punkt, hier eine Achse ein Sammelbecken).}\label{fig:synth}
+\end{figure}
+
+Die so gewonnene \emph{Anatomie} ist mehr als die Aufzählung der Organe: Sie ist ihre \emph{Verdrahtung}.
+Jedes Organ exportiert ein generalisiertes Interface, über das die übrigen seine Dienste nutzen, ohne
+dessen konkrete Belegung zu kennen --- so stellt das Allokations-Organ ein gemeinsames
+Allokations-Interface bereit, das Knoten-Layout, Wert-Ablage und Serialisierung für ihre
+Speicheranforderungen verwenden (Abbildung~\ref{fig:axis-organ}). Software-technisch ist dies die
+\emph{Feature-Interaktion} feature-orientierter Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}:
+eine Achse entspricht einem Feature, ein Lebewesen einer Feature-Komposition, die Anatomie der Verdrahtung
+zwischen den Features. Welche Achse welche nutzt, zeigt der Inter-Organ-Nutzungs-Graph
+(Abbildung~\ref{fig:usage}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  organ/.style={draw,circle,minimum size=1.05cm,fill=green!7,inner sep=0pt}]
+  \node[organ,fill=blue!12,minimum size=1.3cm] (store) at (0,0){Speicher-\\organ};
+  \node[organ] (alloc) at (-3.0,1.15){Allokator};
+  \node[organ] (node) at (-3.0,0){Knotentyp};
+  \node[organ] (layout) at (-3.0,-1.15){Layout};
+  \node[organ] (search) at (3.0,0){Suche};
+  \node[organ,fill=gray!8] (obs) at (2.0,-1.95){Telemetrie};
+  \draw[->,thick,blue] (alloc)--(store);
+  \draw[->,thick,blue] (node)--(store);
+  \draw[->,thick,blue] (layout)--(store);
+  \draw[->,thick,blue] (store)--(search) node[midway,above,font=\scriptsize,text=blue]{muss};
+  \draw[->,dashed,gray] (store)--(obs) node[midway,right,font=\scriptsize]{kann};
+  \node[font=\scriptsize,blue] at (0,-1.6){\texttt{StorageOrgan}-Interface};
+\end{tikzpicture}
+\caption{Achse $=$ Organ, Anatomie $=$ Verdrahtung: das Speicher-Organ (Komposition aus Knotentyp, Layout und Allokator) exportiert ein generalisiertes \texttt{StorageOrgan}-Interface, über das die Suche läuft (durchgezogen, \emph{verpflichtend}); weitere Organe wie die Telemetrie \emph{können} es über optionale Beobachter-Hooks nutzen (gestrichelt, \emph{optional}), müssen aber nicht.}\label{fig:axis-organ}
+\end{figure}
+
+Setzt man diese paarweisen Kopplungen über alle Organe zusammen, entsteht ein gerichteter
+Inter-Organ-Nutzungs-Graph.
+\begin{figure}[htbp]\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  org/.style={draw,rounded corners,fill=green!8,minimum width=2.1cm,minimum height=0.66cm,font=\scriptsize},
+  hub/.style={draw,rounded corners,fill=blue!12,minimum width=3.2cm,minimum height=1.15cm,text width=3.0cm,align=center,font=\scriptsize,very thick}]
+  \node[hub] (store) at (0,0){\textbf{Speicher-Organ}\\\texttt{Layout\-Aware\-Chunked\-Store}\\{\scriptsize T4\,$\oplus$\,T5\,$\oplus$\,T6}};
+  \node[org] (alloc) at (-4.1,1.4){Allokator (T6)};
+  \node[org] (node) at (-4.1,0){Knotentyp (T4)};
+  \node[org] (layout) at (-4.1,-1.4){Layout (T5)};
+  \node[org] (search) at (4.1,0){Suche (T0)};
+  \node[org] (prefetch) at (4.1,1.4){Prefetch (T7)};
+  \node[org,fill=gray!8] (obs) at (4.1,-1.4){Telemetrie (T10)};
+  \node[org,fill=gray!6] (conc) at (0,-2.6){Nebenläufigkeit (T8)};
+  \draw[->,very thick,blue] (alloc)--(store);
+  \draw[->,very thick,blue] (node)--(store);
+  \draw[->,very thick,blue] (layout)--(store);
+  \draw[->,very thick,blue] (store)--(search) node[midway,above,font=\scriptsize]{muss};
+  \draw[->,dashed,gray] (store)--(prefetch) node[midway,above,font=\scriptsize]{kann};
+  \draw[->,dashed,gray] (store)--(obs);
+  \draw[->,dotted,gray] (conc)--(store);
+\end{tikzpicture}} % chktex 31
+\caption{Inter-Organ-Nutzungs-Graph (\enquote{welche Achse nutzt welche}): Es gibt genau \emph{einen}
+kanonischen Hub --- das Speicher-Organ \texttt{LayoutAwareChunkedStore}, das Knotentyp~(T4), Layout~(T5)
+und Allokator~(T6) komponiert.\ \emph{Verpflichtend} (durchgezogen) konsumiert der Store diese drei Achsen,
+und die Suche~(T0) läuft über ihn. Alle übrigen Kopplungen sind \emph{optional} (gestrichelt): Prefetch~(T7)
+und Telemetrie~(T10) lesen den Store nur über \texttt{requires}-gegatete Beobachter-Hooks --- eine Achse
+\emph{kann} fremde Interfaces nutzen, \emph{muss} aber nicht. Die Kopplung der Nebenläufigkeit~(T8) an den
+Store ist im Code (noch) nicht verdrahtet (gepunktet).}\label{fig:usage}
+\end{figure}
+
+\subsection{Das Drei-Ebenen-Modell und die drei Gattungen}\label{sec:anatomy-levels}
+Diese Organe sind in \emph{eine} Architektur eingebettet --- eine einzige, in sich geschlossene Hierarchie
+ohne Parallel-Bäume. An ihrer Wurzel steht die \texttt{ExecutionEngine} als gemeinsame, ausmessbare
+Abstraktion über allem Messbaren; darunter lassen sich drei Ebenen unterscheiden: die \emph{Gattung} als
+nach außen sichtbares Algorithmus-Interface (das \emph{Prüf-Dock}), darunter die
+\emph{Gattungs-Unterklasse} mit festem Achsensatz, darunter die \emph{Organe} selbst
+(Abbildung~\ref{fig:three-levels})\@. \enquote{Lebewesen} und \texttt{SearchAlgorithm} bezeichnen denselben
+Gegenstand --- Metapher und technischer Begriff ---; die Anatomie ist kein zweites Modell, sondern der
+\emph{Körper} dieses Lebewesens: die feste Komposition seiner neunzehn Achsen-Organe.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  box/.style={draw,rounded corners,inner sep=3pt,minimum height=0.7cm}]
+  \node[box] (root) at (0,0){\texttt{IExecutionEngine}};
+  \node[box] (sa) at (-3.5,-1.6){SearchAlgorithm};
+  \node[box] (co) at (0,-1.6){Container};
+  \node[box] (gr) at (3.5,-1.6){Graph};
+  \node[box] (tier) at (-3.5,-3.2){Säugetier\\{\scriptsize 19 Achsen}};
+  \node[box] (cont2) at (0,-3.2){Set, Sequence,\\Adapter, View};
+  \draw[->] (root)--(sa);\draw[->] (root)--(co);\draw[->] (root)--(gr);
+  \draw[->] (sa)--(tier);\draw[->] (co)--(cont2);
+\end{tikzpicture}
+\caption{Das Drei-Ebenen-Modell: Gattung (Ebene 1, Außen-Interface) $\to$ Tier-Unterklasse (Ebene 2, fester Achsen-Satz) $\to$ Organe/Achsen (Ebene 3). Die SearchAlgorithm-Gattung trägt das \enquote{Säugetier} mit den neunzehn Achsen; die Container-Gattung die Unterklassen Set/Sequence/Adapter/View.}\label{fig:three-levels}
+\end{figure}
+
+Auf der obersten Ebene stehen genau drei Gattungen. Die \texttt{SearchAlgorithm}-Gattung --- das
+schlüssel-wert-orientierte Prüf-Dock und der Fokus dieser Arbeit --- trägt als einzige Unterklasse das
+volle Neunzehn-Achsen-\enquote{Säugetier}; die \texttt{Container}-Gattung (schlüsselloser Speicher)
+fächert in die Unterklassen Set, Sequence, Adapter und View auf; die \texttt{Graph}-Gattung trägt einen
+eigenen, andersartigen Organsatz (Abbildung~\ref{fig:genera}). Nicht-baumartige Verfahren erfordern so
+keine eigene Gattung, sondern belegen ein eingeschränktes Achsen-Subset derselben Gattung.
+\begin{figure}[htbp]\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  gen/.style={draw,rounded corners,fill=blue!10,minimum width=2.7cm,minimum height=0.66cm,font=\bfseries\footnotesize},
+  sub/.style={draw,fill=green!8,minimum width=3.0cm,minimum height=0.62cm,font=\scriptsize},
+  tbd/.style={draw,fill=gray!12,minimum width=3.0cm,minimum height=0.7cm,font=\scriptsize},
+  drill/.style={draw,rounded corners,fill=orange!9,minimum width=5.7cm,minimum height=1.0cm,text width=5.3cm,align=left,font=\scriptsize}]
+  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (1.4,1.55){Reich \enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}, anatomie-tragend)};
+  % Ebene 1 --- Gattungen (Außen-Interface)
+  \node[gen] (g1) at (-1.7,0){SearchAlgorithm};
+  \node[gen] (g2) at (4.0,0){Container};
+  \node[gen] (g3) at (7.6,0){Graph};
+  \draw[->] (root)--(g1); \draw[->] (root)--(g2); \draw[->] (root)--(g3);
+  % Ebene 2 --- Tier-Unterklassen
+  \node[sub,fill=green!18] (s1) at (-1.7,-1.3){\textbf{Säugetier}\\{\scriptsize \texttt{map}-Hülle $\cdot$ 19 Achsen}};
+  \node[sub] (c1) at (4.0,-1.05){Vogel $=$ Set {\scriptsize(\texttt{set})}};
+  \node[sub] (c2) at (4.0,-1.85){Reptil $=$ Sequence {\scriptsize(\texttt{vector})}};
+  \node[sub] (c3) at (4.0,-2.65){Wirbelloses $=$ Adapter {\scriptsize(\texttt{stack})}};
+  \node[sub] (c4) at (4.0,-3.45){Pflanze $=$ View {\scriptsize(\texttt{span})}};
+  \node[tbd] (gr1) at (7.6,-1.3){eigener Organsatz\\{\scriptsize Unterklassen offen}};
+  \draw[->] (g1)--(s1); \draw[->] (g2)--(c1); \draw[->] (g2)--(c2); \draw[->] (g2)--(c3); \draw[->] (g2)--(c4); \draw[->] (g3)--(gr1);
+  % Ebene 3--5 --- Säugetier-Ast bis zum kompilierten Individuum
+  \node[drill] (l3) at (-1.6,-2.95){\textbf{Ebene 3 --- Organe:} die 19 Achsen (Knotentyp, Layout, Allokator, Prefetch, \dots) \emph{permutieren}};
+  \node[drill] (l4) at (-1.6,-4.25){\textbf{Ebene 4 --- konkretes Tier:} eine Belegung \emph{aller} Achsen $=$ ein Individuum (ART, HOT, Masstree, SuRF, START, Wormhole; $+$5 Paper-Bindings)};
+  \node[drill,fill=orange!20,very thick] (l5) at (-1.6,-5.65){\textbf{Ebene 5 --- Tier-Binary:} je Permutation kompiliert zu \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, verfeinert um 3 Build-Achsen (Seitentyp, SIMD, Hardware)};
+  \draw[->,thick] (s1)--(l3); \draw[->,thick] (l3)--(l4); \draw[->,thick] (l4)--(l5);
+\end{tikzpicture}} % chktex 31
+\caption[Die drei Gattungen und die Tier-Hierarchie bis zum kompilierten Binary]{Die Gattungs-/Tier-Hierarchie über fünf Ebenen. \texttt{SearchAlgorithm}, \texttt{Container} und \texttt{Graph} sind die drei \emph{Gattungen} (Ebene~1, Außen-Interface). Jede Gattung beherbergt ihre \emph{eigenen} Tier-Unterklassen (Ebene~2): \texttt{SearchAlgorithm} ausschließlich das \enquote{Säugetier} (\texttt{map}-Hülle, volle Neunzehn-Achsen-Anatomie), \texttt{Container} jede \emph{nicht}-Säugetier-Unterklasse (Vogel/Reptil/Wirbelloses/Pflanze $=$ Set/Sequence/Adapter/View), \texttt{Graph} noch offene. Der Säugetier-Ast ist hier bis zum Individuum ausgezogen: die neunzehn Achsen-Organe (Ebene~3) permutieren zu einer konkreten Achsen-Komposition $=$ einem konkreten Tier (Ebene~4, z.\,B.\ ART, HOT, Masstree), das je Permutation als eigenständige Tier-Binary kompiliert wird (Ebene~5, zusätzlich identitäts-verfeinert durch drei Build-Achsen)\@. \emph{Jedes Tier-Binary ist damit ein eigenes Tier}; die Hierarchie reicht von der Gattung bis zur einzelnen kompilierten Permutation. Vgl.\ das verdichtete Modell in Abbildung~\ref{fig:three-levels}.}\label{fig:genera}
+\end{figure}
+
+\subsection{Entwurfsmuster und Übersetzungszeit-Muster}\label{sec:anatomy-patterns}
+Der eigentliche Beitrag liegt damit weniger in einer einzelnen Struktur als in einem \emph{Werkzeug}:
+Statt das Vergleichsproblem direkt zu lösen, baut diese Arbeit zuerst die \enquote{Schaufel} --- den
+Permutations- und Mess-Apparat ---, mit der sich beliebige Achsen-Kombinationen erzeugen und fair
+vermessen lassen. Wissenschaftlich ordnet sich dieser Apparat in das Software-Engineering der
+\emph{Komposition} ein: die invasive Software-Komposition aus Gray-Box-Komponenten~\cite{assmann2003invasive},
+die generative Programmierung~\cite{czarnecki2000generative} und die feature-orientierten
+Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}. Das Achsen-Konzept selbst ist aus
+einer Vorarbeit des Autors (Marke Comdare\,/\,BEP~Venture~UG, ursprünglich zur Deduplikations-Optimierung
+der UltiHash-Datenbank) übernommen; der Beitrag dieser Arbeit ist seine Übertragung auf cache-bewusste
+Suchstrukturen und seine design-pattern-getriebene, mess-orientierte Realisierung. Software-technisch ist
+der Apparat eine Komposition benannter Entwurfsmuster und zweier neuer Übersetzungszeit-Muster
+(Abbildung~\ref{fig:patterns}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
+  \node[draw,rounded corners,fill=green!5,minimum width=12.8cm,minimum height=1.7cm] (classic) at (0,0){};
+  \node[font=\bfseries\footnotesize] at (0,0.55){Klassische Entwurfsmuster (GoF) --- im Code durchgängig verwendet};
+  \node[font=\scriptsize] at (0,0.08){\emph{Strategy} (19 Achsen) $\cdot$ \emph{Abstract Factory}\,/\,\emph{Composite}\,/\,\emph{Iterator} (Permutations-Baum)};
+  \node[font=\scriptsize] at (0,-0.42){\emph{Adapter} (Fremd-Code) $\cdot$ \emph{Observer}\,/\,\emph{Decorator} (Mess-Hüllen) $\cdot$ \emph{Memento} (CoW) $\cdot$ \emph{CRTP}\,/\,\emph{Template Method}};
+  \node[draw,rounded corners,fill=orange!8,minimum width=12.8cm,minimum height=2.0cm] (new) at (0,-2.75){};
+  \node[font=\bfseries\footnotesize] at (0,-1.95){Neue Übersetzungszeit-Muster (Beitrag dieser Arbeit)};
+  \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-2.55){\textbf{1.}~\emph{lazy-spärliche kartesische Materialisierung} --- über $10^{14}$ Achsen-Kombinationen werden nur gezählt und je Pfad mixed-radix einzeln on-demand erzeugt};
+  \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-3.32){\textbf{2.}~\emph{typgetriebenes Quelltext-Emittieren} --- aus einer Achsen-Komposition werden Typnamen extrahiert, zu C++-Quelltext gerendert und je Permutation als Modul über die ABI-Grenze geladen};
+  \draw[->,thick] (classic)--(new) node[midway,right,font=\scriptsize]{Komposition};
+  \node[draw,rounded corners,fill=blue!6,minimum width=12.8cm,minimum height=1.6cm] (chain) at (0,-5.55){};
+  \node[font=\bfseries\footnotesize] at (0,-4.85){Je Achse im Code seziert --- Verfeinerung von \emph{Strategy} $+$ \emph{CRTP}\,/\,\emph{Template Method}};
+  \node[font=\scriptsize] at (0,-5.38){Topic-Concept $\to$ Axis-Concept $\to$ Permutations-Concept $\to$ \texttt{AxisBase} (CRTP) $\to$ \texttt{mp\_list}-Registry};
+  \node[font=\scriptsize] at (0,-5.86){der \emph{literale} \texttt{std::variant} lebt nur im 11-Achsen-\texttt{baustein\_variants}-Fallback (PRT-ART\,$\leftrightarrow$\,Cache-Engine)};
+  \draw[->,thick] (new)--(chain) node[midway,right,font=\scriptsize]{je Achse};
+\end{tikzpicture}
+\caption{Entwurfsmuster als Bausteine der Architektur: oben die im Code durchgängig verwendeten klassischen GoF-Muster mit ihrer jeweiligen Rolle, in der Mitte die zwei in dieser Arbeit benannten neuen Übersetzungszeit-Muster, unten die code-seziert \emph{Drei-Stufen-Concept-Kette} je Achse (Topic-Concept $\to$ Axis-Concept $\to$ CacheEngine-Permutations-Concept $\to$ CRTP-Basis $\to$ \texttt{mp\_list}-Registry) als Verfeinerung von \emph{Strategy}/\emph{CRTP} --- wobei der \emph{literale} \texttt{std::variant} nicht hier, sondern nur im elf-achsigen \texttt{baustein\_variants}-Fallback-Modell auftritt. Ihre Komposition bildet die design-pattern-getriebene, mess-orientierte Architektur (Kapitel~\ref{ch:impl}).}\label{fig:patterns}
+\end{figure}
+
+Die klassischen Muster sind dabei keine Zierde, sondern die Verkabelung des Apparats: \emph{Strategy}
+kapselt jede der neunzehn Achsen als austauschbaren Algorithmus, \emph{Abstract Factory}, \emph{Composite}
+und \emph{Iterator} bilden und durchlaufen den Permutations-Baum, \emph{Adapter} bindet Fremd-Code hinter
+der stabilen Engine-Schnittstelle an, und \emph{Observer} sowie \emph{Decorator} (nicht-intrusive
+Mess-Hüllen) erheben die Messwerte, während ein \emph{Memento} (Copy-on-Write) den Zustand zwischen
+Warmlauf und Messung sichert~\cite{gamma1994patterns}. Den statischen Polymorphismus liefert das
+\emph{Curiously Recurring Template Pattern} (CRTP) samt \emph{Template-Method}-Concept-Prüfungen;
+concept-geprüftes \texttt{if~constexpr} (\texttt{resolve\_baustein}) wählt je Achse zwischen Prüfling- und
+Cache-Engine-Standard, und \emph{Policy-based Design} fasst die Komposition als Tupel von
+Achsen-Policies~\cite{alexandrescu2001modern}. C++23-Module strukturieren dabei die
+Übersetzungseinheiten, garantieren für sich genommen aber noch keine portable
+ABI-Stabilität~\cite{wg21_modules_abi} --- diese stellt erst die C-stabile Modulgrenze her. Über die etablierten Muster hinaus benennt die Arbeit zwei
+Konstruktionen, für die eine Web-Recherche keine etablierte Bezeichnung fand: die \emph{lazy-spärliche
+kartesische Materialisierung}, die den Produktraum von über $10^{14}$ Achsen-Kombinationen nur
+arithmetisch zählt und je Pfad mixed-radix einzeln on-demand erzeugt, statt den Compiler mit dem vollen
+Typ-Baum zu sprengen; und das \emph{typgetriebene Quelltext-Emittieren}, das aus einer compile-zeitlichen
+Achsen-Komposition voll-qualifizierte Typnamen extrahiert, zu C++-Quelltext rendert und je Permutation als
+eigenständiges Modul über die ABI-Grenze lädt --- so wird der Prüfling PRT-ART per Metaprogrammierung in
+Matrix-Schichten gegen die Cache-Engine kompiliert.
+
+Wie diese \emph{eine} Architektur über eine ABI-stabile Hülle im Code sichtbar wird, vertieft
+Kapitel~\ref{ch:impl} (Abschnitt~\ref{sec:axes-impl}); zunächst wendet sich der folgende Abschnitt der
+Frage zu, wie sich die so komponierten Lebewesen fair vermessen lassen.
+
 \section{Das Mess-System}\label{sec:measurement-system}
-Das Mess-System trennt vier Subsysteme und prüft in drei Stufen, die die drei Pflicht-Messreihen speisen
+Damit strukturell verschiedene Suchalgorithmen \emph{fair} verglichen werden, bildet die Arbeit sie alle
+auf eine einzige, gut verstandene Schnittstelle ab: den C++-Vertrag der geordneten Map
+\texttt{std::map<Key,\,Value>} mit Punktanfrage (\texttt{find}), Einfügen/Aktualisieren (\texttt{insert},
+\texttt{emplace}), Löschen (\texttt{erase}) und ordnungsbasierter Navigation
+(\texttt{lower\_bound}/\texttt{upper\_bound}, Bereichs-Iteration)~\cite{iso_cpp}. Die Achsen beschreiben das
+\emph{innere} Verhalten hinter dieser festen Schnittstelle, sodass der Vergleich zweier konformer
+\texttt{std::map}-Implementierungen der zentrale Mess-Akt wird; parallel dient die Sequenz-Hülle
+\texttt{std::vector} (indizierter Zugriff, Größenänderung, zusammenhängender Speicher) als
+Container-Vergleichsfall, um zu prüfen, ob ein Achsen-Komposit auch die Container- und nicht nur die
+Suchsemantik trägt. Hinter der festen Außen-Schnittstelle unterscheidet das System mehrere \emph{Ebenen
+der Dynamik}, die festlegen, \emph{wann} eine Achsen-Entscheidung fällt: die oberste Trennung
+Übersetzungszeit gegen Laufzeit; der Lebewesen-Typ, der nur eine Teilmenge der Achsen belegt; die zur
+Übersetzungszeit in eine Binary einkompilierten Achsenalgorithmen (statische Rekombination); die
+dynamischen Sub-Achsen, deren Laufzeit-Parameter (Prefetch-Distanz, Stapelgröße, Inline-Schwelle,
+Pool-Budget) ohne Neuübersetzung variiert werden; und die statischen Sub-Achsen als übersetzungszeitliche
+Auswahl unter Teil-Algorithmen unterschiedlicher Komplexität. Gegenüber der statischen
+Entwurfsraum-Aufzählung des \emph{Data Calculator}~\cite{idreos2018datacalculator} und dem klassischen
+\emph{Policy-based Design}~\cite{alexandrescu2001modern} führt diese Taxonomie compile- und
+laufzeitvariable Achsen-Ebenen ausdrücklich gemeinsam.
+
+Diese Bausteine sind nur so aussagekräftig wie ihre Vermessung. Wissenschaftliches Messen unterliegt
+etablierten Gütekriterien~\cite{hoefler2015benchmarking}: \emph{Reproduzierbarkeit} (feste Seeds,
+deterministische Reihenfolge, dokumentierte Konfiguration), \emph{Validität} (intern kausal isolierte
+Effekte, Konstrukt- und externe Übertragbarkeit), \emph{Fairness} (identische Schlüssel, Workloads und
+Warmup; fehlende Fähigkeiten als \emph{N/A} statt verdeckt emuliert) und die \emph{Streuung} als Teil der
+Aussage (Perzentile über HDR-Histogramme statt arithmetischer Mittel, mit Signifikanzprüfung). Auf diesen
+Kriterien bauen die verwendeten Mess-Muster auf: eine \emph{Zwei-Phasen-Operationsschleife} trennt einen
+verworfenen Warmlauf von der eigentlichen Messung; die Erhebung erfolgt \emph{hybrid} --- isolierte
+Achsen-Algorithmen direkt gegeneinander, ein zusammengesetztes Lebewesen zentral über eine ABI-stabile
+Per-Achsen-Beobachter-Schnittstelle ---; und ein \emph{Konformitäts-Gatter} prüft vor jeder Messung den
+\texttt{std::map}-Vertrag, damit nur Vergleichbares verglichen wird. Diese Konzepte bilden die
+\emph{Definitions-Klassen} des Messens; ihre technischen \emph{Instanzen} --- Hardware-Performance-Zähler,
+OTF2-/VAMPIR-Profiling, die TU-Dresden-Hardware-Messmethodik --- hat Abschnitt~\ref{sec:sota-instances}
+bereits als konkrete Technologien eingeführt.
+
+Was diese Mess-Muster konkret erheben, sind drei gegenläufige Komponenten --- \emph{Latenz},
+\emph{Durchsatz} und \emph{Speicherverbrauch} ---, gegen die sich jede Achsen-Permutation als
+Trade-off-Profil aufspannen lässt: dieselbe Permutation, die in Abbildung~\ref{fig:design-space} ein Punkt
+im Entwurfsraum ist, erscheint hier als Punkt im Inneren des Trade-off-Dreiecks
+(Abbildung~\ref{fig:measurement-triangle}). Eine vierte, für cache-bewusste Suchstrukturen eigentlich
+zentrale Mess-Komponente --- das cache-bewusste Verhalten auf Knoten-, Daten- und Index-Ebene über
+Hardware-Performance-Zähler --- ist im aktuellen Implementierungsstand noch nicht erhoben (die
+PMC-Erfassung ist standardmäßig abgeschaltet) und bleibt daher als ausstehende vierte Mess-Komponente markiert.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
+  \coordinate (lat) at (0,3.0);
+  \coordinate (thr) at (-3.2,-0.9);
+  \coordinate (mem) at (3.2,-0.9);
+  \draw[thick,fill=blue!4] (lat)--(thr)--(mem)--cycle;
+  \node[above] at (lat){\textbf{Latenz}\\{\scriptsize p50/p99}};
+  \node[below left] at (thr){\textbf{Durchsatz}\\{\scriptsize ops/s}};
+  \node[below right] at (mem){\textbf{Speicher}\\{\scriptsize Bytes im Peak}};
+  \fill[red] (0.5,0.7) circle (2.4pt);
+  \node[red,right,font=\scriptsize] at (0.65,0.7){eine Achsen-Permutation};
+  \node[draw,dashed,rounded corners,fill=gray!8,align=center,font=\scriptsize,text width=4.6cm] (miss) at (0,-2.75){\textbf{fehlt noch (ausstehend):}\\Knoten-/Daten-/Index-Ebene, cache-bewusst --- HW-PMC standardmäßig aus};
+  \draw[->,dashed,gray] (miss)--(0,-0.9);
+\end{tikzpicture}
+\caption{Das Mess-Trade-off-Dreieck: jede Achsen-Permutation spannt sich gegen die drei gegenläufigen
+Mess-Komponenten Latenz, Durchsatz und Speicherverbrauch auf und ist ein Punkt in seinem Inneren (vgl.\ den
+Entwurfsraum in Abbildung~\ref{fig:design-space}, wo dieselbe Permutation ein Punkt ist). Die für
+cache-bewusste Suchstrukturen eigentlich zentrale vierte Komponente --- das Verhalten auf Knoten-, Daten-
+und Index-Ebene über Hardware-Performance-Zähler --- ist im aktuellen Implementierungsstand noch nicht
+erhoben (gestrichelt).}\label{fig:measurement-triangle}
+\end{figure}
+
+Auf diesen Mess-Mustern aufbauend trennt das Mess-System vier Subsysteme und prüft in drei Stufen, die die drei Pflicht-Messreihen speisen
 (nicht eins-zu-eins, Tabelle~\ref{tab:stage-series});
 den Permutationsraum reduziert es gezielt.
 Vier formal getrennte Subsysteme mit unterschiedlichen Verantwortlichkeiten bilden das Modell: der
