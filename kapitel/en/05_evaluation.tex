@@ -83,6 +83,52 @@ e.g.\ range scans of a hash table --- are reported as N/A rather than covertly e
 library the compiler, flags, ISA path, allocator, and commit hash are logged, and each configuration is
 measured in several separate runs with percentiles determined over HDR histograms.
 
+Beyond the three hypotheses, the analysis receives a fourth, self-contained \emph{evaluation
+dimension}: the heuristic counter-proof. Its concept is developed in Chapter~\ref{ch:measurement}
+--- the hybrid mode compiles the heuristically estimated recombination of the tier binaries itself
+into a tier binary and docks it at the probe dock (Section~\ref{sec:heuristics-modes}); the
+measurement-curve type system supplies the estimation basis, and its measurement-error detection is
+formulated by Section~\ref{sec:heuristics-curves}. The assessment question of this dimension reads:
+\enquote{Is the heuristically estimated recombination of the tier binaries faster than the existing
+paper algorithms?} Unlike H1--H3, which test statements about the design space, the counter-proof
+tests the thesis's apparatus itself: whether the recombination estimated from the measurement curves
+delivers, in real wall-clock behaviour, what the curves promise.
+
+The test plan for this is fixed in two stages; since the corresponding measurement runs are still
+pending, it is --- like the target picture in Section~\ref{sec:heuristics-curves} --- formulated in
+the future tense. The first stage will quantify the measurement error that the measurement instances
+themselves introduce, for the heuristic's estimation basis is \emph{observed} curves, while its
+claim concerns unobserved production behaviour. To this end, the same experiment is set up in three
+build variants:
+\begin{enumerate}
+  \item observers in \emph{all} tier binaries \emph{and} in the heuristic hybrid tier,
+  \item observers \emph{only} in the heuristic tier binary,
+  \item observers in \emph{none} of the compiled binaries --- only the wall clock is measured.
+\end{enumerate}
+The differences between the three variants quantify the observer overhead separated by its origin
+--- measurement organs of the subordinate tiers (difference between variants~1 and~2) versus
+measurement commands of the hybrid tier (difference between variants~2 and~3) --- and yield, per
+workload and platform, an \emph{uncertainty band} below which two configurations count as
+indistinguishable.
+
+The second stage will be the complementary \emph{fourth step} of the final heuristic assembly: the
+tier binaries subordinate to the heuristic tier --- not the finally optimized main binary --- are
+rebuilt without micro- and macro-benchmarks and without observers, so that no measurement artefact
+remains in the compiled binary. The comparison is then made purely on the wall clock, in two
+comparison sets with a fixed precedence: primarily against the reconstructed paper algorithms ---
+the paper comparison takes precedence, for it answers the assessment question literally ---,
+secondarily against all known tier-binary permutations, in particular the best single binary; this
+second comparison classifies whether a potential lead is attributable to the heuristic as a whole or
+merely to a single superior permutation.
+
+From this follows the decision rule: the counter-proof counts as \emph{delivered} per workload class
+if the observer-free rebuilt recombination beats the fastest paper reconstruction on the wall clock
+and the margin exceeds the uncertainty band of the build variants; it counts as \emph{missed} if a
+paper algorithm or the best single binary comes out ahead --- this outcome, too, would be a result,
+for it would quantify for the first time how much estimation error lies between curve prognosis and
+real behaviour. The measurement data of this dimension are pending; they will be fed in after the
+first complete measurement runs together with series A--C in Section~\ref{sec:eval-results}.
+
 \section{Results and Analysis}\label{sec:eval-results}
 At the time of writing, methodology and evaluation pipeline are in place and verified on sample data; a
 first real smoke measurement series (43 permutations, real DLL measurement on the development machine) is

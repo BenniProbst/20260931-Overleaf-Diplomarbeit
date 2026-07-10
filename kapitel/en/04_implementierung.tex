@@ -203,7 +203,8 @@ template<class... Ts> class SearchEngine; // ABI-runtime view of the being
 \end{figure}
 
 \begin{figure}[htbp]\centering
-\resizebox{0.96\linewidth}{!}{%
+% No \resizebox: the drawing is only ~15.3cm wide; blowing it up to 0.96\linewidth (x1.006) would inflate
+% the \scriptsize font beyond the body text. Rule: resizebox only to SHRINK (cf. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   iface/.style={draw,rounded corners,fill=blue!7,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize},
   comp/.style={draw,fill=green!8,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize}]
@@ -223,7 +224,7 @@ template<class... Ts> class SearchEngine; // ABI-runtime view of the being
   \node[iface] (resolve) at (4.9,0.3){resolve\_baustein<Tag>};
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{composes 19 axes} (topic.west);
-\end{tikzpicture}} % chktex 31
+\end{tikzpicture}
 \caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase} and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the nineteen axes) and its ABI-runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), measured and driven through the \texttt{IDriveableTier}/\texttt{IObservableTier} contracts; on the right the per-axis implementation pattern repeated for each axis --- a two-layer \texttt{Concept}, a \texttt{requires}-guarded CRTP base, the \texttt{mp\_list} building-block family, and the compile-time resolution \texttt{resolve\_baustein}, which chooses per axis between the probe slot and the cache-engine default.}\label{fig:uml-interfaces}
 \end{figure}
 
@@ -239,7 +240,8 @@ list), (2)~\textbf{Codegen} (one \texttt{comdare\_perm\_<fp>.cpp} per permutatio
 (4)~\textbf{Load} (LoadLibrary/dlopen of all modules), (5)~\textbf{Execute} (\texttt{create\_instance} +
 profile-aware \texttt{run\_workload}), (6)~\textbf{Measure} (aggregate the binary measurement records), and
 (7)~\textbf{Persist} (\texttt{measurements.csv}/\texttt{.json}); two opt-in phases hot-compile missing
-modules and verify the ABI contract per module. The downstream evaluation toolchain is a sequence of small
+modules and verify the ABI contract per module. The downstream evaluation toolchain
+(Figure~\ref{fig:toolchain}) is a sequence of small
 programs --- \texttt{sample\_data\_generator} (deterministic test data without real hardware) $\to$
 \texttt{messung\_driver} (drives the series) $\to$ \texttt{binary\_to\_csv} (deserializes the binary
 measurement records) $\to$ \texttt{csv\_to\_latex} (booktabs tables with per-permutation-ID algorithm fact sheets)
@@ -249,7 +251,8 @@ measurement couplings are separated from the production path by the
 so that the latter carries no measurement overhead, and continuous integration (GitLab CI plus a
 mirrored GitHub workflow) runs across all three repositories.
 \begin{figure}[htbp]\centering
-\resizebox{\linewidth}{!}{%
+% No \resizebox: the drawing is only ~13.5cm wide; blowing it up to \linewidth (x1.19) would inflate
+% the \footnotesize font beyond the body text. Rule: resizebox only to SHRINK (cf. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   ph/.style={draw,rounded corners,fill=blue!6,minimum width=1.6cm,minimum height=0.85cm},
   hi/.style={draw,rounded corners,fill=orange!18,very thick,minimum width=1.6cm,minimum height=0.85cm},
@@ -274,7 +277,7 @@ mirrored GitHub workflow) runs across all three repositories.
   \node[pb] (b1) at (2.0,-3.95){\textbf{BUILD} \texttt{Build\-Orchestrator}: builds \emph{all} tier binaries first (resumable, RAM-aware)};
   \node[pb] (b2) at (8.0,-3.95){\textbf{MEASURE} \texttt{perm\_runner}: loads $+$ measures each tier binary individually (1 DLL/process, via \texttt{IObservableTier})};
   \draw[->,very thick] (b1)--node[above,font=\scriptsize]{tier binaries} (b2);
-\end{tikzpicture}} % chktex 31
+\end{tikzpicture}
 \caption{The measurement pipeline in two forms. \textbf{Path~A} (top) is the in-process seven-phase pipeline
 of the \texttt{ExperimentDriver} per measurement series (Enumerate $\to$ Codegen $\to$ Compile $\to$ Load
 $\to$ Execute $\to$ Measure $\to$ Persist; two opt-in phases hot-compile missing modules and verify the ABI
@@ -284,6 +287,30 @@ plumbing. \textbf{Path~B} (bottom, the recommended route) separates the two task
 \texttt{BuildOrchestrator} builds \emph{all tier binaries first} (resumable, RAM-aware), after which
 \texttt{perm\_runner} loads and measures each binary individually (one DLL per process) through the observer
 interface \texttt{IObservableTier}.}\label{fig:pipeline}
+\end{figure}
+\begin{figure}[htbp]\centering
+% No \resizebox: the chain is deliberately broken into two rows (~11.3cm wide),
+% so the font stays unscaled. Rule: resizebox only to SHRINK (cf. fig:m-model).
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  tool/.style={draw,rounded corners,fill=blue!6,minimum height=0.7cm,inner sep=5pt,font=\ttfamily\scriptsize}]
+  \node[tool] (t1) at (0,0){sample\_data\_generator};
+  \node[tool] (t2) at (4.35,0){messung\_driver};
+  \node[tool] (t3) at (8.1,0){binary\_to\_csv};
+  \node[tool] (t4) at (0,-1.5){csv\_to\_latex};
+  \node[tool] (t5) at (4.35,-1.5){diagram\_generator};
+  \node[tool] (t6) at (8.1,-1.5){latex\_to\_pdf};
+  \draw[->,thick] (t1)--(t2);
+  \draw[->,thick] (t2)--(t3);
+  \draw[->,thick] (t3.south) -- ++(0,-0.4) -- ([yshift=0.4cm]t4.north) -- (t4.north);
+  \draw[->,thick] (t4)--(t5);
+  \draw[->,thick] (t5)--(t6);
+\end{tikzpicture}
+\caption[The downstream evaluation toolchain]{The downstream evaluation toolchain as a six-stage chain:
+\texttt{sample\_data\_generator} produces deterministic test data, \texttt{messung\_driver} drives
+the measurement series, \texttt{binary\_to\_csv} deserializes the binary measurement records,
+\texttt{csv\_to\_latex} renders the booktabs fact sheets per permutation ID,
+\texttt{diagram\_generator} the A4-aware TikZ diagrams, and \texttt{latex\_to\_pdf} typesets the
+manuscript.}\label{fig:toolchain}
 \end{figure}
 
 \section{Quality Assurance: Contract Tests per Layer}\label{sec:impl-contracts}
