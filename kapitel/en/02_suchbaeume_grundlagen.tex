@@ -1,16 +1,19 @@
 \chapter{Search Trees and Fundamentals}\label{ch:foundations}
 
-% [SKELETON] PURELY CONCEPTUAL + VISUAL, NO catalogue tables. Three steps concept->hardware->software:
-% locate the abstraction responsibilities conceptually in 2.1 and realize them in 2.3 with the static hardware /
-% compile-time means from 2.2. All tables live NOT here but in Chapter 3.
+% [HABICH-R2] KNOWN MATERIAL ONLY: terms, established concepts, existing papers. NO catalogue tables,
+% no own conceptual world. Five steps landscape (2.1) -> hardware (2.2) -> workloads/benchmarks (2.3)
+% -> software means (2.4) -> notion of heuristics (2.5). All catalogues and own concepts live in Chapter 3.
 
-This chapter leads from the familiar object --- search trees --- via the hardware that shapes their performance to
-the software means by which their design decisions can be abstracted. Everything stays \emph{visual and
-conceptual}; the systematic catalogues follow in Chapter~\ref{ch:measurement}.
+This chapter leads from the familiar object --- search trees --- via the hardware that shapes their
+performance and the workloads under which they are compared, to the software means and the notion of
+heuristics by which their design decisions can be abstracted and selected. Everything stays with
+\emph{known} terms, concepts, and publications; the systematic catalogues and the thesis's own conceptual
+framework follow in Chapter~\ref{ch:measurement}.
 
 \section{Concept and Overview of the State of the Art}\label{sec:overview}
 We first map the landscape of search structures --- comparison-based trees, digital and prefix-based methods,
-hashing, spatial and flat structures --- and depict \emph{every} known algorithm visually in detail. Here it
+hashing, spatial and flat structures --- and classify the known representatives with their core ideas and
+supporting references. Here it
 already becomes apparent that every algorithm can be located in a shared design space; how this design
 space is systematically spanned is developed in Chapter~\ref{ch:measurement}.
 \begin{figure}[htbp]\centering
@@ -70,6 +73,18 @@ common basis against which structurally different methods can be measured unifor
 as the common denominator of comparison- and digital-based search structures, the \texttt{std::vector} as
 the sequence view, and the hash table as the unordered counter-check; their placement in the conceptual
 framework of this thesis is developed in Chapter~\ref{ch:measurement}.
+
+All methods named so far are \emph{statically designed} structures: their inner organization is fixed
+before the first query arrives. An established line of research, by contrast, moves the design into run
+time\@. \emph{Database cracking}~\cite{idreos2007cracking} builds the index adaptively as a by-product
+of query processing --- each query partitions the data a little further ---, and \emph{stochastic
+cracking}~\cite{halim2012stochastic} makes this approach robust against unfavourable query sequences;
+\emph{learned indexes}~\cite{kraska2018learned} replace the search structure with a model of the key
+distribution that approximately predicts the position of a key. These approaches show a common trend:
+away from the hard-wired single structure, towards configurable, self-adapting designs. For the present
+thesis they are the closest related known approaches, since they demonstrate that the design decisions
+of a search structure can be kept variable; how such decisions can be decomposed systematically and
+measured individually is developed in Chapter~\ref{ch:measurement}.
 
 \section{Hardware: Historical Adaptation to Search Performance}\label{sec:hardware-history}
 The performance of search structures has always been driven by hardware. We introduce the historical advent of
@@ -156,9 +171,37 @@ whose cache properties are predominantly hard-wired and only to a lesser extent 
 combined systematically with the cache-near settings that are actually selectable? This question is taken
 up again in Chapter~\ref{ch:measurement} (Section~\ref{sec:task-concerns}).
 
+\section{Workloads and Benchmark Conventions}\label{sec:workload-basics-known}
+Whether a search structure makes good use of the hardware properties from
+Section~\ref{sec:hardware-history} only shows under load; for this, fixed terms and benchmark
+conventions have become established. A \emph{load} (operation) is a single call of the search
+interface --- a point query, an insertion, a deletion, or a range scan. A \emph{workload} is a
+structured profile of such operations: an operation mix (e.g.\ 50\,\% read / 50\,\% update) over a key
+access distribution (uniform, Zipf-distributed, latest values) on a dataset of defined size and key
+characteristic. Realistic workloads are thereby \emph{playbooks} of many consecutive interface calls
+--- not isolated, unrealistic single accesses.
+
+The most widespread workload convention is the Yahoo!\ Cloud Serving Benchmark
+(YCSB)~\cite{cooper2010ycsb}. It defines a family of key-value workloads: YCSB-A (50/50 read/update,
+Zipf-distributed), YCSB-B (95/5 read/update), YCSB-C (read only), YCSB-D (latest values), YCSB-E
+(short range scans), and YCSB-F (read-modify-write). Alongside this, the literature relies on further
+established families: the index benchmark \emph{SOSD}~\cite{kipf2019sosd}, the transaction benchmarks
+of the \emph{TPC} family (TPC-C, TPC-DS)~\cite{tpc_benchmarks}, real string corpora (URLs, DNA,
+dictionary terms), and --- for the hardware-near works --- \emph{SPEC~CPU}~\cite{spec_cpu2017} and
+\emph{CloudSuite}~\cite{ferdman2012cloudsuite}. These frameworks produce different loads that are not
+directly comparable with one another.
+
+The \emph{goal of workload variation} is to break a methodological bias: each publication typically
+chooses the load profile under which its own algorithm performs best. Only when all load profiles run
+against all comparison candidates can bias-reduced comparability be gained. For this thesis, the
+conventions named above provide the raw material of a common set of load profiles; how this set is
+constructed and driven over all candidates is developed in Chapter~\ref{ch:measurement}, and the
+corresponding measurement matrix belongs to the evaluation methodology (Chapter~\ref{ch:eval}).
+
 \section{Software Means and Synthesis into the Abstraction}\label{sec:software-means}
-With which software-system means --- compile-time metaprogramming, static use of the hardware from
-Section~\ref{sec:hardware-history} --- can such an abstraction be \emph{realized}? Available are the
+With which software-system means --- compile-time metaprogramming, static use of the hardware
+properties from Section~\ref{sec:hardware-history} --- can the abstraction left open there be
+\emph{realized}? Available are the
 established means of software-engineering design: the named design
 patterns~\cite{gamma1994patterns}, the static polymorphism of the \emph{Curiously Recurring Template
 Pattern} together with \emph{policy-based design}~\cite{alexandrescu2001modern}, and the composition from
@@ -166,8 +209,45 @@ interchangeable building blocks as described by invasive software composition fr
 components~\cite{assmann2003invasive}, generative programming~\cite{czarnecki2000generative}, and the
 feature-oriented software product lines~\cite{apel2013feature,batory1992hierarchical}; C++23 modules
 structure the translation units but by themselves do not yet guarantee portable ABI
-stability~\cite{wg21_modules_abi}. With this, the foundations are assembled: the landscape of search
-structures, the hardware properties that shape their performance, and the software means to abstract them.
-How exactly these means allow a search algorithm to be decomposed into orthogonal, individually measurable
-design decisions is developed in Chapter~\ref{ch:measurement}; the concrete realization of the building
-blocks introduced there is shown in Chapter~\ref{ch:impl}.
+stability~\cite{wg21_modules_abi}. For this thesis, the means named above form the toolbox with which
+the hardware properties measured per target platform can be turned into a concrete layout at compile
+time; how they are combined for this purpose is developed in Chapter~\ref{ch:measurement}.
+
+\section{Heuristics as Decision Rules}\label{sec:heuristics-basics}
+Both the adaptive and learned indexes (Section~\ref{sec:overview}) and the replacement strategies of
+the caches (Section~\ref{sec:hardware-history}) make their decisions \emph{heuristically}. A
+\emph{heuristic} is a decision rule without a guarantee of optimality: it maps observable features ---
+such as the cache properties determined per target platform (Section~\ref{sec:hardware-history}) or
+the measured load profile (Section~\ref{sec:workload-basics-known}) --- to a concrete configuration
+without proving that configuration best. It takes the place of an exact solution wherever the latter
+is unknown or too expensive to determine; the cache's own heuristic replacement strategies (LRU,
+RRIP\@; Section~\ref{sec:hardware-history}) are the hardware-side archetype of this way of
+thinking~\cite{jaleel2010rrip}.
+
+Heuristics can be distinguished by \emph{when} their decision is made. A \emph{static heuristic} is
+fixed at compile time: the chosen configuration is compiled firmly into the translated program and no
+longer changes at run time. A \emph{dynamic heuristic}, by contrast, selects the configuration at run
+time, depending on the actually observed behaviour, and may adjust it during operation. Both variants
+presuppose the same \emph{heuristic function} but shift the moment of its evaluation.
+
+Formally, this heuristic function is a \emph{mapping} from a measurement result or load profile to a
+configuration: $h: \mathcal{M} \rightarrow \mathcal{K}$, where $\mathcal{M}$ denotes the space of
+collected features (measurements, load-profile metrics) and $\mathcal{K}$ the space of admissible
+configurations. The present thesis first measures this relationship systematically
+(Chapter~\ref{ch:measurement}); the \emph{automated} determination of $h$ itself --- the mechanism
+that derives the respective best configuration from the measurement results --- is an objective and
+outlook of this thesis (Section~\ref{sec:outlook}).
+
+Finally, the terms used partly synonymously in the literature must be delimited\@. A heuristic is
+called \emph{adaptive} if it adjusts its decision to changing conditions; \emph{dynamic} refers more
+narrowly to the moment --- evaluation at run time rather than at compile time; and
+\emph{measurement-driven} emphasizes the data source --- the decision rests on collected measurements
+rather than on fixed model assumptions. An adaptive heuristic is thus always dynamic, a dynamic one
+not necessarily adaptive, and both may, but need not, be measurement-driven.
+
+With this, the foundations are assembled: the landscape of search structures, the hardware properties
+that shape their performance, the workload conventions under which they are compared, the software
+means of abstraction, and the notion of heuristics that connects measured knowledge with configuration
+choice. How exactly these means allow a search algorithm to be decomposed into orthogonal, individually
+measurable design decisions is developed in Chapter~\ref{ch:measurement}; the concrete realization of
+the building blocks introduced there is shown in Chapter~\ref{ch:impl}.
