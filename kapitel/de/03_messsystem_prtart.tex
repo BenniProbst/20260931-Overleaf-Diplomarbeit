@@ -3,25 +3,54 @@
 % [SKELETT] cache-aware-Fokus. Die Aufgabenstellung wird hier SELBST-ERKLÄREND gemacht (niemand liest sie)
 % und greift auf ALLE Belange von Kapitel 2 zurück. ALLE Tabellen liegen in diesem Kapitel.
 
-Auf den Grundlagen aus Kapitel~\ref{ch:foundations} aufbauend führt dieses Kapitel die eigentlichen Belange der
-Aufgabe ein und entwickelt als deren \emph{Lösung} das Anatomie-Modell als Lösungskonzept und das darauf
-aufbauende Mess-System --- demonstriert am Prüfling PRT-ART\@.
+Auf den Grundlagen aus Kapitel~\ref{ch:foundations} aufbauend entwickelt dieses Kapitel zunächst die
+Problemstellung und die Anforderungen an ein Mess-System und als deren \emph{Lösung} das Anatomie-Modell
+als Lösungskonzept und das darauf aufbauende Mess-System --- demonstriert am Prüfling PRT-ART\@.
 
-\section{Belange der Aufgabenstellung}\label{sec:task-concerns}
-Die Aufgabe verlangt, cache-bewusste Suchalgorithmen so zu zerlegen und zu vermessen, dass der Beitrag jeder
-Entwurfsentscheidung isoliert sichtbar wird. Wir machen diese Belange hier vollständig im Text verständlich ---
-ohne Rückgriff auf das Aufgabenblatt --- im Kontext der Grundlagen aus Kapitel~\ref{ch:foundations}.
-Im Kern verlangt die Aufgabe vier Schritte: cache-bewusste Suchalgorithmen in austauschbare
-Entwurfsbestandteile zu \emph{zerlegen}, Stand-der-Technik-Entwürfe als explizite Konfigurationen zu
-\emph{rekonstruieren}, ihr cache-line-bewusstes Verhalten je Bestandteil wie für den ganzen Algorithmus
-auf gemeinsamer Basis zu \emph{messen} und daraus den besten Gesamtalgorithmus abzuleiten und
-systemoptimiert \emph{auszuliefern}. Der cache-aware-Fokus ist dabei keine Randbedingung, sondern die
-Leitgröße: Nicht die asymptotische Komplexität, sondern das Cache-Line-Verhalten unter realer Last
-entscheidet über die Leistung (Kapitel~\ref{ch:foundations}), und genau dieses Verhalten soll je Achse
-isoliert messbar werden.
+\section{Problemstellung und Anforderungen an ein Mess-System}\label{sec:task-concerns}
+Den Ausgangspunkt liefert der Befund der Grundlagen (Kapitel~\ref{ch:foundations}): Über die Leistung
+cache-bewusster Suchstrukturen entscheidet nicht die asymptotische Komplexität, sondern das
+Cache-Line-Verhalten unter realer Last. Dieses Verhalten ist jedoch das Ergebnis vieler
+ineinandergreifender Entwurfsentscheidungen --- wie Knoten verzweigen, wie Seiten im Speicher angeordnet
+werden, wie alloziert, vorgeladen und synchronisiert wird ---, und in den publizierten Verfahren sind
+diese Entscheidungen monolithisch verwachsen: Wer ein Verfahren vermisst, vermisst stets das ganze
+Bündel, nie die einzelne Entscheidung. Genau das ist die Problemstellung dieser Arbeit, das
+\emph{Trennbarkeits-Problem}: Der Beitrag jeder einzelnen Entwurfsentscheidung zum Cache-Line-Verhalten
+soll isoliert sichtbar werden --- je Entscheidung wie für den ganzen Algorithmus.
 
-Diesen Zerlegungs-Anspruch veranschaulicht der \emph{Entwurfsraum}: Jede dieser Teilentscheidungen ---
-etwa Knotentyp, Speicher-Layout oder Allokator --- spannt eine eigene Achse auf, und jeder
+Der Stand der Technik verschärft dieses Problem in zwei Richtungen. Inhaltlich optimiert jede der
+untersuchten Arbeiten nur wenige Entwurfsentscheidungen isoliert, und im untersuchten Korpus belegt
+\emph{kein einziges Verfahren alle Entwurfsdimensionen gemeinsam}: Manche Dimensionen sind ausschließlich
+mit Baseline- oder Lehrbuch-Varianten besetzt (das Mapping zwischen Algorithmus- und Cache-Traversierung),
+andere treten nur als \emph{Mess-Ziel} auf (der dTLB), die räumliche Such-Klasse fehlt ganz, und
+Entscheidungen wie Ein-/Ausgabe, Migration, Filter und Pufferung sind zwar je einzeln, aber nie gemeinsam
+mit den Such-Entscheidungen in einem Entwurf belegt. Methodisch kommt eine zweite Lücke hinzu: Ergebnisse
+werden in nicht vergleichbaren Settings berichtet, und die häufige Wahl szenariospezifischer, oft günstig
+zugeschnittener Lastprofile erschwert einen fairen Quervergleich; es fehlt eine bias-reduzierte
+Vermessung \emph{aller} Lastprofile gegen \emph{alle} Verfahren auf einer gemeinsamen Basis.
+
+Aus dieser doppelten Lücke folgen vier Anforderungen an eine Lösung. Sie muss cache-bewusste
+Suchalgorithmen erstens in austauschbare Entwurfsbestandteile \emph{zerlegen}, sodass jede Entscheidung
+einzeln fassbar wird; zweitens die Stand-der-Technik-Entwürfe als explizite Konfigurationen dieser
+Bestandteile \emph{rekonstruieren}, damit Bekanntes und Neues im selben Raum vergleichbar werden;
+drittens das cache-line-bewusste Verhalten je Bestandteil wie für den ganzen Algorithmus auf gemeinsamer
+Basis \emph{messen} --- alle Lastprofile gegen alle Verfahren, bias-reduziert; und viertens aus den
+Messungen den besten Gesamtalgorithmus ableiten und systemoptimiert \emph{ausliefern}. Der
+cache-aware-Fokus ist dabei keine Randbedingung, sondern die Leitgröße: Genau das Cache-Line-Verhalten,
+das über die Leistung entscheidet, soll je Entwurfsentscheidung isoliert messbar werden.
+
+Die Mess-Anforderung präzisiert sich an der Gegenüberstellung cache-bewusster und cache-oblivious
+Entwürfe (Abschnitt~\ref{sec:hardware-history}) zu einem dritten, dazwischenliegenden Weg: Die
+tatsächlichen Cache-Eigenschaften (Line-Größe, Hierarchie-Tiefe, Topologie) werden je Zielplattform
+\emph{ermittelt} und gehen als feste Größen in eine systemoptimierte Binary ein, während die
+\emph{konfigurierbaren} cache-nahen Einstellungen (Prefetch-Distanz, Stapel- und Inline-Schwellen,
+Pool-Budgets) als Achsen-Parameter gegen eine bereits geladene Binary permutiert werden --- abgestuft
+nach dem, was Hardware und Betriebssystem erlauben, von voll laufzeit-konfigurierbar (mutables Linux mit
+MSR-Zugriff) über übersetzungsstatisch (immutable Betriebssysteme) bis fixiert (read-only-Cache-Register
+auf ARM und RISC-V). So wird cache-oblivious-Verhalten um \emph{gemessenes} Lokalitätswissen ergänzt.
+
+Die vier Anforderungen verdichten sich zu einem Zielbild, dem \emph{Entwurfsraum}: Jede Teilentscheidung
+--- etwa Knotentyp, Speicher-Layout oder Allokator --- spannt eine eigene Achse auf, und jeder
 Stand-der-Technik-Algorithmus ist ein Punkt im kartesischen Produkt dieser Achsen
 (Abbildung~\ref{fig:design-space}).
 \begin{figure}[htbp]\centering
@@ -38,35 +67,20 @@ Stand-der-Technik-Algorithmus ist ein Punkt im kartesischen Produkt dieser Achse
 \caption{Der Entwurfsraum: die Achsen spannen ein kartesisches Produkt auf; ein konkreter Algorithmus ist ein Punkt darin. Zur Veranschaulichung sind drei der neunzehn Achsen gewählt --- das reale Speicherorgan aus Knotentyp~(T4), Speicher-Layout~(T5) und Allokator~(T6); der volle Entwurfsraum hat neunzehn Dimensionen.}\label{fig:design-space}
 \end{figure}
 
-Der Stand der Technik (Kapitel~\ref{ch:foundations}) legt dabei die zentrale Lücke offen: Jede der
-untersuchten Arbeiten optimiert nur wenige Achsen isoliert, und im untersuchten Korpus belegt \emph{kein
-einziges Verfahren alle neunzehn Achsen gemeinsam}. Manche Achsen sind ausschließlich mit Baseline- oder
-Lehrbuch-Varianten besetzt (das Mapping zwischen Algorithmus- und Cache-Traversierung), andere treten nur
-als \emph{Mess-Ziel} auf (der dTLB), die räumliche Such-Klasse fehlt ganz, und Achsen wie Ein-/Ausgabe,
-Migration, Filter und Pufferung sind zwar je einzeln, aber nie gemeinsam mit den Such-Achsen in einem
-Entwurf belegt.
-
-Aus der Gegenüberstellung cache-bewusster und cache-oblivious Entwürfe (Abschnitt~\ref{sec:hardware-history})
-leitet die Arbeit einen dritten, dazwischenliegenden Weg ab: Die tatsächlichen Cache-Eigenschaften (Line-Größe,
-Hierarchie-Tiefe, Topologie) werden je Zielplattform \emph{ermittelt} und gehen als feste Größen in eine
-systemoptimierte Binary ein, während die \emph{konfigurierbaren} cache-nahen Einstellungen
-(Prefetch-Distanz, Stapel- und Inline-Schwellen, Pool-Budgets) als Achsen-Parameter gegen eine bereits
-geladene Binary permutiert werden --- abgestuft nach dem, was Hardware und Betriebssystem erlauben, von
-voll laufzeit-konfigurierbar (mutables Linux mit MSR-Zugriff) über übersetzungsstatisch (immutable
-Betriebssysteme) bis fixiert (read-only-Cache-Register auf ARM und RISC-V). So wird cache-oblivious-Verhalten
-um \emph{gemessenes} Lokalitätswissen ergänzt.
-
-Hinzu kommt eine methodische Lücke: Ergebnisse werden in nicht vergleichbaren Settings berichtet, und die
-häufige Wahl szenariospezifischer, oft günstig zugeschnittener Lastprofile erschwert einen fairen
-Quervergleich. Es fehlt eine bias-reduzierte Vermessung \emph{aller} Lastprofile gegen \emph{alle}
-Verfahren auf einer gemeinsamen Basis. Was fehlt --- und was diese Arbeit beiträgt --- ist daher die
-systematische, orthogonale Achsen-Zerlegung dieser Entwürfe samt einer \emph{permutierten
-Mess-Architektur}, die sie als explizite Konfigurationen rekonstruiert und auf gemeinsamer Basis
-vermisst; denn cache-aware Algorithmen sind ohne eine Aufteilung der das Caching maßgeblich bestimmenden
-Eigenschaften nicht differenzierbar. Welche der katalogisierten Instanzen das Framework übernimmt und
-welche es als überholt ersetzt, entwickelt der folgende Abschnitt~\ref{sec:sota-instances} dialektisch
-(These--Antithese--Synthese); das Lösungskonzept (Abschnitt~\ref{sec:anatomy-model}) und das darauf
-aufbauende Mess-System (Abschnitt~\ref{sec:measurement-system}) sind die Lösung, die diese Lücke schließt.
+Ist der Entwurfsraum so aufgespannt, wird das Trennbarkeits-Problem lösbar: Eine Entwurfsentscheidung zu
+variieren heißt, sich entlang genau einer Achse zu bewegen, während alle übrigen fixiert bleiben --- ihr
+Beitrag wird isoliert messbar. Was diese Arbeit beiträgt, ist folglich die systematische, orthogonale
+Achsen-Zerlegung der bekannten Entwürfe samt einer \emph{permutierten Mess-Architektur}, die sie als
+explizite Konfigurationen rekonstruiert und auf gemeinsamer Basis vermisst; denn cache-aware Algorithmen
+sind ohne eine Aufteilung der das Caching maßgeblich bestimmenden Eigenschaften nicht differenzierbar.
+Die vier Anforderungen beschreiben dabei zugleich eine Verarbeitungs-Kette --- von der Definition einer
+Achsen-Belegung über ihre Erzeugung und Vermessung bis zur Auswertung ---, und ein System dieser Größe
+bleibt nur beherrschbar, wenn diese Stationen als getrennte Schichten mit festen Verträgen entwickelt
+werden; das Schichtenmodell dazu entwickelt Abschnitt~\ref{sec:anatomy-layers}. Welche der
+katalogisierten Instanzen das Framework übernimmt und welche es als überholt ersetzt, entwickelt der
+folgende Abschnitt~\ref{sec:sota-instances} dialektisch (These--Antithese--Synthese); das Lösungskonzept
+(Abschnitt~\ref{sec:anatomy-model}) und das darauf aufbauende Mess-System
+(Abschnitt~\ref{sec:measurement-system}) sind die Lösung, die die doppelte Lücke schließt.
 
 \section{Stand der Technik als Achsen-Instanzen}\label{sec:sota-instances}
 Die bekannten Verfahren erscheinen nun systematisch als Achsen-Kompositionen; die vollständigen Kataloge liegen
@@ -725,8 +739,77 @@ eigenständiges Modul über die ABI-Grenze lädt --- so wird der Prüfling PRT-A
 Matrix-Schichten gegen die Cache-Engine kompiliert.
 
 Wie diese \emph{eine} Architektur über eine ABI-stabile Hülle im Code sichtbar wird, vertieft
-Kapitel~\ref{ch:impl} (Abschnitt~\ref{sec:axes-impl}); zunächst wendet sich der folgende Abschnitt der
-Frage zu, wie sich die so komponierten Lebewesen fair vermessen lassen.
+Kapitel~\ref{ch:impl} (Abschnitt~\ref{sec:axes-impl}); zuvor ordnet der folgende Unterabschnitt den
+Apparat als Ganzes: in welchen Schichten er von der Experiment-Definition bis zur Auswertung organisiert
+ist und wie er fertiggestellt wird.
+
+\subsection{Fünf Interface-Schichten: E4 bis E0}\label{sec:anatomy-layers}
+Das Anatomie-Modell ordnet das \emph{Gemessene}: was ein Lebewesen ist und aus welchen Organen es
+besteht. Quer dazu braucht der Apparat, der solche Lebewesen erzeugt und vermisst, ein zweites
+Ordnungsprinzip --- eine Sicht auf die \emph{Experiment-Pipeline}, die eine deklarierte Achsen-Belegung
+in gemessene Ergebnisse überführt. Diese Pipeline gliedert sich in fünf Schichten E4 bis E0, ergänzt um
+den Querschnitt~M (Abbildung~\ref{fig:e-layers}). Die Zählung läuft von der abstraktesten zur
+konkretesten Ebene. \emph{E4} ist die Definitions- und Auswertungs-Schicht --- die Ebene, die ein
+Anwender des Frameworks in der Regel verwendet: Experimente werden deklarativ als XML-Profile
+beschrieben, und am Ende der Pipeline nimmt dieselbe Schicht die Messergebnisse als Rückkanal entgegen
+und bereitet sie zu Tabellen und Diagrammen auf. \emph{E3} ist der
+Permutations-B\textsuperscript{+}-Baum: Er entfaltet die deklarierte Belegung zum Experimentbaum, wobei
+die übersetzungsstatischen Achsen die Identität der zu bauenden Binary bestimmen und die dynamischen
+Achsen die Laufzeit-Dimension aufspannen. \emph{E2} sind die Tier-Binaries selbst: je Permutation eine
+eigenständige, über die ABI-stabile Schnittstelle geladene Binary (Ebene~5 der Gattungs-Hierarchie,
+Abbildung~\ref{fig:genera}). \emph{E1} ist die Laufzeit-Konfiguration --- die präziseste
+Detail-Schicht, in der die dynamischen Sub-Achsen-Parameter an der bereits geladenen Binary variiert
+werden. \emph{E0} schließlich ist die Infrastruktur (Bau-, Werkzeug- und Plattform-Unterbau); sie wird
+bewusst zuletzt fertiggestellt. Das Mess-System durchdringt als Querschnitt~\emph{M} alle Schichten,
+ohne selbst eine zu sein --- diese Sonderrolle vertieft Abschnitt~\ref{sec:measurement-system}.
+
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,
+  layer/.style={draw,rounded corners,minimum width=7.4cm,minimum height=0.86cm,align=center,font=\scriptsize}]
+  \node[layer,fill=orange!16] (e4) at (0,0)    {\textbf{E4} --- Definition $+$ Auswertung\\{\tiny XML-Profile, Ergebnis-Rückkanal --- die Anwender-Sicht des Frameworks}};
+  \node[layer,fill=orange!12] (e3) at (0,-1.05){\textbf{E3} --- Permutations-B\textsuperscript{+}-Baum\\{\tiny statische Achsen $=$ Binary-Identität, dynamische $=$ Laufzeit-Dimension}};
+  \node[layer,fill=orange!8]  (e2) at (0,-2.1) {\textbf{E2} --- Tier-Binaries\\{\tiny eine eigenständige Binary je Permutation, ABI-stabile Schnittstelle}};
+  \node[layer,fill=orange!4]  (e1) at (0,-3.15){\textbf{E1} --- Laufzeit-Konfiguration\\{\tiny dynamische Sub-Achsen-Parameter an der geladenen Binary}};
+  \node[layer,fill=gray!10]   (e0) at (0,-4.2) {\textbf{E0} --- Infrastruktur\\{\tiny Bau- und Plattform-Unterbau; wird zuletzt fertiggestellt}};
+  \draw[->] (-4.0,0) -- (-4.0,-3.15);
+  \node[font=\scriptsize,rotate=90] at (-4.35,-1.575){Definition $\to$ Ausführung};
+  \draw[->,dashed] (4.0,-3.15) -- (4.0,0);
+  \node[font=\scriptsize,rotate=90] at (4.35,-1.575){Rückkanal: Messwerte};
+  \node[draw,rounded corners,fill=blue!8,minimum height=3.9cm,minimum width=0.75cm,font=\scriptsize] (m) at (5.15,-1.575){\rotatebox{90}{\textbf{M} --- Mess-System (Querschnitt, \enquote{Blut})}};
+\end{tikzpicture}
+\caption{Die fünf Interface-Schichten der Experiment-Pipeline: von der deklarativen Definitions- und
+Auswertungs-Schicht~E4 (Anwender-Sicht) über den Permutations-B\textsuperscript{+}-Baum~(E3) und die
+Tier-Binaries~(E2) zur Laufzeit-Konfiguration~(E1); die Infrastruktur~(E0) trägt alles und wird zuletzt
+fertiggestellt. Der Rückkanal führt die Messwerte zur Auswertung nach E4 zurück; das Mess-System
+durchdringt als Querschnitt~M alle Schichten (\enquote{Blut}, Abschnitt~\ref{sec:measurement-system}).
+Jede Schicht wird einzeln fertiggestellt, mit eingefrorenem Interface-Vertrag zur
+Nachbar-Ebene.}\label{fig:e-layers}
+\end{figure}
+
+Tragend ist das Fertigstellungs-Prinzip dieser Schichtung: Jede Schicht wird \emph{einzeln}
+fertiggestellt, mit einem explizit \emph{eingefrorenen Interface-Vertrag} zur jeweiligen Nachbar-Ebene
+--- die Grenze E4$\to$E3 etwa friert ein, wie eine XML-Definition in Achsen-Ebenen übersetzt wird, die
+Grenze E3$\to$E2, wie aus einem Baum-Pfad ein Bau-Auftrag wird, und die Grenze E2$\to$E1, welche
+Laufzeit-Stellgrößen eine Binary über die ABI entgegennimmt. Die Prüffrage je Grenze lautet stets:
+Reicht die Schicht ihre Definition \emph{verlustfrei} an die nächste weiter? Ein System mit einem
+Produktraum von über $10^{14}$ Kombinationen ist für gleichzeitige Änderungen über mehrere Ebenen zu
+groß; erst die eingefrorenen Verträge machen jede Ebene einzeln abnehmbar, bevor die nächste beginnt.
+Dieses Prinzip korrespondiert mit der Matrix-Programmierweise des Apparats
+(Abschnitt~\ref{sec:anatomy-patterns}): So wie der Prüfling in Matrix-Schichten gegen die Cache-Engine
+kompiliert wird, wird der Apparat selbst in Interface-Schichten gegen eingefrorene Verträge entwickelt;
+wie jede Schicht dabei einzeln --- gegen einen Ersatz ihrer Nachbar-Ebene --- geprüft wird, zeigt
+Kapitel~\ref{ch:impl}.
+
+Die E-Schichten sind ausdrücklich vom Drei-Ebenen-Modell (Abschnitt~\ref{sec:anatomy-levels}) zu
+unterscheiden, so ähnlich beide auf den ersten Blick wirken: Das Drei-Ebenen-Modell ist die
+\emph{Anatomie-Sicht} --- es ordnet \emph{ein} Lebewesen von der Gattung über die Unterklasse zu den
+Organen und beschreibt damit die Struktur des Gemessenen. Die E-Schichten sind die \emph{Pipeline-Sicht}
+--- sie ordnen den Weg eines Experiments von der Definition über Baum, Binary und Laufzeit zurück zur
+Auswertung und beschreiben damit den Prozess des Messens. Beide Sichten stehen orthogonal zueinander:
+Dasselbe Lebewesen, das anatomisch in Gattung, Unterklasse und Organe zerfällt, durchläuft als
+Tier-Binary die Schichten E3 bis E1. Nachdem damit geklärt ist, was komponiert wird und in welchen
+Schichten der Apparat es verarbeitet, wendet sich der folgende Abschnitt der Frage zu, wie sich die so
+komponierten Lebewesen fair vermessen lassen.
 
 \section{Das Mess-System}\label{sec:measurement-system}
 Damit strukturell verschiedene Suchalgorithmen \emph{fair} verglichen werden, bildet die Arbeit sie alle
@@ -763,6 +846,38 @@ Per-Achsen-Beobachter-Schnittstelle ---; und ein \emph{Konformitäts-Gatter} pr�
 \emph{Definitions-Klassen} des Messens; ihre technischen \emph{Instanzen} --- Hardware-Performance-Zähler,
 OTF2-/VAMPIR-Profiling, die TU-Dresden-Hardware-Messmethodik --- hat Abschnitt~\ref{sec:sota-instances}
 bereits als konkrete Technologien eingeführt.
+
+Innerhalb dieser Definitions-Klassen trennt das Mess-System zwei grundverschiedene Achsen-Systeme, die
+nicht vermischt werden dürfen. Die \emph{Organ-Achsen} (T0--T18) sind das \emph{Gemessene}: Organe des
+Lebewesens, Teil der Gattungen, permutierbar --- jede Belegung verändert die Identität der Tier-Binary.
+Die \emph{System-Achsen} sind dagegen die \emph{Mess-Instrumente} selbst. In der Anatomie-Metapher sind
+sie kein weiteres Organ, sondern das \emph{Blut}: Sie durchdringen den ganzen Körper, sind immer
+präsent, sobald gemessen wird, und gehören keiner Gattung an. Daraus folgen drei Invarianten:
+System-Achsen sind nicht permutierbar (sie sind nicht austauschbare, zentrale Systembestandteile); sie
+stehen nicht im Permutationsbaum; und sie berühren niemals die Binary-Identität --- kein Mess-Instrument
+darf verändern, \emph{was} gebaut wird. Umgekehrt dürfen die Effekte der Organ-Achsen nie mit den
+Effekten der Mess-Instrumente vermengt werden. Konzeptionell verlangen die System-Achsen deshalb eine
+eigene, gemeinsame Wurzel getrennt von der Anatomie-Hierarchie; die Zusammenführung der heute noch
+verstreuten Mess-Bestandteile unter dieser Wurzel ist Teil der Umsetzung (Kapitel~\ref{ch:impl}).
+
+Unter dieser Wurzel ordnen sich die Mess-Kategorien (Abschnitt~\ref{sec:sota-instances}) --- im Apparat
+zu sechzehn Kategorien ausdifferenziert --- in eine \emph{Regime-Zweiteilung}: das zeit- und
+observer-basierte Regime (Laufzeit-Uhren und Beobachter-Hüllen; neun Kategorien, darunter Latenz,
+Durchsatz und Speicher-Fußabdruck) und das zählerbasierte PMC-Regime (Hardware-Performance-Zähler;
+sieben Kategorien, darunter Cache-, dTLB- und Branch-Misses sowie IPC/CPI). Das Regime ist ein Merkmal
+der System-Achse, nicht des gemessenen Organs: Dieselbe Organ-Achse kann von beiden Regimen beleuchtet
+werden. Die observer-basierte Teilmenge löst die Apparatur bereits auf; die PMC-Teilmenge bleibt an
+Hardware-Zähler-Zugriff gebunden.
+
+Beide Achsen-Systeme bindet ein methodisches Prinzip, die \emph{honest-0-Doktrin} (ehrliche Null bzw.\
+ehrliche Leere): Wo ein Wert nicht wirklich erhoben werden kann --- eine Organ-Achse ohne echten
+Laufzeit-Parameter, ein Zähler ohne Hardware-Zugriff, eine Mess-Quelle, die auf der Plattform nicht
+existiert ---, meldet das System \emph{ehrlich ungültig oder leer} statt eines plausiblen Phantomwerts.
+Lieber eine als ungültig markierte Messung als ein erfundener Effekt: Ein Phantomwert würde die
+Heuristik-Ableitung (Abschnitt~\ref{sec:heuristics}) systematisch vergiften, während eine ehrliche Lücke
+sichtbar bleibt und gezielt geschlossen werden kann. Das Prinzip gilt durchgängig --- von der
+Achsen-Verdrahtung (nur Achsen mit real messbarem Laufzeit-Knopf melden Laufzeit-Effekte; die übrigen
+gelten ehrlich als übersetzungsstatisch) bis zur Verfügbarkeits-Meldung der Zähler-Quellen.
 
 Was diese Mess-Muster konkret erheben, sind drei gegenläufige Komponenten --- \emph{Latenz},
 \emph{Durchsatz} und \emph{Speicherverbrauch} ---, gegen die sich jede Achsen-Permutation als
@@ -961,6 +1076,14 @@ und ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte SOTA-Verfahre
 % B9 PRT-ART-Demonstrator: fig:prtart-demo (3.4) ERLEDIGT; PRTART-Galerie: fig:prtart-gallery (4.2) ERLEDIGT
 
 \section{Schärfung durch Heuristiken}\label{sec:heuristics}
+Die Messreihen liefern mehr als Ranglisten: Aus ihnen lassen sich Heuristiken gewinnen, die das
+Mess-System schrittweise von einem Prüfstand zu einem sich selbst optimierenden Auslieferungs-System
+schärfen. Dieser Abschnitt entwickelt diese Schärfung als Konzept in drei Stufen --- die
+Heuristik-Schleife über gelernte Lastprofile, die vier Betriebsmodi des Builders bis zum Hybrid-Modus
+als Zielbild der Arbeit und das Messkurven-Typsystem samt Filterkette und Messfehler-Erkennung, das
+diese Modi mit Daten versorgt. Vollzogenes und Geplantes werden dabei jeweils ausdrücklich getrennt.
+
+\subsection{Heuristik-Schleife und gelernte Lastprofile}\label{sec:heuristics-loop}
 Aus den Messreihen lässt sich --- als Ausblick-Mechanismus --- je Last- und Datentyp-Profil die beste
 Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
 \begin{figure}[htbp]\centering
@@ -995,6 +1118,105 @@ lastprofil-getriebene Konfigurationswahl mit Workload-Filter findet ihre Datenba
 OtterTune~\cite{vanaken2017ottertune} und im Database Tuning Advisor mit Workload-Kompression~\cite{agrawal2005autoadmin},
 die online-laufzeitnahe Variante in Active Harmony~\cite{tapus2002activeharmony}; die Bezeichnung
 \enquote{Software-in-the-Loop} selbst entstammt der X-in-the-Loop-Validierungstaxonomie~\cite{tibba2016xil}.
-Die konkrete Umsetzung dieses Auswahl- und Auslieferungs-Mechanismus
-bleibt zukünftiger Arbeit vorbehalten (Kapitel~\ref{ch:conclusion}). Zunächst vertieft
-Kapitel~\ref{ch:impl} die konkrete Implementierung der hier eingeführten Bausteine.
+Die konkrete Umsetzung dieses ML-gestützten Auswahl-Mechanismus bleibt zukünftiger Arbeit vorbehalten
+(Kapitel~\ref{ch:conclusion}); die Schleife selbst ist jedoch nur die erste Stufe eines größeren
+Betriebs-Zielbilds, das der folgende Unterabschnitt entwickelt.
+
+\subsection{Die vier Betriebsmodi des Builders}\label{sec:heuristics-modes}
+Die Heuristik-Schleife ist der Kern eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden
+Betriebsmodi des Builder-Interfaces. Von diesen vier Modi ist der erste der heutige Betrieb des
+Apparats; die Modi zwei bis vier sind das erklärte Ziel dieser Arbeit und werden hier als Konzept
+festgehalten.
+
+Im \emph{Mess-Modus} --- dem Betrieb, den Abschnitt~\ref{sec:measurement-system} beschreibt --- fährt
+der Builder die Messreihen über die zugelassenen Permutationen. Nach Abschluss der Messung kennt das
+Framework die Eigenschaften aller zugelassenen Achsen-Algorithmen gegen die Rekombination aller
+zugelassenen Lastprofil-Rahmenwerke und Workloads. Der \emph{Auswertungs-Modus} verdichtet diese
+Messungen: Aus ihnen ergeben sich minimale Stränge der Permutationen aller Eigenschaften gegeneinander
+für bestimmte \emph{Workload-Cluster} --- für Gruppen ähnlicher Lasten bleibt der kleine Satz von
+Achsen-Kompositionen übrig, der sie dominiert. Wie Workloads zu Clustern aggregiert werden (welche
+Cluster-Verfahren tragen), ist bewusst offen gelassen und Gegenstand weiterer Untersuchung.
+
+Der \emph{Arbeits-Modus} ist das Produktions-Ziel: Das Builder-Interface hält alle für die aktuell
+stochastisch häufig auftretende Workload-Last und Interface-Funktion relevanten Tier-Binaries hot im
+Arbeitsspeicher und wechselt unter der Haube die Tier-Binary mit ihren speziell optimalen
+Achsen-Permutationen am ABI-stabilen Interface --- derselbe Mechanismus des Binary-Wechsels, den der
+Mess-Modus nutzt, nur last-getrieben statt mess-getrieben. Ebenen-richtig bleibt dabei die
+Übersetzungszeit-Doktrin gewahrt: Es gibt keinen Laufzeit-Umschalter \emph{im} Tier --- die Binaries
+selbst bleiben übersetzungszeitlich permutiert; gewechselt wird \emph{zwischen} vorgeladenen Binaries an
+der bewussten ABI-Grenze. Das Prüf-Dock der Gattung (Abschnitt~\ref{sec:anatomy-levels}) heißt in diesem
+Modus \emph{Arbeits-Dock}: Dieselbe Schnittstelle, über die im Mess-Modus geprüft wird, liefert nun die
+produktiven Antworten.
+
+Der \emph{Hybrid-Modus} schließlich --- das Ziel der Arbeit --- verbindet Arbeitsmodus und Messung. Sein
+Kernstück ist, dass die Heuristik-Optimierung selbst eine \emph{System-Achse} ist
+(Abschnitt~\ref{sec:measurement-system}): Sie übernimmt per Metaprogrammierung die Gattung ihrer
+Tier-Binaries, wird selbst zu einer Tier-Binary kompiliert und dockt am Prüf-Dock des Builders an wie
+jedes echte Tier; Befehle reicht sie über das \emph{Command}-Muster~\cite{gamma1994patterns} an die ihr
+statisch zugewiesenen echten Tier-Binaries weiter. Die Rekombination der zu verwendenden
+Heuristik-Tier-Binaries ist dabei selbst permutierbar gegen die existierenden echten Tier-Binaries; die
+Heuristik-Achse kann daher die Mess-Funktionskurven für Schätzungen verwenden und eine optimale
+mehrdimensionale Rekombination kompilieren, die durch ihr ABI-stabiles Gattungs-Interface eindeutig als
+Suchalgorithmus-Hülle verwendbar ist --- nach außen ein \emph{virtuelles ganzes Tier-Binary}, von einer
+einzelnen Binary nicht unterscheidbar. Zugleich misst der Hybrid-Modus mit: Über die optimierte
+Rekombination werden die kombinierte Wall-Clock-Zeit sowie Makro- und Mikro-Benchmarks per Mess-Command
+über alle Tier-Binaries und Operationen mitgeloggt.
+
+Damit trägt der Hybrid-Modus den \emph{heuristischen Gegenbeweis}: Nach Eintritt des Arbeitsmodus wird
+das Heuristik-Tier-Binary erneut vermessen --- sein Wall-Clock-Verhalten im Vergleich gegen die besten
+Einzel-Binaries und gegen die rekonstruierten Paper-Algorithmen entscheidet, ob die heuristische
+Rekombination hält, was die Kurven versprechen. Das Ziel der Arbeit ist damit doppelt formuliert: die
+beste Rekombination beziehungsweise das beste einzelne Binary gegenüber allen Achsen-Eigenschaften ---
+besonders der Cache-Line-Bewusstheit --- zu bestimmen und am Ende beides produktionsfähig
+bereitzustellen, die beste einzelne Binary \emph{und} das Heuristik-Tier-Binary. Alle vier Modi sollen
+dabei über die Auswertungs-Kette der Definitions-Schicht (Abschnitt~\ref{sec:anatomy-layers})
+automatisch dokumentiert werden; die Messwerttabellen und Diagramme dieser Arbeit selbst sind das erste
+Erzeugnis dieser Kette, und die Bewertung des Gegenbeweises definiert Kapitel~\ref{ch:eval}.
+
+\subsection{Messkurven-Typsystem, Filterkette und Messfehler-Erkennung}\label{sec:heuristics-curves}
+Damit der Auswertungs- und der Hybrid-Modus tragen, braucht die Auswertung mehr als flache
+Ergebnistabellen. Als Zielbild formuliert diese Arbeit dafür ein \emph{Messkurven-Typsystem}; im
+heutigen Stand existiert davon erst der Keim --- eine Kurvenanpassung über eine Achse und eine
+x-Dimension ---, die volle Struktur ist als Ziel formuliert. Jede Tier-Binary-Gesamtpermutation erhält
+je Mess-Achse eine Wall-Clock-Messkurve über das Working-Set --- etwa die Lookup-Latenz als Funktion der
+Füllgröße ---, und zwar getrennt nach Lastprofil-Rahmenwerk, Workload-Typ, Working-Set-Größe,
+Operationstyp und Beobachter-Typ; jede Achse wird im Experimentbaum übersetzungsstatisch wie
+laufzeit-dynamisch separat durchgefahren, sodass jede Achse eine vollständige Übersicht ihrer
+Eigenschaften und Einzelmessungen erhält. Über alle Permutationen zusammengenommen entsteht so je
+Tier-Binary eine mehrdimensionale Mess-Datenbank, aus der die Heuristik-Kurven der Schleife
+(Abschnitt~\ref{sec:heuristics-loop}) abgelesen werden. Die Kardinalität jeder Dimension dieses
+Typsystems ist strategisch in Klassen und Hierarchien einzuteilen: design-feste Konstanten (etwa die
+neunzehn Organ-Achsen und die sechzehn Mess-Kategorien), profil-gebundene Produkte (was ein
+Experiment-Profil an Belegungen zulässt) und laufzeit-freie Iterationsräume (die dynamischen
+Stützstellen je statischer Binary) --- so bleiben die System-Achsen in der Lage, die Auswertung über
+alle Ebenen hinweg zu tragen.
+
+Aus den Auswertungen ergibt sich --- ebenfalls als Zielbild --- automatisch eine \emph{Filterkette}:
+Jedes Kettenglied prüft anhand der bisherigen Kurven, ob eine Permutations-Familie weiterverfolgt wird,
+und reicht die Entscheidung andernfalls an das nächste Glied weiter --- das Entwurfsmuster \emph{Chain
+of Responsibility}~\cite{gamma1994patterns}, strikt im Builder verortet, denn die Kette kontrolliert die
+\emph{Generierung} der Tier-Binaries: Auswertung, Filter, dann die Entscheidung, welche Permutationen
+als Nächstes gebaut und welche verworfen werden. Diese Kette ist im heutigen Code nicht umgesetzt; sie
+wird als Konzept festgehalten und folgt nach den ersten vollständigen Messläufen.
+
+Schließlich braucht der Hybrid-Modus eine Kontrolle des Messfehlers, den die Mess-Instanzen selbst
+eintragen --- Beobachter kosten Zeit. Vorgesehen sind drei Bau-Varianten desselben Experiments: erstens
+Beobachter in allen Tier-Binaries \emph{und} im Heuristik-Hybrid-Tier, zweitens Beobachter nur im
+Heuristik-Tier-Binary, drittens Beobachter in keinem --- nur die Wall-Clock. Die Differenzen zwischen
+den drei Varianten quantifizieren den Messfehler durch die Messinstanzen. Komplementär folgt ein
+\emph{vierter Schritt} der finalen heuristischen Zusammenstellung: Die dem Heuristik-Tier untergebenen
+Tier-Binaries (nicht die final optimierte Haupt-Binary) werden ohne Mikro- und Makro-Benchmarks und
+ohne Beobachter neu gebaut und rein an der Wall-Clock gegen alle bekannten Tier-Binary-Permutationen und
+gegen die bekannten Paper-Algorithmen verglichen --- wobei der Paper-Vergleich Vorrang hat. Auch dies
+ist Zielbild: Weder die Bau-Varianten-Matrix noch der komplementäre vierte Schritt existieren im
+heutigen Code; gelegt ist das Fundament --- die Messschalter je Kompilat und die ehrliche
+Gültigkeits-Markierung je Messwert im Sinne der honest-0-Doktrin
+(Abschnitt~\ref{sec:measurement-system}).
+
+Damit ist klar getrennt, was vollzogen und was Ziel ist: Vollzogen sind der Mess-Apparat des Mess-Modus
+samt Drei-Stufen-Prüfung, die Auswertungs-Kette bis zu Tabellen und Diagrammen und der Keim der
+Kurvenanpassung; noch ausstehend sind die vollständigen Messläufe; Ziel sind Auswertungs-, Arbeits- und
+Hybrid-Modus, das volle Messkurven-Typsystem, die Filterkette und die Messfehler-Kontrolle. Die
+Bewertung des heuristischen Gegenbeweises nimmt Kapitel~\ref{ch:eval} auf; die Einordnung des Ausblicks
+über diese Arbeit hinaus gibt Kapitel~\ref{ch:conclusion}. Zunächst vertieft Kapitel~\ref{ch:impl} die
+konkrete Implementierung der hier eingeführten Bausteine.

@@ -3,23 +3,53 @@
 % [SKELETON] cache-aware focus. The task assignment is made SELF-EXPLANATORY here (nobody reads it)
 % and draws on ALL concerns of Chapter 2. ALL tables live in this chapter.
 
-Building on the foundations from Chapter~\ref{ch:foundations}, this chapter introduces the actual concerns of the
-task and develops as their \emph{solution} the anatomy model as the solution concept and the measurement
-system built upon it --- demonstrated on the probe PRT-ART\@.
+Building on the foundations from Chapter~\ref{ch:foundations}, this chapter first develops the problem
+statement and the requirements for a measurement system, and as their \emph{solution} the anatomy model
+as the solution concept and the measurement system built upon it --- demonstrated on the probe PRT-ART\@.
 
-\section{Concerns of the Task Assignment}\label{sec:task-concerns}
-The task demands decomposing and measuring cache-aware search algorithms such that the contribution of each design
-decision becomes visible in isolation. We make these concerns fully understandable here within the text --- without
-recourse to the task sheet --- in the context of the foundations from Chapter~\ref{ch:foundations}.
-At its core the task demands four steps: to \emph{decompose} cache-aware search algorithms into
-interchangeable design constituents, to \emph{reconstruct} state-of-the-art designs as explicit
-configurations, to \emph{measure} their cache-line-aware behaviour both per constituent and for the whole
-algorithm on a common basis, and from this to derive the best overall algorithm and \emph{deliver} it
-system-optimized. The cache-aware focus is no side condition but the guiding quantity: not asymptotic
-complexity but cache-line behaviour under real load decides performance (Chapter~\ref{ch:foundations}), and
-precisely this behaviour is to become measurable per axis in isolation.
+\section{Problem Statement and Requirements for a Measurement System}\label{sec:task-concerns}
+The starting point is the finding of the foundations (Chapter~\ref{ch:foundations}): the performance of
+cache-aware search structures is decided not by asymptotic complexity but by cache-line behaviour under
+real load. This behaviour, however, is the result of many interlocking design decisions --- how nodes
+branch, how pages are arranged in memory, how allocation, prefetching, and synchronization are done ---,
+and in the published methods these decisions have grown together monolithically: whoever measures a
+method always measures the whole bundle, never the individual decision. Precisely this is the problem
+statement of this thesis, the \emph{separability problem}: the contribution of each individual design
+decision to cache-line behaviour shall become visible in isolation --- per decision as well as for the
+whole algorithm.
 
-This decomposition claim is illustrated by the \emph{design space}: each of these partial decisions ---
+The state of the art sharpens this problem in two directions. In substance, each of the studied works
+optimizes only a few design decisions in isolation, and in the studied corpus \emph{not a single method
+occupies all design dimensions together}: some dimensions are filled exclusively with baseline or
+textbook variants (the mapping between algorithm and cache traversal), others appear only as a
+\emph{measurement target} (the dTLB), the spatial search class is missing entirely, and decisions such as
+I/O, migration, filtering, and buffering are each occupied individually but never together with the
+search decisions in one design. Methodologically a second gap is added: results are reported in
+incomparable settings, and the frequent choice of scenario-specific, often favourably tailored load
+profiles hampers a fair cross-comparison; what is missing is a bias-reduced measurement of \emph{all}
+load profiles against \emph{all} methods on a common basis.
+
+From this double gap follow four requirements for a solution. It must, first, \emph{decompose}
+cache-aware search algorithms into interchangeable design constituents, so that each decision becomes
+individually graspable; second, \emph{reconstruct} the state-of-the-art designs as explicit
+configurations of these constituents, so that the known and the new become comparable in the same space;
+third, \emph{measure} the cache-line-aware behaviour per constituent as well as for the whole algorithm
+on a common basis --- all load profiles against all methods, bias-reduced; and fourth, derive the best
+overall algorithm from the measurements and \emph{deliver} it system-optimized. The cache-aware focus is
+no side condition but the guiding quantity: precisely the cache-line behaviour that decides performance
+shall become measurable in isolation per design decision.
+
+The measurement requirement sharpens, at the juxtaposition of cache-aware and cache-oblivious designs
+(Section~\ref{sec:hardware-history}), into a third, intermediate path: the actual cache properties (line
+size, hierarchy depth, topology) are \emph{determined} per target platform and enter a system-optimized
+binary as fixed quantities, while the \emph{configurable} cache-near settings (prefetch distance,
+batching and inline thresholds, pool budgets) are permuted as axis parameters against an already-loaded
+binary --- graded by what hardware and operating system allow, from fully runtime-configurable (mutable
+Linux with MSR access) through compile-static (immutable operating systems) to fixed (read-only cache
+registers on ARM and RISC-V). Thus cache-oblivious behaviour is augmented with \emph{measured} locality
+knowledge.
+
+The four requirements condense into a target picture, the \emph{design space}: each partial decision ---
 say node type, memory layout, or allocator --- spans an axis of its own, and every state-of-the-art
 algorithm is a point in the Cartesian product of these axes (Figure~\ref{fig:design-space}).
 \begin{figure}[htbp]\centering
@@ -36,33 +66,20 @@ algorithm is a point in the Cartesian product of these axes (Figure~\ref{fig:des
 \caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it. For illustration, three of the nineteen axes are chosen --- the real storage organ of node type~(T4), memory layout~(T5) and allocator~(T6); the full design space has nineteen dimensions.}\label{fig:design-space}
 \end{figure}
 
-The state of the art (Chapter~\ref{ch:foundations}) thereby reveals the central gap: each of the studied
-works optimizes only a few axes in isolation, and in the studied corpus \emph{not a single method occupies
-all nineteen axes together}. Some axes are filled exclusively with baseline or textbook variants (the
-mapping between algorithm and cache traversal), others appear only as a \emph{measurement target} (the
-dTLB), the spatial search class is missing entirely, and axes such as I/O, migration, filtering, and
-buffering are each occupied individually but never together with the search axes in one design.
-
-From the juxtaposition of cache-aware and cache-oblivious designs (Section~\ref{sec:hardware-history})
-the thesis derives a third, intermediate path: the actual cache properties (line size, hierarchy depth,
-topology) are \emph{determined} per target platform and enter a system-optimized binary as fixed
-quantities, while the \emph{configurable} cache-near settings (prefetch distance, batching and inline
-thresholds, pool budgets) are permuted as axis parameters against an already-loaded binary --- graded by
-what hardware and operating system allow, from fully runtime-configurable (mutable Linux with MSR access)
-through compile-static (immutable operating systems) to fixed (read-only cache registers on ARM and
-RISC-V). Thus cache-oblivious behaviour is augmented with \emph{measured} locality knowledge.
-
-Added to this is a methodological gap: results are reported in incomparable settings, and the frequent
-choice of scenario-specific, often favourably tailored load profiles hampers a fair cross-comparison. What
-is missing is a bias-reduced measurement of \emph{all} load profiles against \emph{all} methods on a common
-basis --- and what this thesis contributes is therefore the systematic, orthogonal axis decomposition of
-these designs together with a \emph{permuted measurement architecture} that reconstructs them as explicit
-configurations and measures them on a common basis; for cache-aware algorithms cannot be differentiated
-without a separation of the properties that decisively govern caching. Which of the catalogued instances
+Once the design space is spanned this way, the separability problem becomes solvable: varying a design
+decision means moving along exactly one axis while all others stay fixed --- its contribution becomes
+measurable in isolation. What this thesis contributes is consequently the systematic, orthogonal axis
+decomposition of the known designs together with a \emph{permuted measurement architecture} that
+reconstructs them as explicit configurations and measures them on a common basis; for cache-aware
+algorithms cannot be differentiated without a separation of the properties that decisively govern
+caching. The four requirements at the same time describe a processing chain --- from the definition of an
+axis assignment through its generation and measurement to the evaluation ---, and a system of this size
+remains manageable only if these stations are developed as separate layers with fixed contracts; the
+layer model for this is developed in Section~\ref{sec:anatomy-layers}. Which of the catalogued instances
 the framework adopts and which it replaces as obsolete is developed dialectically by the following
 Section~\ref{sec:sota-instances} (thesis--antithesis--synthesis); the solution concept
 (Section~\ref{sec:anatomy-model}) and the measurement system built upon it
-(Section~\ref{sec:measurement-system}) are the solution that closes this gap.
+(Section~\ref{sec:measurement-system}) are the solution that closes the double gap.
 
 \section{State of the Art as Axis Instances}\label{sec:sota-instances}
 The known methods now appear systematically as axis compositions; the complete catalogues live here.
@@ -711,8 +728,75 @@ C++ source, and loads each permutation as a standalone module across the ABI bou
 PRT-ART is compiled, by metaprogramming, in matrix layers against the cache engine.
 
 How this \emph{one} architecture becomes visible in the code through an ABI-stable hull is deepened in
-Chapter~\ref{ch:impl} (Section~\ref{sec:axes-impl}); first, the following section turns to the question of
-how the living beings thus composed can be measured fairly.
+Chapter~\ref{ch:impl} (Section~\ref{sec:axes-impl}); before that, the following subsection orders the
+apparatus as a whole: in which layers it is organized from experiment definition to evaluation, and how
+it is completed.
+
+\subsection{Five Interface Layers: E4 down to E0}\label{sec:anatomy-layers}
+The anatomy model orders the \emph{measured}: what a living being is and which organs it consists of.
+Orthogonal to that, the apparatus that generates and measures such living beings needs a second ordering
+principle --- a view of the \emph{experiment pipeline} that transforms a declared axis assignment into
+measured results. This pipeline is organized into five layers E4 down to E0, complemented by the
+cross-cutting concern~M (Figure~\ref{fig:e-layers}). The numbering runs from the most abstract to the
+most concrete level. \emph{E4} is the definition and evaluation layer --- the level a user of the
+framework typically works with: experiments are described declaratively as XML profiles, and at the end
+of the pipeline the same layer receives the measurement results as a return channel and prepares them
+into tables and diagrams. \emph{E3} is the permutation B\textsuperscript{+}-tree: it unfolds the declared
+assignment into the experiment tree, where the compile-static axes determine the identity of the binary
+to be built and the dynamic axes span the runtime dimension. \emph{E2} are the tier binaries themselves:
+per permutation one standalone binary loaded across the ABI-stable interface (level~5 of the genus
+hierarchy, Figure~\ref{fig:genera}). \emph{E1} is the runtime configuration --- the most precise detail
+layer, in which the dynamic sub-axis parameters are varied on the already-loaded binary. \emph{E0},
+finally, is the infrastructure (build, tooling, and platform substrate); it is deliberately completed
+last. The measurement system permeates all layers as the cross-cutting concern~\emph{M} without being one
+itself --- this special role is deepened in Section~\ref{sec:measurement-system}.
+
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,
+  layer/.style={draw,rounded corners,minimum width=7.4cm,minimum height=0.86cm,align=center,font=\scriptsize}]
+  \node[layer,fill=orange!16] (e4) at (0,0)    {\textbf{E4} --- definition $+$ evaluation\\{\tiny XML profiles, result return channel --- the user view of the framework}};
+  \node[layer,fill=orange!12] (e3) at (0,-1.05){\textbf{E3} --- permutation B\textsuperscript{+}-tree\\{\tiny static axes $=$ binary identity, dynamic $=$ runtime dimension}};
+  \node[layer,fill=orange!8]  (e2) at (0,-2.1) {\textbf{E2} --- tier binaries\\{\tiny one standalone binary per permutation, ABI-stable interface}};
+  \node[layer,fill=orange!4]  (e1) at (0,-3.15){\textbf{E1} --- runtime configuration\\{\tiny dynamic sub-axis parameters on the loaded binary}};
+  \node[layer,fill=gray!10]   (e0) at (0,-4.2) {\textbf{E0} --- infrastructure\\{\tiny build and platform substrate; completed last}};
+  \draw[->] (-4.0,0) -- (-4.0,-3.15);
+  \node[font=\scriptsize,rotate=90] at (-4.35,-1.575){definition $\to$ execution};
+  \draw[->,dashed] (4.0,-3.15) -- (4.0,0);
+  \node[font=\scriptsize,rotate=90] at (4.35,-1.575){return channel: measurements};
+  \node[draw,rounded corners,fill=blue!8,minimum height=3.9cm,minimum width=0.75cm,font=\scriptsize] (m) at (5.15,-1.575){\rotatebox{90}{\textbf{M} --- measurement system (cross-cutting, \enquote{blood})}};
+\end{tikzpicture}
+\caption{The five interface layers of the experiment pipeline: from the declarative definition and
+evaluation layer~E4 (user view) through the permutation B\textsuperscript{+}-tree~(E3) and the tier
+binaries~(E2) to the runtime configuration~(E1); the infrastructure~(E0) carries everything and is
+completed last. The return channel leads the measurements back to the evaluation in E4; the measurement
+system permeates all layers as the cross-cutting concern~M (\enquote{blood},
+Section~\ref{sec:measurement-system}). Each layer is completed individually, with a frozen interface
+contract to its neighbouring level.}\label{fig:e-layers}
+\end{figure}
+
+Carrying this layering is its completion principle: each layer is completed \emph{individually}, with an
+explicitly \emph{frozen interface contract} to its respective neighbouring level --- the E4$\to$E3
+boundary, say, freezes how an XML definition is translated into axis levels, the E3$\to$E2 boundary how a
+tree path becomes a build order, and the E2$\to$E1 boundary which runtime knobs a binary accepts across
+the ABI\@. The test question per boundary is always: does the layer pass its definition on to the next
+\emph{losslessly}? A system with a product space of over $10^{14}$ combinations is too large for
+simultaneous changes across several levels; only the frozen contracts make each level individually
+acceptable before the next one begins. This principle corresponds to the matrix programming style of the
+apparatus (Section~\ref{sec:anatomy-patterns}): just as the probe is compiled in matrix layers against
+the cache engine, the apparatus itself is developed in interface layers against frozen contracts; how
+each layer is thereby tested individually --- against a substitute of its neighbouring level --- is shown
+in Chapter~\ref{ch:impl}.
+
+The E-layers are expressly to be distinguished from the three-level model
+(Section~\ref{sec:anatomy-levels}), however similar both may look at first glance: the three-level model
+is the \emph{anatomy view} --- it orders \emph{one} living being from the genus through the subclass to
+the organs and thus describes the structure of the measured. The E-layers are the \emph{pipeline view}
+--- they order the path of an experiment from the definition through tree, binary, and runtime back to
+the evaluation and thus describe the process of measuring. Both views are orthogonal to each other: the
+same living being that anatomically decomposes into genus, subclass, and organs passes through the layers
+E3 to E1 as a tier binary. Now that it is settled what is composed and in which layers the apparatus
+processes it, the following section turns to the question of how the living beings thus composed can be
+measured fairly.
 
 \section{The Measurement System}\label{sec:measurement-system}
 To compare structurally different search algorithms \emph{fairly}, the thesis maps them all onto a single,
@@ -748,6 +832,38 @@ so that only comparable things are compared. These concepts form the \emph{defin
 measurement; their technical \emph{instances} --- hardware performance counters, OTF2/VAMPIR profiling, the
 TU-Dresden hardware measurement methodology --- have already been introduced as concrete technologies in
 Section~\ref{sec:sota-instances}.
+
+Within these definitional classes the measurement system separates two fundamentally different axis
+systems that must not be mixed. The \emph{organ axes} (T0--T18) are the \emph{measured}: organs of the
+living being, part of the genera, permutable --- every assignment changes the identity of the tier
+binary. The \emph{system axes}, by contrast, are the \emph{measurement instruments} themselves. In the
+anatomy metaphor they are not another organ but the \emph{blood}: they permeate the whole body, are
+always present as soon as measurement is on, and belong to no genus. From this follow three invariants:
+system axes are not permutable (they are non-interchangeable, central system constituents); they do not
+stand in the permutation tree; and they never touch the binary identity --- no measurement instrument may
+change \emph{what} is built. Conversely, the effects of the organ axes must never be blended with the
+effects of the measurement instruments. Conceptually the system axes therefore demand an own, common root
+separate from the anatomy hierarchy; consolidating the measurement constituents, today still scattered,
+under this root is part of the implementation (Chapter~\ref{ch:impl}).
+
+Under this root the measurement categories (Section~\ref{sec:sota-instances}) --- differentiated in the
+apparatus into sixteen categories --- order themselves into a \emph{regime bipartition}: the time- and
+observer-based regime (runtime clocks and observer hulls; nine categories, among them latency, throughput
+and memory footprint) and the counter-based PMC regime (hardware performance counters; seven categories,
+among them cache, dTLB and branch misses as well as IPC/CPI). The regime is a property of the system
+axis, not of the measured organ: the same organ axis can be illuminated by both regimes. The
+observer-based subset is already resolved by the apparatus; the PMC subset remains bound to hardware
+counter access.
+
+Both axis systems are bound by a methodological principle, the \emph{honest-0 doctrine} (honest zero or
+honest emptiness): where a value cannot truly be collected --- an organ axis without a real runtime
+parameter, a counter without hardware access, a measurement source that does not exist on the platform
+---, the system reports \emph{honestly invalid or empty} instead of a plausible phantom value. Better a
+measurement marked invalid than an invented effect: a phantom value would systematically poison the
+heuristic derivation (Section~\ref{sec:heuristics}), whereas an honest gap stays visible and can be
+closed deliberately. The principle holds throughout --- from the axis wiring (only axes with a genuinely
+measurable runtime knob report runtime effects; the rest count honestly as compile-static) to the
+availability reporting of the counter sources.
 
 What these measurement patterns concretely collect are three opposing components --- \emph{latency},
 \emph{throughput} and \emph{memory footprint} ---, against which every axis permutation spans as a
@@ -941,6 +1057,14 @@ probe dock as every reconstructed SOTA method.
 % B9 PRT-ART demonstrator: fig:prtart-demo (3.4) DONE; PRTART gallery: fig:prtart-gallery (4.2) DONE
 
 \section{Sharpening through Heuristics}\label{sec:heuristics}
+The measurement series deliver more than rankings: from them heuristics can be won that sharpen the
+measurement system step by step from a test bench into a self-optimizing delivery system. This section
+develops this sharpening as a concept in three stages --- the heuristic loop over learned load profiles,
+the four operating modes of the builder up to the hybrid mode as the target picture of this thesis, and
+the measurement-curve type system together with the filter chain and the measurement-error detection that
+feed these modes with data. Throughout, the accomplished and the planned are expressly kept apart.
+
+\subsection{Heuristic Loop and Learned Load Profiles}\label{sec:heuristics-loop}
 From the measurement series one can derive --- as an outlook mechanism --- the best axis composition per load and
 data-type profile and store it as a reusable profile.
 \begin{figure}[htbp]\centering
@@ -975,6 +1099,102 @@ database counterpart in OtterTune~\cite{vanaken2017ottertune} and the Database T
 compression~\cite{agrawal2005autoadmin}, the online runtime-near variant in Active
 Harmony~\cite{tapus2002activeharmony}; the term \enquote{software-in-the-loop} itself originates from the
 X-in-the-loop validation taxonomy~\cite{tibba2016xil}. The
-concrete realization of this selection and delivery mechanism remains reserved for future work
-(Chapter~\ref{ch:conclusion}). First, however, Chapter~\ref{ch:impl} deepens the concrete implementation
-of the building blocks introduced here.
+concrete realization of this ML-based selection mechanism remains reserved for future work
+(Chapter~\ref{ch:conclusion}); the loop itself, however, is only the first stage of a larger operating
+target picture, which the following subsection develops.
+
+\subsection{The Four Operating Modes of the Builder}\label{sec:heuristics-modes}
+The heuristic loop is the core of an operating regime of \emph{four} operating modes of the builder
+interface that build on one another. Of these four modes, the first is the apparatus's operation of
+today; modes two through four are the declared goal of this thesis and are recorded here as a concept.
+
+In the \emph{measurement mode} --- the operation that Section~\ref{sec:measurement-system} describes ---
+the builder runs the measurement series over the admitted permutations. After the measurement completes,
+the framework knows the properties of all admitted axis algorithms against the recombination of all
+admitted load-profile frameworks and workloads. The \emph{evaluation mode} condenses these measurements:
+from them emerge minimal strands of the permutations of all properties against one another for certain
+\emph{workload clusters} --- for groups of similar loads, only the small set of axis compositions that
+dominates them remains. How workloads are aggregated into clusters (which clustering methods carry) is
+deliberately left open and subject to further investigation.
+
+The \emph{working mode} is the production goal: the builder interface keeps all tier binaries relevant
+for the currently stochastically frequent workload load and interface function hot in main memory and
+switches, under the hood, the tier binary with its specifically optimal axis permutations at the
+ABI-stable interface --- the same binary-switching mechanism the measurement mode uses, only load-driven
+instead of measurement-driven. Level-correctly, the compile-time doctrine remains preserved: there is no
+runtime switch \emph{inside} the tier --- the binaries themselves remain compile-time-permuted; switching
+happens \emph{between} preloaded binaries at the deliberate ABI boundary. The probe dock of the genus
+(Section~\ref{sec:anatomy-levels}) is called the \emph{working dock} in this mode: the same interface
+through which the measurement mode tests now delivers the productive answers.
+
+The \emph{hybrid mode}, finally --- the goal of this thesis --- combines working mode and measurement.
+Its centrepiece is that the heuristic optimization is itself a \emph{system axis}
+(Section~\ref{sec:measurement-system}): it adopts, via metaprogramming, the genus of its tier binaries,
+is itself compiled into a tier binary, and docks at the builder's probe dock like every real tier; it
+passes commands via the \emph{Command} pattern~\cite{gamma1994patterns} on to the real tier binaries
+statically assigned to it. The recombination of the heuristic tier binaries to be used is itself
+permutable against the existing real tier binaries; the heuristic axis can therefore use the measured
+function curves for estimates and compile an optimal multidimensional recombination that is unambiguously
+usable as a search-algorithm hull through its ABI-stable genus interface --- towards the outside a
+\emph{virtual whole tier binary}, indistinguishable from a single binary. At the same time, the hybrid
+mode measures along: over the optimized recombination, the combined wall-clock time as well as macro- and
+micro-benchmarks are logged per measurement command across all tier binaries and operations.
+
+The hybrid mode thereby carries the \emph{heuristic counter-proof}: after the working mode is entered,
+the heuristic tier binary is measured anew --- its wall-clock behaviour compared against the best single
+binaries and against the reconstructed paper algorithms decides whether the heuristic recombination
+delivers what the curves promise. The goal of this thesis is thus stated twice over: to determine the
+best recombination or indeed the best single binary against all axis properties --- especially cache-line
+awareness --- and in the end to provide both in production-ready form, the best single binary \emph{and}
+the heuristic tier binary. All four modes shall thereby be documented automatically via the evaluation
+chain of the definition layer (Section~\ref{sec:anatomy-layers}); the measurement tables and diagrams of
+this thesis itself are the first product of this chain, and the assessment of the counter-proof is
+defined by Chapter~\ref{ch:eval}.
+
+\subsection{Measurement-Curve Type System, Filter Chain, and Measurement-Error Detection}\label{sec:heuristics-curves}
+For the evaluation and hybrid modes to carry, the evaluation needs more than flat result tables. As a
+target picture this thesis formulates a \emph{measurement-curve type system} for this; in the current
+state only its germ exists --- a curve fit over one axis and one x-dimension ---, the full structure is
+stated as a goal. Every tier-binary total permutation receives, per measurement axis, a wall-clock
+measurement curve over the working set --- say, the lookup latency as a function of the fill size ---,
+separated by load-profile framework, workload type, working-set size, operation type, and observer type;
+each axis is swept separately in the experiment tree, compile-statically as well as runtime-dynamically,
+so that each axis receives a complete overview of its properties and individual measurements. Taken
+together over all permutations, a multidimensional measurement database arises per tier binary, from
+which the heuristic curves of the loop (Section~\ref{sec:heuristics-loop}) are read. The cardinality of
+each dimension of this type system is to be strategically organized into classes and hierarchies:
+design-fixed constants (say, the nineteen organ axes and the sixteen measurement categories),
+profile-bound products (what an experiment profile admits as assignments), and runtime-free iteration
+spaces (the dynamic sampling points per static binary) --- so the system axes remain able to carry the
+evaluation across all levels.
+
+From the evaluations there emerges --- likewise as a target picture --- automatically a \emph{filter
+chain}: each chain link checks, based on the curves so far, whether a permutation family is pursued
+further, and otherwise passes the decision on to the next link --- the design pattern \emph{Chain of
+Responsibility}~\cite{gamma1994patterns}, located strictly in the builder, for the chain controls the
+\emph{generation} of the tier binaries: evaluation, filter, then the decision which permutations are
+built next and which are discarded. This chain is not implemented in the current code; it is recorded as
+a concept and follows after the first complete measurement runs.
+
+Finally, the hybrid mode needs a control of the measurement error that the measurement instances
+themselves introduce --- observers cost time. Three build variants of the same experiment are envisioned:
+first, observers in all tier binaries \emph{and} in the heuristic hybrid tier; second, observers only in
+the heuristic tier binary; third, observers in none --- only the wall clock. The differences between the
+three variants quantify the measurement error caused by the measurement instances. Complementarily
+follows a \emph{fourth step} of the final heuristic assembly: the tier binaries subordinate to the
+heuristic tier (not the finally optimized main binary) are rebuilt without micro- and macro-benchmarks
+and without observers and compared purely on the wall clock against all known tier-binary permutations
+and against the known paper algorithms --- with the paper comparison taking precedence. This too is a
+target picture: neither the build-variant matrix nor the complementary fourth step exists in the current
+code; what is laid is the foundation --- the per-compilation measurement switches and the honest validity
+marking per measured value in the sense of the honest-0 doctrine
+(Section~\ref{sec:measurement-system}).
+
+This keeps clearly apart what is accomplished and what is a goal: accomplished are the measurement
+apparatus of the measurement mode including the three-stage evaluation, the evaluation chain up to tables
+and diagrams, and the germ of the curve fit; still pending are the complete measurement runs; goals are
+the evaluation, working, and hybrid modes, the full measurement-curve type system, the filter chain, and
+the measurement-error control. The assessment of the heuristic counter-proof is taken up by
+Chapter~\ref{ch:eval}; the placement of the outlook beyond this thesis is given by
+Chapter~\ref{ch:conclusion}. First, however, Chapter~\ref{ch:impl} deepens the concrete implementation of
+the building blocks introduced here.
