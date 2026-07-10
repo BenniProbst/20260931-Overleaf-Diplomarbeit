@@ -44,9 +44,10 @@ Entwürfe (Abschnitt~\ref{sec:hardware-history}) zu einem dritten, dazwischenlie
 tatsächlichen Cache-Eigenschaften (Line-Größe, Hierarchie-Tiefe, Topologie) werden je Zielplattform
 \emph{ermittelt} und gehen als feste Größen in eine systemoptimierte Binary ein, während die
 \emph{konfigurierbaren} cache-nahen Einstellungen (Prefetch-Distanz, Stapel- und Inline-Schwellen,
-Pool-Budgets) als Achsen-Parameter gegen eine bereits geladene Binary permutiert werden --- abgestuft
+Pool-Budgets sowie, wo Architektur und Betriebssystem es erlauben, der Hardware-Prefetcher) als
+Achsen-Parameter gegen eine bereits geladene Binary permutiert werden --- abgestuft
 nach dem, was Hardware und Betriebssystem erlauben, von voll laufzeit-konfigurierbar (mutables Linux mit
-MSR-Zugriff) über übersetzungsstatisch (immutable Betriebssysteme) bis fixiert (read-only-Cache-Register
+MSR-Zugriff) über boot- bzw.\ übersetzungsstatisch (immutable Betriebssysteme) bis fixiert (read-only-Cache-Register
 auf ARM und RISC-V). So wird cache-oblivious-Verhalten um \emph{gemessenes} Lokalitätswissen ergänzt.
 
 Die vier Anforderungen verdichten sich zu einem Zielbild, dem \emph{Entwurfsraum}: Jede Teilentscheidung
@@ -192,7 +193,9 @@ Permutations-Index~\cite{mao2012masstree} eine dünn besetzte Achse bleibt. Die 
 instanziiert die byte-weise Variante~\cite{leis2013art}, den Patricia-Split~\cite{morrison1968patricia,binna2018hot},
 die Macro-Node~\cite{boffa2024coco} und das Multi-Byte-Rewiring~\cite{fent2020start}, und die
 \emph{Knotentyp-Achse} (T4) bündelt die adaptiven Layouts von Node4/16/48/256~\cite{leis2013art} über
-HOT-Compound~\cite{binna2018hot} und die CSS-/CSB\textsuperscript{+}-/Hankins-Knoten bis zur
+HOT-Compound~\cite{binna2018hot}, Internal/Border~\cite{mao2012masstree},
+Decision/Span~\cite{schmeisser2022b2tree}, LOUDS-Dense/Sparse~\cite{zhang2018surf} und die
+CSS-/CSB\textsuperscript{+}-/Hankins-Knoten bis zur
 PRT-ART-Familie.
 
 Die \emph{Speicher-Layout-Achse} (T5) reicht vom cache-line-ausgerichteten AoS über zeigerfreie
@@ -245,7 +248,8 @@ Prefetch-Hardware, Atomic-Familie) und die \emph{Scheduling-Strategie} (Worker-P
 SIMD-Worker-Limit --- hardwarebedingt typisch zwei von $N$ Kernen ---, heterogener P-/E-Kern-Dispatch,
 Co-Routinen und Batch-Granularität) ---, die Tabelle~\ref{tab:hw-sched}
 je Paper zuordnet. Die \emph{Telemetrie-Achse} (T10) instanziiert Density-Tracker~\cite{leis2013art},
-Insert-Zähler~\cite{binna2018hot}, HdrHistogramm und Pfad-Lese-Zähler~\cite{zhang2024pathprefix}; die
+Insert-Zähler~\cite{binna2018hot}, HdrHistogramm, Pfad-Lese-Zähler~\cite{zhang2024pathprefix} und die
+Probability-Hints (P16/P17 Bender~\cite{bender2000cobtree,bender2005coboblivious}); die
 kohärenz-schonenden Leaf-Only-Varianten gehen auf Kuehn zurück (P28~\cite{kuehn2023bplustree};
 persönliche Kommunikation 2023, über den publizierten DaMoN-2023-Stand zum cache- und
 verteilungsbewussten B\textsuperscript{+}-Layout hinaus), während der
@@ -273,11 +277,13 @@ Zähler in allen (auch inneren) Knoten als \emph{Anti-Pattern} (Cache-Line-Ping-
   \end{tabular}
 \end{table}
 
-Die \emph{Nebenläufigkeits-Achse} (T8) gliedert sich in Muster und Sperr-Modus: vom seriellen Nullpunkt
+Die \emph{Nebenläufigkeits-Achse} (T8) gliedert sich in die zwei Sub-Achsen Muster und Reklamation
+(Pattern $\perp$ Reclamation, Tabelle~\ref{tab:dialectic}): Die Muster reichen vom seriellen Nullpunkt
 über grobes Sperren~\cite{dijkstra1965concurrent}, Leser-/Schreiber-Sperren~\cite{courtois1971readers} und
 optimistisches Lock-Coupling~\cite{leis2016olc} zu lock-freien~\cite{michael1996queue},
 wait-freien~\cite{herlihy1991waitfree} sowie RCU-~\cite{mckenney2001rcu} und
-Hazard-Pointer-Verfahren~\cite{michael2004hazard}. Die \emph{I/O-Achse} (T14) instanziiert
+Hazard-Pointer-Verfahren~\cite{michael2004hazard}; der Sperr-Modus innerhalb eines Musters
+unterscheidet read-only, read-write, upgradeable und optimistische Validierung. Die \emph{I/O-Achse} (T14) instanziiert
 gepufferte~\cite{stonebraker1981os}, direkte und memory-mapped Ein-/Ausgabe~\cite{crotty2022mmap}, die
 \emph{Migrations-Achse} (T15) Hot/Cold-Trennung und mehrstufige RAM$\to$NVM$\to$SSD-Migration, und die
 \emph{Pufferungs-Achsen} (T17/T18) reichen vom Disruptor-Ringpuffer~\cite{thompson2011disruptor} über die
@@ -368,9 +374,13 @@ eine reine Hash-Tabelle als Gegenprobe innerhalb der SearchAlgorithm-Gattung ---
 T0-Bausteine, von denen je Permutation genau einer gewählt wird und die beide permutiert werden: ein
 Open-Addressing-Hash nach Knuth (S14, implementiert) und die SwissTable~\cite{abseil_swisstable}
 (als eigener Baustein vorgesehen). Die Gegenprobe erfüllt das Punktanfrage-Subset des
-\texttt{std::map}-Interface (\texttt{find}/\texttt{insert}/\texttt{erase}), belegt ein limitiertes
-Achsen-Subset --- Allokation, Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD bleiben geteilt,
-die trie-spezifischen Achsen entfallen --- und erfordert so keine eigene Gattung.
+\texttt{std::map}-Interface (\texttt{find}/\texttt{insert}/\texttt{erase}); die ordnungsbasierten
+Operationen entfallen prinzipbedingt, da eine Hash-Tabelle ungeordnet ist. Über dieses Subset belegt sie
+ein limitiertes Achsen-Subset: Allokation, Prefetch, Nebenläufigkeit, Speicher-Layout und ISA-SIMD bleiben
+geteilt --- letztere Achse trägt konkret das SwissTable-Gruppen-Lookup~\cite{abseil_swisstable} ---,
+während die baum- und trie-spezifischen Achsen (Pfadkompression, Knotentyp, Bereichs-Index) nicht
+wegfallen, sondern als Durchreich-Varianten (\texttt{None}) belegt werden; die Gegenprobe erfordert so
+keine eigene Gattung.
 
 Die Veröffentlichungen entstammen sechs thematischen \emph{Herkunfts-Clustern}, die hier nur der
 ganzheitlichen Einordnung jedes Lebewesens dienen, bevor es in seine Organe zerlegt wird. Die
@@ -424,7 +434,10 @@ denen es seinen Hauptbeitrag leistet; alle erscheinen so als Punkte im gemeinsam
 \end{figure}
 
 Für jeden SOTA-Algorithmus (\emph{State of the Art} --- der Stand der Technik aus
-Abschnitt~\ref{sec:overview}) und jeden Allokator hält ein Profil-XML die Achsen-Belegung, eine
+Abschnitt~\ref{sec:overview}) und jeden Allokator hält ein Profil-XML die Achsen-Belegung
+(\texttt{page}, \texttt{node}, \texttt{traversal}, \texttt{value\_handle}, \texttt{concurrency},
+\texttt{allocator}, \texttt{prefetch}, \texttt{telemetry}, \texttt{isa}, \texttt{layout},
+\texttt{reclamation}), eine
 Schlüssel-Wert-Signatur und einen optionalen \texttt{<expected\_workload>}-Tag fest, der die
 Mess-Heuristik überschreibt (Tabelle~\ref{tab:sota-profiles}). Drei der 33 Korpus-Arbeiten besitzen bewusst
 kein eigenständiges Profil, sondern gehen nur seziert ein: das optimistische Lock-Coupling von
@@ -483,28 +496,39 @@ die DensityTracker-Aktualisierungen) getaggt.
 
 Der Kern-Befund dieser Lastprofil-Analyse ist ein systematischer \emph{Bias}: Jede Veröffentlichung wählt
 das Lastprofil, unter dem ihr eigener Entwurf am besten abschneidet. Statische, read-only-orientierte
-Tries und Filter rahmen \enquote{build-once, 100\,\% positive Lookups} und meiden Aktualisierungen;
-komprimierte Verfahren machen den Negativ-Anfrage-Anteil zur Primärachse; zipfian-zentrierte Arbeiten
-begünstigen cache-bewusste Reordering-Layouts; und schreib- bzw.\ nebenläufigkeits-lastige Arbeiten treten
-umgekehrt nur dort an, wo statische Strukturen versagen. Vierzehn der Veröffentlichungen liefern überhaupt
-kein eigenes Index-Lastprofil. Erst wenn \emph{alle} Lastprofile gegen \emph{alle} Lebewesen-Binaries
-laufen --- der Workload als dynamische Achse (Kapitel~\ref{ch:eval}) ---, lässt sich der \enquote{Sieger
-nur im selbstgewählten Heimprofil} sichtbar machen und bias-reduzierte Vergleichbarkeit gewinnen.
+Tries und Filter (HOT~\cite{binna2018hot}, CoCo~\cite{boffa2024coco},
+B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}, SuRF~\cite{zhang2018surf}, CSS~\cite{rao1999css})
+rahmen \enquote{build-once, 100\,\% positive Lookups} und meiden Aktualisierungen; komprimierte Tries und
+Filter (CoCo, B\textsuperscript{2}-Baum, SuRF) machen den Negativ-Anfrage-Anteil zur Primärachse, weil sie
+bei Misses früh abbrechen; zipfian-zentrierte Arbeiten (B-Trees Are Back~\cite{mueller2025btreesback},
+Mahling~\cite{mahling2025hotpath}, Kuehn~\cite{kuehn2023bplustree}) begünstigen cache-bewusste
+Reordering-Layouts; schreib- und nebenläufigkeits-lastige Arbeiten (ART~\cite{leis2013art},
+Masstree~\cite{mao2012masstree}, Wormhole~\cite{wu2019wormhole}, OLC-ART~\cite{leis2016olc},
+RCU~\cite{mckenney2001rcu}) treten umgekehrt nur dort an, wo statische Strukturen versagen; und prefetch-
+bzw.\ hardware-nahe Arbeiten (CSB\textsuperscript{+}~\cite{rao2000csb}, Chen~\cite{chen2001prefetch},
+Schmidt~\cite{schmidt2025hbm}) vermessen über Knotengröße und Prefetch eher Cache und TLB als die
+Algorithmus-Logik. Vierzehn der Veröffentlichungen liefern überhaupt kein eigenes Index-Lastprofil
+(Survey-, Theorie- und Hardware-Arbeiten). Erst wenn \emph{alle} Lastprofile gegen \emph{alle}
+Lebewesen-Binaries (und die Container-Hüllen) laufen --- der Workload als dynamische Achse
+(Kapitel~\ref{ch:eval}) ---, lässt sich der \enquote{Sieger nur im selbstgewählten Heimprofil} sichtbar
+machen und bias-reduzierte Vergleichbarkeit gewinnen.
 
 Schließlich erscheinen auch die Güte-Kriterien wissenschaftlichen Messens (vgl.\ die Definitions-Klassen in Abschnitt~\ref{sec:measurement-system})
 als konkrete Technologien.\ \emph{Hardware-Performance-Zähler} (PMC, über \texttt{perf})~\cite{demelo2010perf}
-sind nahezu universell und liefern Cache-Miss-Raten, dTLB-Misses, Branch-Misses und IPC/CPI\@; \emph{Profiler}
+sind nahezu universell und liefern Cache-Miss-Raten, dTLB-Misses, Branch-Misses und IPC/CPI --- die
+Mehrzahl der Arbeiten P01--P28 berichtet solche Zähler ---; \emph{Profiler}
 wie OTF2/VAMPIR~\cite{berthold2023vampir} und VTune~\cite{reinders2005vtune} erheben trace-basierte
 Laufzeitprofile, \emph{Simulatoren} wie gem5~\cite{binkert2011gem5} liefern hardware-genaue Schätzungen, wo
-reale Zähler fehlen, und das \emph{HdrHistogramm}~\cite{tene_hdrhistogram} erhebt die Latenz-Perzentile
+reale Zähler fehlen (so P25 Mahling~\cite{mahling2025hotpath}, P27
+Zhang~\cite{zhang2025hierarchical}), und das \emph{HdrHistogramm}~\cite{tene_hdrhistogram} erhebt die Latenz-Perzentile
 (p50/p95/p99). Auf der Erhebung baut die Auswertung auf: Statt arithmetischer Mittel werden Median und
 Perzentile berichtet, Unterschiede mit dem verteilungsfreien \emph{Mann-Whitney-U-Test}~\cite{mann1947utest}
-(mit Holm-Korrektur~\cite{holm1979sequential}) auf Signifikanz geprüft und über das Effektmaß
+(mit Holm-Korrektur der Familienfehlerrate~\cite{holm1979sequential}) auf Signifikanz geprüft und über das Effektmaß
 \emph{Cliff's~$\delta$}~\cite{cliff1993dominance} quantifiziert, den Empfehlungen für wissenschaftliches
 Benchmarking~\cite{hoefler2015benchmarking} folgend. Eine eigene methodische Linie bildet die hardware-nahe
 Messmethodik der TU Dresden (Habich-Gruppe): Ungethüm et al.~\cite{ungethuem2017survey} systematisieren die
 Hardware-Optimierungen für Datenbank-Maschinen, Schmidt et al.~\cite{schmidt2025hbm} vermessen Stride- gegen
-Sequenz-Zugriffe auf HBM, und VAMPIR~\cite{berthold2023vampir} profiliert nicht-funktionale Eigenschaften
+Sequenz-Zugriffe auf HBM mit dTLB- und L2/L3-Zählern, und VAMPIR~\cite{berthold2023vampir} profiliert nicht-funktionale Eigenschaften
 heterogener Speicher. Aus all diesen Technologien ergibt sich der Satz der Mess-Kategorien ---
 Cache-Line-Auslastung, Cache-Misses (L1/L2/L3), dTLB-Misses, Speicher-Fußabdruck, Branch-Misses,
 IPC/CPI, Latenz (Mittel und Perzentile p50--p999), Durchsatz, Energie und Fill-Buffer-Auslastung ---,
@@ -528,9 +552,17 @@ ein Punkt im kartesischen Produkt aller Achsen, ein Stand-der-Technik-Entwurf ei
 Konfiguration. Entscheidend ist die \emph{modulare Austauschbarkeit}: Eine neue Achsen-Variante lässt sich
 isoliert untersuchen --- ihr Effekt je Achse \emph{und} für den ganzen Algorithmus messen ---, ohne die
 übrigen neu zu implementieren; genau das löst das Trennbarkeits-Problem, da der Beitrag jedes Bestandteils
-bei sonst fixierten Achsen isoliert messbar wird. Eine anschauliche Metapher fasst dies zusammen: ein
-Suchalgorithmus als \emph{Lebewesen}, dessen \emph{Organe} die Achsen sind, und das Mess-System als seine
-medizinische Diagnostik (Abbildung~\ref{fig:anatomy-bridge}).
+bei sonst fixierten Achsen isoliert messbar wird. Diese Zerlegung beruht auf zwei Beobachtungen. Erstens
+teilen Suchalgorithmen im großen Bild dieselbe \emph{Baum-Anatomie} in unterschiedlicher Ausprägung ---
+von ausgewogenen Suchbäumen über Tries und Radix-Bäume bis zu eigenentwickelten Konstrukten; selbst eine
+sortierte Schlüssel-Wert-Liste ist streng genommen ein einzelnes Blatt eines Baumes, dessen Werte über
+Verweise weiter auf Daten-Blätter zeigen. Die Baum-Struktur ist damit universell über alle
+Suchalgorithmus-Architekturen hinweg und bildet die Leinwand, auf der die Achsen platziert werden;
+nicht-baumartige Suchverfahren --- etwa die Hash-Gegenprobe aus Abschnitt~\ref{sec:sota-instances} ---
+bleiben dieselbe Gattung mit eingeschränktem Profil, denn eine eigene Gattung entstünde erst, wenn sich
+der Basis-Achsen-Satz grundlegend unterschiede. Zweitens fasst eine anschauliche Metapher einen konkreten
+Algorithmus als \emph{Lebewesen} auf, dessen \emph{Organe} die Achsen sind --- und das Mess-System als
+seine medizinische Diagnostik (Abbildung~\ref{fig:anatomy-bridge}).
 
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
@@ -848,15 +880,24 @@ der Dynamik}, die festlegen, \emph{wann} eine Achsen-Entscheidung fällt: die ob
 Übersetzungszeit in eine Binary einkompilierten Achsenalgorithmen (statische Rekombination); die
 dynamischen Sub-Achsen, deren Laufzeit-Parameter (Prefetch-Distanz, Stapelgröße, Inline-Schwelle,
 Pool-Budget) ohne Neuübersetzung variiert werden; und die statischen Sub-Achsen als übersetzungszeitliche
-Auswahl unter Teil-Algorithmen unterschiedlicher Komplexität. Gegenüber der statischen
-Entwurfsraum-Aufzählung des \emph{Data Calculator}~\cite{idreos2018datacalculator} und dem klassischen
+Auswahl unter Teil-Algorithmen unterschiedlicher Komplexität. Die Idee, Datenstrukturen nicht einzeln,
+sondern als Entwurfsraum zu betrachten, prägt Idreos' \emph{Periodic Table of Data
+Structures}~\cite{idreos2018periodic} und den \emph{Data Calculator}~\cite{idreos2018datacalculator}:
+Strukturen entstehen aus der Kombination weniger Entwurfs-Primitive, deren Kosten sich synthetisieren
+lassen --- das deckt sich unmittelbar mit der Achsen-Sezierung dieser Arbeit
+(Abschnitt~\ref{sec:sota-instances}), in der die klassischen Familien bloße Lese-Gruppierungen
+orthogonaler Achsen-Belegungen sind. Gegenüber der statischen
+Entwurfsraum-Aufzählung des Data Calculator und dem klassischen
 \emph{Policy-based Design}~\cite{alexandrescu2001modern} führt diese Taxonomie compile- und
-laufzeitvariable Achsen-Ebenen ausdrücklich gemeinsam.
+laufzeitvariable Achsen-Ebenen jedoch ausdrücklich gemeinsam; eine etablierte Benennung dieser
+Staffelung fand eine Web-Recherche nicht (vgl.\ Abschnitt~\ref{sec:anatomy-patterns}).
 
 Diese Bausteine sind nur so aussagekräftig wie ihre Vermessung. Wissenschaftliches Messen unterliegt
 etablierten Gütekriterien~\cite{hoefler2015benchmarking}: \emph{Reproduzierbarkeit} (feste Seeds,
-deterministische Reihenfolge, dokumentierte Konfiguration), \emph{Validität} (intern kausal isolierte
-Effekte, Konstrukt- und externe Übertragbarkeit), \emph{Fairness} (identische Schlüssel, Workloads und
+deterministische Reihenfolge, dokumentierte Konfiguration, sodass Läufe methodisch wiederholbar und
+statistisch vergleichbar sind), \emph{Validität} (intern: kausal isolierte Effekte; Konstrukt: die Metrik
+misst tatsächlich das gemeinte Konzept; extern: Übertragbarkeit auf andere Plattformen und Lasten),
+\emph{Fairness} (identische Schlüssel, Workloads und
 Warmup; fehlende Fähigkeiten als \emph{N/A} statt verdeckt emuliert) und die \emph{Streuung} als Teil der
 Aussage (Perzentile über HDR-Histogramme statt arithmetischer Mittel, mit Signifikanzprüfung). Auf diesen
 Kriterien bauen die verwendeten Mess-Muster auf: eine \emph{Zwei-Phasen-Operationsschleife} trennt einen
@@ -941,7 +982,9 @@ Sieben-Phasen-Pipeline über seinen \texttt{ExperimentDriver} ausführt), die \t
 Standard-Implementierungen je Achse) und der \texttt{Prüfling} PRT-ART (der einige Achsen-Organe selbst
 stellt und für die übrigen Cache-Engine-Dienste konsumiert). Die \texttt{ExecutionEngine} ist dabei kein
 fünftes Subsystem, sondern die gemeinsame messbare Wurzel (das \texttt{IExecutionEngine}-Interface), über
-die diese vier verbunden sind. Definierend ist die \emph{bidirektionale}
+die diese vier verbunden sind: Unter ihr registrieren sich der Prüfling und jede Engine als
+\texttt{IExecutionEngine}, und der Builder enumeriert den Permutationsraum je registrierter Engine.
+Definierend ist die \emph{bidirektionale}
 Cache-Engine\,$\leftrightarrow$\,Prüfling-Beziehung: Die Cache-Engine instantiiert den Prüfling je
 Permutations-Konfiguration, und der Prüfling ruft zur Laufzeit Cache-Engine-Dienste (Telemetrie, Prefetch,
 Heuristik) während seiner eigenen Lookups auf. Diese Symmetrie trägt die \emph{Multi-Prüfling}-Fähigkeit,
@@ -1037,14 +1080,16 @@ gebunden, sondern läuft build-übergreifend über aufeinanderfolgende Stände d
 
 Die drei Messreihen --- alle vom \texttt{messung\_driver} über die \texttt{ExperimentDriver}-Bibliothek
 ausgeführt, konfiguriert entweder als drei feste Reihen oder über eine externe
-\texttt{messreihen.xml} --- sind damit: \emph{Reihe~A} (PRT-ART vs.\ Stand der Technik) mit den Modi A\_defined (8
-Rang-1-Profile) und A\_full (alle 30 SOTA-Profile); \emph{Reihe~B} (systematische Variation der
+\texttt{messreihen.xml} --- sind damit: \emph{Reihe~A} (PRT-ART vs.\ Stand der Technik) mit den Modi A\_defined
+(schnelle Verifikation gegen die 8 Rang-1-Profile) und A\_full (alle 30 SOTA-Profile; Standard gemäß der
+Vollständigkeits-Direktive); \emph{Reihe~B} (systematische Variation der
 Achsen-Entscheidungen unter sonst gleichen Bedingungen, um den Beitrag jeder Achse zu isolieren); und
 \emph{Reihe~C} (konkrete Merge-Punkte zwischen PRT-ART-Bausteinen und Cache-Engine-Permutationen, etwa
 das PRT-ART-OLC mit tcmalloc und ART-Page, der 4+1+2-Pool mit der HOT-Page, das Path-Prefetch mit der
 B\textsuperscript{2}-Baum-Page oder das MultiLevel-Layout mit der Wormhole-Page). Jede Reihe wird in drei Granularitäten erhoben: \emph{Micro-Benchmarking}
 vergleicht jeden Entwurfsbestandteil isoliert über das gemeinsame Kategorie-Interface,
-\emph{Makro-Benchmarking} misst die einzelnen \texttt{std::map}-Operationen, und \emph{Gesamt-Benchmarking}
+\emph{Makro-Benchmarking} misst die einzelnen \texttt{std::map}-Interface-Operationen (Einfügen,
+Punkt- und Bereichssuche, Aktualisieren, Löschen) gegen Beispiel-Lasten, und \emph{Gesamt-Benchmarking}
 fährt die YCSB-Lastprofile über jede Rekombination. Genau diese drei-granulare Methodik ist die Antwort auf
 das Trennbarkeits-Problem: Indem jeder Bestandteil zunächst isoliert (Micro) vermessen wird, bevor er im
 Operations- und Gesamt-Kontext erscheint, werden die Beiträge getrennt und isoliert messbar, statt im
@@ -1131,9 +1176,10 @@ Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
 reine Rangbildung hinaus ist eine \emph{Heuristik-Extraktion} als Folge-Phase nach \textbf{Persist}
 vorgesehen, die aus den gesammelten Messungen automatisch ableitet, welche Achsen-Konfiguration je Workload
 und Datensatz die beste ist. Der angestrebte Mechanismus ist eine ML-Klassifikation in drei Schritten:
-Zunächst werden je Permutation Merkmale gewonnen --- die Lastprofil- und Datensatz-Merkmale (Workload-Typ,
-Schlüssel-Verteilung, Alphabet- und Präfix-Charakteristik) sowie die Achsen-Belegung ---, mit der je
-Lastmuster gemessenen Bestleistung als Zielgröße; darüber lernt ein \emph{ML-Klassifikator} die Abbildung
+Zunächst werden aus der Mess-CSV je Permutation Merkmale gewonnen --- die Lastprofil- und Datensatz-Merkmale (Workload-Typ,
+Schlüssel-Verteilung, Schreib-/Lese-Anteil, Alphabet- und Präfix-Charakteristik sowie Schlüssel- und
+Wert-Datentyp) sowie die Achsen-Belegung ---, mit der je
+Lastmuster gemessenen Bestleistung (etwa Durchsatz oder Tail-Latenz) als Zielgröße; darüber lernt ein \emph{ML-Klassifikator} die Abbildung
 von Lastprofil-/Achsen-Merkmalen auf die beste Konfiguration; und dieser liefert je Workload-/Datensatz-Klasse
 die empfohlene Achsen-Komposition, ohne den gesamten Permutationsraum erneut zu fahren. Das Ergebnis wird
 als wiederverwendbares \emph{XML-Lastprofil} persistiert --- symmetrisch zu den Messreihen-XML-Konfigurationen

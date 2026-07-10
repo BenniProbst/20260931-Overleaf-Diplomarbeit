@@ -207,6 +207,9 @@ Variante & Beschreibung & Quelle \\
 \texttt{Node16\allowbreak{}Node\allowbreak{}Type} & Mittlerer ART-Knoten mit 16 Slots, optimiert für SIMD-basierte binäre Suche (SSE2 PCMPESTRM /\allowbreak{} AVX2 VPCMPESTRM). Balance zwischen Speicher und Suchgeschwindigkeit; größte Kapazität ohne Indirection. CE-Re-Impl der Leis-ICDE-2013-Spezifikation. & P01 \\
 \texttt{Node48\allowbreak{}Node\allowbreak{}Type} & Großer ART-Knoten mit 48 Slots, nutzt Indirection: 256-Byte Child\allowbreak{}Index (Byte→Slot-Mapping, 0=leer) plus 48er Child\allowbreak{}Array. Trade-off zwischen Speicher (vs Node256 direct) und Cache-Misses (vs Node4 linear). Doppelter Indirektions-Zugriffsmuster (Index + Child). & P01 \\
 \texttt{Node256\allowbreak{}Node\allowbreak{}Type} & Maximaler ART-Knoten mit 256 Slots, direkt adressiert ohne Index. O(1) Lookup (kein Scan, kein Index-Touch). Hoher Speicherverbrauch (256 Pointer), aber optimale Suchgeschwindigkeit für dicht besetzte Knoten. Default für untere Baumebenen. & P01 \\
+Internal/\allowbreak{}Border & Knotentyp-Paar des Masstree (Trie aus B\textsuperscript{+}-Bäumen): Internal-Knoten navigieren die 8-Byte-Schlüssel-Slices der B\textsuperscript{+}-Ebene, Border-Knoten bilden die Blatt-Ebene mit den Werten bzw.\ dem Übergang zur nächsten Trie-Schicht. Paper-Knotenformat (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P03 (Mao et al.\ 2012)~\cite{mao2012masstree} \\
+Decision/\allowbreak{}Span & Knotentyp-Paar des B\textsuperscript{2}-Baums (B\textsuperscript{+} mit eingebetteten binären In-Knoten, cache-bewusst): Decision-Knoten tragen die binäre Verzweigungs-Entscheidung innerhalb der Seite, Span-Knoten fassen zusammenhängende Schlüsselbereiche zusammen. Paper-Knotenformat (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P06 (Schmeisser et al.\ 2022)~\cite{schmeisser2022b2tree} \\
+LOUDS-Dense/\allowbreak{}Sparse & Knotentyp-Paar des succinct Range-Filters Su\allowbreak{}RF\@: LOUDS-Dense kodiert die oberen, dicht besetzten Trie-Ebenen bitmap-basiert mit direkter Adressierung, LOUDS-Sparse die unteren, spärlich besetzten Ebenen byte-sequenziell succinct. Paper-Knotenformat (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P10 (Zhang et al.\ 2018)~\cite{zhang2018surf} \\
 \texttt{Node\allowbreak{}Type\allowbreak{}Slot\allowbreak{}Store} & Storage-Organ: node\_\allowbreak{}type-getriebener boundierter Slot-Speicher. Erstreckt sich über \texttt{std::array} mit Kapazität \texttt{N::max\_\allowbreak{}capacity()} über einen gemeinsamen uint64-Key. Erfüllt das Storage\allowbreak{}Organ-Concept und ist Drop-in-Substrat für Composed\allowbreak{}Search. Baseline-Variante ohne Layout/\allowbreak{}Allocator-Integration. & Code/\allowbreak{}Baseline \\
 \texttt{Composed\allowbreak{}Store} & 3-Achsen-Storage-Organ: node\_\allowbreak{}type(N) $\oplus$ layout(L) $\oplus$ allocator(A). Unboundierter vector über Allocator A\@; layout fliesst als statisches cache\_\allowbreak{}line\_\allowbreak{}size und via optionale \texttt{organ\_\allowbreak{}scan\_\allowbreak{}field\_\allowbreak{}sum()} ein. Real messbar (F15-Brücke). & Code/\allowbreak{}Baseline \\
 \texttt{Node\allowbreak{}Chunked\allowbreak{}Store} & 3-Achsen-Storage-Organ mit Laufzeitwirkung der node\_\allowbreak{}type-Achse: Slots liegen in Chunks der Kapazität \texttt{N::max\_\allowbreak{}capacity()}. Chunk-Count = Zahl der node-großen Allokationen; damit ist die node\_\allowbreak{}type-Achse REAL messbar (Node4 viele Chunks, Node256 wenige). Beweis für Delegation. & Code/\allowbreak{}Baseline \\
@@ -216,7 +219,7 @@ Variante & Beschreibung & Quelle \\
 \end{longtable}
 \end{scriptsize}
 
-\emph{Beitragende Quellen:} P01~\cite{leis2013art}.
+\emph{Beitragende Quellen:} P01~\cite{leis2013art}, P03~\cite{mao2012masstree}, P06~\cite{schmeisser2022b2tree}, P10~\cite{zhang2018surf}.
 
 \section{T5 Speicher-Layout (Memory Layout)}
 
@@ -492,11 +495,12 @@ Variante & Beschreibung & Quelle \\
 \texttt{Density\allowbreak{}Tracker} & Per-Node Density/\allowbreak{}Slot-Occupancy-Tracking für adaptive Node-Type-Wahl (4→16→48→256). Kontextuelle Telemetrie zur ART-Struktur (Leis ICDE 2013), misst Slot-Belegung aller Knoten. Höherer Overhead als Leaf\allowbreak{}Only, liefert aber Adaption-Signal für dynamische Rebalancing-Entscheidungen. & P01 (ART/\allowbreak{}Leis ICDE 2013, Kontext; Code/\allowbreak{}Baseline) \\
 \texttt{Insert\allowbreak{}Counter} & Globaler atomarer Insert-Zähler mit minimalem Overhead (1 atomic increment pro Insert). Kontextuelle Telemetrie zur HOT-Struktur (Binna SIGMOD 2018), global Scope. Ausreichend für Durchsatz-Mess-Reihen, keine Laten-Granularität. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, Kontext; Code/\allowbreak{}Baseline) \\
 \texttt{Latency\allowbreak{}Histogram} & HDR-Histogramm zur Lookup-Latenz-Verteilung (p50/\allowbreak{}p95/\allowbreak{}p99 Quantile). Basiert auf Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 Lizenz. Höchster Overhead (pro Lookup), liefert aber vollständige Latenz-Statistik für SLA-orientierte und research-grade Messreihen. Einziger is\_\allowbreak{}original-Kandidat der Achse. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
+Probability-Hints & Wahrscheinlichkeits-Hinweise der cache-oblivious Bender-Linie (P16/\allowbreak{}P17): verteilungs- bzw.\ wahrscheinlichkeitsbezogene Belegungs-Hinweise, die als Eingabe der Layout-Entscheidungen dienen. Paper-Baustein der Achsen-Sezierung (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
 
-\emph{Beitragende Quellen:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}.
+\emph{Beitragende Quellen:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
 
 \emph{Verwandte Literatur:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
 

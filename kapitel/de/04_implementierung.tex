@@ -13,18 +13,26 @@ Die Implementierung verteilt sich auf drei Git-Repositorien mit klar getrennten 
 \begin{itemize}
   \item \texttt{comdare-cache-engine} --- \textbf{wie} gemessen wird: die Bausteine-Bibliothek und der
   Builder (XML-Config-Parser, \texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile}-Codegenerierung,
-  Permutations-Schleife, Modul-Loader und der sieben-phasige \texttt{ExperimentDriver}), die ABI-Header,
+  Permutations-Schleife, Modul-Loader und der sieben-phasige \texttt{ExperimentDriver}), die ABI-Header
+  (\texttt{search\_\allowbreak{}engine}, \texttt{execution\_\allowbreak{}engine},
+  \texttt{baustein\_\allowbreak{}variants}, \texttt{resolve\_\allowbreak{}baustein}),
   30~SOTA-Profile unter \texttt{algorithm\_profiles/sota} und die Test-Suites; der Quellbaum folgt einem
-  Pitchfork-Layout (\texttt{apps/}, \texttt{libs/}, \texttt{libs/common}).
+  Pitchfork-Layout (\texttt{apps/} für ausführbare Dateien, \texttt{libs/} für Bibliotheken,
+  \texttt{libs/common} für querschnittlichen Code).
   \item \texttt{comdare-prt-art} --- der \textbf{Prüfling}: die hybride \texttt{PrtArtSearchEngine}
   (Vector/Map/Tuple-API), ihre ABI-Adapter und ihre Bausteine (4+1+2-Allokator-Pools --- sieben Pools:
   vier Größenklassen-Pools A--D, ein Rest-Pool R und zwei reservierte Wert-Pools ---, OLC mit
   reservierten Blöcken, MultiLevel-Layout, pfadorientiertes Prefetch, DensityTracker,
-  Hypothesen-Metriken H1/H2/H3); Pool-, Prefetch- und Layout-Komponenten sind dabei derzeit
-  Deskriptor-Skelette ohne echte Speicheranbindung.
+  Hypothesen-Metriken H1/H2/H3) sowie die prüflingseitigen Vergleichs-Re-Implementierungen der
+  Tier-2/3-Paper ohne öffentlichen Quellcode (\texttt{legacy\_\allowbreak{}reimpl}, P11--P27), die im
+  SOTA-Beitrittstest gegen die echten Adapter der Cache-Engine verglichen werden; Pool-, Prefetch- und
+  Layout-Komponenten sind dabei derzeit Deskriptor-Skelette ohne echte Speicheranbindung.
   \item \texttt{probst-Diplomarbeit-cache-engine} --- \textbf{was} getestet wird: der
   \texttt{messung\_driver}, die Experiment-Konfigurationen, die Auswertungs-Pipeline und das Manuskript.
 \end{itemize}
+Die vier Subsysteme (Mess-Treiber, CacheEngineBuilder, CacheEngine, Prüfling) liegen dabei orthogonal
+zu dieser Drei-Repository-Aufteilung: Builder und CacheEngine teilen sich \texttt{comdare-cache-engine},
+sind dort aber eine ausführbare Datei (\texttt{apps/}) beziehungsweise eine Bibliothek (\texttt{libs/}).
 Quer dazu trennt die Terminologie zwei Engine-Begriffe, die nicht kurzgeschlossen werden dürfen. Die
 \texttt{CacheEngine} (\texttt{cache-engine/libs}) ist die \emph{Bibliothek der Achsen-Bausteine}:
 Sie stellt je Achse die austauschbaren Entwurfsbestandteile als Concept-/CRTP-Komponenten bereit und
@@ -34,7 +42,9 @@ Abschnitt~\ref{sec:measurement-system}) liefert der konkrete Laufzeit-Adapter
 \texttt{SearchAlgorithmAbiAdapter<A>} über die \texttt{SearchAlgorithmAnatomy} die
 OS-Primitiven (cache-line-ausgerichtete Allokation, NUMA-konformes Read-Pinning, kohärenz-bewusstes
 Schreiben); die Mess- und Observer-Kopplungen des Adapters sind über
-\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gegated, und den Mess-Aggregator führt der
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gegated --- daraus entstehen drei
+Auslieferungsvarianten derselben Permutation (Debug mit Observer, Messung mit Aggregator, Release ohne
+Mess-Kopplungen) ---, und den Mess-Aggregator führt der
 \texttt{ExperimentDriver} host-seitig (eine CMake-Option
 \texttt{COMDARE\_\allowbreak{}EXPERIMENT\_\allowbreak{}MODE} existiert, verdrahtet dieses Gating derzeit
 aber nicht). Kurz: Die \texttt{CacheEngine} liefert die \emph{Bausteine}, die
@@ -94,7 +104,9 @@ dünnen \emph{Adapter} integriert, der die Original-Implementierung hinter dem E
 Allokator-Vendors werden über per-Vendor-Include-Shims (\texttt{\#if COMDARE\_AXIS\_06\_USE\_<X>} mit
 Forward-Stubs), SOTA-Bausteine über constexpr-Enable-Flags samt \texttt{mp\_filter}
 (\texttt{COMDARE\_AXIS\_*\_USE\_}-/\texttt{ENABLE\_}-Flag-Familie) übersetzungszeitlich zu- oder
-abgeschaltet, jeweils mit sicherem Fallback (etwa \texttt{std::malloc} oder einer Re-Implementierung),
+abgeschaltet, jeweils mit sicherem, familienweise gewähltem Fallback --- Allokator-Adapter ersetzen den
+fehlenden Vendor durch \texttt{std::malloc}/\texttt{std::free}, Datenstruktur-Adapter durch einen Stub,
+der bei Benutzung kontrolliert eine \texttt{std::runtime\_error}-Ausnahme wirft ---,
 sodass der Build eigenständig lauffähig bleibt --- \texttt{COMDARE\_HAVE\_<X>} besteht nur noch als
 historisches Detektions-Define; die Integration des
 hierarchischen Prefetching~\cite{zhang2025hierarchical} liefert zusätzlich einen Call-Graph-Analyzer zur
@@ -242,7 +254,8 @@ und Sub-Bank-Bitfeldern wächst; die neunzehn Kompositions-Achsen identifiziert 
 ungültige Kombinationen vor jeder Modulerzeugung aus. Über diese Bausteine läuft die
 \emph{Sieben-Phasen-Mess-Pipeline} (Abbildung~\ref{fig:pipeline}) des \texttt{ExperimentDriver} je Reihe: (1)~\textbf{Enumerate}
 (XML-Configs parsen, Permutationsliste aufbauen), (2)~\textbf{Codegen} (ein \texttt{comdare\_perm\_<fp>.cpp}
-je Permutation), (3)~\textbf{Compile}, (4)~\textbf{Load} (LoadLibrary/dlopen aller Module),
+je Permutation, plus \texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile} für
+die SOTA-Profile), (3)~\textbf{Compile}, (4)~\textbf{Load} (LoadLibrary/dlopen aller Module),
 (5)~\textbf{Execute} (\texttt{create\_instance} + profilbewusstes \texttt{run\_workload}),
 (6)~\textbf{Measure} (binäre Mess-Records aggregieren) und (7)~\textbf{Persist}
 (\texttt{measurements.csv}/\texttt{.json}); zwei opt-in-Phasen kompilieren fehlende Module hot und

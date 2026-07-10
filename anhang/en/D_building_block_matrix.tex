@@ -207,6 +207,9 @@ Variant & Description & Source \\
 \texttt{Node16\allowbreak{}Node\allowbreak{}Type} & Medium ART node with 16 slots, optimized for SIMD-based binary search (SSE2 PCMPESTRM /\allowbreak{} AVX2 VPCMPESTRM). Balance between memory and search speed; largest capacity without indirection. CE re-implementation of the Leis ICDE 2013 specification. & P01 \\
 \texttt{Node48\allowbreak{}Node\allowbreak{}Type} & Large ART node with 48 slots, using indirection: 256-byte Child\allowbreak{}Index (byte→slot mapping, 0=empty) plus 48-slot Child\allowbreak{}Array. Trade-off between memory (vs Node256 direct) and cache misses (vs Node4 linear). Double-indirection access pattern (index + child). & P01 \\
 \texttt{Node256\allowbreak{}Node\allowbreak{}Type} & Maximal ART node with 256 slots, directly addressed without index. O(1) lookup (no scan, no index touch). High memory overhead (256 pointers), but optimal search speed for dense nodes. Default for lower tree levels. & P01 \\
+Internal/\allowbreak{}Border & Node-type pair of Masstree (trie of B\textsuperscript{+} trees): internal nodes navigate the 8-byte key slices of the B\textsuperscript{+} level, border nodes form the leaf level with the values or the transition to the next trie layer. Paper node format (reconstruction target of this thesis, no CE baseline). & P03 (Mao et al.\ 2012)~\cite{mao2012masstree} \\
+Decision/\allowbreak{}Span & Node-type pair of the B\textsuperscript{2}-tree (B\textsuperscript{+} with embedded binary inner nodes, cache-aware): decision nodes carry the binary branching decision within the page, span nodes group contiguous key ranges. Paper node format (reconstruction target of this thesis, no CE baseline). & P06 (Schmeisser et al.\ 2022)~\cite{schmeisser2022b2tree} \\
+LOUDS-Dense/\allowbreak{}Sparse & Node-type pair of the succinct range filter Su\allowbreak{}RF\@: LOUDS-Dense encodes the upper, densely populated trie levels bitmap-based with direct addressing, LOUDS-Sparse the lower, sparsely populated levels byte-sequentially succinct. Paper node format (reconstruction target of this thesis, no CE baseline). & P10 (Zhang et al.\ 2018)~\cite{zhang2018surf} \\
 \texttt{Node\allowbreak{}Type\allowbreak{}Slot\allowbreak{}Store} & Storage organ: node-type-driven bounded slot storage. Spans \texttt{std::array} with capacity \texttt{N::max\_\allowbreak{}capacity()} over a shared uint64 key. Fulfills the Storage\allowbreak{}Organ concept and is drop-in substrate for Composed\allowbreak{}Search. Baseline variant without layout/\allowbreak{}allocator integration. & Code/\allowbreak{}Baseline \\
 \texttt{Composed\allowbreak{}Store} & 3-axis storage organ: node\_\allowbreak{}type(N) $\oplus$ layout(L) $\oplus$ allocator(A). Unbounded vector over allocator A\@; layout flows in as static cache\_\allowbreak{}line\_\allowbreak{}size and via optional \texttt{organ\_\allowbreak{}scan\_\allowbreak{}field\_\allowbreak{}sum()}. Really measurable (F15 bridge). & Code/\allowbreak{}Baseline \\
 \texttt{Node\allowbreak{}Chunked\allowbreak{}Store} & 3-axis storage organ with runtime impact of node\_\allowbreak{}type axis: Slots lie in chunks of capacity \texttt{N::max\_\allowbreak{}capacity()}. Chunk count = number of node-sized allocations; thus the node\_\allowbreak{}type axis is REALLY measurable (Node4 many chunks, Node256 few). Proof of delegation. & Code/\allowbreak{}Baseline \\
@@ -216,7 +219,7 @@ Variant & Description & Source \\
 \end{longtable}
 \end{scriptsize}
 
-\emph{Contributing sources:} P01~\cite{leis2013art}.
+\emph{Contributing sources:} P01~\cite{leis2013art}, P03~\cite{mao2012masstree}, P06~\cite{schmeisser2022b2tree}, P10~\cite{zhang2018surf}.
 
 \section{T5 Memory Layout}
 
@@ -492,11 +495,12 @@ Variant & Description & Source \\
 \texttt{Density\allowbreak{}Tracker} & Per-node density/\allowbreak{}slot-occupancy tracking for adaptive node-type selection (4→16→48→256). Contextual telemetry tied to ART structure (Leis ICDE 2013), measures slot occupancy across all nodes. Higher overhead than Leaf\allowbreak{}Only, but provides adaptation signal for dynamic rebalancing decisions. & P01 (ART/\allowbreak{}Leis ICDE 2013, context; Code/\allowbreak{}Baseline) \\
 \texttt{Insert\allowbreak{}Counter} & Global atomic insert counter with minimal overhead (1 atomic increment per insert). Contextual telemetry tied to HOT structure (Binna SIGMOD 2018), global scope. Sufficient for throughput measurement series, no latency granularity. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, context; Code/\allowbreak{}Baseline) \\
 \texttt{Latency\allowbreak{}Histogram} & HDR histogram for lookup latency distribution (p50/\allowbreak{}p95/\allowbreak{}p99 quantiles). Based on Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 license. Highest overhead (per lookup), but provides complete latency statistics for SLA-oriented and research-grade measurement series. Only is\_\allowbreak{}original candidate of the axis. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
+Probability-Hints & Probability hints of the cache-oblivious Bender line (P16/\allowbreak{}P17): distribution- and probability-related occupancy hints that serve as input to the layout decisions. Paper building block of the axis dissection (reconstruction target of this thesis, no CE baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
 
-\emph{Contributing sources:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}.
+\emph{Contributing sources:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
 
 \emph{Related literature:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
 
