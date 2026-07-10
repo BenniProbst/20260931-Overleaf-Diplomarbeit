@@ -33,8 +33,15 @@ optional). Deltas: + Mac Mini 2019 (Coffee Lake, Autor 2026-06-15); − i7-1270P
 Experiment-OS-Plan (AP-M1): **Dual-OS Talos (immutable) + root-Linux/Ubuntu (perf/MSR)**.
 GPU explizit außerhalb des Umfangs (Aufgabenstellung Z.124-125).
 
-## Offener Nebenfund (für Text-/Impl-Agent, nicht Infra)
-Anhang D widerspricht Kap. 5/6 + Terminen: `anhang/de/D_building_block_matrix.tex:557,570,913,914`
-nennt „Barnard (AMD EPYC 7763 Zen 3), Capella (Intel Xeon)" — korrekt ist Barnard = **Intel
-Sapphire Rapids** (Xeon Platinum 8470) und Capella = **AMD EPYC 9334** (+ NVIDIA A100).
-Stand 2026-07-10: gemeldet, noch nicht korrigiert.
+## Nebenfund (KORRIGIERT 2026-07-10)
+Anhang D widersprach Kap. 5/6 + Terminen: „Barnard (AMD EPYC 7763 Zen 3), Capella (Intel Xeon)" —
+korrigiert auf Barnard = **Intel Xeon Platinum 8470 (Sapphire Rapids)** und Capella =
+**AMD EPYC 9334** (DE+EN, je 3 Stellen).
+
+## ⚠️ WICHTIG für den Infra-Agenten: i9-14900KS AUSGEFALLEN (User-Info 2026-07-10)
+Die Production-Maschine 2 (prod2, **Intel i9-14900KS** — im obigen Mess-Fleet Position 2) ist
+**gestorben und im RMA/Austausch; verwendbar erst ~September 2026**. Bis dahin: keine
+`pmc:intel`-/P-E-Core-Messungen auf dieser Plattform (`COMDARE_PROD2_AVAILABLE=false`, Runner 17
+pausiert — bleibt so). Die Hybrid-CPU-Klasse hat damit vorerst keine freigegebene Messmaschine
+(i7-1270P wurde 2026-06-15 von Messwerten ausgeschlossen). Details + Konsequenzen: DA-Ledger
+§12, Eintrag 2026-07-10.
