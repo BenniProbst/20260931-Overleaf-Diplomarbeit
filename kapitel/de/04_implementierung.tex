@@ -77,7 +77,8 @@ im Mess-Pfad über den Cache-Engine-Standard laufen, bis ihre Anbindung (Folgesc
 Auf eine Galerie verdichtet zeigt Abbildung~\ref{fig:prtart-gallery} die sechs eigenen Schlüsselstellen
 von PRT-ART, je an ihrer Achse verortet.
 \begin{figure}[htbp]\centering
-\resizebox{0.97\linewidth}{!}{%
+% Kein \resizebox: die Zeichnung ist ~14.9cm schmal; ein Aufblasen auf 0.97\linewidth (x1.04) vergroesserte
+% die \footnotesize-Schrift ueber den Fliesstext hinaus. Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,
   pa/.style={draw,rounded corners,fill=orange!10,minimum width=4.7cm,minimum height=2.25cm,text width=4.4cm,align=center,inner sep=3pt}]
   \node[pa] (p1) at (0,0){\textbf{4+1+2-Pool-Allokator}\\{\scriptsize Achse T6}\\[2pt]{\tiny vier Größenklassen-Pools $+$ Rest-Pool $+$ zwei reservierte; cache-line-ausgerichtete, fragmentierungsarme Free-List statt fest verdrahteter Allokation}};
@@ -86,7 +87,7 @@ von PRT-ART, je an ihrer Achse verortet.
   \node[pa] (p4) at (0,-2.85){\textbf{MultiLevel-Layout}\\{\scriptsize Achse T5}\\[2pt]{\tiny mehrstufiges Speicher-Layout über die Knotenebenen; layout-getriebener Stride (CLA 64-Byte vs.\ AoS 16-Byte)}};
   \node[pa] (p5) at (5.1,-2.85){\textbf{Kohärenz-bewusste Telemetrie}\\{\scriptsize Achse T10}\\[2pt]{\tiny Leaf-Only-Zähler (Haupt), Sampling (jeder $N$-te), Offline-Recompute; Per-Node-Zähler nur als Anti-Pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{DensityTracker $+$ H1/H2/H3}\\{\scriptsize Achse T10 (eigene Organe)}\\[2pt]{\tiny eigene Mess-Organe: Belegungsdichte-Tracker und die drei Hypothesen-Metriken des Prüflings}};
-\end{tikzpicture}} % chktex 31
+\end{tikzpicture}
 \caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+1+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die Kacheln zeigen die \emph{Bausteine des Prüfling-Repos}; im Apparat überschrieben sind derzeit T7/T8/T10, die Bausteine zu T5/T6 laufen dort noch über den Cache-Engine-Standard (E6). Die übrigen vierzehn Kompositions-Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
 \end{figure}
 
@@ -124,30 +125,33 @@ Queuing-Achsen ---, sodass keine Composition übersetzt, die eine Achse offenlä
 Organ-Satz ist damit keine Konvention, sondern eine übersetzungszeitlich geprüfte Bedingung.
 % AXIS-T0..T18-Galerie: fig:axes-gallery (4.3) ERLEDIGT
 \begin{figure}[htbp]\centering
-\resizebox{\linewidth}{!}{%
+% Kein \resizebox: die Galerie ist von 5x4 auf 4x5 Kacheln umgebrochen (~15.9cm statt ~17.8cm breit,
+% Kacheln 3.35->3.75cm, Raster 4.05cm) und passt nativ in \textwidth (16cm); so bleibt die
+% \footnotesize-Schrift unskaliert statt per resizebox (x0.90) verkleinert. Regel: resizebox nur zum
+% VERKLEINERN (vgl. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,
-  ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt}]
+  ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt}]
   \node[ax] (t0) at (0,0){\textbf{T0 Suchalgorithmus}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(21: 17 Basis $+$ 4 per-K)}\\{\tiny\itshape Std.\ Array256}};
-  \node[ax] (t1) at (3.6,0){\textbf{T1 Cache-Travers.}\\{\tiny CT1--CT2}\\{\tiny Linear-Fanout, Hash-Lookup, Binär-Fanout}\\{\tiny\itshape Std.\ Linear}};
-  \node[ax] (t2) at (7.2,0){\textbf{T2 Slot-Mapping}\\{\tiny MP1--MP2}\\{\tiny Direkt-Platzierung, Pool-relativ}\\{\tiny\itshape Std.\ Direkt}};
-  \node[ax] (t3) at (10.8,0){\textbf{T3 Pfadkompression}\\{\tiny PC1--PC3}\\{\tiny Keine, Byte-weise (ART), Patricia}\\{\tiny\itshape Std.\ Keine}};
-  \node[ax] (t4) at (14.4,0){\textbf{T4 Knotentyp}\\{\tiny NT1--NT3}\\{\tiny Node4 / 16 / 48 / 256}\\{\tiny\itshape Std.\ Node256}};
-  \node[ax] (t5) at (0,-2.4){\textbf{T5 Speicher-Layout}\\{\tiny HM1--HM4}\\{\tiny AoS, Cache-Line-aligned, SoA, Bitmap (LOUDS), AoSoA}\\{\tiny\itshape Std.\ Cache-Line}};
-  \node[ax] (t6) at (3.6,-2.4){\textbf{T6 Allokator}\\{\tiny AA1--AA7}\\{\tiny Hoard, Slab, Mimalloc, Jemalloc, TCMalloc, Buddy \dots\,(25)}\\{\tiny\itshape Std.\ Std-Malloc}};
-  \node[ax] (t7) at (7.2,-2.4){\textbf{T7 Prefetch}\\{\tiny PF1--PF3}\\{\tiny Keine, Distanz-Schätzer (ART), Hardware, Pfad-orient.}\\{\tiny\itshape Std.\ Keine}};
-  \node[ax] (t8) at (10.8,-2.4){\textbf{T8 Nebenläufigkeit}\\{\tiny CC1--CC2}\\{\tiny Keine, Blocking, R/W, OLC, Lock-free, RCU, Hazard}\\{\tiny\itshape Std.\ Keine}};
-  \node[ax] (t9) at (14.4,-2.4){\textbf{T9 Serialisierung}\\{\tiny SR1--SR3}\\{\tiny Roh-Binär, VarLen (LEB128), Succinct, LZ4/Delta}\\{\tiny\itshape Std.\ Roh-Binär}};
-  \node[ax] (t10) at (0,-4.8){\textbf{T10 Telemetrie}\\{\tiny TM1--TM3}\\{\tiny Leaf-Only-Zähler, Density-Tracker, HDR-Histogramm}\\{\tiny\itshape Std.\ Leaf-Only}};
-  \node[ax] (t11) at (3.6,-4.8){\textbf{T11 Wert-Handle}\\{\tiny VH1--VH3}\\{\tiny Inline, Extern-Pool, RCU-Shared, MVCC, Chain-Ref}\\{\tiny\itshape Std.\ Inline}};
-  \node[ax] (t12) at (7.2,-4.8){\textbf{T12 ISA}\\{\tiny IS1--IS3}\\{\tiny Amd64 (SSE2), AArch64 (NEON), PowerPC, RISC-V}\\{\tiny\itshape Std.\ Amd64}};
-  \node[ax] (t13) at (10.8,-4.8){\textbf{T13 Index-Org.}\\{\tiny io1--io3}\\{\tiny Clustered, Heap, IOT (embedded), Non-Clustered}\\{\tiny\itshape Std.\ Heap}};
-  \node[ax] (t14) at (14.4,-4.8){\textbf{T14 I/O-Dispatch}\\{\tiny IO1--IO3}\\{\tiny In-Memory, Buffered, Direct (O\_DIRECT), Mmap}\\{\tiny\itshape Std.\ In-Memory}};
-  \node[ax] (t15) at (0,-7.2){\textbf{T15 Migration}\\{\tiny MG1--MG3}\\{\tiny Keine, Hot/Cold, Tier-basiert, Adaptiv (ML)}\\{\tiny\itshape Std.\ Keine}};
-  \node[ax] (t16) at (3.6,-7.2){\textbf{T16 Filter}\\{\tiny FT1--FT3}\\{\tiny Bloom, Cuckoo, Range-SuRF (LOUDS), Xor}\\{\tiny\itshape (kein None)}};
-  \node[ax] (t17) at (7.2,-7.2){\textbf{T17 Op.-Puffer}\\{\tiny QS1--QS6}\\{\tiny Kein, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Std.\ Kein-Puffer}};
-  \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush-Policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptiv-LSM}\\{\tiny\itshape Std.\ Lazy}};
-  \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Lesart}\\{\tiny Jede Achse $=$ ein \texttt{Concept} mit austauschbaren Bausteinen (\emph{Strategy}); eine Composition wählt je Slot genau einen.}};
-\end{tikzpicture}} % chktex 31
+  \node[ax] (t1) at (4.05,0){\textbf{T1 Cache-Travers.}\\{\tiny CT1--CT2}\\{\tiny Linear-Fanout, Hash-Lookup, Binär-Fanout}\\{\tiny\itshape Std.\ Linear}};
+  \node[ax] (t2) at (8.1,0){\textbf{T2 Slot-Mapping}\\{\tiny MP1--MP2}\\{\tiny Direkt-Platzierung, Pool-relativ}\\{\tiny\itshape Std.\ Direkt}};
+  \node[ax] (t3) at (12.15,0){\textbf{T3 Pfadkompression}\\{\tiny PC1--PC3}\\{\tiny Keine, Byte-weise (ART), Patricia}\\{\tiny\itshape Std.\ Keine}};
+  \node[ax] (t4) at (0,-2.4){\textbf{T4 Knotentyp}\\{\tiny NT1--NT3}\\{\tiny Node4 / 16 / 48 / 256}\\{\tiny\itshape Std.\ Node256}};
+  \node[ax] (t5) at (4.05,-2.4){\textbf{T5 Speicher-Layout}\\{\tiny HM1--HM4}\\{\tiny AoS, Cache-Line-aligned, SoA, Bitmap (LOUDS), AoSoA}\\{\tiny\itshape Std.\ Cache-Line}};
+  \node[ax] (t6) at (8.1,-2.4){\textbf{T6 Allokator}\\{\tiny AA1--AA7}\\{\tiny Hoard, Slab, Mimalloc, Jemalloc, TCMalloc, Buddy \dots\,(25)}\\{\tiny\itshape Std.\ Std-Malloc}};
+  \node[ax] (t7) at (12.15,-2.4){\textbf{T7 Prefetch}\\{\tiny PF1--PF3}\\{\tiny Keine, Distanz-Schätzer (ART), Hardware, Pfad-orient.}\\{\tiny\itshape Std.\ Keine}};
+  \node[ax] (t8) at (0,-4.8){\textbf{T8 Nebenläufigkeit}\\{\tiny CC1--CC2}\\{\tiny Keine, Blocking, R/W, OLC, Lock-free, RCU, Hazard}\\{\tiny\itshape Std.\ Keine}};
+  \node[ax] (t9) at (4.05,-4.8){\textbf{T9 Serialisierung}\\{\tiny SR1--SR3}\\{\tiny Roh-Binär, VarLen (LEB128), Succinct, LZ4/Delta}\\{\tiny\itshape Std.\ Roh-Binär}};
+  \node[ax] (t10) at (8.1,-4.8){\textbf{T10 Telemetrie}\\{\tiny TM1--TM3}\\{\tiny Leaf-Only-Zähler, Density-Tracker, HDR-Histogramm}\\{\tiny\itshape Std.\ Leaf-Only}};
+  \node[ax] (t11) at (12.15,-4.8){\textbf{T11 Wert-Handle}\\{\tiny VH1--VH3}\\{\tiny Inline, Extern-Pool, RCU-Shared, MVCC, Chain-Ref}\\{\tiny\itshape Std.\ Inline}};
+  \node[ax] (t12) at (0,-7.2){\textbf{T12 ISA}\\{\tiny IS1--IS3}\\{\tiny Amd64 (SSE2), AArch64 (NEON), PowerPC, RISC-V}\\{\tiny\itshape Std.\ Amd64}};
+  \node[ax] (t13) at (4.05,-7.2){\textbf{T13 Index-Org.}\\{\tiny io1--io3}\\{\tiny Clustered, Heap, IOT (embedded), Non-Clustered}\\{\tiny\itshape Std.\ Heap}};
+  \node[ax] (t14) at (8.1,-7.2){\textbf{T14 I/O-Dispatch}\\{\tiny IO1--IO3}\\{\tiny In-Memory, Buffered, Direct (O\_DIRECT), Mmap}\\{\tiny\itshape Std.\ In-Memory}};
+  \node[ax] (t15) at (12.15,-7.2){\textbf{T15 Migration}\\{\tiny MG1--MG3}\\{\tiny Keine, Hot/Cold, Tier-basiert, Adaptiv (ML)}\\{\tiny\itshape Std.\ Keine}};
+  \node[ax] (t16) at (0,-9.6){\textbf{T16 Filter}\\{\tiny FT1--FT3}\\{\tiny Bloom, Cuckoo, Range-SuRF (LOUDS), Xor}\\{\tiny\itshape (kein None)}};
+  \node[ax] (t17) at (4.05,-9.6){\textbf{T17 Op.-Puffer}\\{\tiny QS1--QS6}\\{\tiny Kein, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Std.\ Kein-Puffer}};
+  \node[ax] (t18) at (8.1,-9.6){\textbf{T18 Flush-Policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptiv-LSM}\\{\tiny\itshape Std.\ Lazy}};
+  \node[draw,rounded corners,fill=green!8,minimum width=3.75cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt] (leg) at (12.15,-9.6){\textbf{Lesart}\\{\tiny Jede Achse $=$ ein \texttt{Concept} mit austauschbaren Bausteinen (\emph{Strategy}); eine Composition wählt je Slot genau einen.}};
+\end{tikzpicture}
 \caption{Galerie der neunzehn Kompositions-Achsen (T0--T18): je Achse das Implementierungs-Konzept --- Kurzname, Sub-Achsen-Familie und eine repräsentative Auswahl der austauschbaren Bausteine. Jede Achse ist ein \texttt{Concept}-Interface mit mehreren Strategie-Bausteinen (\emph{Strategy}-Muster); eine konkrete Composition belegt je Slot genau einen. Der \emph{Standard} (\enquote{Std.}) ist eine abgeleitete Vergleichs-Baseline, kein Code-Flag; bei den großen Achsen T0/T6/T17 ist die Gesamt-Bausteinzahl in Klammern angegeben. Die vollständige Matrix mit Herkunfts-Quellen führt Anhang~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
 
@@ -164,7 +168,9 @@ unter derselben Wurzel, tragen aber keine Anatomie.
 
 \begin{figure}[!htbp]
   \centering
-  \resizebox{0.95\textwidth}{!}{%
+  % Kein \resizebox: die Zeichnung ist ~15.5cm schmal und passt nativ in \textwidth (16cm); das fruehere
+  % \resizebox{0.95\textwidth} (x0.98) skalierte die \footnotesize-Schrift nur unnoetig gegen den
+  % Fliesstext. Regel: resizebox nur zum VERKLEINERN echter Ueberbreite (vgl. fig:m-model).
   \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=3pt, text width=3.5cm}]
     \node[box,fill=blue!8,text width=5.3cm] (root) at (0,0) {\texttt{IExecutionEngine} --- \textbf{Treiber der Messung}\\{\scriptsize \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown}; messbarer Vertrag: Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
     \node[box] (ana) at (-4.4,-2.1) {\texttt{IAnatomyBase}\\{\scriptsize Lebewesen (Anatomie-Gattungen)}};
@@ -185,7 +191,7 @@ unter derselben Wurzel, tragen aber keine Anatomie.
     \draw[->] (sa) -- (abi);
     \draw[->] (body) -- (comp);
     \draw[->] (comp) -- (bin);
-  \end{tikzpicture}} % chktex 31
+  \end{tikzpicture}
   \caption{Die \emph{eine} Architektur als einzige Hierarchie ohne Parallel-Bäume. An der Wurzel steht
   \texttt{IExecutionEngine} als \emph{Treiber der Messung} --- der universelle messbare Vertrag
   (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) über alle drei Engine-Arten Anatomy,

@@ -75,7 +75,8 @@ multi-level layout run via the cache-engine default in the measurement path unti
 Condensed into a gallery, Figure~\ref{fig:prtart-gallery} shows the six own key points of PRT-ART, each
 located at its axis.
 \begin{figure}[htbp]\centering
-\resizebox{0.97\linewidth}{!}{%
+% No \resizebox: the drawing is only ~14.9cm wide; blowing it up to 0.97\linewidth (x1.04) would inflate
+% the \footnotesize font beyond the body text. Rule: resizebox only to SHRINK (cf. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,
   pa/.style={draw,rounded corners,fill=orange!10,minimum width=4.7cm,minimum height=2.25cm,text width=4.4cm,align=center,inner sep=3pt}]
   \node[pa] (p1) at (0,0){\textbf{4+1+2 pool allocator}\\{\scriptsize axis T6}\\[2pt]{\tiny four size-class pools $+$ rest pool $+$ two reserved; cache-line-aligned, low-fragmentation free list instead of hard-wired allocation}};
@@ -84,7 +85,7 @@ located at its axis.
   \node[pa] (p4) at (0,-2.85){\textbf{Multi-level layout}\\{\scriptsize axis T5}\\[2pt]{\tiny multi-level memory layout across the node levels; layout-driven stride (CLA 64-byte vs.\ AoS 16-byte)}};
   \node[pa] (p5) at (5.1,-2.85){\textbf{Coherence-aware telemetry}\\{\scriptsize axis T10}\\[2pt]{\tiny leaf-only counters (main), sampling (every $N$th), offline recompute; per-node counter only as anti-pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{Density tracker $+$ H1/H2/H3}\\{\scriptsize axis T10 (own organs)}\\[2pt]{\tiny own measurement organs: occupancy density tracker and the probe's three hypothesis metrics}};
-\end{tikzpicture}} % chktex 31
+\end{tikzpicture}
 \caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a multi-level layout (T5), and cache-coherence-aware telemetry (T10) together with the density tracker and the hypothesis metrics H1/H2/H3. The tiles show the \emph{building blocks of the probe repo}; currently T7/T8/T10 are overridden in the apparatus, while the building blocks for T5/T6 still run there via the cache-engine default (E6). The remaining fourteen composition axes the probe draws via the compile-time fallback from the cache-engine.}\label{fig:prtart-gallery}
 \end{figure}
 
@@ -121,30 +122,33 @@ queuing axes ---, so that no composition compiles that leaves an axis open; the 
 thus not a convention but a compile-time-checked condition.
 % AXIS-T0..T18 gallery: fig:axes-gallery (4.3) DONE
 \begin{figure}[htbp]\centering
-\resizebox{\linewidth}{!}{%
+% No \resizebox: the gallery is re-flowed from 5x4 to 4x5 tiles (~15.9cm instead of ~17.8cm wide,
+% tiles 3.35->3.75cm, grid 4.05cm) and fits natively into \textwidth (16cm); this keeps the
+% \footnotesize font unscaled instead of shrunk via resizebox (x0.90). Rule: resizebox only to
+% SHRINK (cf. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,
-  ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt}]
+  ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt}]
   \node[ax] (t0) at (0,0){\textbf{T0 Search algorithm}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(21: 17 base $+$ 4 per-K)}\\{\tiny\itshape Def.\ Array256}};
-  \node[ax] (t1) at (3.6,0){\textbf{T1 Cache traversal}\\{\tiny CT1--CT2}\\{\tiny Linear-fanout, Hash-lookup, Binary-fanout}\\{\tiny\itshape Def.\ Linear}};
-  \node[ax] (t2) at (7.2,0){\textbf{T2 Slot mapping}\\{\tiny MP1--MP2}\\{\tiny Direct-placement, Pool-relative}\\{\tiny\itshape Def.\ Direct}};
-  \node[ax] (t3) at (10.8,0){\textbf{T3 Path compression}\\{\tiny PC1--PC3}\\{\tiny None, Byte-wise (ART), Patricia}\\{\tiny\itshape Def.\ None}};
-  \node[ax] (t4) at (14.4,0){\textbf{T4 Node type}\\{\tiny NT1--NT3}\\{\tiny Node4 / 16 / 48 / 256}\\{\tiny\itshape Def.\ Node256}};
-  \node[ax] (t5) at (0,-2.4){\textbf{T5 Memory layout}\\{\tiny HM1--HM4}\\{\tiny AoS, Cache-line-aligned, SoA, Bitmap (LOUDS), AoSoA}\\{\tiny\itshape Def.\ Cache-line}};
-  \node[ax] (t6) at (3.6,-2.4){\textbf{T6 Allocator}\\{\tiny AA1--AA7}\\{\tiny Hoard, Slab, Mimalloc, Jemalloc, TCMalloc, Buddy \dots\,(25)}\\{\tiny\itshape Def.\ Std-malloc}};
-  \node[ax] (t7) at (7.2,-2.4){\textbf{T7 Prefetch}\\{\tiny PF1--PF3}\\{\tiny None, Distance-estimator (ART), Hardware, Path-orient.}\\{\tiny\itshape Def.\ None}};
-  \node[ax] (t8) at (10.8,-2.4){\textbf{T8 Concurrency}\\{\tiny CC1--CC2}\\{\tiny None, Blocking, R/W, OLC, Lock-free, RCU, Hazard}\\{\tiny\itshape Def.\ None}};
-  \node[ax] (t9) at (14.4,-2.4){\textbf{T9 Serialization}\\{\tiny SR1--SR3}\\{\tiny Raw-binary, VarLen (LEB128), Succinct, LZ4/Delta}\\{\tiny\itshape Def.\ Raw-binary}};
-  \node[ax] (t10) at (0,-4.8){\textbf{T10 Telemetry}\\{\tiny TM1--TM3}\\{\tiny Leaf-only counter, Density-tracker, HDR-histogram}\\{\tiny\itshape Def.\ Leaf-only}};
-  \node[ax] (t11) at (3.6,-4.8){\textbf{T11 Value handle}\\{\tiny VH1--VH3}\\{\tiny Inline, External-pool, RCU-shared, MVCC, Chain-ref}\\{\tiny\itshape Def.\ Inline}};
-  \node[ax] (t12) at (7.2,-4.8){\textbf{T12 ISA}\\{\tiny IS1--IS3}\\{\tiny Amd64 (SSE2), AArch64 (NEON), PowerPC, RISC-V}\\{\tiny\itshape Def.\ Amd64}};
-  \node[ax] (t13) at (10.8,-4.8){\textbf{T13 Index org.}\\{\tiny io1--io3}\\{\tiny Clustered, Heap, IOT (embedded), Non-clustered}\\{\tiny\itshape Def.\ Heap}};
-  \node[ax] (t14) at (14.4,-4.8){\textbf{T14 I/O dispatch}\\{\tiny IO1--IO3}\\{\tiny In-memory, Buffered, Direct (O\_DIRECT), Mmap}\\{\tiny\itshape Def.\ In-memory}};
-  \node[ax] (t15) at (0,-7.2){\textbf{T15 Migration}\\{\tiny MG1--MG3}\\{\tiny None, Hot/Cold, Tier-based, Adaptive (ML)}\\{\tiny\itshape Def.\ None}};
-  \node[ax] (t16) at (3.6,-7.2){\textbf{T16 Filter}\\{\tiny FT1--FT3}\\{\tiny Bloom, Cuckoo, Range-SuRF (LOUDS), Xor}\\{\tiny\itshape (no None)}};
-  \node[ax] (t17) at (7.2,-7.2){\textbf{T17 Op. buffer}\\{\tiny QS1--QS6}\\{\tiny None, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Def.\ No-buffer}};
-  \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptive-LSM}\\{\tiny\itshape Def.\ Lazy}};
-  \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Reading}\\{\tiny Each axis $=$ a \texttt{Concept} with interchangeable building blocks (\emph{Strategy}); a composition picks exactly one per slot.}};
-\end{tikzpicture}} % chktex 31
+  \node[ax] (t1) at (4.05,0){\textbf{T1 Cache traversal}\\{\tiny CT1--CT2}\\{\tiny Linear-fanout, Hash-lookup, Binary-fanout}\\{\tiny\itshape Def.\ Linear}};
+  \node[ax] (t2) at (8.1,0){\textbf{T2 Slot mapping}\\{\tiny MP1--MP2}\\{\tiny Direct-placement, Pool-relative}\\{\tiny\itshape Def.\ Direct}};
+  \node[ax] (t3) at (12.15,0){\textbf{T3 Path compression}\\{\tiny PC1--PC3}\\{\tiny None, Byte-wise (ART), Patricia}\\{\tiny\itshape Def.\ None}};
+  \node[ax] (t4) at (0,-2.4){\textbf{T4 Node type}\\{\tiny NT1--NT3}\\{\tiny Node4 / 16 / 48 / 256}\\{\tiny\itshape Def.\ Node256}};
+  \node[ax] (t5) at (4.05,-2.4){\textbf{T5 Memory layout}\\{\tiny HM1--HM4}\\{\tiny AoS, Cache-line-aligned, SoA, Bitmap (LOUDS), AoSoA}\\{\tiny\itshape Def.\ Cache-line}};
+  \node[ax] (t6) at (8.1,-2.4){\textbf{T6 Allocator}\\{\tiny AA1--AA7}\\{\tiny Hoard, Slab, Mimalloc, Jemalloc, TCMalloc, Buddy \dots\,(25)}\\{\tiny\itshape Def.\ Std-malloc}};
+  \node[ax] (t7) at (12.15,-2.4){\textbf{T7 Prefetch}\\{\tiny PF1--PF3}\\{\tiny None, Distance-estimator (ART), Hardware, Path-orient.}\\{\tiny\itshape Def.\ None}};
+  \node[ax] (t8) at (0,-4.8){\textbf{T8 Concurrency}\\{\tiny CC1--CC2}\\{\tiny None, Blocking, R/W, OLC, Lock-free, RCU, Hazard}\\{\tiny\itshape Def.\ None}};
+  \node[ax] (t9) at (4.05,-4.8){\textbf{T9 Serialization}\\{\tiny SR1--SR3}\\{\tiny Raw-binary, VarLen (LEB128), Succinct, LZ4/Delta}\\{\tiny\itshape Def.\ Raw-binary}};
+  \node[ax] (t10) at (8.1,-4.8){\textbf{T10 Telemetry}\\{\tiny TM1--TM3}\\{\tiny Leaf-only counter, Density-tracker, HDR-histogram}\\{\tiny\itshape Def.\ Leaf-only}};
+  \node[ax] (t11) at (12.15,-4.8){\textbf{T11 Value handle}\\{\tiny VH1--VH3}\\{\tiny Inline, External-pool, RCU-shared, MVCC, Chain-ref}\\{\tiny\itshape Def.\ Inline}};
+  \node[ax] (t12) at (0,-7.2){\textbf{T12 ISA}\\{\tiny IS1--IS3}\\{\tiny Amd64 (SSE2), AArch64 (NEON), PowerPC, RISC-V}\\{\tiny\itshape Def.\ Amd64}};
+  \node[ax] (t13) at (4.05,-7.2){\textbf{T13 Index org.}\\{\tiny io1--io3}\\{\tiny Clustered, Heap, IOT (embedded), Non-clustered}\\{\tiny\itshape Def.\ Heap}};
+  \node[ax] (t14) at (8.1,-7.2){\textbf{T14 I/O dispatch}\\{\tiny IO1--IO3}\\{\tiny In-memory, Buffered, Direct (O\_DIRECT), Mmap}\\{\tiny\itshape Def.\ In-memory}};
+  \node[ax] (t15) at (12.15,-7.2){\textbf{T15 Migration}\\{\tiny MG1--MG3}\\{\tiny None, Hot/Cold, Tier-based, Adaptive (ML)}\\{\tiny\itshape Def.\ None}};
+  \node[ax] (t16) at (0,-9.6){\textbf{T16 Filter}\\{\tiny FT1--FT3}\\{\tiny Bloom, Cuckoo, Range-SuRF (LOUDS), Xor}\\{\tiny\itshape (no None)}};
+  \node[ax] (t17) at (4.05,-9.6){\textbf{T17 Op. buffer}\\{\tiny QS1--QS6}\\{\tiny None, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Def.\ No-buffer}};
+  \node[ax] (t18) at (8.1,-9.6){\textbf{T18 Flush policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptive-LSM}\\{\tiny\itshape Def.\ Lazy}};
+  \node[draw,rounded corners,fill=green!8,minimum width=3.75cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt] (leg) at (12.15,-9.6){\textbf{Reading}\\{\tiny Each axis $=$ a \texttt{Concept} with interchangeable building blocks (\emph{Strategy}); a composition picks exactly one per slot.}};
+\end{tikzpicture}
 \caption{Gallery of the nineteen composition axes (T0--T18): per axis the implementation concept --- short name, sub-axis family and a representative selection of the interchangeable building blocks. Each axis is a \texttt{Concept} interface with several strategy building blocks (\emph{Strategy} pattern); a concrete composition occupies exactly one per slot. The \emph{default} (\enquote{Def.}) is a derived comparison baseline, not a code flag; for the large axes T0/T6/T17 the total building-block count is given in parentheses. The complete matrix with origin sources is given in Appendix~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
 
@@ -161,7 +165,9 @@ beneath the same root but carry no anatomy.
 
 \begin{figure}[!htbp]
   \centering
-  \resizebox{0.95\textwidth}{!}{%
+  % No \resizebox: the drawing is only ~15.5cm wide and fits natively into \textwidth (16cm); the former
+  % \resizebox{0.95\textwidth} (x0.98) merely scaled the \footnotesize font against the body text.
+  % Rule: resizebox only to SHRINK genuine overwidth (cf. fig:m-model).
   \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=3pt, text width=3.5cm}]
     \node[box,fill=blue!8,text width=5.3cm] (root) at (0,0) {\texttt{IExecutionEngine} --- \textbf{driver of measurement}\\{\scriptsize \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown}; measurable contract: Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
     \node[box] (ana) at (-4.4,-2.1) {\texttt{IAnatomyBase}\\{\scriptsize living being (anatomy genera)}};
@@ -182,7 +188,7 @@ beneath the same root but carry no anatomy.
     \draw[->] (sa) -- (abi);
     \draw[->] (body) -- (comp);
     \draw[->] (comp) -- (bin);
-  \end{tikzpicture}} % chktex 31
+  \end{tikzpicture}
   \caption{The \emph{one} architecture as a single hierarchy without parallel trees. At the root stands
   \texttt{IExecutionEngine} as the \emph{driver of measurement} --- the universal measurable contract
   (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) across all three engine kinds Anatomy,

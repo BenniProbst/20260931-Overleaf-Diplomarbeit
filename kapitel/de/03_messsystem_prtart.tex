@@ -404,7 +404,8 @@ al.\ (P21/P22)~\cite{chen2001prefetch,chen2002fractal}, Khan (P23)~\cite{khan201
 \emph{TU-Dresden-Linie} schließlich Ungethüm (P31)~\cite{ungethuem2017survey}, Schmidt
 (P32)~\cite{schmidt2025hbm} und VAMPIR (P33)~\cite{berthold2023vampir}. Der parallele
 \emph{Allokator-Korpus} (A01--A23) spannt von den Klassikern dlmalloc~\cite{lea1996dlmalloc},
-Hoard~\cite{berger2000hoard}, Slab~\cite{bonwick1994slab,bonwick2001vmem} und Michaels lock-freier
+Hoard~\cite{berger2000hoard}, Slab samt Magazines-/Vmem-Erweiterung~\cite{bonwick1994slab,bonwick2001vmem}
+und Michaels lock-freier
 Allokation~\cite{michael2004lockfree} über die mehrkern-skalierbaren mimalloc~\cite{leijen2019mimalloc},
 jemalloc~\cite{evans2006jemalloc}, TCMalloc~\cite{ghemawat2005tcmalloc}, snmalloc~\cite{lietar2019snmalloc},
 scalloc~\cite{aigner2015scalloc}, rpmalloc~\cite{jansson2017rpmalloc} und lrmalloc~\cite{leite2018lrmalloc}
@@ -414,22 +415,24 @@ Abbildung~\ref{fig:sota-gallery} verdichtet die wichtigsten rekonstruierten Such
 Galerie --- je Verfahren seine Herkunfts-Klasse, die charakteristische Struktur-Idee und die Achsen, an
 denen es seinen Hauptbeitrag leistet; alle erscheinen so als Punkte im gemeinsamen Entwurfsraum.
 \begin{figure}[htbp]\centering
-\resizebox{\linewidth}{!}{%
+% Kein \resizebox: die vorher ~16.9cm breite Zeichnung ist auf ~15.9cm gestaucht (Kacheln 4.0->3.8cm,
+% Raster 4.3->4.05cm) und passt nativ in \textwidth (16cm); so bleibt die \footnotesize-Schrift unskaliert
+% statt per resizebox (x0.95) verkleinert. Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,
-  so/.style={draw,rounded corners,fill=orange!8,minimum width=4.0cm,minimum height=2.0cm,text width=3.75cm,align=center,inner sep=2pt}]
+  so/.style={draw,rounded corners,fill=orange!8,minimum width=3.8cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt}]
   \node[so] (a1) at (0,0){\textbf{ART} {\scriptsize(P01)}\\{\tiny Trie}\\[1pt]{\tiny adaptive Knoten 4/16/48/256, byte-weise Verzweigung, Pfadkompression}\\{\tiny\itshape Achsen T4, T3}};
-  \node[so] (a2) at (4.3,0){\textbf{HOT} {\scriptsize(P02)}\\{\tiny Trie}\\[1pt]{\tiny höhenoptimierter dynamischer Span, kompakte SIMD-Knoten}\\{\tiny\itshape Achsen T4, T0}};
-  \node[so] (a3) at (8.6,0){\textbf{Masstree} {\scriptsize(P03)}\\{\tiny Trie $+$ B\textsuperscript{+}}\\[1pt]{\tiny Trie aus B\textsuperscript{+}-Bäumen, 8-Byte-Slices, B\textsuperscript{+}-Blattknoten}\\{\tiny\itshape Achsen T4, T11}};
-  \node[so] (a4) at (12.9,0){\textbf{CoCo-Trie} {\scriptsize(P04)}\\{\tiny Succinct}\\[1pt]{\tiny kompakt-kollabierter Trie, succinct kodierte Pfade}\\{\tiny\itshape Achsen T3, T4}};
+  \node[so] (a2) at (4.05,0){\textbf{HOT} {\scriptsize(P02)}\\{\tiny Trie}\\[1pt]{\tiny höhenoptimierter dynamischer Span, kompakte SIMD-Knoten}\\{\tiny\itshape Achsen T4, T0}};
+  \node[so] (a3) at (8.1,0){\textbf{Masstree} {\scriptsize(P03)}\\{\tiny Trie $+$ B\textsuperscript{+}}\\[1pt]{\tiny Trie aus B\textsuperscript{+}-Bäumen, 8-Byte-Slices, B\textsuperscript{+}-Blattknoten}\\{\tiny\itshape Achsen T4, T11}};
+  \node[so] (a4) at (12.15,0){\textbf{CoCo-Trie} {\scriptsize(P04)}\\{\tiny Succinct}\\[1pt]{\tiny kompakt-kollabierter Trie, succinct kodierte Pfade}\\{\tiny\itshape Achsen T3, T4}};
   \node[so] (b1) at (0,-2.4){\textbf{START} {\scriptsize(P05)}\\{\tiny Trie}\\[1pt]{\tiny selbstoptimierender adaptiver Radix-Span}\\{\tiny\itshape Achsen T0, T4}};
-  \node[so] (b2) at (4.3,-2.4){\textbf{B\textsuperscript{2}-Tree} {\scriptsize(P06)}\\{\tiny Hybrid}\\[1pt]{\tiny B\textsuperscript{+} mit binären In-Knoten, cache-bewusst}\\{\tiny\itshape Achsen T4, T5}};
-  \node[so] (b3) at (8.6,-2.4){\textbf{Wormhole} {\scriptsize(P07)}\\{\tiny Hybrid}\\[1pt]{\tiny Trie $+$ Hash $+$ B\textsuperscript{+}-Leaf, $O(\log L)$ Punktsuche}\\{\tiny\itshape Achsen T0, T2}};
-  \node[so] (b4) at (12.9,-2.4){\textbf{LOUDS} {\scriptsize(P09)}\\{\tiny Succinct}\\[1pt]{\tiny unäre Grad-Sequenz, Bitmap-kodierter Trie}\\{\tiny\itshape Achsen T9, T5}};
+  \node[so] (b2) at (4.05,-2.4){\textbf{B\textsuperscript{2}-Tree} {\scriptsize(P06)}\\{\tiny Hybrid}\\[1pt]{\tiny B\textsuperscript{+} mit binären In-Knoten, cache-bewusst}\\{\tiny\itshape Achsen T4, T5}};
+  \node[so] (b3) at (8.1,-2.4){\textbf{Wormhole} {\scriptsize(P07)}\\{\tiny Hybrid}\\[1pt]{\tiny Trie $+$ Hash $+$ B\textsuperscript{+}-Leaf, $O(\log L)$ Punktsuche}\\{\tiny\itshape Achsen T0, T2}};
+  \node[so] (b4) at (12.15,-2.4){\textbf{LOUDS} {\scriptsize(P09)}\\{\tiny Succinct}\\[1pt]{\tiny unäre Grad-Sequenz, Bitmap-kodierter Trie}\\{\tiny\itshape Achsen T9, T5}};
   \node[so] (c1) at (0,-4.8){\textbf{SuRF} {\scriptsize(P10)}\\{\tiny Succinct}\\[1pt]{\tiny succinct Range-Filter über LOUDS}\\{\tiny\itshape Achsen T16, T9}};
-  \node[so] (c2) at (4.3,-4.8){\textbf{CSS-Tree} {\scriptsize(P11)}\\{\tiny cache-sensitiv}\\[1pt]{\tiny zeigerloser impliziter Baum, arithmetische Navigation}\\{\tiny\itshape Achsen T4, T5}};
-  \node[so] (c3) at (8.6,-4.8){\textbf{CSB\textsuperscript{+}-Tree} {\scriptsize(P12)}\\{\tiny cache-sensitiv}\\[1pt]{\tiny B\textsuperscript{+} mit \emph{einem} Kind-Gruppen-Zeiger}\\{\tiny\itshape Achsen T4, T5}};
-  \node[draw,rounded corners,fill=blue!8,minimum width=4.0cm,minimum height=2.0cm,text width=3.75cm,align=center,inner sep=2pt] (c4) at (12.9,-4.8){\textbf{SwissTable}\\{\tiny Hash (Gegenprobe)}\\[1pt]{\tiny SIMD-Control-Bytes; nicht-baumartig, im selben Achsen-System}\\{\tiny\itshape Achsen T0, T12}};
-\end{tikzpicture}} % chktex 31
+  \node[so] (c2) at (4.05,-4.8){\textbf{CSS-Tree} {\scriptsize(P11)}\\{\tiny cache-sensitiv}\\[1pt]{\tiny zeigerloser impliziter Baum, arithmetische Navigation}\\{\tiny\itshape Achsen T4, T5}};
+  \node[so] (c3) at (8.1,-4.8){\textbf{CSB\textsuperscript{+}-Tree} {\scriptsize(P12)}\\{\tiny cache-sensitiv}\\[1pt]{\tiny B\textsuperscript{+} mit \emph{einem} Kind-Gruppen-Zeiger}\\{\tiny\itshape Achsen T4, T5}};
+  \node[draw,rounded corners,fill=blue!8,minimum width=3.8cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt] (c4) at (12.15,-4.8){\textbf{SwissTable}\\{\tiny Hash (Gegenprobe)}\\[1pt]{\tiny SIMD-Control-Bytes; nicht-baumartig, im selben Achsen-System}\\{\tiny\itshape Achsen T0, T12}};
+\end{tikzpicture}
 \caption{Galerie der wichtigsten rekonstruierten Suchstrukturen: je Verfahren (mit Paper-ID) seine Herkunfts-Klasse, die charakteristische Struktur-Idee und die Achsen, an denen es seinen Hauptbeitrag leistet. Trie-, Hybrid-, succinct- und cache-sensitive Verfahren stehen neben einer nicht-baumartigen Hash-Gegenprobe (SwissTable) --- alle als Punkte im selben Achsen-Entwurfsraum. Die vollständige Achsen-Sezierung führt Tabelle~\ref{tab:axes-overview}.}\label{fig:sota-gallery}
 \end{figure}
 
@@ -439,7 +442,8 @@ Abschnitt~\ref{sec:overview}) und jeden Allokator hält ein Profil-XML die Achse
 \texttt{allocator}, \texttt{prefetch}, \texttt{telemetry}, \texttt{isa}, \texttt{layout},
 \texttt{reclamation}), eine
 Schlüssel-Wert-Signatur und einen optionalen \texttt{<expected\_workload>}-Tag fest, der die
-Mess-Heuristik überschreibt (Tabelle~\ref{tab:sota-profiles}). Drei der 33 Korpus-Arbeiten besitzen bewusst
+Mess-Heuristik überschreibt (Tabelle~\ref{tab:sota-profiles}); alle 30 SOTA-Profile und alle 10
+Allokator-Profile sind getaggt. Drei der 33 Korpus-Arbeiten besitzen bewusst
 kein eigenständiges Profil, sondern gehen nur seziert ein: das optimistische Lock-Coupling von
 ART~\cite{leis2016olc} als Nebenläufigkeits-Organ, die succinct LOUDS-Repräsentation~\cite{jacobson1989louds}
 als Speicher-Layout-Organ (u.\,a.\ in SuRF~\cite{zhang2018surf}) und das Profiling-Werkzeug
@@ -562,7 +566,8 @@ nicht-baumartige Suchverfahren --- etwa die Hash-Gegenprobe aus Abschnitt~\ref{s
 bleiben dieselbe Gattung mit eingeschränktem Profil, denn eine eigene Gattung entstünde erst, wenn sich
 der Basis-Achsen-Satz grundlegend unterschiede. Zweitens fasst eine anschauliche Metapher einen konkreten
 Algorithmus als \emph{Lebewesen} auf, dessen \emph{Organe} die Achsen sind --- und das Mess-System als
-seine medizinische Diagnostik (Abbildung~\ref{fig:anatomy-bridge}).
+seine medizinische Diagnostik (Abbildung~\ref{fig:anatomy-bridge}). Diese Metapher ist dem Hintergrund des
+Autors in der Biomedizinischen Technik verschuldet und soll die Analyse durch Bildhaftigkeit vereinfachen.
 
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
@@ -622,7 +627,9 @@ dessen konkrete Belegung zu kennen --- so stellt das Allokations-Organ ein gemei
 Allokations-Interface bereit, das Knoten-Layout, Wert-Ablage und Serialisierung für ihre
 Speicheranforderungen verwenden (Abbildung~\ref{fig:axis-organ}). Software-technisch ist dies die
 \emph{Feature-Interaktion} feature-orientierter Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}:
-eine Achse entspricht einem Feature, ein Lebewesen einer Feature-Komposition, die Anatomie der Verdrahtung
+eine Achse entspricht einem Feature, ein Lebewesen einer Feature-Komposition, ein Lebewesen-Typ (die
+Gattungs-Unterklasse, Abschnitt~\ref{sec:anatomy-levels}) einer statischen Feature-Set-Definition, eine
+Gattung einer (Such-)Algorithmus-Interface-Kategorie und die Anatomie der Verdrahtung
 zwischen den Features. Welche Achse welche nutzt, zeigt der Inter-Organ-Nutzungs-Graph
 (Abbildung~\ref{fig:usage}).
 \begin{figure}[htbp]\centering
@@ -776,7 +783,9 @@ kapselt jede der neunzehn Achsen als austauschbaren Algorithmus, \emph{Abstract 
 und \emph{Iterator} bilden und durchlaufen den Permutations-Baum, \emph{Adapter} bindet Fremd-Code hinter
 der stabilen Engine-Schnittstelle an, und \emph{Observer} sowie \emph{Decorator} (nicht-intrusive
 Mess-Hüllen) erheben die Messwerte, während ein \emph{Memento} (Copy-on-Write) den Zustand zwischen
-Warmlauf und Messung sichert~\cite{gamma1994patterns}. Den statischen Polymorphismus liefert das
+Warmlauf und Messung sichert~\cite{gamma1994patterns}; nicht verwendet werden hingegen \emph{Singleton},
+\emph{Flyweight} und \emph{Bridge}, während das \emph{Command}-Muster allein als Befehls-Kanal des
+Hybrid-Modus auftritt (Abschnitt~\ref{sec:heuristics-modes}). Den statischen Polymorphismus liefert das
 \emph{Curiously Recurring Template Pattern} (CRTP) samt \emph{Template-Method}-Concept-Prüfungen;
 concept-geprüftes \texttt{if~constexpr} (\texttt{resolve\_baustein}) wählt je Achse zwischen Prüfling- und
 Cache-Engine-Standard, und \emph{Policy-based Design} fasst die Komposition als Tupel von
