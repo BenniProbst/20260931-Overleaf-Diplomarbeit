@@ -5,7 +5,7 @@
 
 Building on the foundations from Chapter~\ref{ch:foundations}, this chapter first develops the problem
 statement and the requirements for a measurement system, and as their \emph{solution} the anatomy model
-as the solution concept and the measurement system built upon it --- demonstrated on the probe PRT-ART\@.
+and the measurement system built upon it --- demonstrated on the probe PRT-ART\@.
 
 \section{Problem Statement and Requirements for a Measurement System}\label{sec:task-concerns}
 The starting point is the finding of the foundations (Chapter~\ref{ch:foundations}): the performance of
@@ -78,7 +78,7 @@ axis assignment through its generation and measurement to the evaluation ---, an
 remains manageable only if these stations are developed as separate layers with fixed contracts; the
 layer model for this is developed in Section~\ref{sec:anatomy-layers}. Which of the catalogued instances
 the framework adopts and which it replaces as obsolete is developed dialectically by the following
-Section~\ref{sec:sota-instances} (thesis--antithesis--synthesis); the solution concept
+Section~\ref{sec:sota-instances}; the solution concept
 (Section~\ref{sec:anatomy-model}) and the measurement system built upon it
 (Section~\ref{sec:measurement-system}) are the solution that closes the double gap.
 
@@ -118,7 +118,7 @@ T2 Mapping (B) & linear 1:1 mapping; hash redirect, permutation index & --- & di
 T3 Path-Compression (A) & byte-wise (ART), Patricia (HOT), macro node (CoCo), multi-byte (START) & uncompressed raw path & compression granularity selectable \\
 T4 Node-Type (A) & ART Node4/16/48/256 & fixed node size & adaptive node class + storage delegation \\
 T5 Memory-Layout (B) & AoS-aligned, SoA, LOUDS bit-packed, CSS/CSB\textsuperscript{+}, AoSoA & --- & four layout dimensions permutable \\
-T6 Allocator (C) & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/Hazard & algorithm-hardwired allocator & allocation as shared interface organ (seven sub-families) \\
+T6 Allocator (C) & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/Hazard & algorithm-hardwired allocator & allocation as shared interface organ (seven sub-axes) \\
 T7 Prefetch (D) & distance estimator (ART), hardware (Wormhole), stride (Chen), adaptive & prefetch not isolated as an axis & path-oriented bundle prefetch (own) \\
 T8 Concurrency (E) & OLC (ART), RCU, hazard pointers; lock-/wait-free & coarse locking as the only assumption & pattern $\perp$ reclamation as two sub-axes \\
 T9 Serialization (F) & raw binary, varint (ART), succinct (LOUDS/FST), LZ77 & --- & encoding/compression selectable \\
@@ -162,7 +162,7 @@ contributions.
     T8 concurrency & CC1--CC2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
     T9 serialization & SR1--SR3 & P01,P09,P10; LZ77 \\
     \midrule
-    T10 telemetry & TM1--TM3 & P01,P02,P16,P26,P28; HdrHistogram (Gil Tene) \\
+    T10 telemetry & TM1--TM3 & P01,P02,P16,P17,P26,P28; HdrHistogram (Gil Tene) \\
     T11 value\_handle & VH1--VH3 & P01,P03,P07,P29 \\
     T12 isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (vendor-spec) \\
     T13 index\_organization & io1--io3 & Bayer/McCreight,Comer,Oracle \\
@@ -284,7 +284,7 @@ distinguishes read-only, read-write, upgradeable, and optimistic validation. The
 buffered~\cite{stonebraker1981os}, direct, and memory-mapped I/O~\cite{crotty2022mmap}. The axis
 thereby builds on the block-transfer thinking of the external-memory tradition
 (Section~\ref{sec:hardware-history}): for I/O-efficient data-structure engineering, TPIE provides a
-reference library from the same ESA-2002 line~\cite{arge2002tpie}; the textbook foundation is supplied by
+reference library of the external-memory line (ESA 2002)~\cite{arge2002tpie}; the textbook foundation is supplied by
 Mehlhorn and Sanders~\cite{mehlhorn2008toolbox}. The
 \emph{migration axis} (T15) instantiates hot/cold separation and multi-tier RAM$\to$NVM$\to$SSD migration, and the
 \emph{buffering axes} (T17/T18) range from the Disruptor ring buffer~\cite{thompson2011disruptor} through
@@ -294,6 +294,7 @@ queues~\cite{michael1996queue}. The \emph{index-organization axis} (T13) disting
 arrangement~\cite{bayer1972btree}, heap storage, and non-clustered secondary index~\cite{comer1979btree},
 the \emph{filter axis} (T16) the Bloom~\cite{bloom1970}, Cuckoo~\cite{fan2014cuckoo}, SuRF~\cite{zhang2018surf},
 and Xor filter~\cite{graf2020xor}.
+
 The \emph{loads}, too, appear as instances. The workloads used in the literature stem from \emph{several},
 mutually incomparable benchmark frameworks; Table~\ref{tab:wl-frameworks} maps them to the using
 publications. Most widespread is the Yahoo!\ Cloud Serving Benchmark (YCSB)~\cite{cooper2010ycsb}; besides
@@ -363,8 +364,8 @@ distributions --- and are each derived from concrete publications.
 
 The state of the art dissected here rests on a fixed corpus: the analysis draws on 33~deeply analysed
 search-algorithm publications (P01--P33) and a parallel allocator corpus of 23~works (A01--A23), whose
-axis assignment is each persisted as an XML profile in the \texttt{comdare-cache-engine}; the complete
-building-block and allocator matrices are given in the appendix. The axis-wise dissection of this corpus
+axis assignments are persisted as XML profiles in the \texttt{comdare-cache-engine} (three works enter
+only dissected, see below); the complete building-block and allocator matrices are given in the appendix. The axis-wise dissection of this corpus
 follows a web-verified provenance map over roughly 110~organ algorithms; every
 state-of-the-art algorithm thereby appears as a point in the
 Cartesian product of the axes (Figure~\ref{fig:design-space}). That the axis framework also carries
@@ -508,9 +509,11 @@ Masstree~\cite{mao2012masstree}, Wormhole~\cite{wu2019wormhole}, OLC-ART~\cite{l
 RCU~\cite{mckenney2001rcu}) conversely compete only where static structures fail; and prefetch- and
 hardware-near works (CSB\textsuperscript{+}~\cite{rao2000csb}, Chen~\cite{chen2001prefetch},
 Schmidt~\cite{schmidt2025hbm}) measure cache and TLB rather than algorithm logic, via node size and
-prefetch. Fourteen of the publications provide no index load profile of their own at all (survey, theory,
-and hardware works). Only when \emph{all} load profiles run against \emph{all} living-being binaries (and
-the container hulls) --- the workload as a dynamic axis (Chapter~\ref{ch:eval}) --- can the
+prefetch. Fourteen of the publications contribute no distinct load profile to the catalogue --- partly
+survey, theory, and hardware works without an index load profile of their own, partly works whose custom
+microbenchmarks are subsumed by profiles already catalogued. Only when \emph{all} load profiles run
+against \emph{all} living-being binaries (and the container hulls, Section~\ref{sec:anatomy-levels}) ---
+the workload as a dynamic axis (Chapter~\ref{ch:eval}) --- can the
 \enquote{winner only in its self-chosen home profile} be made visible and bias-reduced comparability be
 gained.
 
@@ -556,7 +559,8 @@ state-of-the-art design an explicit configuration. The decisive property is \emp
 exchangeability}: a new axis variant can be studied in isolation --- its effect measured per axis \emph{and}
 for the whole algorithm --- without reimplementing the others; this is precisely what solves the
 separability problem, since the contribution of each constituent becomes measurable in isolation while the
-other axes are held fixed. This decomposition rests on two observations. First, search algorithms share,
+other axes are held fixed. This decomposition rests on one observation and is carried by a metaphor.
+First, search algorithms share,
 in the large, the same \emph{tree anatomy} in different expressions --- from balanced search trees through
 tries and radix trees to custom constructs; even a sorted key--value list is, strictly speaking, a single
 leaf of a tree whose values point onward to data leaves. The tree structure is therefore universal across
@@ -684,8 +688,9 @@ store only via \texttt{requires}-gated observer hooks --- an axis \emph{can} use
 These organs are embedded in \emph{one} architecture --- a single, self-contained hierarchy without
 parallel trees. At its root stands the \texttt{ExecutionEngine} as the common, measurable abstraction over
 everything measurable; beneath it three levels can be distinguished: the \emph{genus} as the
-outward-visible algorithm interface (the \emph{probe dock}), beneath it the \emph{genus subclass} with a
-fixed axis set, beneath that the \emph{organs} themselves (Figure~\ref{fig:three-levels}).
+outward-visible algorithm interface (the \emph{probe dock}), beneath it the \emph{genus subclass} (also:
+\emph{tier subclass}) with a fixed axis set, beneath that the \emph{organs} themselves
+(Figure~\ref{fig:three-levels}).
 \enquote{Living being} and \texttt{SearchAlgorithm} denote the same entity --- metaphor and technical term
 ---; the anatomy is not a second model but the \emph{body} of this living being: the fixed composition of
 its nineteen axis-organs.
@@ -708,7 +713,10 @@ At the topmost level there stand exactly three genera. The \texttt{SearchAlgorit
 key-value-oriented probe dock and the focus of this thesis --- carries as its sole subclass the full
 nineteen-axis \enquote{mammal}; the \texttt{Container} genus (keyless storage) fans out into the
 subclasses Set, Sequence, Adapter, and View; the \texttt{Graph} genus carries its own, different organ set
-(Figure~\ref{fig:genera}). Non-tree-like methods thus require no genus of their own but occupy a
+(Figure~\ref{fig:genera}). The kingdom \enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}) shown there as
+the root is the anatomy-bearing view immediately beneath the measurable root \texttt{IExecutionEngine} of
+Figure~\ref{fig:three-levels}; the code separation of the two interfaces is deepened in
+Chapter~\ref{ch:impl}. Non-tree-like methods thus require no genus of their own but occupy a
 restricted axis subset of the same genus.
 \begin{figure}[htbp]\centering
 % No \resizebox: the drawing is only ~13.6cm wide; blowing it up to \linewidth (x1.18) would inflate
@@ -927,8 +935,8 @@ observer-based regime (runtime clocks and observer hulls; nine categories, among
 and memory footprint) and the counter-based PMC regime (hardware performance counters; seven categories,
 among them cache, dTLB and branch misses as well as IPC/CPI). The regime is a property of the system
 axis, not of the measured organ: the same organ axis can be illuminated by both regimes. The
-observer-based subset is already resolved by the apparatus; the PMC subset remains bound to hardware
-counter access.
+observer-based subset is already resolved by the apparatus, the PMC subset remains bound to hardware
+counter access (Section~\ref{sec:sota-instances}).
 
 Both axis systems are bound by a methodological principle, the \emph{honest-0 doctrine} (honest zero or
 honest emptiness): where a value cannot truly be collected --- an organ axis without a real runtime
@@ -970,12 +978,12 @@ performance counters --- is not yet collected in the current implementation stat
 \end{figure}
 
 Building on these measurement patterns, the measurement system separates four subsystems and tests in
-three stages that feed the three mandatory measurement series (not one-to-one,
-Table~\ref{tab:stage-series}); it reduces the permutation space deliberately.
+three stages that feed the three mandatory measurement series; it reduces the permutation space
+deliberately.
 Four formally separated subsystems with distinct responsibilities form the model: the
 \texttt{messung\_driver} (the evaluation orchestrator that runs the pipeline per mandatory measurement
 series A/B/C), the \texttt{CacheEngineBuilder} (an autonomous platform-measurement system that executes the
-seven-phase pipeline via its \texttt{ExperimentDriver}), the \texttt{CacheEngine} (the axis building-block library with the default
+seven-phase pipeline (Section~\ref{sec:impl-pipeline}) via its \texttt{ExperimentDriver}), the \texttt{CacheEngine} (the axis building-block library with the default
 implementations per axis), and the \texttt{probe} PRT-ART (which supplies some axis-organs itself and
 consumes cache-engine services for the rest). The \texttt{ExecutionEngine} is not a fifth subsystem but the
 shared measurable root (the \texttt{IExecutionEngine} interface) through which these four are connected:
@@ -1023,7 +1031,8 @@ The builder orchestrates a \emph{three-stage evaluation}: \textbf{Stage~1} (cach
 default variant per axis, \textbf{Stage~2} (probe only) replaces the overridden axes by the probe variants
 and otherwise keeps the defaults, and \textbf{Stage~3} (full join, non-redundant) combines default and all
 probe variants. Each stage can produce up to thousands of non-redundant permutation binaries that are
-loaded at runtime as ABI-stable C++23 modules; the present measurement run materializes a sparse, capped
+loaded at runtime across the C-stable module boundary as C++23 modules; the present measurement run
+materializes a sparse, capped
 subset of these (Figure~\ref{fig:three-stage}).
 
 \begin{figure}[!htbp]
@@ -1049,8 +1058,9 @@ subset of these (Figure~\ref{fig:three-stage}).
 These stages do \emph{not} map one-to-one onto the three mandatory measurement series but feed them: the
 default binaries of Stage~1 (including the reconstructed SOTA profiles) and the probe binaries of Stage~2
 \emph{jointly} form the comparison series~A\@; the non-redundant full join of Stage~3 is the basis of the
-variation series~B\@; and the regression series~C is bound to no single stage but runs build-spanning over
-successive states of the same configuration (Table~\ref{tab:stage-series}).
+variation series~B\@; and the merge/regression series~C (old vs.\ new) is bound to no single stage but
+runs build-spanning as an old-versus-new comparison --- over successive states of the same configuration
+as well as over concrete merge points (Table~\ref{tab:stage-series}).
 
 \begin{table}[!htbp]
   \centering
@@ -1062,7 +1072,7 @@ successive states of the same configuration (Table~\ref{tab:stage-series}).
     Stage~1 (cache-engine only) & default building blocks + SOTA profiles & A (baseline also for C) \\
     Stage~2 (probe only) & overridden axes = probe variants & A \\
     Stage~3 (full join) & default $\times$ probe, non-redundant & B \\
-    build-spanning & old vs.\ new of the same configuration & C \\
+    build-spanning & old vs.\ new (regression and merge points) & C \\
     \bottomrule
   \end{tabular}
 
@@ -1076,11 +1086,13 @@ The three measurement series --- all executed by the \texttt{messung\_driver} vi
 \texttt{ExperimentDriver} library, configured either as three fixed series or via an external
 \texttt{messreihen.xml} --- are thus: \emph{series~A} (PRT-ART vs.\ state of the art) with the
 modes A\_defined (fast verification against the 8 Rank-1 profiles) and A\_full (all 30 SOTA profiles;
-the standard, per the completeness directive); \emph{series~B} (systematic
+the standard, since only the full run delivers the bias-reduced measurement of all load profiles against
+all methods, Section~\ref{sec:task-concerns}); \emph{series~B} (systematic
 variation of the axis decisions all else held equal, to isolate the contribution of each axis); and
-\emph{series~C} (concrete merge points between PRT-ART building blocks and cache-engine permutations, e.g.\
-the PRT-ART OLC with tcmalloc and the ART page, the 4+1+2 pool with the HOT page, the path prefetch with
-the B\textsuperscript{2}-tree page, or the multi-level layout with the Wormhole page). Each series is collected in three granularities:
+\emph{series~C} (merge/regression old vs.\ new: concrete merge points between PRT-ART building blocks and
+cache-engine permutations --- e.g.\ the PRT-ART OLC with tcmalloc and the ART page, the 4+1+2 pool with
+the HOT page, the path prefetch with the B\textsuperscript{2}-tree page, or the multi-level layout with
+the Wormhole page ---, run build-spanning as an old-versus-new comparison). Each series is collected in three granularities:
 \emph{micro-benchmarking} compares each design constituent in isolation over the shared category interface,
 \emph{macro-benchmarking} measures the individual \texttt{std::map} interface operations (insertion,
 point and range lookup, update, deletion) against example loads, and \emph{overall
@@ -1098,9 +1110,8 @@ sixty-four sub-axes it grows from around 5.5~billion to over $10^{14}$ permutati
 cluster, observing the axis compatibility reported by the platform probe.
 
 \section{PRT-ART as Demonstrator}\label{sec:prtart-demo}
-PRT-ART is the probe that shows the system holds: it supplies some organs itself and falls back on the default
-building blocks for the rest.
-PRT-ART is a \emph{probe}: an abstract living being that supplies some axis-organs itself and falls back
+PRT-ART is the \emph{probe} that shows the system holds: an abstract living being that supplies some
+axis-organs itself and falls back
 via a compile-time fallback (\texttt{resolve\_baustein.hpp}) on the cache-engine default building blocks
 where it does not override an axis; the hybrid \texttt{PrtArtSearchEngine<Ts\ldots>} API remains
 unaffected, and the runtime binding occurs via the execution-engine adapter, not via a separate
@@ -1109,7 +1120,9 @@ as well as the organs path compression (redirect), value handle (ChainRef slot),
 pattern, and telemetry --- path-oriented (bundle) prefetch, optimistic lock coupling with reserved value
 blocks, and the hypothesis metrics H1/H2/H3 ---; its further own building blocks, the 4+1+2 pool allocator
 (free-list sub-axis) and the multi-level layout, live in the probe repo and currently run via the
-cache-engine default in the measurement path (binding as follow-up step~E6); for the remaining axes it
+cache-engine default in the measurement path (binding as follow-up step~E6 of the internal
+implementation planning; the identifier is independent of the interface layers E4--E0); for the
+remaining axes it
 reuses existing SOTA building blocks via the permutation configuration. Thus the probe shows that the measurement system holds: a novel
 living being arises from a few of its own organs plus the default toolkit (Figure~\ref{fig:prtart-demo}) and is measurable over the same
 probe dock as every reconstructed SOTA method.
@@ -1150,7 +1163,7 @@ the measurement-curve type system together with the filter chain and the measure
 feed these modes with data. Throughout, the accomplished and the planned are expressly kept apart.
 
 \subsection{Heuristic Loop and Learned Load Profiles}\label{sec:heuristics-loop}
-From the measurement series one can derive --- as an outlook mechanism --- the best axis composition per load and
+From the measurement series one can derive the best axis composition per load and
 data-type profile and store it as a reusable profile.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,align=center,
@@ -1164,8 +1177,11 @@ data-type profile and store it as a reusable profile.
 \end{tikzpicture}
 \caption{The heuristic loop: from the measurement series the best axis composition per load profile is learned, stored as an XML load profile, and fed back via the workload filter into the next measurement.}\label{fig:heuristic-loop}
 \end{figure}
-\emph{This is an outlook mechanism, not a function implemented within this thesis.} Beyond mere ranking, a
-\emph{heuristic extraction} is envisioned as a follow-up phase after \textbf{Persist} that automatically
+\emph{The full loop is an outlook mechanism; what is implemented within this thesis is only a first
+increment of the automatic selection and binary delivery (\texttt{best\_binary\_selector},
+Section~\ref{sec:contributions}).} Beyond mere ranking, a
+\emph{heuristic extraction} is envisioned as a follow-up phase after \textbf{Persist} --- the last phase
+of the seven-phase pipeline (Section~\ref{sec:impl-pipeline}) --- that automatically
 derives from the collected measurements which axis configuration is best per workload and dataset. The
 intended mechanism is an ML classification in three steps: first, features are extracted from the
 measurement CSV per permutation

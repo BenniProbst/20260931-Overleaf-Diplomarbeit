@@ -5,7 +5,7 @@
 
 Auf den Grundlagen aus Kapitel~\ref{ch:foundations} aufbauend entwickelt dieses Kapitel zunächst die
 Problemstellung und die Anforderungen an ein Mess-System und als deren \emph{Lösung} das Anatomie-Modell
-als Lösungskonzept und das darauf aufbauende Mess-System --- demonstriert am Prüfling PRT-ART\@.
+und das darauf aufbauende Mess-System --- demonstriert am Prüfling PRT-ART\@.
 
 \section{Problemstellung und Anforderungen an ein Mess-System}\label{sec:task-concerns}
 Den Ausgangspunkt liefert der Befund der Grundlagen (Kapitel~\ref{ch:foundations}): Über die Leistung
@@ -79,7 +79,7 @@ Achsen-Belegung über ihre Erzeugung und Vermessung bis zur Auswertung ---, und 
 bleibt nur beherrschbar, wenn diese Stationen als getrennte Schichten mit festen Verträgen entwickelt
 werden; das Schichtenmodell dazu entwickelt Abschnitt~\ref{sec:anatomy-layers}. Welche der
 katalogisierten Instanzen das Framework übernimmt und welche es als überholt ersetzt, entwickelt der
-folgende Abschnitt~\ref{sec:sota-instances} dialektisch (These--Antithese--Synthese); das Lösungskonzept
+folgende Abschnitt~\ref{sec:sota-instances} dialektisch; das Lösungskonzept
 (Abschnitt~\ref{sec:anatomy-model}) und das darauf aufbauende Mess-System
 (Abschnitt~\ref{sec:measurement-system}) sind die Lösung, die die doppelte Lücke schließt.
 
@@ -119,7 +119,7 @@ T2 Mapping (B) & lineare 1:1-Abbildung; Hash-Redirect, Permutations-Index & --- 
 T3 Path-Compression (A) & byte-weise (ART), Patricia (HOT), Macro-Node (CoCo), Multi-Byte (START) & unkomprimierter Rohpfad & Kompressions-Granularität wählbar \\
 T4 Node-Type (A) & ART Node4/16/48/256 & feste Knotengröße & adaptive Knotenklasse + Storage-Delegation \\
 T5 Memory-Layout (B) & AoS-aligned, SoA, LOUDS-bitgepackt, CSS/CSB\textsuperscript{+}, AoSoA & --- & vier Layout-Dimensionen permutierbar \\
-T6 Allocator (C) & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/Hazard & algorithmus-fest verdrahteter Allokator & Allokation als gemeinsames Interface-Organ (sieben Sub-Familien) \\
+T6 Allocator (C) & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/Hazard & algorithmus-fest verdrahteter Allokator & Allokation als gemeinsames Interface-Organ (sieben Sub-Achsen) \\
 T7 Prefetch (D) & Distance-Estimator (ART), Hardware (Wormhole), Stride (Chen), adaptiv & Prefetch nicht als Achse isoliert & Path-Oriented Bundle-Prefetch (eigen) \\
 T8 Concurrency (E) & OLC (ART), RCU, Hazard-Pointer; Lock-/Wait-Free & grobes Sperren als einzige Annahme & Pattern $\perp$ Reclamation als zwei Sub-Achsen \\
 T9 Serialization (F) & Raw-Binary, Varint (ART), succinct (LOUDS/FST), LZ77 & --- & Kodierung/Kompression wählbar \\
@@ -163,7 +163,7 @@ in ihren Organ-Beiträgen.
     T8 concurrency & CC1--CC2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
     T9 serialization & SR1--SR3 & P01,P09,P10; LZ77 \\
     \midrule
-    T10 telemetry & TM1--TM3 & P01,P02,P16,P26,P28; HdrHistogram (Gil Tene) \\
+    T10 telemetry & TM1--TM3 & P01,P02,P16,P17,P26,P28; HdrHistogram (Gil Tene) \\
     T11 value\_handle & VH1--VH3 & P01,P03,P07,P29 \\
     T12 isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (Vendor-Spec) \\
     T13 index\_organization & io1--io3 & Bayer/McCreight,Comer,Oracle \\
@@ -248,7 +248,7 @@ Prefetch-Hardware, Atomic-Familie) und die \emph{Scheduling-Strategie} (Worker-P
 SIMD-Worker-Limit --- hardwarebedingt typisch zwei von $N$ Kernen ---, heterogener P-/E-Kern-Dispatch,
 Co-Routinen und Batch-Granularität) ---, die Tabelle~\ref{tab:hw-sched}
 je Paper zuordnet. Die \emph{Telemetrie-Achse} (T10) instanziiert Density-Tracker~\cite{leis2013art},
-Insert-Zähler~\cite{binna2018hot}, HdrHistogramm, Pfad-Lese-Zähler~\cite{zhang2024pathprefix} und die
+Insert-Zähler~\cite{binna2018hot}, HdrHistogram, Pfad-Lese-Zähler~\cite{zhang2024pathprefix} und die
 Probability-Hints (P16/P17 Bender~\cite{bender2000cobtree,bender2005coboblivious}); die
 kohärenz-schonenden Leaf-Only-Varianten gehen auf Kuehn zurück (P28~\cite{kuehn2023bplustree};
 persönliche Kommunikation 2023, über den publizierten DaMoN-2023-Stand zum cache- und
@@ -287,7 +287,7 @@ unterscheidet read-only, read-write, upgradeable und optimistische Validierung. 
 gepufferte~\cite{stonebraker1981os}, direkte und memory-mapped Ein-/Ausgabe~\cite{crotty2022mmap}. Die Achse
 setzt dabei auf dem Blocktransfer-Denken der External-Memory-Tradition auf
 (Abschnitt~\ref{sec:hardware-history}): Für das I/O-effiziente Datenstruktur-Engineering stellt TPIE eine
-Referenz-Bibliothek derselben ESA-2002-Linie bereit~\cite{arge2002tpie}; die Lehrbuch-Grundlage liefern
+Referenz-Bibliothek der External-Memory-Linie bereit (ESA 2002)~\cite{arge2002tpie}; die Lehrbuch-Grundlage liefern
 Mehlhorn und Sanders~\cite{mehlhorn2008toolbox}. Die
 \emph{Migrations-Achse} (T15) instanziiert Hot/Cold-Trennung und mehrstufige RAM$\to$NVM$\to$SSD-Migration, und die
 \emph{Pufferungs-Achsen} (T17/T18) reichen vom Disruptor-Ringpuffer~\cite{thompson2011disruptor} über die
@@ -297,6 +297,7 @@ MPMC-Queues~\cite{michael1996queue}. Die \emph{Index-Organisations-Achse} (T13) 
 Anordnung~\cite{bayer1972btree}, Heap-Ablage und nicht-geclusterten Sekundärindex~\cite{comer1979btree},
 die \emph{Filter-Achse} (T16) den Bloom-~\cite{bloom1970}, Cuckoo-~\cite{fan2014cuckoo},
 SuRF-~\cite{zhang2018surf} und Xor-Filter~\cite{graf2020xor}.
+
 Auch die \emph{Lasten} erscheinen als Instanzen. Die in der Literatur verwendeten Workloads entstammen
 \emph{mehreren}, untereinander nicht vergleichbaren Benchmark-Frameworks; Tabelle~\ref{tab:wl-frameworks}
 ordnet sie den nutzenden Veröffentlichungen zu. Am verbreitetsten ist der Yahoo!\ Cloud Serving Benchmark
@@ -368,9 +369,9 @@ abgeleitet.
 
 Der hier sezierte Stand der Technik beruht auf einem festen Korpus: Die Analyse stützt sich
 auf 33~tiefenanalysierte Suchalgorithmus-Veröffentlichungen (P01--P33) und einen parallelen
-Allokator-Korpus aus 23~Arbeiten (A01--A23), deren Achsen-Belegung jeweils als XML-Profil in der
-\texttt{comdare-cache-engine} persistiert ist; die vollständigen Bausteine- und Allokator-Matrizen führt
-der Anhang. Die achsenweise Sezierung dieses Korpus folgt einer web-verifizierten Provenienz-Map über
+Allokator-Korpus aus 23~Arbeiten (A01--A23), deren Achsen-Belegungen als XML-Profile in der
+\texttt{comdare-cache-engine} persistiert sind (drei Arbeiten gehen nur seziert ein, siehe unten); die
+vollständigen Bausteine- und Allokator-Matrizen führt der Anhang. Die achsenweise Sezierung dieses Korpus folgt einer web-verifizierten Provenienz-Map über
 rund 110~Organ-Algorithmen; jeder
 Stand-der-Technik-Algorithmus erscheint so als ein Punkt im kartesischen Produkt der Achsen
 (Abbildung~\ref{fig:design-space}). Dass das Achsen-Gerüst auch nicht-baumartige Verfahren trägt, belegt
@@ -515,9 +516,11 @@ Masstree~\cite{mao2012masstree}, Wormhole~\cite{wu2019wormhole}, OLC-ART~\cite{l
 RCU~\cite{mckenney2001rcu}) treten umgekehrt nur dort an, wo statische Strukturen versagen; und prefetch-
 bzw.\ hardware-nahe Arbeiten (CSB\textsuperscript{+}~\cite{rao2000csb}, Chen~\cite{chen2001prefetch},
 Schmidt~\cite{schmidt2025hbm}) vermessen über Knotengröße und Prefetch eher Cache und TLB als die
-Algorithmus-Logik. Vierzehn der Veröffentlichungen liefern überhaupt kein eigenes Index-Lastprofil
-(Survey-, Theorie- und Hardware-Arbeiten). Erst wenn \emph{alle} Lastprofile gegen \emph{alle}
-Lebewesen-Binaries (und die Container-Hüllen) laufen --- der Workload als dynamische Achse
+Algorithmus-Logik. Vierzehn der Veröffentlichungen steuern kein distinktes Lastprofil zum Katalog bei ---
+teils Survey-, Theorie- und Hardware-Arbeiten ohne eigenes Index-Lastprofil, teils Arbeiten, deren
+Custom-Microbenchmarks in bereits katalogisierten Profilen aufgehen. Erst wenn \emph{alle} Lastprofile
+gegen \emph{alle} Lebewesen-Binaries (und die Container-Hüllen, Abschnitt~\ref{sec:anatomy-levels})
+laufen --- der Workload als dynamische Achse
 (Kapitel~\ref{ch:eval}) ---, lässt sich der \enquote{Sieger nur im selbstgewählten Heimprofil} sichtbar
 machen und bias-reduzierte Vergleichbarkeit gewinnen.
 
@@ -528,7 +531,7 @@ Mehrzahl der Arbeiten P01--P28 berichtet solche Zähler ---; \emph{Profiler}
 wie OTF2/VAMPIR~\cite{berthold2023vampir} und VTune~\cite{reinders2005vtune} erheben trace-basierte
 Laufzeitprofile, \emph{Simulatoren} wie gem5~\cite{binkert2011gem5} liefern hardware-genaue Schätzungen, wo
 reale Zähler fehlen (so P25 Mahling~\cite{mahling2025hotpath}, P27
-Zhang~\cite{zhang2025hierarchical}), und das \emph{HdrHistogramm}~\cite{tene_hdrhistogram} erhebt die Latenz-Perzentile
+Zhang~\cite{zhang2025hierarchical}), und das \emph{HdrHistogram}~\cite{tene_hdrhistogram} erhebt die Latenz-Perzentile
 (p50/p95/p99). Auf der Erhebung baut die Auswertung auf: Statt arithmetischer Mittel werden Median und
 Perzentile berichtet, Unterschiede mit dem verteilungsfreien \emph{Mann-Whitney-U-Test}~\cite{mann1947utest}
 (mit Holm-Korrektur der Familienfehlerrate~\cite{holm1979sequential}) auf Signifikanz geprüft und über das Effektmaß
@@ -541,7 +544,7 @@ heterogener Speicher. Aus all diesen Technologien ergibt sich der Satz der Mess-
 Cache-Line-Auslastung, Cache-Misses (L1/L2/L3), dTLB-Misses, Speicher-Fußabdruck, Branch-Misses,
 IPC/CPI, Latenz (Mittel und Perzentile p50--p999), Durchsatz, Energie und Fill-Buffer-Auslastung ---,
 deren zeit- und observer-basierte Teilmenge die eigene Apparatur bereits auflöst (Wall-Clock,
-HdrHistogramm, Per-Achsen-Observer, die Statistik-Triade aus Median/Perzentilen, Signifikanztest und
+HdrHistogram, Per-Achsen-Observer, die Statistik-Triade aus Median/Perzentilen, Signifikanztest und
 Effektmaß, die Zwei-Phasen-Operationsschleife und das Konformitäts-Gatter gegen \texttt{std::map}),
 während die zählerbasierten PMC-Kategorien an Hardware-Zähler-Zugriff gebunden bleiben; die
 vollständige Mess-Architektur entwickeln das Mess-System (Abschnitt~\ref{sec:measurement-system})
@@ -560,7 +563,8 @@ ein Punkt im kartesischen Produkt aller Achsen, ein Stand-der-Technik-Entwurf ei
 Konfiguration. Entscheidend ist die \emph{modulare Austauschbarkeit}: Eine neue Achsen-Variante lässt sich
 isoliert untersuchen --- ihr Effekt je Achse \emph{und} für den ganzen Algorithmus messen ---, ohne die
 übrigen neu zu implementieren; genau das löst das Trennbarkeits-Problem, da der Beitrag jedes Bestandteils
-bei sonst fixierten Achsen isoliert messbar wird. Diese Zerlegung beruht auf zwei Beobachtungen. Erstens
+bei sonst fixierten Achsen isoliert messbar wird. Diese Zerlegung beruht auf einer Beobachtung und wird
+von einer Metapher getragen. Erstens
 teilen Suchalgorithmen im großen Bild dieselbe \emph{Baum-Anatomie} in unterschiedlicher Ausprägung ---
 von ausgewogenen Suchbäumen über Tries und Radix-Bäume bis zu eigenentwickelten Konstrukten; selbst eine
 sortierte Schlüssel-Wert-Liste ist streng genommen ein einzelnes Blatt eines Baumes, dessen Werte über
@@ -571,7 +575,7 @@ bleiben dieselbe Gattung mit eingeschränktem Profil, denn eine eigene Gattung e
 der Basis-Achsen-Satz grundlegend unterschiede. Zweitens fasst eine anschauliche Metapher einen konkreten
 Algorithmus als \emph{Lebewesen} auf, dessen \emph{Organe} die Achsen sind --- und das Mess-System als
 seine medizinische Diagnostik (Abbildung~\ref{fig:anatomy-bridge}). Diese Metapher ist dem Hintergrund des
-Autors in der Biomedizinischen Technik verschuldet und soll die Analyse durch Bildhaftigkeit vereinfachen.
+Autors in der Biomedizinischen Technik geschuldet und soll die Analyse durch Bildhaftigkeit vereinfachen.
 
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
@@ -693,7 +697,7 @@ Diese Organe sind in \emph{eine} Architektur eingebettet --- eine einzige, in si
 ohne Parallel-Bäume. An ihrer Wurzel steht die \texttt{ExecutionEngine} als gemeinsame, ausmessbare
 Abstraktion über allem Messbaren; darunter lassen sich drei Ebenen unterscheiden: die \emph{Gattung} als
 nach außen sichtbares Algorithmus-Interface (das \emph{Prüf-Dock}), darunter die
-\emph{Gattungs-Unterklasse} mit festem Achsensatz, darunter die \emph{Organe} selbst
+\emph{Gattungs-Unterklasse} (auch: \emph{Tier-Unterklasse}) mit festem Achsensatz, darunter die \emph{Organe} selbst
 (Abbildung~\ref{fig:three-levels})\@. \enquote{Lebewesen} und \texttt{SearchAlgorithm} bezeichnen denselben
 Gegenstand --- Metapher und technischer Begriff ---; die Anatomie ist kein zweites Modell, sondern der
 \emph{Körper} dieses Lebewesens: die feste Komposition seiner neunzehn Achsen-Organe.
@@ -716,7 +720,10 @@ Auf der obersten Ebene stehen genau drei Gattungen. Die \texttt{SearchAlgorithm}
 schlüssel-wert-orientierte Prüf-Dock und der Fokus dieser Arbeit --- trägt als einzige Unterklasse das
 volle Neunzehn-Achsen-\enquote{Säugetier}; die \texttt{Container}-Gattung (schlüsselloser Speicher)
 fächert in die Unterklassen Set, Sequence, Adapter und View auf; die \texttt{Graph}-Gattung trägt einen
-eigenen, andersartigen Organsatz (Abbildung~\ref{fig:genera}). Nicht-baumartige Verfahren erfordern so
+eigenen, andersartigen Organsatz (Abbildung~\ref{fig:genera}). Das dort als Wurzel gezeigte Reich
+\enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}) ist die anatomie-tragende Sicht unmittelbar unterhalb
+der messbaren Wurzel \texttt{IExecutionEngine} aus Abbildung~\ref{fig:three-levels}; die Code-Trennung
+der beiden Interfaces vertieft Kapitel~\ref{ch:impl}. Nicht-baumartige Verfahren erfordern so
 keine eigene Gattung, sondern belegen ein eingeschränktes Achsen-Subset derselben Gattung.
 \begin{figure}[htbp]\centering
 % Kein \resizebox: die Zeichnung ist ~13.6cm schmal; ein Aufblasen auf \linewidth (x1.18) vergroesserte
@@ -942,8 +949,8 @@ observer-basierte Regime (Laufzeit-Uhren und Beobachter-Hüllen; neun Kategorien
 Durchsatz und Speicher-Fußabdruck) und das zählerbasierte PMC-Regime (Hardware-Performance-Zähler;
 sieben Kategorien, darunter Cache-, dTLB- und Branch-Misses sowie IPC/CPI). Das Regime ist ein Merkmal
 der System-Achse, nicht des gemessenen Organs: Dieselbe Organ-Achse kann von beiden Regimen beleuchtet
-werden. Die observer-basierte Teilmenge löst die Apparatur bereits auf; die PMC-Teilmenge bleibt an
-Hardware-Zähler-Zugriff gebunden.
+werden. Die observer-basierte Teilmenge löst die Apparatur bereits auf, die PMC-Teilmenge bleibt an
+Hardware-Zähler-Zugriff gebunden (Abschnitt~\ref{sec:sota-instances}).
 
 Beide Achsen-Systeme bindet ein methodisches Prinzip, die \emph{honest-0-Doktrin} (ehrliche Null bzw.\
 ehrliche Leere): Wo ein Wert nicht wirklich erhoben werden kann --- eine Organ-Achse ohne echten
@@ -985,13 +992,12 @@ und Index-Ebene über Hardware-Performance-Zähler --- ist im aktuellen Implemen
 erhoben (gestrichelt).}\label{fig:measurement-triangle}
 \end{figure}
 
-Auf diesen Mess-Mustern aufbauend trennt das Mess-System vier Subsysteme und prüft in drei Stufen, die die drei Pflicht-Messreihen speisen
-(nicht eins-zu-eins, Tabelle~\ref{tab:stage-series});
-den Permutationsraum reduziert es gezielt.
+Auf diesen Mess-Mustern aufbauend trennt das Mess-System vier Subsysteme und prüft in drei Stufen, die
+die drei Pflicht-Messreihen speisen; den Permutationsraum reduziert es gezielt.
 Vier formal getrennte Subsysteme mit unterschiedlichen Verantwortlichkeiten bilden das Modell: der
 \texttt{messung\_driver} (der Auswertungs-Orchestrator, der je Pflicht-Messreihe A/B/C die Pipeline
 durchläuft), der \texttt{CacheEngineBuilder} (ein autonomes Plattform-Ausmess-System, das die
-Sieben-Phasen-Pipeline über seinen \texttt{ExperimentDriver} ausführt), die \texttt{CacheEngine} (die Achsen-Bausteine-Bibliothek mit den
+Sieben-Phasen-Pipeline (Abschnitt~\ref{sec:impl-pipeline}) über seinen \texttt{ExperimentDriver} ausführt), die \texttt{CacheEngine} (die Achsen-Bausteine-Bibliothek mit den
 Standard-Implementierungen je Achse) und der \texttt{Prüfling} PRT-ART (der einige Achsen-Organe selbst
 stellt und für die übrigen Cache-Engine-Dienste konsumiert). Die \texttt{ExecutionEngine} ist dabei kein
 fünftes Subsystem, sondern die gemeinsame messbare Wurzel (das \texttt{IExecutionEngine}-Interface), über
@@ -1040,7 +1046,8 @@ Der Builder orchestriert eine \emph{Drei-Stufen-Prüfung}: \textbf{Stufe~1} (nur
 Standard-Variante je Achse, \textbf{Stufe~2} (nur Prüfling) ersetzt die überschriebenen Achsen durch die
 Prüfling-Varianten und behält sonst die Standards, und \textbf{Stufe~3} (Full Join, nicht-redundant)
 kombiniert Standard- und alle Prüfling-Varianten. Jede Stufe kann bis zu tausende nicht-redundante
-Permutations-Binaries erzeugen, die zur Laufzeit als ABI-stabile C++23-Module geladen werden; der
+Permutations-Binaries erzeugen, die zur Laufzeit über die C-stabile Modulgrenze als C++23-Module geladen
+werden; der
 vorliegende Mess-Lauf materialisiert davon eine spärliche, gedeckelte Teilmenge
 (Abbildung~\ref{fig:three-stage}).
 
@@ -1067,8 +1074,9 @@ vorliegende Mess-Lauf materialisiert davon eine spärliche, gedeckelte Teilmenge
 Diese Stufen bilden \emph{nicht} eins-zu-eins auf die drei Pflicht-Messreihen ab, sondern speisen sie: Die
 Standard-Binaries der Stufe~1 (samt der rekonstruierten SOTA-Profile) und die Prüfling-Binaries der
 Stufe~2 bilden \emph{gemeinsam} die Vergleichs-Messreihe~A\@; der nicht-redundante Full Join der Stufe~3 ist
-die Grundlage der Variations-Messreihe~B\@; und die Regressions-Messreihe~C ist an keine einzelne Stufe
-gebunden, sondern läuft build-übergreifend über aufeinanderfolgende Stände derselben Konfiguration
+die Grundlage der Variations-Messreihe~B\@; und die Merge-/Regressions-Messreihe~C (alt gegen neu) ist an
+keine einzelne Stufe gebunden, sondern läuft build-übergreifend als alt-gegen-neu-Vergleich --- über
+aufeinanderfolgende Stände derselben Konfiguration ebenso wie über konkrete Merge-Punkte
 (Tabelle~\ref{tab:stage-series}).
 
 \begin{table}[!htbp]
@@ -1081,7 +1089,7 @@ gebunden, sondern läuft build-übergreifend über aufeinanderfolgende Stände d
     Stufe~1 (nur Cache-Engine) & Standard-Bausteine + SOTA-Profile & A (Baseline auch für C) \\
     Stufe~2 (nur Prüfling) & überschriebene Achsen = Prüfling-Varianten & A \\
     Stufe~3 (Full Join) & Standard $\times$ Prüfling, nicht-redundant & B \\
-    build-übergreifend & alt gegen neu derselben Konfiguration & C \\
+    build-übergreifend & alt gegen neu (Regression und Merge-Punkte) & C \\
     \bottomrule
   \end{tabular}
 
@@ -1094,17 +1102,19 @@ gebunden, sondern läuft build-übergreifend über aufeinanderfolgende Stände d
 Die drei Messreihen --- alle vom \texttt{messung\_driver} über die \texttt{ExperimentDriver}-Bibliothek
 ausgeführt, konfiguriert entweder als drei feste Reihen oder über eine externe
 \texttt{messreihen.xml} --- sind damit: \emph{Reihe~A} (PRT-ART vs.\ Stand der Technik) mit den Modi A\_defined
-(schnelle Verifikation gegen die 8 Rang-1-Profile) und A\_full (alle 30 SOTA-Profile; Standard gemäß der
-Vollständigkeits-Direktive); \emph{Reihe~B} (systematische Variation der
+(schnelle Verifikation gegen die 8 Rang-1-Profile) und A\_full (alle 30 SOTA-Profile; der Standard, da erst der
+Voll-Lauf die bias-reduzierte Vermessung aller Lastprofile gegen alle Verfahren einlöst,
+Abschnitt~\ref{sec:task-concerns}); \emph{Reihe~B} (systematische Variation der
 Achsen-Entscheidungen unter sonst gleichen Bedingungen, um den Beitrag jeder Achse zu isolieren); und
-\emph{Reihe~C} (konkrete Merge-Punkte zwischen PRT-ART-Bausteinen und Cache-Engine-Permutationen, etwa
-das PRT-ART-OLC mit tcmalloc und ART-Page, der 4+1+2-Pool mit der HOT-Page, das Path-Prefetch mit der
-B\textsuperscript{2}-Baum-Page oder das MultiLevel-Layout mit der Wormhole-Page). Jede Reihe wird in drei Granularitäten erhoben: \emph{Micro-Benchmarking}
+\emph{Reihe~C} (Merge/Regression alt gegen neu: konkrete Merge-Punkte zwischen PRT-ART-Bausteinen und
+Cache-Engine-Permutationen --- etwa das PRT-ART-OLC mit tcmalloc und ART-Page, der 4+1+2-Pool mit der
+HOT-Page, das Path-Prefetch mit der B\textsuperscript{2}-Baum-Page oder das MultiLevel-Layout mit der
+Wormhole-Page ---, build-übergreifend als alt-gegen-neu-Vergleich gefahren). Jede Reihe wird in drei Granularitäten erhoben: \emph{Mikro-Benchmarking}
 vergleicht jeden Entwurfsbestandteil isoliert über das gemeinsame Kategorie-Interface,
 \emph{Makro-Benchmarking} misst die einzelnen \texttt{std::map}-Interface-Operationen (Einfügen,
 Punkt- und Bereichssuche, Aktualisieren, Löschen) gegen Beispiel-Lasten, und \emph{Gesamt-Benchmarking}
 fährt die YCSB-Lastprofile über jede Rekombination. Genau diese drei-granulare Methodik ist die Antwort auf
-das Trennbarkeits-Problem: Indem jeder Bestandteil zunächst isoliert (Micro) vermessen wird, bevor er im
+das Trennbarkeits-Problem: Indem jeder Bestandteil zunächst isoliert (Mikro) vermessen wird, bevor er im
 Operations- und Gesamt-Kontext erscheint, werden die Beiträge getrennt und isoliert messbar, statt im
 Gesamtdurchsatz vermengt zu bleiben.
 
@@ -1118,9 +1128,8 @@ einfließen), und der \texttt{Full}- bzw.\ \texttt{Full-Sampled}-Modus (etwa jed
 läuft nur auf dem ZIH-Cluster unter Beachtung der vom Plattform-Probe gemeldeten Achsen-Kompatibilität.
 
 \section{PRT-ART als Demonstrator}\label{sec:prtart-demo}
-PRT-ART ist der Prüfling, der zeigt, dass das System trägt: er stellt einige Organe selbst und greift für die
-übrigen auf die Standard-Bausteine zurück.
-PRT-ART ist ein \emph{Prüfling}: ein abstraktes Lebewesen, das einige Achsen-Organe selbst stellt und für
+PRT-ART ist der \emph{Prüfling}, der zeigt, dass das System trägt: ein abstraktes Lebewesen, das einige
+Achsen-Organe selbst stellt und für
 die übrigen über einen Compile-Time-Fallback (\texttt{resolve\_baustein.hpp}) auf die
 Cache-Engine-Standardbausteine zurückgreift, wo es eine Achse nicht überschreibt; die hybride
 \texttt{PrtArtSearchEngine<Ts\ldots>}-API bleibt davon unberührt, und die Laufzeit-Anbindung erfolgt über
@@ -1130,7 +1139,8 @@ Prefetch, Concurrency-Pattern und Telemetry --- Path-Oriented-(Bundle-)Prefetch,
 Lock-Coupling mit reservierten Wert-Blöcken sowie die Hypothesen-Metriken H1/H2/H3 ---; seine weiteren
 eigenen Bausteine, der 4+1+2-Pool-Allokator (Free-List-Sub-Achse) und das MultiLevel-Layout, liegen im
 Prüfling-Repo und laufen im Mess-Pfad derzeit über den Cache-Engine-Standard (Anbindung als
-Folgeschritt~E6); für die übrigen Achsen verwendet er bestehende SOTA-Bausteine über die
+Folgeschritt~E6 der internen Umsetzungsplanung; die Kennung ist von den Interface-Schichten E4--E0
+unabhängig); für die übrigen Achsen verwendet er bestehende SOTA-Bausteine über die
 Permutations-Konfiguration wieder. So zeigt der Prüfling, dass das Mess-System trägt: Ein neuartiges
 Lebewesen entsteht aus wenigen eigenen Organen plus dem Standard-Baukasten (Abbildung~\ref{fig:prtart-demo})
 und ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte SOTA-Verfahren.
@@ -1171,7 +1181,7 @@ als Zielbild der Arbeit und das Messkurven-Typsystem samt Filterkette und Messfe
 diese Modi mit Daten versorgt. Vollzogenes und Geplantes werden dabei jeweils ausdrücklich getrennt.
 
 \subsection{Heuristik-Schleife und gelernte Lastprofile}\label{sec:heuristics-loop}
-Aus den Messreihen lässt sich --- als Ausblick-Mechanismus --- je Last- und Datentyp-Profil die beste
+Aus den Messreihen lässt sich je Last- und Datentyp-Profil die beste
 Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,align=center,
@@ -1185,9 +1195,11 @@ Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
 \end{tikzpicture}
 \caption{Die Heuristik-Schleife: aus den Messreihen wird je Lastprofil die beste Achsen-Komposition gelernt, als XML-Lastprofil abgelegt und über den Workload-Filter in die nächste Messung zurückgeführt.}\label{fig:heuristic-loop}
 \end{figure}
-\emph{Dies ist ein Ausblick-Mechanismus, keine im Rahmen dieser Arbeit umgesetzte Funktion.} Über die
-reine Rangbildung hinaus ist eine \emph{Heuristik-Extraktion} als Folge-Phase nach \textbf{Persist}
-vorgesehen, die aus den gesammelten Messungen automatisch ableitet, welche Achsen-Konfiguration je Workload
+\emph{Die volle Schleife ist ein Ausblick-Mechanismus; im Rahmen dieser Arbeit umgesetzt ist davon nur
+ein erstes Inkrement der automatischen Auswahl und des Binary-Versands (\texttt{best\_binary\_selector},
+Abschnitt~\ref{sec:contributions}).} Über die
+reine Rangbildung hinaus ist eine \emph{Heuristik-Extraktion} als Folge-Phase nach \textbf{Persist} ---
+der letzten Phase der Sieben-Phasen-Pipeline (Abschnitt~\ref{sec:impl-pipeline}) --- vorgesehen, die aus den gesammelten Messungen automatisch ableitet, welche Achsen-Konfiguration je Workload
 und Datensatz die beste ist. Der angestrebte Mechanismus ist eine ML-Klassifikation in drei Schritten:
 Zunächst werden aus der Mess-CSV je Permutation Merkmale gewonnen --- die Lastprofil- und Datensatz-Merkmale (Workload-Typ,
 Schlüssel-Verteilung, Schreib-/Lese-Anteil, Alphabet- und Präfix-Charakteristik sowie Schlüssel- und

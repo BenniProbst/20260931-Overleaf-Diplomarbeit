@@ -67,13 +67,12 @@ quadtree~\cite{finkel1974quadtree}, R-tree~\cite{guttman1984rtree}) partition a 
 space and lie outside the scope, as do the theoretical \enquote{exotics} --- the van Emde Boas
 tree~\cite{vanemdeboas1975} and the y-fast trie~\cite{willard1983yfast} with $O(\log\log u)$ over a
 universe of size~$u$, or the Fusion Tree~\cite{fredman1993fusion} that undercuts the comparison bound ---
-as well as the flat, sorted array with binary or interpolation search~\cite{knuth1998taocp3} --- strictly speaking the single leaf
+as well as the randomized skip list~\cite{pugh1990skiplist}, the flat, sorted array with binary or interpolation search~\cite{knuth1998taocp3} --- strictly speaking the single leaf
 of a tree --- and the suffix array, which generalizes this layout on string keys into a space-saving
 full-text index and whose lightweight, memory-budgeted construction counts as a textbook example of
 algorithm engineering~\cite{manzini2002suffixarray}. This thesis concentrates on the
 tree-like structures of the comparison- and digital-based classes (Figure~\ref{fig:search-map}); as
-outwardly different as the classes appear, they share recurring, mutually separable partial decisions ---
-how these can be decomposed systematically is developed in Chapter~\ref{ch:measurement}.
+outwardly different as the classes appear, they share recurring, mutually separable partial decisions.
 
 Orthogonal to this search-algorithm view stands the established taxonomy of the \emph{containers} of the
 C++ standard library~\cite{iso_cpp}: sequence containers (\texttt{std::vector}) order by insertion
@@ -101,9 +100,10 @@ of a search structure can be kept variable; how such decisions can be decomposed
 measured individually is developed in Chapter~\ref{ch:measurement}.
 
 \section{Hardware: Historical Adaptation to Search Performance}\label{sec:hardware-history}
-The performance of search structures has always been driven by hardware. We introduce the historical advent of
+The performance of search structures has always been driven by hardware. We trace the historical advent of
 cache-near hardware --- cache hierarchy, cache line, address translation, coherence --- focusing on the
-\emph{static and compile-time-relevant} properties that later carry the abstraction.
+\emph{static and compile-time-relevant} properties that later carry the abstraction in
+Section~\ref{sec:software-means}.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center]
   \foreach \i in {0,...,7} { \draw (\i*0.55,0) rectangle (\i*0.55+0.55,0.55); }
@@ -127,9 +127,9 @@ it; the depth of the hierarchy also varies (simple
 RISC-V cores such as the SiFive~U74 end at L2, some AMD processors bring a stacked 3D V-Cache L3). For a
 cache-line-aware layout,
 the line size determined per target platform is therefore an \emph{input to compilation}, not a fixed
-assumption --- the transfer itself is not strictly block-at-once, for \emph{critical-word-first} delivers
-the requested word first, DDR5 splits the memory channel into two independent 32-bit
-sub-channels~\cite{micron_ddr5}, and non-temporal or write-combining stores bypass the normal
+assumption. Moreover, the transfer of a line does not proceed strictly block-at-once: \emph{critical-word-first} delivers
+the requested word first, and DDR5 splits the memory channel into two independent 32-bit
+sub-channels~\cite{micron_ddr5}; non-temporal or write-combining stores additionally bypass the normal
 write-allocate path instead of pulling the affected cache line into the cache
 hierarchy~\cite{intel_sdm}.
 
@@ -138,12 +138,12 @@ tree~\cite{rao1999css} introduces the cache-line node, the CSB\textsuperscript{+
 the contiguous sibling cluster, Hankins and Patel~\cite{hankins2003nodesize} measure the effect of node
 size, and Samuel et al.~\cite{samuel2005procaware} make the node processor-aware; the Adaptive Radix
 Tree~\cite{leis2013art} grades node size cache-line-orientedly with Node4/16/48/256, and Schmidt et
-al.~\cite{schmidt2025hbm} measure stride versus sequential accesses on high-bandwidth memory. On the
-memory-layout level there thus stand concretely the dense and the cache-line-aligned array-of-structs,
+al.~\cite{schmidt2025hbm} measure stride versus sequential accesses on high-bandwidth memory. As
+concrete layout options, the literature knows the dense and the cache-line-aligned array-of-structs,
 the column-oriented struct-of-arrays, the bit-packed LOUDS~\cite{jacobson1989louds}, and the SIMD-tiled
 AoSoA. The multi-level hierarchy itself is moreover the subject of software/hardware-cooperative
 prefetching methods such as the hierarchical instruction prefetcher for server applications of Zhang et
-al.~\cite{zhang2025hierarchical}, which enters as a prefetching instance and not as a data-structure-specific
+al.~\cite{zhang2025hierarchical}, which enters this thesis as a prefetching instance and not as a data-structure-specific
 tree data prefetch.
 
 Besides the data-cache hierarchy there exists a second locality boundary: the \emph{translation lookaside
@@ -152,10 +152,10 @@ walk~\cite{hennessy2019architecture}. For locality reasons processors separate t
 the data TLB (dTLB) --- since instruction accesses are considerably more local than data accesses ---
 and lay it out in multiple stages (L1 dTLB plus a shared L2 STLB)~\cite{intel_sdm,drepper2007memory}; for search
 structures the dTLB is the second, independent boundary alongside the cache line, since large or widely
-scattered nodes raise dTLB pressure independently of cache utilization, which is why large pages (huge
-pages, 2\,MiB/1\,GiB) enlarge the TLB reach. In the state of the art the dTLB appears mainly as a
-\emph{measurement target}; algorithmically it is addressed by huge pages, which several allocators
-(mimalloc, jemalloc, TCMalloc, snmalloc) support and which Schmidt et al.~\cite{schmidt2025hbm} use
+scattered nodes raise dTLB pressure independently of cache utilization. In the state of the art the dTLB appears mainly as a
+\emph{measurement target}; algorithmically it is addressed by large pages (huge pages, 2\,MiB/1\,GiB),
+which enlarge the TLB reach, are supported by several allocators
+(mimalloc, jemalloc, TCMalloc, snmalloc), and which Schmidt et al.~\cite{schmidt2025hbm} use
 empirically with 2-MiB pages --- a standalone dTLB optimization nevertheless remains
 underrepresented in the search-algorithm papers, an observation to which the research gap in
 Chapter~\ref{ch:measurement} (Section~\ref{sec:task-concerns}) returns.
@@ -185,7 +185,7 @@ inclusion policy varies between generations --- inclusive on earlier Intel clien
 Nehalem), non-inclusive on
 Intel servers from Skylake-SP/Xeon~Scalable, and predominantly victim-like on
 AMD~Zen~\cite{intel_optimization,amd_sog}.
-Since none of this is freely selectable at runtime, these properties are given per target platform and
+Since for the most part this is not freely selectable at runtime, these properties are given per target platform and
 accessible only through measurement; their effect --- in particular the \emph{cache-line ping-pong} under
 competing writes to the same line --- must be made visible explicitly by a fair measurement procedure
 (Chapter~\ref{ch:measurement}).
@@ -200,7 +200,8 @@ locality-preserving $O(k/B)$ bound~\cite{bender2002scanning},
 and the layout of a tree of fixed topology that minimizes the expected number of block transfers in a
 multi-level memory model nearly optimally even under unknown block
 size~\cite{bender2002treelayout,bender2000cobtree};
-Saikkonen and Soisalon-Soininen maintain a cache-sensitive layout invariant even under updates, and
+Saikkonen and Soisalon-Soininen maintain a cache-sensitive layout invariant even under
+updates~\cite{saikkonen2008multilevel,saikkonen2016layout}, and
 Graefe/Larson~\cite{graefe2001btree} compare both approaches across the CPU cache levels, while all
 practical trie and B\textsuperscript{+} indexes are designed cache-aware. Both philosophies, however,
 leave one question open: how can \emph{measured} locality knowledge of the concrete target platform ---
@@ -212,18 +213,19 @@ up again in Chapter~\ref{ch:measurement} (Section~\ref{sec:task-concerns}).
 Whether a search structure makes good use of the hardware properties from
 Section~\ref{sec:hardware-history} only shows under load; for this, fixed terms and benchmark
 conventions have become established. A \emph{load} (operation) is a single call of the search
-interface --- a point query, an insertion, a deletion, or a range scan. A \emph{workload} is a
+interface --- a point query, an insertion, a deletion, or a range scan. A \emph{workload} (in this
+thesis synonymously: \emph{load profile}) is a
 structured profile of such operations: an operation mix (e.g.\ 50\,\% read / 50\,\% update) over a key
 access distribution (uniform, Zipf-distributed, latest values) on a dataset of defined size and key
-characteristic. Realistic workloads are thereby \emph{playbooks} of many consecutive interface calls
+characteristic. Realistic workloads are thereby sequences of many consecutive interface calls
 --- not isolated, unrealistic single accesses.
 
 The most widespread workload convention is the Yahoo!\ Cloud Serving Benchmark
 (YCSB)~\cite{cooper2010ycsb}. It defines a family of key-value workloads: YCSB-A (50/50 read/update,
 Zipf-distributed), YCSB-B (95/5 read/update), YCSB-C (read only), YCSB-D (latest values), YCSB-E
 (short range scans), and YCSB-F (read-modify-write). Alongside this, the literature relies on further
-established families: the index benchmark \emph{SOSD}~\cite{kipf2019sosd}, the transaction benchmarks
-of the \emph{TPC} family (TPC-C, TPC-DS)~\cite{tpc_benchmarks}, the integration into real systems (such
+established families: the index benchmark \emph{SOSD}~\cite{kipf2019sosd}, the benchmarks
+of the \emph{TPC} family (transactional TPC-C, analytical TPC-DS)~\cite{tpc_benchmarks}, the integration into real systems (such
 as SuRF~\cite{zhang2018surf} as a Bloom-filter replacement in RocksDB), real string corpora (URLs, DNA,
 dictionary terms), and --- for the hardware-near works --- \emph{SPEC~CPU}~\cite{spec_cpu2017} and
 \emph{CloudSuite}~\cite{ferdman2012cloudsuite}. These frameworks produce different loads that are not
@@ -246,8 +248,9 @@ Pattern} together with \emph{policy-based design}~\cite{alexandrescu2001modern},
 interchangeable building blocks as described by invasive software composition from gray-box
 components~\cite{assmann2003invasive}, generative programming~\cite{czarnecki2000generative}, and the
 feature-oriented software product lines~\cite{apel2013feature,batory1992hierarchical}; C++23 modules
-structure the translation units but by themselves do not yet guarantee portable ABI
-stability~\cite{wg21_modules_abi}. For this thesis, the means named above form the toolbox with which
+structure the translation units of such building-block compositions but by themselves do not yet guarantee portable ABI
+stability~\cite{wg21_modules_abi} --- relevant as soon as pre-compiled building blocks are to be
+exchanged. For this thesis, the means named above form the toolbox with which
 the hardware properties measured per target platform can be turned into a concrete layout at compile
 time; how they are combined for this purpose is developed in Chapter~\ref{ch:measurement}.
 

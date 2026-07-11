@@ -24,22 +24,25 @@ The implementation is distributed across three Git repositories with clearly sep
   (vector/map/tuple API), its ABI adapters, and its building blocks (4+1+2 allocator pools --- seven
   pools: four size-class pools A--D, one rest pool R, and two reserved value pools ---, OLC with
   reserved blocks, multi-level layout, path-oriented prefetch, density tracker, hypothesis metrics
-  H1/H2/H3) as well as the probe-side comparison re-implementations of the tier-2/3 papers without
+  H1/H2/H3) as well as the probe-side comparison re-implementations of the Rank-2/3 papers without
   public source code (\texttt{legacy\_\allowbreak{}reimpl}, P11--P27), which are compared against the
   real cache-engine adapters in the SOTA admission test; the pool, prefetch, and layout components are
-  currently descriptor skeletons without a real memory backend.
+  currently descriptor skeletons without a real memory backend --- the prefetch building block
+  nonetheless already overrides the prefetch slot of the measurement apparatus, while pool and layout
+  still run there via the cache-engine default (Section~\ref{sec:prtart-impl}).
   \item \texttt{probst-Diplomarbeit-cache-engine} --- \textbf{what} is tested: the \texttt{messung\_driver},
   the experiment configurations, the evaluation pipeline, and the manuscript.
 \end{itemize}
 The four subsystems (measurement driver, CacheEngineBuilder, CacheEngine, probe) are orthogonal to
-this three-repository split: builder and CacheEngine share \texttt{comdare-cache-engine}, yet are an
-executable (\texttt{apps/}) and a library (\texttt{libs/}) there, respectively.
+this three-repository split: builder and CacheEngine share \texttt{comdare-cache-engine} --- the
+builder as an executable (\texttt{apps/}) on top of its builder library
+(\texttt{libs/\allowbreak{}cache\_\allowbreak{}engine/\allowbreak{}builder}), the CacheEngine as a library (\texttt{libs/\allowbreak{}cache\_\allowbreak{}engine}).
 Across this, the terminology separates two engine terms that must not be conflated. The
-\texttt{CacheEngine} (\texttt{cache-engine/libs}) is the \emph{library of axis building blocks}: it
+\texttt{CacheEngine} (\texttt{libs/\allowbreak{}cache\_\allowbreak{}engine}) is the \emph{library of axis building blocks}: it
 provides per axis the interchangeable design constituents as concept/CRTP components and contains \emph{no}
 measurement logic. The \texttt{ExecutionEngine}, by contrast, is the execution and measurement
-infrastructure lying across all axes: as the abstract measurable root (\texttt{IExecutionEngine},
-Section~\ref{sec:measurement-system}) the concrete runtime adapter
+infrastructure lying across all axes: its abstract measurable root is \texttt{IExecutionEngine}
+(Section~\ref{sec:measurement-system}); the concrete runtime adapter
 \texttt{SearchAlgorithmAbiAdapter<A>} provides, via the \texttt{SearchAlgorithmAnatomy}, the OS
 primitives (cache-line-aligned allocation, NUMA-conformant read pinning, coherence-aware writing); the
 adapter's measurement and observer couplings are gated by
@@ -53,7 +56,7 @@ gating). In short: the \texttt{CacheEngine} provides the \emph{building blocks},
 
 \section{PRT-ART in Detail}\label{sec:prtart-impl}
 Building on the known state of the art, we describe each key point of PRT-ART individually and visually.
-PRT-ART contributes several key points of its own, each located at its axis (two of them on T10). On the \emph{allocator axis}, a
+PRT-ART contributes six key points of its own, two of them on T10. On the \emph{allocator axis}, a
 \emph{4+1+2 pool allocator} (four size-class pools, one rest pool, plus two reserved value pools) replaces the algorithm-hardwired
 allocation with a cache-line-aligned, low-fragmentation free list. On the \emph{concurrency axis} --- itself
 split into pattern (8.1) and locking mode (8.2) --- PRT-ART contributes \emph{optimistic lock coupling (OLC)
@@ -87,7 +90,7 @@ located at its axis.
   \node[pa] (p5) at (5.1,-2.85){\textbf{Coherence-aware telemetry}\\{\scriptsize axis T10}\\[2pt]{\tiny leaf-only counters (main), sampling (every $N$th), offline recompute; per-node counter only as anti-pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{Density tracker $+$ H1/H2/H3}\\{\scriptsize axis T10 (own organs)}\\[2pt]{\tiny own measurement organs: occupancy density tracker and the probe's three hypothesis metrics}};
 \end{tikzpicture}
-\caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a multi-level layout (T5), and cache-coherence-aware telemetry (T10) together with the density tracker and the hypothesis metrics H1/H2/H3. The tiles show the \emph{building blocks of the probe repo}; currently T7/T8/T10 are overridden in the apparatus, while the building blocks for T5/T6 still run there via the cache-engine default (E6). The remaining fourteen composition axes the probe draws via the compile-time fallback from the cache-engine.}\label{fig:prtart-gallery}
+\caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a multi-level layout (T5), and cache-coherence-aware telemetry (T10) together with the density tracker and the hypothesis metrics H1/H2/H3. The tiles show the \emph{building blocks of the probe repo}; currently T7/T8/T10 are overridden in the apparatus, while the building blocks for T5/T6 still run there via the cache-engine default (E6). In addition, the probe overrides the path-compression redirect (T3), the ChainRef value handle (T11), and the build axis page type; the remaining fourteen composition axes (currently including T5/T6) the probe draws via the compile-time fallback from the cache-engine.}\label{fig:prtart-gallery}
 \end{figure}
 
 \section{Axis Implementation and Measurement-System Levels}\label{sec:axes-impl}
@@ -95,9 +98,10 @@ Each axis is implemented as a generalized interface; alongside lie the levels of
 generation to the seven-phase pipeline.
 Each axis is a topic directory containing a two-layer \emph{concept} (a broad topic concept and a narrow
 axis concept) and a CRTP base class secured by a \texttt{requires} clause. The probe-versus-default choice
-is resolved for the eleven PRT-ART fallback axes at compile time via \texttt{resolve\_baustein.hpp}
+is resolved for the fourteen PRT-ART fallback axes at compile time via \texttt{resolve\_baustein.hpp}
 (concept-checked \texttt{if constexpr} over
-tag specializations), so that the hot path contains neither \texttt{virtual} calls nor runtime switches ---
+tag specializations; the literal tag catalogue of the historical eleven-axis precursor persists there
+only as the \texttt{baustein\_variants} fallback), so that the hot path contains neither \texttt{virtual} calls nor runtime switches ---
 the zero-cost abstraction from Section~\ref{sec:anatomy-model}. Every SOTA design and every allocator is
 integrated via a thin \emph{adapter} that provides the original implementation behind the engine ABI\@:
 allocator vendors are switched on or off at compile time via per-vendor include shims
@@ -106,8 +110,8 @@ enable flags plus \texttt{mp\_filter} (the \texttt{COMDARE\_AXIS\_*\_USE\_}/\tex
 family), each with a safe fallback chosen per family --- allocator adapters substitute the missing
 vendor with \texttt{std::malloc}/\texttt{std::free}, data-structure adapters with a stub that throws a
 controlled \texttt{std::runtime\_error} exception on use ---, so that the
-build remains independently runnable --- \texttt{COMDARE\_HAVE\_<X>} persists only as a historical
-detection define; the integration of hierarchical
+build remains independently runnable. The former detection define \texttt{COMDARE\_HAVE\_<X>} persists
+only historically. The integration of hierarchical
 prefetching~\cite{zhang2025hierarchical} additionally provides a compile-time call-graph analyzer
 (\texttt{p27\_bundle\_finder}, a C++23 port of the original tool \texttt{hp\_soft} that identifies
 functions whose subtree footprint exceeds a threshold as bundle entry points).
@@ -268,8 +272,8 @@ programs --- \texttt{sample\_data\_generator} (deterministic test data without r
 measurement records) $\to$ \texttt{csv\_to\_latex} (booktabs tables with per-permutation-ID algorithm fact sheets)
 $\to$ \texttt{diagram\_generator} (A4-aware TikZ plots) $\to$ \texttt{latex\_to\_pdf} ---; the
 measurement couplings are separated from the production path by the
-\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gating,
-so that the latter carries no measurement overhead, and continuous integration (GitLab CI plus a
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gating
+(Section~\ref{sec:repos}), and continuous integration (GitLab CI plus a
 mirrored GitHub workflow) runs across all three repositories.
 \begin{figure}[htbp]\centering
 % No \resizebox: the drawing is only ~13.5cm wide; blowing it up to \linewidth (x1.19) would inflate
