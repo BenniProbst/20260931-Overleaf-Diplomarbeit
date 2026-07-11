@@ -68,14 +68,14 @@ treten dieser Arbeit als nicht-baumartige Vergleichsgröße zur Seite\@. \emph{R
 partitionieren einen mehrdimensionalen Schlüsselraum und liegen außerhalb des Umfangs, ebenso wie die
 theoretischen \enquote{Exoten} --- der van-Emde-Boas-Baum~\cite{vanemdeboas1975} und der y-fast
 Trie~\cite{willard1983yfast} mit $O(\log\log u)$ über einem Universum der Größe~$u$ oder der die
-Vergleichsschranke unterschreitende Fusion Tree~\cite{fredman1993fusion} --- sowie das flache, sortierte
+Vergleichsschranke unterschreitende Fusion Tree~\cite{fredman1993fusion} --- sowie die randomisierte
+Skip-Liste~\cite{pugh1990skiplist}, das flache, sortierte
 Array mit Binär- oder Interpolationssuche~\cite{knuth1998taocp3} --- streng genommen das einzelne Blatt
 eines Baumes --- und das Suffix-Array, das dieses Layout auf String-Schlüsseln zu einem platzsparenden
 Volltext-Index verallgemeinert und dessen leichtgewichtige, speicher-budgetierte Konstruktion als
 Musterbeispiel des Algorithm-Engineerings gilt~\cite{manzini2002suffixarray}. Diese Arbeit konzentriert sich auf die baumartigen Strukturen
 der vergleichs- und der digitalbasierten Klasse (Abbildung~\ref{fig:search-map}); so verschieden die
-Klassen äußerlich wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen ---
-wie sich diese systematisch zerlegen lassen, entwickelt Kapitel~\ref{ch:measurement}.
+Klassen äußerlich wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen.
 
 Quer zu dieser Suchalgorithmus-Sicht steht die etablierte Untergliederung der \emph{Container} der
 C++-Standardbibliothek~\cite{iso_cpp}: Sequenz-Container (\texttt{std::vector}) ordnen nach
@@ -104,9 +104,10 @@ gehalten werden können; wie sich solche Entscheidungen systematisch zerlegen un
 lassen, entwickelt Kapitel~\ref{ch:measurement}.
 
 \section{Hardware: historische Anpassung an die Suchleistung}\label{sec:hardware-history}
-Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Wir führen die historische
-Einführung cache-naher Hardware ein --- Cache-Hierarchie, Cache-Line, Adressübersetzung, Kohärenz --- mit Fokus
-auf die \emph{statischen und übersetzungszeit-relevanten} Eigenschaften, die später die Abstraktion tragen.
+Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Wir zeichnen die historische
+Einführung cache-naher Hardware nach --- Cache-Hierarchie, Cache-Line, Adressübersetzung, Kohärenz --- mit Fokus
+auf die \emph{statischen und übersetzungszeit-relevanten} Eigenschaften, die später die Abstraktion in
+Abschnitt~\ref{sec:software-means} tragen.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center]
   \foreach \i in {0,...,7} { \draw (\i*0.55,0) rectangle (\i*0.55+0.55,0.55); }
@@ -130,11 +131,11 @@ aber nicht verändern; auch die Tiefe
 der Hierarchie variiert (einfache RISC-V-Kerne wie der SiFive~U74 enden bei L2, manche AMD-Prozessoren
 bringen einen
 gestapelten 3D-V-Cache-L3 mit). Für ein cache-line-bewusstes Layout ist die je Zielplattform ermittelte
-Line-Größe daher ein \emph{Eingabeparameter der Übersetzung}, keine feste Annahme --- der Transfer selbst
-erfolgt dabei nicht streng blockweise am Stück, denn \emph{critical-word-first} liefert zuerst das
-angefragte Wort, DDR5 unterteilt den Speicherkanal in zwei unabhängige
-32-Bit-Sub-Kanäle~\cite{micron_ddr5}, und nicht-temporale bzw.\ Write-Combining-Schreibzugriffe umgehen
-den normalen Write-Allocate-Pfad, statt die betroffene Cache-Line in die Cache-Hierarchie zu
+Line-Größe daher ein \emph{Eingabeparameter der Übersetzung}, keine feste Annahme. Der Transfer einer
+Line erfolgt zudem nicht streng blockweise am Stück: \emph{critical-word-first} liefert zuerst das
+angefragte Wort, und DDR5 unterteilt den Speicherkanal in zwei unabhängige
+32-Bit-Sub-Kanäle~\cite{micron_ddr5}; nicht-temporale bzw.\ Write-Combining-Schreibzugriffe umgehen
+überdies den normalen Write-Allocate-Pfad, statt die betroffene Cache-Line in die Cache-Hierarchie zu
 holen~\cite{intel_sdm}.
 
 Eben dieses cache-line-orientierte Layout ist der historische Leitgedanke der einschlägigen Forschung:
@@ -143,13 +144,13 @@ CSB\textsuperscript{+}-Baum~\cite{rao2000csb} das zusammenhängende Geschwister-
 Patel~\cite{hankins2003nodesize} vermessen den Effekt der Knotengröße und Samuel et
 al.~\cite{samuel2005procaware} machen den Knoten prozessor-bewusst; der Adaptive Radix
 Tree~\cite{leis2013art} staffelt mit Node4/16/48/256 die Knotengröße cache-line-orientiert, und Schmidt et
-al.~\cite{schmidt2025hbm} vermessen Stride- gegen Sequenz-Zugriffe auf High-Bandwidth-Memory. Auf der
-Speicher-Layout-Ebene stehen damit konkret das dichte und das cache-line-ausgerichtete Array-of-Structs,
+al.~\cite{schmidt2025hbm} vermessen Stride- gegen Sequenz-Zugriffe auf High-Bandwidth-Memory. Als
+konkrete Layout-Optionen kennt die Literatur das dichte und das cache-line-ausgerichtete Array-of-Structs,
 das spaltenorientierte Struct-of-Arrays, das bit-gepackte LOUDS~\cite{jacobson1989louds} und das
 SIMD-gekachelte AoSoA. Die mehrstufige Hierarchie selbst ist überdies Gegenstand
 software-/hardware-kooperativer Prefetch-Verfahren wie dem hierarchischen Instruktions-Prefetcher für
 Server-Anwendungen von
-Zhang et al.~\cite{zhang2025hierarchical}, der als Prefetching-Instanz und nicht als
+Zhang et al.~\cite{zhang2025hierarchical}, der in diese Arbeit als Prefetching-Instanz und nicht als
 datenstruktur-spezifischer Baum-Datenprefetch eingeht.
 
 Neben der Daten-Cache-Hierarchie existiert eine zweite Lokalitätsgrenze: der \emph{Translation Lookaside
@@ -158,10 +159,10 @@ aus~\cite{hennessy2019architecture}. Prozessoren trennen aus Lokalitätsgründen
 Daten-TLB (dTLB) --- da Instruktionszugriffe deutlich lokaler sind als Datenzugriffe --- und legen ihn
 mehrstufig aus (L1-dTLB plus gemeinsamer L2-STLB)~\cite{intel_sdm,drepper2007memory}; für Suchstrukturen ist
 der dTLB die zweite, eigenständige Grenze neben der Cache-Line, denn große oder weit gestreute Knoten
-erhöhen den dTLB-Druck unabhängig von der Cache-Auslastung, weshalb große Seiten (Huge-Pages,
-2\,MiB/1\,GiB) den TLB-Reach vergrößern. Im Stand der Technik tritt der dTLB vorwiegend als \emph{Mess-Ziel}
-auf; algorithmenseitig adressieren ihn Huge-Pages, die mehrere Allokatoren (mimalloc, jemalloc, TCMalloc,
-snmalloc) unterstützen und die Schmidt et al.~\cite{schmidt2025hbm} mit 2-MiB-Seiten empirisch nutzen ---
+erhöhen den dTLB-Druck unabhängig von der Cache-Auslastung. Im Stand der Technik tritt der dTLB vorwiegend als \emph{Mess-Ziel}
+auf; algorithmenseitig adressieren ihn große Seiten (Huge-Pages, 2\,MiB/1\,GiB), die den TLB-Reach
+vergrößern, von mehreren Allokatoren (mimalloc, jemalloc, TCMalloc,
+snmalloc) unterstützt werden und die Schmidt et al.~\cite{schmidt2025hbm} mit 2-MiB-Seiten empirisch nutzen ---
 eine eigenständige dTLB-Optimierung bleibt in den Suchalgorithmus-Papern jedoch unterbelegt, eine
 Beobachtung, auf die die Forschungslücke in Kapitel~\ref{ch:measurement}
 (Abschnitt~\ref{sec:task-concerns}) zurückkommt.
@@ -189,8 +190,8 @@ oder \emph{Invalid}, herstellerseitig um Varianten wie MOESI (AMD~\cite{amd_sog}
 Instanz dieser fixierten Eigenschaften variiert etwa die L3-Inklusions-Politik zwischen den Generationen
 --- inklusiv bei früheren Intel-Client-Generationen (etwa Nehalem), nicht-inklusiv bei Intel-Servern ab
 Skylake-SP/Xeon~Scalable und überwiegend
-victim-artig bei AMD~Zen~\cite{intel_optimization,amd_sog}. Da all dies zur Laufzeit nicht frei wählbar
-ist, sind diese Eigenschaften je Zielplattform gegeben und nur durch Messung zugänglich; ihre
+victim-artig bei AMD~Zen~\cite{intel_optimization,amd_sog}. Da all dies zur Laufzeit überwiegend nicht
+frei wählbar ist, sind diese Eigenschaften je Zielplattform gegeben und nur durch Messung zugänglich; ihre
 Wirkung --- insbesondere das \emph{Cache-Line-Ping-Pong} bei konkurrierenden Schreibzugriffen auf dieselbe
 Line --- muss ein faires Messverfahren eigens sichtbar machen (Kapitel~\ref{ch:measurement}).
 
@@ -205,7 +206,8 @@ $O(k/B)$-Schranke~\cite{bender2002scanning} und dem
 Baum-Layout fester Topologie, das die erwartete Zahl der Blocktransfers in einem mehrstufigen
 Speicher-Modell auch bei unbekannter Block-Größe nahezu optimal
 minimiert~\cite{bender2002treelayout,bender2000cobtree}; Saikkonen und
-Soisalon-Soininen halten eine cache-sensitive Layout-Invariante auch unter Updates, und
+Soisalon-Soininen halten eine cache-sensitive Layout-Invariante auch unter
+Updates~\cite{saikkonen2008multilevel,saikkonen2016layout}, und
 Graefe/Larson~\cite{graefe2001btree} vergleichen beide Ansätze über die CPU-Cache-Ebenen, während
 sämtliche praktischen Trie- und B\textsuperscript{+}-Indizes cache-bewusst ausgelegt sind. Beide
 Philosophien lassen dabei eine Frage offen: Wie lässt sich \emph{gemessenes} Lokalitätswissen der konkreten
@@ -217,18 +219,19 @@ Diese Frage nimmt Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:task-concerns
 Ob eine Suchstruktur die Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} gut nutzt,
 zeigt sich erst unter Last; dafür haben sich feste Begriffe und Benchmark-Konventionen etabliert. Eine
 \emph{Last} (Operation) ist ein einzelner Aufruf der Such-Schnittstelle --- eine Punktanfrage, ein
-Einfügen, ein Löschen oder ein Bereichs-Scan. Ein \emph{Workload} ist ein strukturiertes Profil solcher
+Einfügen, ein Löschen oder ein Bereichs-Scan. Ein \emph{Workload} (in dieser Arbeit synonym:
+\emph{Lastprofil}) ist ein strukturiertes Profil solcher
 Operationen: ein Operations-Mix (etwa 50\,\% Lesen / 50\,\% Aktualisieren) über einer
 Schlüssel-Zugriffsverteilung (gleichverteilt, Zipf-verteilt, jüngste Werte) auf einem Datensatz
-definierter Größe und Schlüssel-Charakteristik. Realistische Workloads sind dabei \emph{Playbooks} aus
-vielen aufeinanderfolgenden Interface-Aufrufen --- nicht isolierte, unrealistische Einzelzugriffe.
+definierter Größe und Schlüssel-Charakteristik. Realistische Workloads sind dabei Folgen
+vieler aufeinanderfolgender Interface-Aufrufe --- nicht isolierte, unrealistische Einzelzugriffe.
 
 Die verbreitetste Workload-Konvention ist der Yahoo!\ Cloud Serving Benchmark
 (YCSB)~\cite{cooper2010ycsb}. Er definiert eine Familie von Schlüssel-Wert-Workloads: YCSB-A (50/50
 Lesen/Aktualisieren, Zipf-verteilt), YCSB-B (95/5 Lesen/Aktualisieren), YCSB-C (nur Lesen), YCSB-D
 (jüngste Werte), YCSB-E (kurze Bereichs-Scans) und YCSB-F (Read-Modify-Write). Daneben stützt sich die
 Literatur auf weitere etablierte Familien: den Index-Benchmark \emph{SOSD}~\cite{kipf2019sosd}, die
-Transaktions-Benchmarks der \emph{TPC}-Familie (TPC-C, TPC-DS)~\cite{tpc_benchmarks}, die Integration
+Benchmarks der \emph{TPC}-Familie (transaktional TPC-C, analytisch TPC-DS)~\cite{tpc_benchmarks}, die Integration
 in reale Systeme (etwa SuRF~\cite{zhang2018surf} als Bloom-Filter-Ersatz in RocksDB), reale
 String-Korpora (URLs, DNA, Wörterbuch-Terme) sowie --- bei den hardware-nahen Arbeiten ---
 \emph{SPEC~CPU}~\cite{spec_cpu2017} und \emph{CloudSuite}~\cite{ferdman2012cloudsuite}. Diese
@@ -252,8 +255,10 @@ Template Pattern} samt \emph{Policy-based Design}~\cite{alexandrescu2001modern} 
 austauschbaren Bausteinen, wie sie die invasive Software-Komposition aus
 Gray-Box-Komponenten~\cite{assmann2003invasive}, die generative Programmierung~\cite{czarnecki2000generative}
 und die feature-orientierten Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}
-beschreiben; C++23-Module strukturieren die Übersetzungseinheiten, garantieren für sich genommen aber noch
-keine portable ABI-Stabilität~\cite{wg21_modules_abi}. Für diese Arbeit bilden die genannten Mittel den
+beschreiben; C++23-Module strukturieren die Übersetzungseinheiten solcher Baustein-Kompositionen,
+garantieren für sich genommen aber noch
+keine portable ABI-Stabilität~\cite{wg21_modules_abi} --- relevant, sobald vorübersetzte Bausteine
+ausgetauscht werden sollen. Für diese Arbeit bilden die genannten Mittel den
 Werkzeugkasten, mit dem sich die je Zielplattform gemessenen Hardware-Eigenschaften zur Übersetzungszeit
 in ein konkretes Layout umsetzen lassen; wie sie dafür kombiniert werden, entwickelt
 Kapitel~\ref{ch:measurement}.

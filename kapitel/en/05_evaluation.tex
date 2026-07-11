@@ -11,7 +11,11 @@ Three \emph{hypotheses} guide the analysis:
   dense page types win, as expected, under Zipf distribution (YCSB-A), range-optimized pages under range
   scans (YCSB-E).
   \item[H2 (code quality per source)] The code-quality score inherited from the original source repository
-  correlates measurably with the achieved throughput.
+  --- recorded per source repository as a documented quality audit over seven assessment axes (style,
+  tests, documentation, maintainability, maintenance status, license, build system; scale 1--5,
+  \texttt{docs/quality\_audit}) and complemented by the documented per-function
+  \texttt{is\_original} marking (Appendix~\ref{app:blocks}) --- correlates measurably with the achieved
+  throughput.
   \item[H3 (inline vs.\ external vs.\ chain distribution)] The observed distribution of the three
   ValueHandle variants correlates with page density: dense pages prefer inline, sparse pages external, and
   PRT-ART heuristics ChainRef.
@@ -22,15 +26,17 @@ metrics H1--H3 (Section~\ref{sec:prtart-demo}): the former are testable statemen
 space, the latter measurement organs of the probe that, among other things, supply the data for this
 test.
 
-Phase~5 derives the YCSB workload per permutation from the profile's traversal tag
-(Table~\ref{tab:workload-routing}); modules without a profile use the global default workload. The data
+Phase~5 derives the YCSB workload per permutation as a fallback heuristic from the profile's traversal
+tag (Table~\ref{tab:workload-routing}), unless an \texttt{<expected\_workload>} tag of the profile
+overrides the heuristic (Section~\ref{sec:sota-instances}); modules without a profile use the global
+default workload. The data
 basis is real string datasets of differing characteristics (Table~\ref{tab:datasets}), each with a
 reproducibility record of source, checksum, line count, preprocessing, and seed rule for the synthetic
 miss, update, and delete keys.
 
 \begin{table}[!htbp]
   \centering
-  \caption{Profile-aware workload routing}\label{tab:workload-routing}
+  \caption{Profile-aware workload routing (fallback heuristic)}\label{tab:workload-routing}
   \begin{tabular}{lll}
     \toprule
     \textbf{Traversal tag} & \textbf{YCSB workload} & \textbf{Characteristic} \\
@@ -60,7 +66,7 @@ miss, update, and delete keys.
 \end{table}
 
 The measurements target a local workstation for development verification and the TU-Dresden ZIH cluster
-(Barnard CPU nodes with Intel Sapphire Rapids, Capella GPU) for the full sweeps, plus the Rank-3 platforms (Ryzen~9~9950X3D, % chktex 29
+(Barnard CPU nodes with Intel Sapphire Rapids, Capella GPU) for the full sweeps, plus the platforms of the Rank-3 hardware works (Ryzen~9~9950X3D, % chktex 29
 Intel~i9~14900KS, and an HBM platform). An \texttt{IPlatformProbe} (Phase~1) reports per platform the
 runnable subset of axes (e.g.\ AVX-512 only where available, HBM-aware only on HBM hardware); per platform
 a scalar, an AVX2, and --- on Barnard --- an AVX-512 build are
@@ -77,9 +83,9 @@ the privileged regime and logged per platform with operating system, kernel, and
 
 Fair comparability is secured by fixed rules: each comparison separates a common minimal mode (common
 denominator: external value handles, no PRT-ART special paths) from the PRT-ART native mode (inline
-switching, cache engine, page-type scheduler); all methods
-receive identical, normalized byte keys as well as identical miss, update, and delete sets, with warm-up,
-randomization, and thread pinning logged per platform and workload. Missing capabilities of a baseline ---
+switching and adaptive page-type selection per branch point); all methods
+receive identical, normalized byte keys as well as identical miss, update, and delete sets; warm-up,
+randomization, and thread pinning are logged per platform and workload. Missing capabilities of a baseline ---
 e.g.\ range scans of a hash table --- are reported as N/A rather than covertly emulated; for every foreign
 library the compiler, flags, ISA path, allocator, and commit hash are logged, and each configuration is
 measured in several separate runs with percentiles determined over HDR histograms.
@@ -137,12 +143,13 @@ documented in Appendix~\ref{app:measurements} together with its limitations
 (Section~\ref{sec:measurements:limitations}), the complete runs of the mandatory measurement series on
 the target platforms are pending (Section~\ref{sec:limitations}). Per series run, the
 \texttt{messung\_driver} writes under \texttt{Code/\_runs/<date>/<spec\_id>/} the files
-\texttt{measurements.csv} --- one row per permutation with the columns of the canonical measurement
+\texttt{measurements.csv}, \texttt{measurements.json}, and optional binary records.
+\texttt{measurements.csv} carries one row per permutation with the columns of the canonical measurement
 record: \texttt{op\_count}, \texttt{total\_cycles}, L1/L2/L3 cache misses, dTLB misses, coherence
 invalidations, energy, plus the memory fields (\texttt{bytes\_allocated},
 \texttt{bytes\_in\_use\_peak}, fragmentation); branch misses and throughput are added as a schema
-extension of the record (throughput so far exists in the command path) ---,
-\texttt{measurements.json}, and optional binary records; the evaluation enriches them via
+extension of the record (throughput so far exists in the command path).
+The evaluation enriches these files via
 \texttt{binary\_to\_csv} with profile ID, paper reference, and axis assignment, renders
 \texttt{csv\_to\_latex} fact sheets per permutation ID (in series
 \texttt{A\_defined} this corresponds to one per SOTA profile) and
@@ -169,8 +176,7 @@ otherwise constant structure, the axis framework makes the contribution of each 
 per permutation, the analysis quantifies at the micro granularity which axis contributes most to the
 performance variance; macro and whole-system benchmarking add the operation and the YCSB load-profile
 level, and from the ranking across the three granularities follows the recommendation of standard
-configurations per workload class. Thus the arc closes back to the task: the sensitivity analysis delivers
-exactly the separated weighting of the individual constituents whose absence was the original problem. The
+configurations per workload class. The
 results are finally discussed against the thesis's leitmotif --- the transition from heuristic to informed
 cache management, i.e.\ the question whether telemetry-driven, automatically adapted configurations
 outperform statically chosen ones. Chapter~\ref{ch:conclusion} draws the conclusion from this.
