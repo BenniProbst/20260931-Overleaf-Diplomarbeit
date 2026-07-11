@@ -1,4 +1,150 @@
 \chapter{Architecture Decisions}\label{app:adr}
 
-% Architecture Decision Records F1--F15 (+K, +F-EXTRA)
-% (from docs/bausteine/04_architekturentscheidungen_F1_F15.md).
+% [#90/AP-B5] Compact ADR collection (Architecture Decision Records), traced from the chapters.
+% Documented decisions only; every ADR is backed by a \ref to the supporting thesis section.
+This appendix collects the load-bearing design decisions of this thesis as compact
+\emph{Architecture Decision Records} (ADRs): for each decision the context in which it was made,
+the decision itself, and its most important consequence. The goal is quick traceability ---
+\emph{why} the apparatus is built the way the chapters describe it; the detailed derivation and
+justification resides in the section referenced under \emph{Evidence} and is not repeated here.
+
+\begin{description}
+
+  \item[ADR-1 --- C-stable module boundary instead of a C++ module ABI]\hfill\\
+  \textbf{Context:} Each permutation is compiled as a standalone tier binary and loaded at run
+  time; C++23 modules structure the translation units but, by themselves, guarantee no portable
+  ABI stability~\cite{wg21_modules_abi}.
+  \textbf{Decision:} A uniform C module boundary
+  (\texttt{comdare\_create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exports exactly one creature
+  per permutation; behind it lies the three-layer abstraction chain
+  \texttt{CacheEngine} $\to$ \texttt{ExecutionEngine} $\to$ \texttt{SearchEngine}.
+  \textbf{Consequence:} ABI stability is established by the C boundary, not by the module system;
+  the ABI contract becomes verifiable per module (opt-in ABI verify).
+  \textbf{Evidence:} Sections~\ref{sec:contributions}, \ref{sec:anatomy-patterns},
+  and~\ref{sec:impl-architecture}.
+
+  \item[ADR-2 --- Compile-time permutation via type lists instead of runtime adaptation]\hfill\\
+  \textbf{Context:} Nineteen composition axes span a product space of more than $10^{14}$
+  combinations; the hot path must carry neither \texttt{virtual} calls nor runtime switches.
+  \textbf{Decision:} Permutation happens at compile time via Boost.MP11 type lists
+  (\texttt{mp\_list}) and concept-checked \texttt{if constexpr} (\texttt{resolve\_baustein}) ---
+  no runtime tag, no \texttt{std::variant}; the literal \texttt{std::variant} catalogue exists
+  only as the historical eleven-axis precursor (the \texttt{baustein\_variants} fallback).
+  \textbf{Consequence:} The axis abstraction remains a zero-cost abstraction.
+  \textbf{Evidence:} Sections~\ref{sec:contributions}, \ref{sec:anatomy-patterns},
+  and~\ref{sec:axes-impl}.
+
+  \item[ADR-3 --- The three-level model as the \emph{one} architecture]\hfill\\
+  \textbf{Context:} The anatomy metaphor and the technical engine view threaten to drift apart
+  into parallel model trees.
+  \textbf{Decision:} There is exactly one hierarchy without parallel trees --- genus (outer
+  interface, the test dock) $\to$ genus subclass (fixed axis set) $\to$ axis organs --- under the
+  common measurable root \texttt{IExecutionEngine}; a separate genus would arise only if the base
+  axis set differed fundamentally.
+  \textbf{Consequence:} \enquote{SearchEngine} is merely the ABI runtime view of the same
+  creature, not a second model.
+  \textbf{Evidence:} Sections~\ref{sec:anatomy-model}, \ref{sec:anatomy-levels},
+  and~\ref{sec:impl-architecture}.
+
+  \item[ADR-4 --- Pass-through doctrine and enforced full assignment]\hfill\\
+  \textbf{Context:} Non-tree-shaped methods (such as the hash cross-check) cannot meaningfully
+  carry tree- and trie-specific axes like path compression or node type.
+  \textbf{Decision:} Such axes are not dropped but assigned as pass-through variants
+  (\texttt{None}); the \texttt{IsComposition} concept enforces, at compile time, the assignment
+  of all nineteen organs, so no composition with an open axis compiles.
+  \textbf{Consequence:} Non-tree-shaped methods require no genus of their own but a restricted
+  axis subset of the same genus.
+  \textbf{Evidence:} Sections~\ref{sec:sota-instances}, \ref{sec:anatomy-levels},
+  and~\ref{sec:axes-impl}.
+
+  \item[ADR-5 --- Layer model E4--E0 with frozen contracts and contract tests]\hfill\\
+  \textbf{Context:} Two implementation increments spanning several layers at once had to be
+  rolled back entirely; with more than $10^{14}$ combinations, multi-layer changes are
+  practically impossible to accept.
+  \textbf{Decision:} The experiment pipeline is organised into layers E4--E0 (plus the
+  cross-cutting concern~M); each layer is completed individually, with an explicitly frozen
+  interface contract towards its neighbouring layer, and contract-tested against a compile-time
+  substitute (fake) of that neighbour.
+  \textbf{Consequence:} Every layer can be accepted individually before the next one begins; the
+  E3$\to$E2 boundary is already golden-tested.
+  \textbf{Evidence:} Sections~\ref{sec:anatomy-layers} and~\ref{sec:impl-contracts}.
+
+  \item[ADR-6 --- honest-0 doctrine: honest zero and honest emptiness]\hfill\\
+  \textbf{Context:} Values that cannot truly be collected (counters without hardware access, axes
+  without a real runtime parameter) invite plausible phantom values that would systematically
+  poison the heuristic derivation.
+  \textbf{Decision:} The system reports honestly invalid or empty instead of a phantom value ---
+  per-event validity flags per measurement; the wall-clock source, for instance, refuses to label
+  its mean as a percentile.
+  \textbf{Consequence:} Gaps remain visible and can be closed deliberately; the doctrine is
+  programmed into the building blocks rather than merely documented.
+  \textbf{Evidence:} Sections~\ref{sec:measurement-system} and~\ref{sec:impl-system-axes}.
+
+  \item[ADR-7 --- Three-repository split with orthogonal subsystems]\hfill\\
+  \textbf{Context:} Measurement apparatus, test subject, and evaluation have separate
+  responsibilities and life cycles.
+  \textbf{Decision:} Three repositories --- \texttt{comdare-cache-engine} (\emph{how} measuring
+  is done), \texttt{comdare-prt-art} (the test subject), and
+  \texttt{probst-Diplomarbeit-cache-engine} (\emph{what} is tested) --- with a Pitchfork source
+  tree layout; the four subsystems (measurement driver, CacheEngineBuilder, CacheEngine, test
+  subject) lie orthogonal to this split.
+  \textbf{Consequence:} Builder and CacheEngine share one repository as an executable and a
+  library respectively; the roles remain cleanly separated.
+  \textbf{Evidence:} Section~\ref{sec:repos}.
+
+  \item[ADR-8 --- Family-wise adapter fallbacks for self-contained buildable trees]\hfill\\
+  \textbf{Context:} Third-party code (allocator vendors, SOTA building blocks) is not available
+  or activated on every platform and in every build.
+  \textbf{Decision:} Compile-time flag families enable or disable adapters, each with a safe,
+  family-wise chosen fallback: allocator adapters replace the missing vendor with
+  \texttt{std::malloc}/\texttt{std::free}, data-structure adapters with a stub that, when used,
+  throws a controlled \texttt{std::runtime\_error} exception.
+  \textbf{Consequence:} The build remains self-containedly runnable without any third-party
+  activation.
+  \textbf{Evidence:} Section~\ref{sec:axes-impl}.
+
+  \item[ADR-9 --- Measurement gating and three delivery variants]\hfill\\
+  \textbf{Context:} Measurement and observer couplings cost time and must not burden the
+  production path.
+  \textbf{Decision:} The measurement couplings of the runtime adapter are gated behind
+  \texttt{COMDARE\_MEASUREMENT\_ON}; this yields three delivery variants of the same permutation
+  (debug with observers, measurement with aggregator, release without measurement couplings), and
+  the measurement aggregator is run host-side by the \texttt{ExperimentDriver}.
+  \textbf{Consequence:} The production path stays measurement-free and carries no measurement
+  overhead.
+  \textbf{Evidence:} Sections~\ref{sec:repos} and~\ref{sec:impl-pipeline}.
+
+  \item[ADR-10 --- The \texttt{std::map} contract as common denominator with a conformance gate]\hfill\\
+  \textbf{Context:} Structurally different search algorithms can only be compared fairly through
+  a common, well-understood outer interface.
+  \textbf{Decision:} All methods are mapped onto the C++ contract of the ordered map
+  \texttt{std::map<Key,\,Value>} (with \texttt{std::vector} in parallel as the container
+  comparison case); a conformance gate verifies this contract before every measurement.
+  \textbf{Consequence:} Only comparables are compared; the axes describe exclusively the inner
+  behaviour behind the fixed interface.
+  \textbf{Evidence:} Section~\ref{sec:measurement-system}.
+
+  \item[ADR-11 --- Design-pattern selection with negative list; Command only in hybrid mode]\hfill\\
+  \textbf{Context:} The apparatus is deliberately a composition of named design patterns; unclear
+  pattern roles would dilute the architecture.
+  \textbf{Decision:} Used are, among others, \emph{Strategy}, \emph{Abstract Factory},
+  \emph{Composite}, \emph{Iterator}, \emph{Adapter}, \emph{Observer}, \emph{Decorator},
+  \emph{Memento}, and CRTP; \emph{not} used are \emph{Singleton}, \emph{Flyweight}, and
+  \emph{Bridge}, and the \emph{Command} pattern appears exclusively as the command channel of the
+  hybrid mode.
+  \textbf{Consequence:} Every pattern has exactly one named role in the wiring of the apparatus.
+  \textbf{Evidence:} Sections~\ref{sec:anatomy-patterns} and~\ref{sec:heuristics-modes}.
+
+  \item[ADR-12 --- Dual measurement regime: immutable Talos and root Linux]\hfill\\
+  \textbf{Context:} Production fidelity and measurement depth are in conflict: a
+  production-faithful system denies precisely the hardware-counter access that deep measurements
+  require.
+  \textbf{Decision:} On the production target machines, every measurement is collected under two
+  operating-system regimes: an immutable operating system (Talos) as the production mirror and a
+  root Linux with full hardware-counter access (\texttt{perf}/MSR).
+  \textbf{Consequence:} The time- and observer-based categories run identically under both
+  regimes and secure comparability; the PMC categories are collected only under the privileged
+  regime.
+  \textbf{Evidence:} Sections~\ref{sec:eval-method} and~\ref{sec:contributions}.
+
+\end{description}

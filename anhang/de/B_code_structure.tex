@@ -1,4 +1,233 @@
 \chapter{Code-Struktur}\label{app:code}
 
-% TODO(DE): Uebersetzung aus anhang/en/B_code_structure.tex.
+Dieser Anhang dokumentiert die reale Quellcode-Struktur der drei Repositorien aus
+Abschnitt~\ref{sec:repos} nachprüfbar auf Verzeichnis-Ebene. Erhoben wurde der Code-Stand am
+Stichtag 11.~Juli~2026 per Verzeichnis-Listing (zwei bis drei Ebenen tief); maßgeblich sind die
+Commits \texttt{c022ce05} (\texttt{comdare-cache-engine}), \texttt{faa4e76}
+(\texttt{comdare-prt-art}) und \texttt{ba3a9ae}
+(\texttt{probst-\allowbreak{}Diplomarbeit-\allowbreak{}cache-\allowbreak{}engine},
+Super-Repository). Build-Artefakte (\texttt{build*/}), IDE-Verzeichnisse und der vendorte
+Fremdcode unter \texttt{ext/} sind ausgeblendet beziehungsweise zu einem Sammel-Eintrag
+zusammengefasst; alle übrigen genannten Pfade existieren im erhobenen Stand. Pfadangaben sind
+relativ zur jeweiligen Repository-Wurzel.
 
+\section*{comdare-cache-engine --- Bausteine-Bibliothek und Builder}
+
+Das Repository folgt dem Pitchfork-Layout: \texttt{apps/} enthält die ausführbaren Programme,
+\texttt{libs/} die Bibliotheken, \texttt{libs/common} den querschnittlichen Code. Der vendorte
+Fremdcode der A-/P-Serie liegt gesammelt unter \texttt{ext/} und wird hier nicht aufgefächert.
+
+{\footnotesize
+\begin{verbatim}
+comdare-cache-engine/                       Stand: Commit c022ce05
+|-- adapters/               ABI-Adapter der A-/P-Serie
+|                   (A01-hoard ... A20-dlmalloc, P01-ART ... P30-HazardPointers)
+|-- apps/                   Executables (Pitchfork)
+|   |-- cache_engine_builder/   Builder-Hauptprogramm (main.cpp)
+|   |-- perm_runner/            Runner fuer generierte Permutations-Module
+|   `-- anatomy_codegen_tool/, catalog_codegen_tool/, adhoc_emitter/,
+|       f15_compare/, is_original_validator/   Codegen- und Pruef-Werkzeuge
+|-- libs/                   Bibliotheken (Pitchfork)
+|   |-- cache_engine/       CacheEngine: Achsen-Bausteine + Builder-Bibliothek
+|   |   |-- axes/               ein Unterverzeichnis je Achse (alloc, layout,
+|   |   |                  prefetch_axis, telemetry_axis, concurrency_axis, ...)
+|   |   |-- builder/            codegen/, permutation_loop/, module_loader/,
+|   |   |                       experiment_driver/ (ExperimentDriver)
+|   |   |-- include/cache_engine/abi/   ABI-Header (baustein_variants.hpp,
+|   |   |                       resolve_baustein.hpp, module_abi_v1.hpp, ...)
+|   |   `-- algorithm_profiles/ sota/ (33 Profil-Dateien *.profile.xml),
+|   |                        allocators/, thesis_profiles/, permutation_axes.xml
+|   |-- common/             Querschnitt: config/, measurement/, platform/,
+|   |                       serialization/ (xml_config_parser/), succinct/
+|   |-- execution_engine/   ExecutionEngine-Bibliothek (result_aggregator)
+|   |-- search_engine/      SearchEngine-Bausteine (node/, page/, traversal/,
+|   |                       operations/, memory_layout/, value_handle/, ...)
+|   `-- test_infra/         benchmark_suite/, test_data/, workload_generator/
+|-- ext/             vendorte Fremd-Repositorien der A-/P-Serie (Sammel-Eintrag)
+|-- tests/                  unit/, integration/, generic_module_tests/,
+|                           module_specific_tests/, fixtures/
+|-- tools/       Hilfswerkzeuge (abi_stability_test/, permutation_codegen/, ...)
+`-- docs/                   Architektur-, Status- und Session-Dokumentation
+\end{verbatim}
+}
+
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Komponente} & \textbf{Pfad} & \textbf{Zweck} \\
+\midrule
+CacheEngineBuilder &
+\texttt{apps/\allowbreak{}cache\_engine\_builder/} &
+Builder-Executable (Konfiguration zu Permutations-Modulen) \\
+ExperimentDriver &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}experiment\_driver/} &
+sieben-phasiger Experiment-Treiber (host-seitig) \\
+Codegenerierung &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}codegen/} &
+\texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile} samt Templates \\
+Permutations-Schleife &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}permutation\_loop/} &
+Aufzählung der Achsen-Permutationen \\
+Modul-Loader &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}module\_loader/} &
+Laden der erzeugten Module \\
+ABI-Header &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}include/\allowbreak{}cache\_engine/\allowbreak{}abi/} &
+u.\,a. \texttt{baustein\_\allowbreak{}variants.hpp}, \texttt{resolve\_\allowbreak{}baustein.hpp} \\
+XML-Config-Parser &
+\texttt{libs/\allowbreak{}common/\allowbreak{}serialization/\allowbreak{}xml\_config\_parser/} &
+Parser der Profil- und Experiment-XMLs \\
+Achsen-Bausteine &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}axes/} &
+je Achse ein Unterverzeichnis \\
+SOTA-Profile &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}algorithm\_profiles/\allowbreak{}sota/} &
+33 Profil-Dateien (\texttt{*.profile.xml}): die 30 eigenständigen SOTA-Algorithmus-Profile
+(Abschnitt~\ref{sec:sota-instances}) plus drei Dateien für die Nebenläufigkeits-Disziplinen
+\texttt{olc}, \texttt{rcu} und \texttt{hazard\_\allowbreak{}pointers} \\
+Adapter A-/P-Serie &
+\texttt{adapters/} &
+ABI-Adapter über dem \texttt{ext/}-Fremdcode (10~A-, 12~P-Einträge) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{comdare-prt-art --- Prüfling}
+
+Der Prüfling ist als Header-Bibliothek unter \texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/}
+organisiert; jeder Baustein liegt in einem eigenen thematischen Unterverzeichnis.
+
+{\footnotesize
+\begin{verbatim}
+comdare-prt-art/                            Stand: Commit faa4e76
+|-- CMakeLists.txt, comdare_pruefling.cmake   Build-Einstieg (CMake)
+|-- prt_art/
+|   |-- include/prt_art/    Bausteine des Prueflings (Header)
+|   |   |-- identity/           prt_art_search_engine.hpp (PrtArtSearchEngine),
+|   |   |                       prt_art_execution_engine_adapter.hpp,
+|   |   |                       prt_art_pruefling_factory.hpp
+|   |   |-- allocator/          pool_descriptor.hpp, pool_router.hpp, pool_set.hpp
+|   |   |-- concurrency/        olc_with_reserved_blocks.hpp
+|   |   |-- prefetch/           path_oriented_prefetch.hpp, redirect_prefetch.hpp,
+|   |   |                       distance_estimator.hpp
+|   |   |-- memory_layout/      multi_level_layout.hpp u.a.
+|   |   |-- measurement/        density_tracker.hpp, hypothesis_metrics.hpp
+|   |   |-- telemetry/          leaf_only_counter.hpp
+|   |   `-- ...                 nodes/, slots/, traversal/, value_handle/,
+|   |                           internal_search/, serialization/, ...
+|   |-- legacy_reimpl/      14 Re-Implementierungen im Nummernband P11-P27
+|   |                       (P11-CSS-tree ... P27-Zhang-ASPLOS-Hierarchical)
+|   |-- algorithm_profiles/ prtart_pruefling.profile.xml,
+|   |                       permutation_axes_extension.xml
+|   |-- codegen/ + permutations_codegen/   Codegen-Vorlagen des Prueflings
+|   `-- tests/unit/         modulnahe Tests
+|-- tests/unit/             repositoriumsweite Unit-Tests
+|-- cmake/                  Build-Hilfsdateien
+`-- docs/                   sessions/ (Entwicklungs-Dokumentation)
+\end{verbatim}
+}
+
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Komponente} & \textbf{Pfad} & \textbf{Zweck} \\
+\midrule
+PrtArtSearchEngine &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}identity/\allowbreak{}prt\_art\_search\_engine.hpp} &
+hybride Engine des Prüflings (Vector/Map/Tuple-API) \\
+ExecutionEngine-Adapter &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}identity/\allowbreak{}prt\_\allowbreak{}art\_\allowbreak{}execution\_\allowbreak{}engine\_\allowbreak{}adapter.hpp} &
+ABI-Anbindung an die Mess-Infrastruktur \\
+Pool-Allokator &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}allocator/} &
+Deskriptoren der 4+1+2-Pools \\
+OLC &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}concurrency/} &
+OLC mit reservierten Blöcken \\
+Prefetch &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}prefetch/} &
+pfadorientiertes Prefetch, Redirect-Prefetch \\
+MultiLevel-Layout &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}memory\_layout/} &
+\texttt{multi\_\allowbreak{}level\_\allowbreak{}layout.hpp} u.\,a. \\
+DensityTracker, H1--H3 &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}measurement/} &
+\texttt{density\_\allowbreak{}tracker.hpp}, \texttt{hypothesis\_\allowbreak{}metrics.hpp} \\
+legacy\_reimpl &
+\texttt{prt\_art/\allowbreak{}legacy\_reimpl/} &
+14 Vergleichs-Re-Implementierungen (P11--P27) \\
+Prüflings-Profil &
+\texttt{prt\_art/\allowbreak{}algorithm\_profiles/} &
+Profil- und Achsen-Erweiterungs-XML \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{probst-Diplomarbeit-cache-engine --- Super-Repository}
+
+Das Super-Repository bündelt Mess-Treiber, Experiment-Konfigurationen, Auswertungs-Pipeline und
+Manuskript; die beiden Code-Repositorien sind unter \texttt{Code/\allowbreak{}external/} als
+Submodule eingebunden.
+
+{\footnotesize
+\begin{verbatim}
+probst-Diplomarbeit-cache-engine/           Stand: Commit ba3a9ae
+|-- Code/
+|   |-- 01_sample_data_generator/   Erzeugung von Beispieldaten
+|   |-- 02_messung_driver/          Mess-Treiber (main.cpp, v32_orchestrator.hpp,
+|   |                            plugin_loader.hpp, measurement_writer.hpp, ...)
+|   |-- 03_binary_to_csv/           Auswertungs-Stufe 1: binaere Messdaten -> CSV
+|   |-- 04_csv_to_latex/            Auswertungs-Stufe 2: CSV -> LaTeX-Tabellen
+|   |-- 05_diagram_generator/       Auswertungs-Stufe 3: Diagramm-Erzeugung
+|   |-- 06_latex_to_pdf/            Manuskript-Build (build_thesis.sh/.bat)
+|   |-- 07_tier_binary_report/      Bericht ueber die Tier-Mess-Binaries
+|   |-- experiment_config/          config_a_prt_art_vs_sota.xml,
+|   |                               config_b_cache_engine_perms.xml,
+|   |                               config_c_merge_alt_neu.xml, messreihen.xml,
+|   |                               sample_data/
+|   |-- external/               Submodule: comdare-cache-engine, comdare-prt-art
+|   `-- tests/, cmake/, tools/      repoweite Tests, Build- und Hilfsskripte
+|-- thesis/diplomarbeit/            Manuskript: diplomarbeit.tex, Makefile,
+|                                   kapitel/{de,en}/, anhang/{de,en}/,
+|                                   tabellen/, tikz/
+|-- docs/                           Ledger, Architektur- und Session-Dokumentation
+|-- Forschungsarbeiten/             Literatur-Sammlung je Achse (Sammel-Eintrag)
+`-- Messdaten-Backup/               additive Sicherung der Roh-Messdaten
+\end{verbatim}
+}
+
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Komponente} & \textbf{Pfad} & \textbf{Zweck} \\
+\midrule
+messung\_driver &
+\texttt{Code/\allowbreak{}02\_messung\_driver/} &
+Mess-Treiber: lädt Permutations-Module, orchestriert die Messreihen \\
+Experiment-Konfigurationen &
+\texttt{Code/\allowbreak{}experiment\_config/} &
+XML-Konfigurationen A/B/C und \texttt{messreihen.xml} \\
+binary\_to\_csv &
+\texttt{Code/\allowbreak{}03\_binary\_to\_csv/} &
+Auswertungs-Pipeline, Stufe~1 \\
+csv\_to\_latex &
+\texttt{Code/\allowbreak{}04\_csv\_to\_latex/} &
+Auswertungs-Pipeline, Stufe~2 \\
+diagram\_generator &
+\texttt{Code/\allowbreak{}05\_diagram\_generator/} &
+Diagramm-Erzeugung aus CSV-Daten \\
+latex\_to\_pdf &
+\texttt{Code/\allowbreak{}06\_latex\_to\_pdf/} &
+Manuskript-Build-Skripte \\
+Submodule &
+\texttt{Code/\allowbreak{}external/} &
+Einbindung der beiden Code-Repositorien \\
+Manuskript &
+\texttt{thesis/\allowbreak{}diplomarbeit/} &
+LaTeX-Quellen der Arbeit (DE/EN) \\
+Messdaten-Backup &
+\texttt{Messdaten-Backup/} &
+additive Sicherung der Roh-Messdaten \\
+\bottomrule
+\end{tabular}
+\end{center}

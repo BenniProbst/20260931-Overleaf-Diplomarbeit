@@ -1,4 +1,148 @@
 \chapter{Architekturentscheidungen}\label{app:adr}
 
-% TODO(DE): Uebersetzung aus anhang/en/E_architecture_decisions.tex.
+% [#90/AP-B5] Kompakte ADR-Sammlung (Architecture Decision Records), aus den Kapiteln nachgezeichnet.
+% Nur dokumentierte Entscheidungen; jede ADR belegt per \ref auf den tragenden Thesis-Abschnitt.
+Dieser Anhang sammelt die tragenden Entwurfsentscheidungen der Arbeit als kompakte
+\emph{Architecture Decision Records} (ADRs): je Entscheidung der Kontext, in dem sie fiel, die
+Entscheidung selbst und ihre wichtigste Konsequenz. Ziel ist die schnelle Nachvollziehbarkeit ---
+\emph{warum} der Apparat so gebaut ist, wie ihn die Kapitel beschreiben; die ausführliche
+Herleitung und Begründung liegt jeweils im per \emph{Beleg} referenzierten Abschnitt des
+Haupttextes und wird hier nicht wiederholt.
 
+\begin{description}
+
+  \item[ADR-1 --- C-stabile Modulgrenze statt C++-Modul-ABI]\hfill\\
+  \textbf{Kontext:} Jede Permutation wird als eigenständige Tier-Binary kompiliert und zur Laufzeit
+  geladen; C++23-Module strukturieren zwar die Übersetzungseinheiten, garantieren für sich genommen
+  aber keine portable ABI-Stabilität~\cite{wg21_modules_abi}.
+  \textbf{Entscheidung:} Eine einheitliche C-Modulgrenze
+  (\texttt{comdare\_create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exportiert je Permutation genau
+  ein Lebewesen; dahinter liegt die dreischichtige Abstraktionskette
+  \texttt{CacheEngine} $\to$ \texttt{ExecutionEngine} $\to$ \texttt{SearchEngine}.
+  \textbf{Konsequenz:} Die ABI-Stabilität stellt die C-Grenze her, nicht das Modulsystem; der
+  ABI-Vertrag wird je Modul prüfbar (opt-in ABI-Verify).
+  \textbf{Beleg:} Abschnitte~\ref{sec:contributions}, \ref{sec:anatomy-patterns}
+  und~\ref{sec:impl-architecture}.
+
+  \item[ADR-2 --- Compile-Time-Permutation über Typlisten statt Laufzeit-Adaption]\hfill\\
+  \textbf{Kontext:} Neunzehn Kompositions-Achsen spannen einen Produktraum von über $10^{14}$
+  Kombinationen auf; der Hot-Path darf weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches tragen.
+  \textbf{Entscheidung:} Die Permutation läuft übersetzungszeitlich über
+  Boost.MP11-Typlisten (\texttt{mp\_list}) und concept-geprüftes \texttt{if constexpr}
+  (\texttt{resolve\_baustein}) --- kein Runtime-Tag, kein \texttt{std::variant}; der literale
+  \texttt{std::variant}-Katalog besteht nur als historische Elf-Achsen-Vorstufe
+  (\texttt{baustein\_variants}-Fallback).
+  \textbf{Konsequenz:} Die Achsen-Abstraktion bleibt eine zero-cost abstraction.
+  \textbf{Beleg:} Abschnitte~\ref{sec:contributions}, \ref{sec:anatomy-patterns}
+  und~\ref{sec:axes-impl}.
+
+  \item[ADR-3 --- Drei-Ebenen-Modell als die \emph{eine} Architektur]\hfill\\
+  \textbf{Kontext:} Anatomie-Metapher und technische Engine-Sicht drohen zu parallelen
+  Modellbäumen auseinanderzulaufen.
+  \textbf{Entscheidung:} Es gibt genau eine Hierarchie ohne Parallel-Bäume --- Gattung
+  (Außen-Interface, das Prüf-Dock) $\to$ Gattungs-Unterklasse (fester Achsen-Satz) $\to$
+  Achsen-Organe --- unter \texttt{IExecutionEngine} als gemeinsamer messbarer Wurzel; eine eigene
+  Gattung entstünde erst, wenn sich der Basis-Achsen-Satz grundlegend unterschiede.
+  \textbf{Konsequenz:} \enquote{SearchEngine} ist nur die ABI-Laufzeit-Sicht desselben Lebewesens,
+  kein zweites Modell.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-model}, \ref{sec:anatomy-levels}
+  und~\ref{sec:impl-architecture}.
+
+  \item[ADR-4 --- Durchreich-Doktrin und erzwungene Vollbelegung]\hfill\\
+  \textbf{Kontext:} Nicht-baumartige Verfahren (etwa die Hash-Gegenprobe) tragen baum- und
+  trie-spezifische Achsen wie Pfadkompression oder Knotentyp nicht sinnvoll.
+  \textbf{Entscheidung:} Solche Achsen fallen nicht weg, sondern werden als Durchreich-Varianten
+  (\texttt{None}) belegt; das \texttt{IsComposition}-Concept erzwingt übersetzungszeitlich die
+  Belegung aller neunzehn Organe, sodass keine Composition mit offener Achse übersetzt.
+  \textbf{Konsequenz:} Nicht-baumartige Verfahren erfordern keine eigene Gattung, sondern ein
+  eingeschränktes Achsen-Subset derselben Gattung.
+  \textbf{Beleg:} Abschnitte~\ref{sec:sota-instances}, \ref{sec:anatomy-levels}
+  und~\ref{sec:axes-impl}.
+
+  \item[ADR-5 --- Schichtenmodell E4--E0 mit eingefrorenen Verträgen und Contract-Tests]\hfill\\
+  \textbf{Kontext:} Zwei Implementierungs-Inkremente über mehrere Ebenen gleichzeitig mussten
+  vollständig zurückgenommen werden; bei über $10^{14}$ Kombinationen sind Mehr-Ebenen-Änderungen
+  praktisch nicht abnehmbar.
+  \textbf{Entscheidung:} Die Experiment-Pipeline gliedert sich in die Schichten E4--E0 (plus
+  Querschnitt~M); jede Schicht wird einzeln fertiggestellt, mit explizit eingefrorenem
+  Interface-Vertrag zur Nachbar-Ebene, und gegen einen übersetzungszeitlichen Ersatz (Fake) der
+  Nachbar-Ebene contract-getestet.
+  \textbf{Konsequenz:} Jede Ebene ist einzeln abnehmbar, bevor die nächste beginnt; die Grenze
+  E3$\to$E2 ist bereits golden-getestet.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-layers} und~\ref{sec:impl-contracts}.
+
+  \item[ADR-6 --- honest-0-Doktrin: ehrliche Null bzw.\ ehrliche Leere]\hfill\\
+  \textbf{Kontext:} Nicht wirklich erhebbare Werte (Zähler ohne Hardware-Zugriff, Achsen ohne
+  echten Laufzeit-Parameter) laden zu plausiblen Phantomwerten ein, die die Heuristik-Ableitung
+  systematisch vergiften würden.
+  \textbf{Entscheidung:} Das System meldet ehrlich ungültig oder leer statt eines Phantomwerts ---
+  per-Ereignis-Gültigkeits-Flags je Messung; die Wall-Clock-Quelle verweigert es etwa, ihren
+  Mittelwert als Perzentil zu etikettieren.
+  \textbf{Konsequenz:} Lücken bleiben sichtbar und gezielt schließbar; die Doktrin ist in den
+  Bausteinen einprogrammiert statt nur dokumentiert.
+  \textbf{Beleg:} Abschnitte~\ref{sec:measurement-system} und~\ref{sec:impl-system-axes}.
+
+  \item[ADR-7 --- Drei-Repository-Split mit orthogonalen Subsystemen]\hfill\\
+  \textbf{Kontext:} Mess-Apparat, Prüfling und Auswertung haben getrennte Verantwortlichkeiten
+  und Lebenszyklen.
+  \textbf{Entscheidung:} Drei Repositorien --- \texttt{comdare-cache-engine} (\emph{wie} gemessen
+  wird), \texttt{comdare-prt-art} (der Prüfling) und \texttt{probst-Diplomarbeit-cache-engine}
+  (\emph{was} getestet wird) --- mit Pitchfork-Quellbaum-Layout; die vier Subsysteme
+  (Mess-Treiber, CacheEngineBuilder, CacheEngine, Prüfling) liegen orthogonal zu dieser Aufteilung.
+  \textbf{Konsequenz:} Builder und CacheEngine teilen sich ein Repo als ausführbare Datei bzw.\
+  Bibliothek; die Rollen bleiben klar getrennt.
+  \textbf{Beleg:} Abschnitt~\ref{sec:repos}.
+
+  \item[ADR-8 --- Familienweise Adapter-Fallbacks für eigenständig lauffähige Builds]\hfill\\
+  \textbf{Kontext:} Fremd-Code (Allokator-Vendors, SOTA-Bausteine) ist nicht auf jeder Plattform
+  und in jedem Build verfügbar oder aktiviert.
+  \textbf{Entscheidung:} Übersetzungszeitliche Flag-Familien schalten Adapter zu oder ab, jeweils
+  mit sicherem, familienweise gewähltem Fallback: Allokator-Adapter ersetzen den fehlenden Vendor
+  durch \texttt{std::malloc}/\texttt{std::free}, Datenstruktur-Adapter durch einen Stub, der bei
+  Benutzung kontrolliert eine \texttt{std::runtime\_error}-Ausnahme wirft.
+  \textbf{Konsequenz:} Der Build bleibt ohne jede Fremd-Aktivierung eigenständig lauffähig.
+  \textbf{Beleg:} Abschnitt~\ref{sec:axes-impl}.
+
+  \item[ADR-9 --- Mess-Gating und drei Auslieferungsvarianten]\hfill\\
+  \textbf{Kontext:} Mess- und Observer-Kopplungen kosten Zeit und dürfen den Produktiv-Pfad
+  nicht belasten.
+  \textbf{Entscheidung:} Die Mess-Kopplungen des Laufzeit-Adapters sind über
+  \texttt{COMDARE\_MEASUREMENT\_ON} gegated; daraus entstehen drei Auslieferungsvarianten derselben
+  Permutation (Debug mit Observer, Messung mit Aggregator, Release ohne Mess-Kopplungen), und den
+  Mess-Aggregator führt der \texttt{ExperimentDriver} host-seitig.
+  \textbf{Konsequenz:} Der Produktiv-Pfad bleibt mess-frei und trägt keinen Mess-Overhead.
+  \textbf{Beleg:} Abschnitte~\ref{sec:repos} und~\ref{sec:impl-pipeline}.
+
+  \item[ADR-10 --- \texttt{std::map}-Vertrag als gemeinsamer Nenner mit Konformitäts-Gatter]\hfill\\
+  \textbf{Kontext:} Strukturell verschiedene Suchalgorithmen sind nur über eine gemeinsame, gut
+  verstandene Außen-Schnittstelle fair vergleichbar.
+  \textbf{Entscheidung:} Alle Verfahren werden auf den C++-Vertrag der geordneten Map
+  \texttt{std::map<Key,\,Value>} abgebildet (parallel \texttt{std::vector} als
+  Container-Vergleichsfall); ein Konformitäts-Gatter prüft diesen Vertrag vor jeder Messung.
+  \textbf{Konsequenz:} Nur Vergleichbares wird verglichen; die Achsen beschreiben ausschließlich
+  das innere Verhalten hinter der festen Schnittstelle.
+  \textbf{Beleg:} Abschnitt~\ref{sec:measurement-system}.
+
+  \item[ADR-11 --- Entwurfsmuster-Auswahl mit Negativliste; Command nur im Hybrid-Modus]\hfill\\
+  \textbf{Kontext:} Der Apparat ist bewusst eine Komposition benannter Entwurfsmuster; unklare
+  Muster-Rollen würden die Architektur verwässern.
+  \textbf{Entscheidung:} Verwendet werden u.\,a.\ \emph{Strategy}, \emph{Abstract Factory},
+  \emph{Composite}, \emph{Iterator}, \emph{Adapter}, \emph{Observer}, \emph{Decorator},
+  \emph{Memento} und CRTP; \emph{nicht} verwendet werden \emph{Singleton}, \emph{Flyweight} und
+  \emph{Bridge}, und das \emph{Command}-Muster tritt ausschließlich als Befehls-Kanal des
+  Hybrid-Modus auf.
+  \textbf{Konsequenz:} Jedes Muster hat genau eine benannte Rolle in der Verkabelung des Apparats.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-patterns} und~\ref{sec:heuristics-modes}.
+
+  \item[ADR-12 --- Mess-Regime-Doppel: immutables Talos und root-Linux]\hfill\\
+  \textbf{Kontext:} Produktions-Treue und Mess-Tiefe stehen im Konflikt: Ein produktionsnahes
+  System verwehrt gerade den Hardware-Zähler-Zugriff, den tiefe Messungen brauchen.
+  \textbf{Entscheidung:} Auf den Produktions-Zielmaschinen wird jede Messung unter zwei
+  Betriebssystem-Regimes erhoben: einem immutablen Betriebssystem (Talos) als Produktiv-Spiegel
+  und einem root-Linux mit vollem Hardware-Zähler-Zugriff (\texttt{perf}/MSR).
+  \textbf{Konsequenz:} Die zeit- und observer-basierten Kategorien laufen unter beiden Regimes
+  identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
+  privilegierten Regime erhoben.
+  \textbf{Beleg:} Abschnitte~\ref{sec:eval-method} und~\ref{sec:contributions}.
+
+\end{description}
