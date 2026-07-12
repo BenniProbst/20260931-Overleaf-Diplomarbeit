@@ -63,6 +63,38 @@ Einzeloperationen \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{scan
 \input{anhang/de/tabellen/lc_surface_op_scan_p50_ns.tex}
 \input{anhang/de/tabellen/lc_surface_op_rmw_p50_ns.tex}
 
+% =====================================================================
+%  CI-interaktiv (2026-07, #24): die vier folgenden Darstellungen werden
+%  vom C++23-Generator (Code/08_appendix_generator, ersetzt die .ps1-
+%  Orchestratoren) je Messlauf aus der WIDE-Matrix regeneriert und von
+%  der Mess-Pipeline nach measurement/<datiert>/ persistiert.
+%  \InputIfFileExists: kompiliert auch VOR dem ersten Messlauf sauber.
+% =====================================================================
+
+\section{Per-Achsen-Latenz-Attribution}\label{sec:measurements:seg-attribution}
+
+Die folgende Abbildung zerlegt die Segment-Laufzeit je Suchverfahren in die Beitr\"age der einzelnen
+Organ-Achsen (gestapelte Balken). Das 100\,\%-Ganze je Balken ist die Wall-Clock des separaten
+19-Segment-Laufs (\texttt{seg\_run\_total\_ns}), \emph{nicht} die Real-Workload-Latenz
+(\texttt{total\_ns}); die 20 Segmente (19 Organ-Achsen + Framework-Rest) summieren sich exakt zu
+dieser Basis (Coverage $\approx 1{,}0$).
+
+\InputIfFileExists{anhang/de/tabellen/seg_attribution.tex}{}{%
+  \emph{(Diese Darstellung erscheint nach dem n\"achsten Messlauf mit \texttt{seg\_*\_ns}-Spalten.)}}
+
+\section{Latenz-Verteilung}\label{sec:measurements:latency-distribution}
+
+Die Range-Balken zeigen je Suchverfahren und Operation die p50--p99-Spanne (Punkt bei p50, Whisker
+zu p99); da nur diese beiden Perzentile gemessen werden, wird bewusst \emph{kein} Box-Plot mit
+interpolierten Quartilen gezeichnet. Die ECDF stellt die Verteilung der Gesamt-Latenz \emph{\"uber
+die Konfigurationen} dar (Anteil der Permutationen mit \texttt{ns\_per\_op} $\le x$) --- keine
+Per-Operation-CDF, da die Rohsamples je Operation nicht vorliegen.
+
+\InputIfFileExists{anhang/de/tabellen/latency_range.tex}{}{%
+  \emph{(Die p50--p99-Range-Darstellung erscheint nach dem n\"achsten Messlauf.)}}
+\InputIfFileExists{anhang/de/tabellen/latency_ecdf.tex}{}{%
+  \emph{(Die Konfigurations-ECDF erscheint nach dem n\"achsten Messlauf.)}}
+
 \section{Achsen-Austauschbarkeit}\label{sec:measurements:exchange}
 
 Die vier folgenden Langtabellen belegen die Austauschbarkeit je variabler Achse anhand der
@@ -77,6 +109,14 @@ Geschwister-Paar-Differenzen (Median rel.\ $\Delta$ ns/op bez\"uglich $v$): \tex
 \input{anhang/de/tabellen/ld_exchange_node_type.tex}
 \input{anhang/de/tabellen/ld_exchange_memory_layout.tex}
 \input{anhang/de/tabellen/ld_exchange_prefetch.tex}
+
+Der folgende Forest-Plot fasst die Austauschbarkeit der \texttt{ns\_per\_op}-Kennzahl zusammen
+(Punkt = Median rel.\ $\Delta$, Whisker = IQR, 0-Referenzlinie; kleine-$n$-Zeilen ausgegraut). Der
+Whisker liegt symmetrisch um den Median (\"uber die IQR-Breite), da das Aggregat nur die IQR-Breite,
+nicht die Quartilsgrenzen tr\"agt.
+
+\InputIfFileExists{anhang/de/tabellen/exchange_forest.tex}{}{%
+  \emph{(Der Forest-Plot erscheint nach dem n\"achsten Messlauf.)}}
 
 \section{Limitierungen}\label{sec:measurements:limitations}
 

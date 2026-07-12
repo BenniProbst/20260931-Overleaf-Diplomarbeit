@@ -61,6 +61,38 @@ individual operations \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{
 \input{anhang/en/tabellen/lc_surface_op_scan_p50_ns.tex}
 \input{anhang/en/tabellen/lc_surface_op_rmw_p50_ns.tex}
 
+% =====================================================================
+%  CI-interactive (2026-07, #24): the four figures below are regenerated
+%  per measurement run by the C++23 generator (Code/08_appendix_generator,
+%  replaces the .ps1 orchestrators) from the WIDE matrix and persisted by
+%  the measurement pipeline to measurement/<dated>/.
+%  \InputIfFileExists: compiles cleanly even BEFORE the first run.
+% =====================================================================
+
+\section{Per-axis latency attribution}\label{sec:measurements:seg-attribution}
+
+The following figure decomposes the segment runtime per search method into the contributions of the
+individual organ axes (stacked bars). The 100\,\% whole per bar is the wall-clock of the separate
+19-segment run (\texttt{seg\_run\_total\_ns}), \emph{not} the real-workload latency
+(\texttt{total\_ns}); the 20 segments (19 organ axes + framework remainder) sum exactly to this
+base (coverage $\approx 1.0$).
+
+\InputIfFileExists{anhang/en/tabellen/seg_attribution.tex}{}{%
+  \emph{(This figure appears after the next measurement run with \texttt{seg\_*\_ns} columns.)}}
+
+\section{Latency distribution}\label{sec:measurements:latency-distribution}
+
+The range bars show the p50--p99 span per search method and operation (dot at p50, whisker to p99);
+since only these two percentiles are measured, no box plot with interpolated quartiles is drawn on
+purpose. The ECDF shows the distribution of the overall latency \emph{across configurations} (share
+of permutations with \texttt{ns\_per\_op} $\le x$) --- not a per-operation CDF, as raw per-operation
+samples are not available.
+
+\InputIfFileExists{anhang/en/tabellen/latency_range.tex}{}{%
+  \emph{(The p50--p99 range figure appears after the next measurement run.)}}
+\InputIfFileExists{anhang/en/tabellen/latency_ecdf.tex}{}{%
+  \emph{(The configuration ECDF appears after the next measurement run.)}}
+
 \section{Axis exchangeability}\label{sec:measurements:exchange}
 
 The four following longtables provide the exchangeability evidence per variable axis from the
@@ -75,6 +107,14 @@ sibling-pair differences (median rel.\ $\Delta$ ns/op w.r.t.\ $v$): \texttt{sear
 \input{anhang/en/tabellen/ld_exchange_node_type.tex}
 \input{anhang/en/tabellen/ld_exchange_memory_layout.tex}
 \input{anhang/en/tabellen/ld_exchange_prefetch.tex}
+
+The following forest plot summarises the exchangeability of the \texttt{ns\_per\_op} metric (dot =
+median rel.\ $\Delta$, whisker = IQR, zero reference line; small-$n$ rows greyed out). The whisker
+is symmetric around the median (via the IQR width), as the aggregate stores only the IQR width, not
+the quartile bounds.
+
+\InputIfFileExists{anhang/en/tabellen/exchange_forest.tex}{}{%
+  \emph{(The forest plot appears after the next measurement run.)}}
 
 \section{Limitations}\label{sec:measurements:limitations}
 
