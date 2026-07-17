@@ -1,4 +1,177 @@
 \chapter{Architecture Decisions}\label{app:adr}
 
-% Architecture Decision Records F1--F15 (+K, +F-EXTRA)
-% (from docs/bausteine/04_architekturentscheidungen_F1_F15.md).
+% Architecture Decision Records ADR-1..ADR-12, extracted verbatim-faithfully from the
+% consolidated, user-verified decisions in the project ledger
+% (DIPLOMARBEIT-ZIELE-OFFENE-PUNKTE-LEDGER.md, sections 18/19/20 + goal V6), 2026-07-16/17.
+% Only documented decisions are recorded; no invented architecture. The earlier F1--F15
+% round (docs/bausteine/04_...) is historical and partly superseded (newer facts win).
+
+This appendix records the load-bearing architecture decisions as Architecture Decision Records
+(ADRs). Each ADR states the context, the decision and its consequences, and carries the date on
+which it was fixed. The decisions are the consolidated, verified choices of the architect (the
+author, in the supervising role); they were established across the design sessions of
+2026-07-16/17 and supersede an earlier decision round where they conflict. The code structure they
+govern is documented in Appendix~\ref{app:code}.
+
+\section{ADR-1: Recursive dock architecture}\label{asec:adr-dock}
+\emph{Date: 2026-07-16/17.}
+\paragraph{Context.} The framework must both compose measurement systems and drive the individual
+tier binaries, at two different granularities, while keeping every boundary binary-stable.
+\paragraph{Decision.} The same dock/ABI-stable-shared-object/contract pattern is applied
+recursively on two levels. The \emph{experiment dock} (planner~$\leftrightarrow$~cache-engine
+builder, CEB) is \emph{one-directional}: the planner steers the settings of the CEB it compiles and
+receives no return channel. The \emph{check dock} (CEB~$\leftrightarrow$~tier binary) is
+\emph{bidirectional}: the CEB drives the tier binary and the tier binary reports back ABI-stably.
+The CEB is itself a system-axis-versioned shared object; it writes the requested tasks and measured
+values itself to the target given in the experiment XML, not through the one-directional experiment
+dock.
+\paragraph{Consequences.} The Anatomy major version rides on the experiment-planner dock. The two
+levels share their concepts, so the pattern is genuinely recursive. Result write-back is decoupled
+from the drive path.
+
+\section{ADR-2: Compile-time-only composition (CRTP + concept guard)}\label{asec:adr-crtp}
+\emph{Date: 2026-07-16 (standing doctrine).}
+\paragraph{Context.} The design space is reassembled by permutation, not by runtime adaptation; the
+hot path must not pay for dynamic dispatch.
+\paragraph{Decision.} On the hot path, composition is compile-time only: axes are CRTP bases guarded
+by concepts, with no vtable and no runtime switch. Any compile-time-to-runtime degradation is
+corrected back. Runtime polymorphism is permitted only internally, never at the product interfaces
+or the ABI. Only named textbook design patterns are used; ad-hoc constructions are disallowed.
+\paragraph{Consequences.} Each composed configuration is monomorphised per point; the axis roof
+\texttt{topics::Axis} enforces the guard (empty, non-polymorphic) so that an accidentally introduced
+vtable fails to compile. The orphaned runtime-vtable scheduling strategy is deprecated and replaced
+(see ADR-7).
+
+\section{ADR-3: Allocators are algorithms of the allocator axis}\label{asec:adr-alloc}
+\emph{Date: 2026-07-16.}
+\paragraph{Context.} Allocation is one of the cache-aware design decisions and must be measurable on
+equal footing with the other axes.
+\paragraph{Decision.} An allocator wrapper \emph{is} the algorithm choice, modelled as a compile-time
+strategy on the allocator axis (\texttt{axis\_06}). All vendor wrappers live in one central type
+list; a compile-time filter selects the enabled subset, and code generation bakes exactly one choice
+into each per-permutation binary.
+\paragraph{Consequences.} Allocator selection is a static axis value, never a runtime switch; this
+keeps per-permutation measurement fair and directly motivates the DLL-load decision (ADR-5), because
+each shared object must carry its own allocator archive.
+
+\section{ADR-4: Four level-one genera, each with a head framework}\label{asec:adr-genera}
+\emph{Date: 2026-07-16/17.}
+\paragraph{Context.} Structurally different data structures (ordered map, sequential container, set,
+graph) must be expressed as points of the same design space behind one interface, without collapsing
+their distinct outer hulls.
+\paragraph{Decision.} There are four level-one genera --- map (the search-algorithm hull),
+(sequential) container, set and graph --- each with its own head framework of shared genus concepts.
+Each genus is its own genus with its own ABI and only partially reused observers; genera do not
+intersect but may use one another. A \emph{set} is its own genus with its own ABI (not a subtype of
+sequence); a \emph{view} is a read-only projection of a sequential container.
+\paragraph{Consequences.} Promoting set from a sub-genus of container to a level-one genus is part of
+the coordinated ABI bump (ADR-7); the genera and their enforcement are non-negotiable.
+
+\section{ADR-5: Dynamic-library loading via Option B (self-linked vendor archive)}\label{asec:adr-dll}
+\emph{Date: 2026-07-17.}
+\paragraph{Context.} The runtime build path for a per-permutation shared object did not link the
+vendor allocator archive, so \texttt{dlopen} failed on undefined allocator symbols and no
+measurements were produced.
+\paragraph{Decision.} Each permutation shared object self-links its own vendor allocator archive
+(Option~B). The rejected Option~A (host-side symbol export via \texttt{-rdynamic}) was found
+doctrine-adverse on five counts: it breaks the allocator-as-algorithm axis through one process-wide
+allocator instance with arena contamination between permutations, breaks the destroy contract,
+violates the self-contained ABI, breaks the truthfulness of the build-variant metadata, and couples
+static dispatch to runtime symbol resolution.
+\paragraph{Consequences.} Each shared object is loaded under \texttt{RTLD\_LOCAL} with private
+allocator symbols, giving fair per-library isolation and a clean teardown. The fix is purely
+additive and ABI-compatible; it restored non-zero measurement output and unblocked the real
+measurement run (see Appendix~\ref{app:measurements}).
+
+\section{ADR-6: System axes over tier-binary axes (the target layering)}\label{asec:adr-layering}
+\emph{Date: 2026-07-16/17.}
+\paragraph{Context.} The CEB-level configuration axes were scattered and flat: all axes were
+reflected into one flat list, with no shared layer separating the system level from the organ level.
+\paragraph{Decision.} System axes (at CEB level, compile-time static, versioned) sit \emph{over} the
+tier-binary axes (organs plus governor/prefetcher). The CEB is built under its system axes, which in
+turn determine how the subordinate tier binaries are built statically; the compile order is
+system configuration first, then the measurement/heuristic configuration. The CEB configuration
+system axes are: scheduling, hardware/ISA, telemetry regime, load and load frameworks, compiler
+(\texttt{gcc}\,$\vert$\,\texttt{clang}) and extension hardware (see ADR-12) --- six in total. System
+axes get their own abstract root (``blood''); organ and system axes are never mixed.
+\paragraph{Consequences.} A dedicated system-axis level is split off above the nineteen organ axes;
+this layering was introduced ABI-compatibly, without a major bump, closing the layering gap between
+the model and the implementation.
+
+\section{ADR-7: The single coordinated 4\,$\to$\,5 ABI bump}\label{asec:adr-abi}
+\emph{Date: 2026-07-17.}
+\paragraph{Context.} Four changes each break the same ABI boundary (module symbols, POD layouts, the
+genus discriminator and the \texttt{binary\_id} convention). Doing them separately would touch the
+frozen ABI boundary four times and re-materialise the golden set four times.
+\paragraph{Decision.} They are bundled into one coordinated Anatomy major bump (4\,$\to$\,5) at the
+experiment-planner dock: telemetry moved out of the \texttt{binary\_id} into a system axis; the set
+level-one promotion; the native set ABI; and scheduling as a compile-time CRTP system axis (replacing
+the orphaned runtime vtable). The magic marker advances so the loader cleanly rejects all
+old-major libraries. This is the one reserved major bump; it proceeds only under the coordinated
+approval, with one backup and review.
+\paragraph{Consequences.} The check dock becomes the single bidirectional contract carrier (the
+former iterator bypass is unified). Documentation and measurement data are never deleted; the bump
+carries a per-increment verification checkpoint showing the concrete POD/ABI diff.
+
+\section{ADR-8: Measurement-preserving rebuild of the golden set}\label{asec:adr-golden}
+\emph{Date: 2026-07-17.}
+\paragraph{Context.} The golden pilot set is a fixed 320-point configuration that also serves as a
+round-trip gate. The coordinated ABI bump (ADR-7) breaks it three ways (system axes leave the path,
+the genus discriminator changes, the major advances).
+\paragraph{Decision.} The golden set is deliberately decomposed and rebuilt rather than kept
+byte-identical, but strictly measurement-preserving: the old fixtures and their measurement
+CSV/PDF are frozen additively and untouched; the serialisation is \emph{extended, not replaced}; the
+set is re-materialised once per genus; and the gate is re-pointed, keeping the old set as a
+historical reference.
+\paragraph{Consequences.} No measurement datum is ever lost; the previous round-trip invariant is
+replaced by the measurement-preserving rebuild only inside the one coordinated bump.
+
+\section{ADR-9: Serialisation --- flat system-axis folders, deep tier tree, dynamic-only columns}\label{asec:adr-serial}
+\emph{Date: 2026-07-16.}
+\paragraph{Context.} Encoding every axis as a CSV column is redundant, because the static and system
+axes are constant within a run.
+\paragraph{Decision.} System axes are serialised \emph{flat} as a folder structure; the tier-binary
+axes together with the CSV form a \emph{deeper} serialised permutation tree. Static compile-time axes
+and system axes do not become columns; they move into folder and file labels and into a sidecar
+manifest. Only the dynamic sub-axes (workload, resource control, P/E-core, NUMA, multithreading)
+remain columns. On disk this is a tree plus index; results are written first into the build path and
+then atomically copied to the single output target named in the experiment XML.
+\paragraph{Consequences.} The result layout is compact and non-redundant; provenance for the static
+and system choices is carried beside the binary rather than inflating every row.
+
+\section{ADR-10: Failure visibility --- \texttt{failed} cell instead of null}\label{asec:adr-failure}
+\emph{Date: 2026-07-16.}
+\paragraph{Context.} A silently missing value cannot be distinguished from a genuine zero, which would
+let a mis-programmed axis or an ISA/OS incompatibility disappear.
+\paragraph{Decision.} A failed axis algorithm yields the literal cell value ``failed'' (never null),
+together with an aggregated log written next to the CSV. The harness keeps measuring the remaining
+configurations.
+\paragraph{Consequences.} Mis-programming and platform incompatibilities become visible in the result
+tables; measurement is never disabled by writing zeros.
+
+\section{ADR-11: Measurement modes --- debug parallel, measurement single-thread}\label{asec:adr-modes}
+\emph{Date: 2026-07-16.}
+\paragraph{Context.} Debugging benefits from full parallelism, whereas a fair latency measurement must
+avoid harness-induced scheduling noise.
+\paragraph{Decision.} In debug mode all threads run in parallel; in measurement mode a single
+measurement thread is used, with the genus threading taken from the tier binary rather than
+overridden by the harness. Measurement is never switched off by writing zeros. From the same
+experiment XML the planner generates either the CI code or the local CMake code, synchronously.
+\paragraph{Consequences.} Measurement runners are laid out as ISA\,$\times$\,OS\,$\times$\,system-axes,
+disjoint and parallel across ISA, with concurrency one per measuring machine.
+
+\section{ADR-12: Extension-hardware system axis and compiler axis (Q2, Option C)}\label{asec:adr-q2}
+\emph{Date: 2026-07-17.}
+\paragraph{Context.} Instruction-set extensions (such as SIMD width) change the compiled tier binary
+and hence its measurements, and must be controlled explicitly without polluting the \texttt{binary\_id}.
+\paragraph{Decision.} Option~C: the CEB receives its frame from the experiment planner but itself
+permutes the extension-hardware value (initially the SIMD extension) at its own runtime, and for each
+value compiles and measures tier binaries at compile time. The extension hardware (SIMD, later GPU)
+is therefore its own system axis; its value is passed as compiler flags at the compile-function seam,
+its provenance is recorded in the build-variant sidecar, and it never enters the \texttt{binary\_id}.
+The compiler (\texttt{gcc}\,$\vert$\,\texttt{clang}) is a further full system axis, so that the
+planner can build and compare with both compilers.
+\paragraph{Consequences.} This yields the sixth CEB system axis (extension hardware) and the compiler
+axis of ADR-6; the hardware/ISA coupling drives \texttt{-march}/\texttt{-mavx} selection at the
+compile seam, and the versioned build-variant metadata (with an AVX10 field) documents each static
+compilation beside its binary.
