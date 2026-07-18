@@ -8,10 +8,10 @@
 > cache-engine `b8761f0`+ (Audit-Referenz), prt-art `f98445e`. DE 152 / EN 144 Seiten, Builds sauber.
 
 ## 1. Maßgebliche Dokumente (bereits im Repo, hier nur verlinkt)
-- **Audit (autoritativ):** `sessions/2026-07-02-audit-thesis-vs-code.md` — 151 Claims, §1=28 Thesis-Korrekturen (alle umgesetzt), §2=16 Code-TODOs.
-- **Impl-Handout (offener Arbeitsvorrat!):** `sessions/2026-07-02-handout-implementierungsagent-audit-code-todos.md` — User-Matrix P1–P7 + AP-1…AP-15 (P0=M3-Gate). **Alle AP offen.**
-- **Session-Verlauf/Restpunkte:** `sessions/2026-06-30-figuren-korrekturen-F1-F9-ERLEDIGT.md` (inkl. Voll-Review-, Galerie-, Audit-Nachzug- und Restpunkte-Abschnitte).
-- Architektur-Grundlage der Figuren: `sessions/2026-06-30-architektur-analyse-bild-korrekturen.md`.
+- **Audit (autoritativ):** `docs/sessions/2026-07-02-audit-thesis-vs-code.md` — 151 Claims, §1=28 Thesis-Korrekturen (alle umgesetzt), §2=16 Code-TODOs.
+- **Impl-Handout (offener Arbeitsvorrat!):** `docs/sessions/2026-07-02-handout-implementierungsagent-audit-code-todos.md` — User-Matrix P1–P7 + AP-1…AP-15 (P0=M3-Gate). **Alle AP offen.**
+- **Session-Verlauf/Restpunkte:** `docs/sessions/2026-06-30-figuren-korrekturen-F1-F9-ERLEDIGT.md` (inkl. Voll-Review-, Galerie-, Audit-Nachzug- und Restpunkte-Abschnitte).
+- Architektur-Grundlage der Figuren: `docs/sessions/2026-06-30-architektur-analyse-bild-korrekturen.md`.
 
 ## 2. Dieser Backup-Ordner
 - `memory/` — 34 diplomarbeit-/cache-engine-/codex-relevante Memory-Dateien des bisherigen Accounts

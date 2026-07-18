@@ -57,7 +57,7 @@ B12 `fig:pipeline`, UML `fig:uml-interfaces`). Jeder Schritt committet + gepusht
   Anatomie/Gattung/Tier-Hierarchie · die 19 Achsen + Sub-Achsen + Concept/CRTP/variant · Inter-Achsen-Interface-Nutzung (kann/muss) ·
   Build+Mess-Pipeline (CacheEngineBuilder baut Tier-Binaries je Config + misst; messung_driver) · Mess-Kategorien + Lücke
   (Latenz/Durchsatz/Speicher + Knoten/Daten/Index/cache-aware) · Architektur-Stand + offene Impl-Projekte · Web-Recherche SiL-Systeme.
-- **Schreibt** die Analyse nach **`thesis/diplomarbeit/sessions/2026-06-30-architektur-analyse-bild-korrekturen.md`** (Run-ID `wf_1422bec5-451`).
+- **Schreibt** die Analyse nach **`thesis/diplomarbeit/docs/sessions/2026-06-30-architektur-analyse-bild-korrekturen.md`** (Run-ID `wf_1422bec5-451`).
 - **Nächste Session:** dieses Analyse-Dokument zuerst lesen — es liefert die code-geerdete Grundlage für F1, F3–F7, F9 (Hierarchien, Pipeline, Mess-Lücke) und die SiL-Zitate für F8. Falls der Workflow nicht fertig wurde: erneut starten via `Workflow({scriptPath: ".../workflows/scripts/thesis-arch-figure-analysis-wf_1422bec5-451.js", resumeFromRunId: "wf_1422bec5-451"})` (gecachte Agenten kommen sofort zurück).
 
 ## 5. Weiterhin offen: die repetitiven Massen-Bildserien (als `% TODO` im Text verankert)

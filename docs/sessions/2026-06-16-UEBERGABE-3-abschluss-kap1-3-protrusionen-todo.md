@@ -38,7 +38,7 @@ Fehler oder eine Protrusion. (Optionen, falls gewünscht: 6 Manuals auf `@techre
 
 ## §2 — WAS DU (USER) MANUELL BESCHAFFEN MUSST  ← deine Frage
 ### (A) Paper-Volltexte via SLUB / TU-Dresden-Lizenz (AP-Z1; ich kann die PDFs nicht ziehen)
-Vollständige Liste mit Begründung: **`sessions/2026-06-16-AP-Z1-beschaffungsliste.md`**. Kurz, paywalled-aber-publiziert (8):
+Vollständige Liste mit Begründung: **`docs/sessions/2026-06-16-AP-Z1-beschaffungsliste.md`**. Kurz, paywalled-aber-publiziert (8):
 | `\cite`-Key | P-ID | Quelle |
 |---|---|---|
 | `bender2005coboblivious` | P17 | SIAM J. Computing (SICOMP) |
