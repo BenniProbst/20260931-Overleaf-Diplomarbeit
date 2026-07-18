@@ -1,6 +1,6 @@
 # Restruktur-Detailplan v3: Gliederung + Bildprogramm (Habich, 2026-06-29)
 
-> Reine **Planung** (noch kein Umbau). Grundlage = Backup-Tag `backup-2026-06-29-pre-habich-restruktur`.
+> Reine **Planung** (noch kein Umbau). Grundlage = Backup-Tag `backup-20260629-pre-habich-restruktur`.
 > **v3 = Kap. 2 als Dreischritt Konzept→Hardware→Software + präzisierte Bild-Platzierung** (s. unten).
 > Prinzip: **allgemein→speziell**, fließende Absätze statt Silos, **Kap. 2 konzeptionell/visuell (keine Tabellen)**,
 > **alle Tabellen + Aufgabenstellungs-Belange + Mess-System in Kap. 3**, **Anatomie-Metapher als visuelle Leitidee**,

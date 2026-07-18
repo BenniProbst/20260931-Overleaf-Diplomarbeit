@@ -3,7 +3,7 @@
 > **Nächste Session: HIER STARTEN.** Selbsttragend. Reihenfolge: §0 Identität → §1 Ist-Stand → **§2 WAS DU
 > (USER) MANUELL BESCHAFFEN MUSST** (Paper/Datensätze) → §3 verbleibende Arbeit („Haufen") → §4 Standing
 > Constraints → §5 Bau/Commit/Overleaf. Repo sauber, HEAD = `09be68d`, alles gepusht. Vorgänger-Übergaben:
-> `2026-06-16-UEBERGABE-kapitel-3-start.md`, `2026-06-16-UEBERGABE-2-einleitung-ff-und-querschnitt.md`.
+> `20260616-UEBERGABE-kapitel-3-start.md`, `20260616-UEBERGABE-2-einleitung-ff-und-querschnitt.md`.
 
 ## §0 — Wer/Was
 Thesis-Text-Workstream (TU-Dresden-Diplomarbeit „Aktive cache-bewusste Hardware-Adaption: Eine Cache-Engine
@@ -38,7 +38,7 @@ Fehler oder eine Protrusion. (Optionen, falls gewünscht: 6 Manuals auf `@techre
 
 ## §2 — WAS DU (USER) MANUELL BESCHAFFEN MUSST  ← deine Frage
 ### (A) Paper-Volltexte via SLUB / TU-Dresden-Lizenz (AP-Z1; ich kann die PDFs nicht ziehen)
-Vollständige Liste mit Begründung: **`docs/sessions/2026-06-16-AP-Z1-beschaffungsliste.md`**. Kurz, paywalled-aber-publiziert (8):
+Vollständige Liste mit Begründung: **`docs/sessions/20260616-AP-Z1-beschaffungsliste.md`**. Kurz, paywalled-aber-publiziert (8):
 | `\cite`-Key | P-ID | Quelle |
 |---|---|---|
 | `bender2005coboblivious` | P17 | SIAM J. Computing (SICOMP) |

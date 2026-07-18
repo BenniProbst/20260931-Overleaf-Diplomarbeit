@@ -1,7 +1,7 @@
 # Figuren-Korrekturen Habich-Feedback (F1–F9) — ERLEDIGT
 
-> Datum: 2026-06-30 · Folge-Session zu `2026-06-30-UEBERGABE-figuren-korrekturen-und-arch-workflow.md`
-> + `2026-06-30-architektur-analyse-bild-korrekturen.md` (code-geerdete Grundlage).
+> Datum: 2026-06-30 · Folge-Session zu `20260630-UEBERGABE-figuren-korrekturen-und-arch-workflow.md`
+> + `20260630-architektur-analyse-bild-korrekturen.md` (code-geerdete Grundlage).
 > Status: **alle 9 Figuren-Aufgaben abgeschlossen, committet, zu beiden Remotes gepusht.**
 
 ## Git-Stand Ende Session
@@ -57,7 +57,7 @@ navigierbar; 9 Quote-Reste→\enquote; 2 stale TODOs. **DE 148 / EN 138 S., beid
 ## Audit-Nachzug (2026-07-02, User-Matrix P1–P7) — ERLEDIGT
 Alle 28 §1-Audit-Korrekturen umgesetzt (1.2 bewusst Soll belassen; 1.3 = zwei wählbare T0-Bausteine S14+SwissTable, beide
 permutiert) + Folge-Konsistenz (fig:uml-interfaces `std::variant`→`mp_list`; Kap.-6-Ausblick: XML-Parser als implementiert,
-Modul-Body-Lücken präzisiert). Handout an Impl-Agent: `2026-07-02-handout-implementierungsagent-audit-code-todos.md`
+Modul-Body-Lücken präzisiert). Handout an Impl-Agent: `20260702-handout-implementierungsagent-audit-code-todos.md`
 (AP-1…AP-15; P0=M3-Gate). DE 152 / EN 144 S., beide 0 Fehler/Overfull/undef.
 **Restpunkte nächste Text-Session:** (a) PRT-ART-Organ-Menge in fig:prtart-demo (3.3), fig:prtart-gallery (4.1) und
 Fließtext 03:~519 + 04-§4.2 an Audit 1.12 angleichen (Layout/Allocator sind prt-art-Bausteine, aber [noch] keine im Apparat

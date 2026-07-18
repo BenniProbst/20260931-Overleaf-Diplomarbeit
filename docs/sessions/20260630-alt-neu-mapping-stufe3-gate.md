@@ -4,7 +4,7 @@
 > 6-Kapitel-Neu-Skelett. Dies ist der in der Übergabe §5 geforderte **Gate-Schritt 1** — Stufe 3 (Inhalt bewegen)
 > darf erst danach starten, sonst Inhalts-Verlust (v. a. die Brücken aus §4).
 >
-> **Sicherheitsnetz:** Backup-Tag `backup-2026-06-29-pre-habich-restruktur`. Alt-Dateien
+> **Sicherheitsnetz:** Backup-Tag `backup-20260629-pre-habich-restruktur`. Alt-Dateien
 > `kapitel/de|en/01_introduction … 08_conclusion` + `anhang/*/A..F` sind **un-included** (Inhaltsquelle), nicht gelöscht.
 > **Prinzip:** allgemein→speziell, fließende Absätze (KEINE Silo-Wiederherstellung), Inhalt bleibt, DE führt/EN folgt.
 

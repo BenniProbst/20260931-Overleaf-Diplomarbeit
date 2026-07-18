@@ -1,8 +1,8 @@
 # Audit Prof. Habich (2026-06-29) — Kritik + Restruktur-Plan
 
-> **Backup des Vor-Umbau-Stands:** Git-Tag `backup-2026-06-29-pre-habich-restruktur` (Commit `a361622`,
+> **Backup des Vor-Umbau-Stands:** Git-Tag `backup-20260629-pre-habich-restruktur` (Commit `a361622`,
 > Thesis-Repo) auf **beiden** Remotes (GitHub origin + GitLab intern). BASE-Pointer `a4fc439`.
-> Wiederherstellung: `git checkout backup-2026-06-29-pre-habich-restruktur`.
+> Wiederherstellung: `git checkout backup-20260629-pre-habich-restruktur`.
 
 ## 1. Kontext
 Prof. Habich (Erstprüfer) hat die Arbeit im Audit **bis tief in Kapitel 4** gelesen. **Inhaltlich richtig**,
@@ -108,4 +108,4 @@ Bild-Konzept-Liste **zuerst abstimmen**, dann **alle** zeichnen.
 - **Kapitel 4 (Frage 4):** nach dem bekannten Stand der Technik **jeden PRT-ART-Algorithmus als Bild** + Beschreibung.
 - **Anhänge (Frage 5):** anpassen, sobald das Gesamtbild klar ist (zurückgestellt).
 - **Gesamtcharakter:** gigantische Umstrukturierung **samt grafischer Erweiterung**. Detail-Plan + Bildprogramm:
-  `2026-06-29-restruktur-detailplan-gliederung-und-bildliste.md`.
+  `20260629-restruktur-detailplan-gliederung-und-bildliste.md`.

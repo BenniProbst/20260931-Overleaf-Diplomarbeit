@@ -1,7 +1,7 @@
 # KONTEXT-ÜBERGABE — Thesis-Workstream (Stand 2026-06-24, sehr ausführlich)
 
 > Für die nächste Session (Text-Agent der Diplomarbeit „Aktive cache-bewusste Hardware-Adaption").
-> Self-contained. Ergänzt die frühere Übergabe `2026-06-22-UEBERGABE-kontext-thesis-konsolidierung.md`
+> Self-contained. Ergänzt die frühere Übergabe `20260622-UEBERGABE-kontext-thesis-konsolidierung.md`
 > (Architektur-Wahrheit dort weiterhin gültig). Diese Session war SEHR umfangreich (Zitate-Vollständigkeit,
 > Anhang-D-Datenkonsolidierung, Lebewesen-Metapher). Lies dies VOLLSTÄNDIG, bevor du an Anhang D / Zitaten weiterarbeitest.
 

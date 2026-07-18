@@ -24,7 +24,7 @@
   2.3 Einheitliche Vergleichsinterfaces (std::map/std::vector + Dynamik-Ebenen), 2.4 Lasten/Workloads
   (Frameworks plural), 2.5 Wissenschaftliches Messen, 2.6 C++23-Metaprog + Design-Pattern.
   Alle `%`-Kommentare des Autors BELASSEN (Chapter-End-Kommentar C02-8 noch drin — erst nach Kap. 3 räumen).
-- **✅ Instanz-Mapping-Survey FERTIG + gesichert** — Commit **`af0941e`**: `docs/sessions/2026-06-16-kap3-instanz-mapping-survey.md`.
+- **✅ Instanz-Mapping-Survey FERTIG + gesichert** — Commit **`af0941e`**: `docs/sessions/20260616-kap3-instanz-mapping-survey.md`.
   Das ist der **vollständige Instanz-Spiegel** (jede Kap.-2-Definition → ALLE Paper-Instanzen P01–P33 + A01–A23
   + Web), erhoben von 4 read-only Agenten. **Treibt Kap. 3.**
 - **✅ Korpus erweitert (Design-Space-Linie)** — Commit **`16cb5fa`**: `literatur.bib` +`kraska2018learned`,
@@ -83,9 +83,9 @@ konkrete Paper-Achsen-Zuordnung gegen `bausteine/03` + `bausteine/01` + Doc 18 *
 ## §4 — Schlüssel-Dokumente (zuerst lesen)
 | Doc | Pfad | Zweck |
 |---|---|---|
-| **Instanz-Survey** | `docs/sessions/2026-06-16-kap3-instanz-mapping-survey.md` | Instanz-Spiegel §A–§F → treibt Kap. 3 |
-| **Aufgabenbeschreibung** | `docs/sessions/2026-06-15-aufgabenbeschreibung-kapitel-1-3-kommentare.md` | §0–§13: Compliance, AP-Liste, Maschinen, Workloads |
-| **Zwischenstand Maschinen/Dual-OS** | `docs/sessions/2026-06-15-zwischenstand-maschinen-cache-os-dualos-2.1.md` | Flotte, Dual-OS (Talos+root-Ubuntu), B+-Baum |
+| **Instanz-Survey** | `docs/sessions/20260616-kap3-instanz-mapping-survey.md` | Instanz-Spiegel §A–§F → treibt Kap. 3 |
+| **Aufgabenbeschreibung** | `docs/sessions/20260615-aufgabenbeschreibung-kapitel-1-3-kommentare.md` | §0–§13: Compliance, AP-Liste, Maschinen, Workloads |
+| **Zwischenstand Maschinen/Dual-OS** | `docs/sessions/20260615-zwischenstand-maschinen-cache-os-dualos-2.1.md` | Flotte, Dual-OS (Talos+root-Ubuntu), B+-Baum |
 | Governance-Memory | `…\.claude\…\memory\feedback_thesis_nur_user_ideen_persistieren.md` | Provenienz + kein Trailer + #include |
 | Kap. 2 (fertig, Referenz) | `kapitel/de/02_fundamentals.tex` | Definitions-Klassen, die Kap. 3 spiegelt |
 | Korpus-Quellen | superproject `docs/forschungslandkarte/01_quellen_gesamtkatalog.md` (56 Paper) + `docs/bausteine/03_cross_paper_konzeptmatrix.md` + `bausteine/01_bausteine_matrix.md` + cache-engine `docs/architecture/34_…md` + `18_achsen_algorithmus_paper_code_map.md` | Paper-Achsen-Zuordnung zum Gegenprüfen |

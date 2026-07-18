@@ -81,13 +81,13 @@ Maßgeblich: **Doc 36** `cache-engine/docs/architecture/36_eine_architektur_lebe
     Ziel-Versprechen implementieren; TODO-4 Tabellen-/Diagramm-Breite; TODO-5 (revidiert); **TODO-6
     search_engine↔Anatomie vereinheitlichen (I1)**.
 - **Übergabe EINE Architektur** (Impl-Agent): `cache-engine/docs/docs/sessions/20260620-UEBERGABE-impl-agent-EINE-ARCHITEKTUR-vereinheitlichung.md`
-- **Kap-4-Gerüst** (für den User zum Schreiben): `thesis/.../docs/sessions/2026-06-21-kap4-geruest-eine-architektur.md` (TEIL A Streichliste + TEIL B Detail-Skelett B.1–B.11)
-- **Konsolidierungs-Liste**: `thesis/.../docs/sessions/2026-06-21-konsolidierung-user-ergaenzungen.md`
+- **Kap-4-Gerüst** (für den User zum Schreiben): `thesis/.../docs/sessions/20260621-kap4-geruest-eine-architektur.md` (TEIL A Streichliste + TEIL B Detail-Skelett B.1–B.11)
+- **Konsolidierungs-Liste**: `thesis/.../docs/sessions/20260621-konsolidierung-user-ergaenzungen.md`
 - **Formatierer**: `thesis/diplomarbeit/tools/format_tex.py`
 - Messdaten-Auswertung (frühere Session): `…\Messdaten-Backup\analyze_ff.py` + `AUSWERTUNG_…md`
 
 ## 6. OFFEN / NÄCHSTE SCHRITTE
-- **User schreibt Kapitel 4** manuell aus dem Gerüst (`2026-06-21-kap4-geruest…`); Text-Agent
+- **User schreibt Kapitel 4** manuell aus dem Gerüst (`20260621-kap4-geruest…`); Text-Agent
   unterstützt mit Fakten/Struktur, schreibt die Synthese NICHT selbst.
 - Kap. 4–6 ausbauen, Kap. 7 wartet auf echte Messläufe (Stubs).
 - **Tasks:** #87 AP-B3 (I/O-Achse, Impl-Agent, zurückgestellt); #89 AP-B4 (Anhang B Code-Struktur)

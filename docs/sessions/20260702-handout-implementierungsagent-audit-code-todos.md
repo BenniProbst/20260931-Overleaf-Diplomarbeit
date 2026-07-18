@@ -1,6 +1,6 @@
 # HANDOUT an den Implementierungsagenten — Code-Nachzug nach Thesis-Audit (2026-07-02)
 
-> **Quelle & Autorität:** ultracode-Audit `docs/sessions/2026-07-02-audit-thesis-vs-code.md` (151 Claims: 99 OK / 50 divergent),
+> **Quelle & Autorität:** ultracode-Audit `docs/sessions/20260702-audit-thesis-vs-code.md` (151 Claims: 99 OK / 50 divergent),
 > §2 = Code-hinter-Soll, plus **User-Entscheidungsmatrix vom 2026-07-02** (unten). Grundsatz des Users:
 > **„Die Diplomarbeit beschreibt den faktischen Sollstand — dieser Diff wird jetzt gemergt."** Wo der Text bereits
 > an den Code angeglichen wurde (§1 des Audits, P4–P7), ist NICHTS zu tun; dieses Handout enthält ausschließlich
