@@ -20,7 +20,7 @@ noch die Ausformulierung der Forschungsfragen (AP-E3).**
   Anhang C + Ränge-Fußnote) = `228f822`; **AP-E3 (Forschungsfragen) ✅ ERLEDIGT 2026-06-16** (5 Haupt-FF +
   3 Teilfragen, Einleitung + Fazit synchron — s. §2).
 - **Querschnitt-Verifikation** (16-Agenten-Workflow) durchgeführt + bestätigte Abweichungen korrigiert
-  (`f078b6e`), dauerhaft dokumentiert in `sessions/2026-06-16-kap3-instanz-mapping-survey.md` §I.
+  (`f078b6e`), dauerhaft dokumentiert in `docs/sessions/2026-06-16-kap3-instanz-mapping-survey.md` §I.
 - Alle DE-Builds sauber: 76 S., **0 undefined, 0 multiply-defined, 0 Overfull > 50 pt** (`build.ps1 -Lang de`,
   MiKTeX). microtype + `\emergencystretch=3em` in `diplomarbeit.tex`.
 
@@ -132,7 +132,7 @@ Gate-1-Kardinalität = exakt 137.594.142.720.000 (≈1,4·10^14, `test_br1_full2
   (jetzt 96 Einträge); Korpus-Übersicht 3.1.1 DE+EN auf `\cite` umgestellt (33 SOTA + 9 Allokatoren in der
   Bibliografie). Unpublished-Paper sauber `note={To appear}`. 7 Allokator-Einträge (scalloc/rpmalloc/lrmalloc/
   dlmalloc/cama/vmem/michael-lockfree) = verfügbare orphans (zitierbar bei Detail-Diskussion, z.B. tab:allocator-profiles).
-- **#80 AP-Z1 — Liste fertig (User-Aktion).** Beschaffungs-/Finalisierungs-Liste = `sessions/2026-06-16-AP-Z1-beschaffungsliste.md`
+- **#80 AP-Z1 — Liste fertig (User-Aktion).** Beschaffungs-/Finalisierungs-Liste = `docs/sessions/2026-06-16-AP-Z1-beschaffungsliste.md`
   (13 Paper: 8 paywalled-publiziert → **dein SLUB/TU-Dresden-Login**; 5 unpubliziert/„to appear" → Metadaten beim
   Erscheinen finalisieren). P-ID→Key-Map: `sessions/ap-z1-z2-keymap.json`. PDF-Zug + DOI-Finalisierung = nicht von mir machbar.
 - **#79 AP-G5-Anhang ✅ ERLEDIGT (2026-06-16, `879945d`).** Dedizierter **Anhang F** `app:interfaces`
@@ -149,9 +149,9 @@ Gate-1-Kardinalität = exakt 137.594.142.720.000 (≈1,4·10^14, `test_br1_full2
 ## §6 — Schlüssel-Dokumente + Workflow-Outputs
 | Doc | Pfad | Zweck |
 |---|---|---|
-| Instanz-Survey + Verifikation | `sessions/2026-06-16-kap3-instanz-mapping-survey.md` (§A–§I) | Instanz-Map + #include-Korrektur + Querschnitt-Befund |
-| Aufgabenbeschreibung | `sessions/2026-06-15-aufgabenbeschreibung-kapitel-1-3-kommentare.md` | AP-Liste, Maschinen, Workloads |
-| Vorgänger-Übergabe | `sessions/2026-06-16-UEBERGABE-kapitel-3-start.md` | Kap.-3-Start-Stand |
+| Instanz-Survey + Verifikation | `docs/sessions/2026-06-16-kap3-instanz-mapping-survey.md` (§A–§I) | Instanz-Map + #include-Korrektur + Querschnitt-Befund |
+| Aufgabenbeschreibung | `docs/sessions/2026-06-15-aufgabenbeschreibung-kapitel-1-3-kommentare.md` | AP-Liste, Maschinen, Workloads |
+| Vorgänger-Übergabe | `docs/sessions/2026-06-16-UEBERGABE-kapitel-3-start.md` | Kap.-3-Start-Stand |
 | Aufgabenstellung | `aufgabenstellung/de.tex` | offizieller Auftrag (neutral, Teilaufgaben 1–6) |
 | FF-Recherche-Output | Temp `…\tasks\wd6rmji01.output` (vergänglich!) — **FF-Texte sind in §2 oben dauerhaft gesichert** | 8 FF-Kandidaten + Synthese (Empfehlung 5) |
 | Querschnitt-Output | Temp `…\tasks\wasu9ns5q.output` (vergänglich) — **Kern in Survey §I gesichert** | Verifikations-Befunde |

@@ -76,13 +76,13 @@ Maßgeblich: **Doc 36** `cache-engine/docs/architecture/36_eine_architektur_lebe
 
 ## 5. ARTEFAKTE (Pfade)
 - **Doc 36** (Architektur-Referenz): `cache-engine/docs/architecture/36_eine_architektur_lebewesen_ist_searchalgorithm.md`
-- **Impl-Agent-Handout** (TODO-1..6): `cache-engine/docs/sessions/20260619-HANDOUT-impl-agent-profile-pruefling-ziele-tabellenbreite.md`
+- **Impl-Agent-Handout** (TODO-1..6): `cache-engine/docs/docs/sessions/20260619-HANDOUT-impl-agent-profile-pruefling-ziele-tabellenbreite.md`
   - TODO-1 Profile-Ausbau P01–P33; TODO-2 abstract/full-Prüflinge + Originalkonfiguration; TODO-3
     Ziel-Versprechen implementieren; TODO-4 Tabellen-/Diagramm-Breite; TODO-5 (revidiert); **TODO-6
     search_engine↔Anatomie vereinheitlichen (I1)**.
-- **Übergabe EINE Architektur** (Impl-Agent): `cache-engine/docs/sessions/20260620-UEBERGABE-impl-agent-EINE-ARCHITEKTUR-vereinheitlichung.md`
-- **Kap-4-Gerüst** (für den User zum Schreiben): `thesis/.../sessions/2026-06-21-kap4-geruest-eine-architektur.md` (TEIL A Streichliste + TEIL B Detail-Skelett B.1–B.11)
-- **Konsolidierungs-Liste**: `thesis/.../sessions/2026-06-21-konsolidierung-user-ergaenzungen.md`
+- **Übergabe EINE Architektur** (Impl-Agent): `cache-engine/docs/docs/sessions/20260620-UEBERGABE-impl-agent-EINE-ARCHITEKTUR-vereinheitlichung.md`
+- **Kap-4-Gerüst** (für den User zum Schreiben): `thesis/.../docs/sessions/2026-06-21-kap4-geruest-eine-architektur.md` (TEIL A Streichliste + TEIL B Detail-Skelett B.1–B.11)
+- **Konsolidierungs-Liste**: `thesis/.../docs/sessions/2026-06-21-konsolidierung-user-ergaenzungen.md`
 - **Formatierer**: `thesis/diplomarbeit/tools/format_tex.py`
 - Messdaten-Auswertung (frühere Session): `…\Messdaten-Backup\analyze_ff.py` + `AUSWERTUNG_…md`
 

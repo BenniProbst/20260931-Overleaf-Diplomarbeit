@@ -210,7 +210,7 @@ Schreib-Punkte:
 - **Doc 36** `…/docs/architecture/36_eine_architektur_lebewesen_ist_searchalgorithm.md` (Primär).
 - Doc 14 `docs/architektur/14_achsen_komposition_organ_metapher.md`; Doc 34 `34_KONSOLIDIERTER…`;
   Doc 35 (function-handle-hops, T0–T18); Doc 30 §8.0/§8.1; Doc 31 (I1).
-- Übergabe `…/docs/sessions/20260620-UEBERGABE-impl-agent-EINE-ARCHITEKTUR-vereinheitlichung.md`.
+- Übergabe `…/docs/docs/sessions/20260620-UEBERGABE-impl-agent-EINE-ARCHITEKTUR-vereinheitlichung.md`.
 - Memories: `reference_anatomie_gattungen`, `reference_3_kompositionale_joins_anatomie`,
   `reference_m_schichten_modell`, `feedback_technical_identifiers_over_metaphor`,
   `project_eine_architektur_lebewesen_searchalgorithm`.

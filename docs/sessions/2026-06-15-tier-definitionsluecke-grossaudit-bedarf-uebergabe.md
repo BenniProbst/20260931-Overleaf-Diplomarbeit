@@ -107,6 +107,6 @@ Die Bestandsaufnahme (Explore-Agent, diese Session) hat **mindestens DREI** dist
 
 ## 9. Verweise
 
-- Anker: `sessions/2026-06-15-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md` (§7 enthält die „Tier"-Doppeldeutigkeits-Regel, §9 Formulierungs-Landkarte, §10 Richtlinien — **selbst noch mit „Tier-Unterklasse" durchsetzt, muss in der Umstellung mit**).
+- Anker: `docs/sessions/2026-06-15-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md` (§7 enthält die „Tier"-Doppeldeutigkeits-Regel, §9 Formulierungs-Landkarte, §10 Richtlinien — **selbst noch mit „Tier-Unterklasse" durchsetzt, muss in der Umstellung mit**).
 - Architektur autoritativ: `docs/architektur/14_achsen_komposition_organ_metapher.md`; cache-engine `docs/architecture/34_KONSOLIDIERTER_MASTER_IST_STAND.md` (3-Ebenen-Modell §1) + `14_*` + `30_*`.
 - Memory: `reference_anatomie_gattungen.md` (3 Gattungen + 5 Lebewesen-Unterklassen, Achsen-Sätze 19/15/11/13/7, Tier-Doppeldeutigkeits-Note).

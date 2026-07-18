@@ -3,8 +3,8 @@
 > Diese Datei ist die **Einstiegs-/Handoff-Doku** für die nächste Session. Sie fasst den
 > gesamten Stand, alle Entscheidungen, offene Punkte, die Overleaf-Anleitung und technische
 > Fallstricke zusammen. Ergänzende Detail-Dokus: `ZIH-FRAMEWORK-REFERENZ.md` (Framework-Befehle
-> + Bug-Tabelle), `sessions/2026-06-01-bilingualer-compile-schalter.md` (Schalter-Konzept),
-> `sessions/2026-06-01-gesamtstand-und-aequivalenz.md` (Äquivalenz-Prinzip).
+> + Bug-Tabelle), `docs/sessions/2026-06-01-bilingualer-compile-schalter.md` (Schalter-Konzept),
+> `docs/sessions/2026-06-01-gesamtstand-und-aequivalenz.md` (Äquivalenz-Prinzip).
 
 ---
 
