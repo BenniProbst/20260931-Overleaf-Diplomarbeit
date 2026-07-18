@@ -2,10 +2,10 @@
 
 > Für die nächste Session (Text-Agent der Diplomarbeit „Aktive cache-bewusste Hardware-Adaption").
 > Self-contained, ABER lies zwingend auch **Übergabe 1** (`2026-06-22-…konsolidierung`) und **Übergabe 2**
-> (`2026-06-24-UEBERGABE-2-anhang-d-footer-zitate-vollstaendig`) — dort steht die Architektur-Wahrheit
+> (`20260624-UEBERGABE-2-anhang-d-footer-zitate-vollstaendig`) — dort steht die Architektur-Wahrheit
 > und der vollständige Anhang-D-Zitate-Stand. Diese Übergabe 3 dokumentiert: Layout-Norm-Fix, die
 > **Kap.-1–3-Redundanz-Kondensierung (abgeschlossen)** und die **Kap.-4-Planungssession + 5 Autor-Entscheidungen**.
-> ZUSÄTZLICH PFLICHT-LESEN: das Planungs-Dokument `docs/sessions/2026-06-24-PLANUNG-kapitel-4-zielstruktur.md`
+> ZUSÄTZLICH PFLICHT-LESEN: das Planungs-Dokument `docs/sessions/20260624-PLANUNG-kapitel-4-zielstruktur.md`
 > (die vollständige ch4-Ziel-Struktur + Impl-Agent-Übergabe + offene Punkte).
 
 ---
@@ -33,7 +33,7 @@
 | `afc677c` | **Layout norm-neutral:** zihpub.cls revertiert + Build-SIMD-Kurzmarke `\section[kurz]{lang}` → `\headheight`-Warnung + Overfull weg, keine Geometrieänderung. |
 | `6b92e82` | Overleaf-Merge (kleine ch3-Edits des Autors). |
 | `34cdc2b` | **Kap. 1–3 Redundanz-Kondensierung R1–R6** (DE+EN). |
-| *(uncommitted)* | `docs/sessions/2026-06-24-PLANUNG-kapitel-4-zielstruktur.md` + diese Übergabe 3. |
+| *(uncommitted)* | `docs/sessions/20260624-PLANUNG-kapitel-4-zielstruktur.md` + diese Übergabe 3. |
 
 ### R1–R6 (Kap. 1–3 Redundanzen — volle Version je an der passendsten Stelle behalten)
 - **R1** Comdare/BEP-Provenienz: voll in **ch3 §3.6.3** (`ssec:sota-design-contribution`), ch1 → `\ref`.

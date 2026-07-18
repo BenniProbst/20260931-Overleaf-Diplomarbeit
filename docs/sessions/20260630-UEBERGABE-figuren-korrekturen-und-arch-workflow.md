@@ -1,14 +1,14 @@
 # ÜBERGABE — Figuren-Korrekturen (Habich-Feedback) + Architektur-Workflow (2026-06-30)
 
-> **Lies ZUERST**, sobald verfügbar: `2026-06-30-architektur-analyse-bild-korrekturen.md` (von einem ultracode-Workflow
+> **Lies ZUERST**, sobald verfügbar: `20260630-architektur-analyse-bild-korrekturen.md` (von einem ultracode-Workflow
 > aus dem Code von cache-engine / prt-art / Diplomarbeit erzeugt — die code-geerdete Grundlage für fast alle Korrekturen unten).
-> Dann diese Übergabe (die Aufgabenliste) + die Restruktur-Übergaben `2026-06-29-UEBERGABE-restruktur-stand-skelett-bilder.md`
-> und das Mapping-Gate `2026-06-30-alt-neu-mapping-stufe3-gate.md`.
+> Dann diese Übergabe (die Aufgabenliste) + die Restruktur-Übergaben `20260629-UEBERGABE-restruktur-stand-skelett-bilder.md`
+> und das Mapping-Gate `20260630-alt-neu-mapping-stufe3-gate.md`.
 
 ---
 
 ## 0. Sicherheitsnetz / Git-Stand
-- **Backup-Tag** `backup-2026-06-29-pre-habich-restruktur` (Vor-Umbau, 8 Kapitel) auf beiden Remotes.
+- **Backup-Tag** `backup-20260629-pre-habich-restruktur` (Vor-Umbau, 8 Kapitel) auf beiden Remotes.
 - **Git-Stand Ende Session:** Thesis-HEAD `2d1957a`, BASE-HEAD `ceebc64`, beide auf GitHub(origin)+GitLab(gitlab).
 - **Alt-Inhalt** `kapitel/{de,en}/01_introduction … 08_conclusion` ist un-included (Quelle); Anhänge A–F sind jetzt **wieder included**.
 - **Build:** `pwsh -NoProfile -File build.ps1 -Lang de|en`; aktuell **DE 140 S. / EN 128 S.**, durchgängig 0 Fehler / 0 undef-Refs / 0 undef-Zitate / 0 Overfull.
@@ -57,7 +57,7 @@ B12 `fig:pipeline`, UML `fig:uml-interfaces`). Jeder Schritt committet + gepusht
   Anatomie/Gattung/Tier-Hierarchie · die 19 Achsen + Sub-Achsen + Concept/CRTP/variant · Inter-Achsen-Interface-Nutzung (kann/muss) ·
   Build+Mess-Pipeline (CacheEngineBuilder baut Tier-Binaries je Config + misst; messung_driver) · Mess-Kategorien + Lücke
   (Latenz/Durchsatz/Speicher + Knoten/Daten/Index/cache-aware) · Architektur-Stand + offene Impl-Projekte · Web-Recherche SiL-Systeme.
-- **Schreibt** die Analyse nach **`thesis/diplomarbeit/docs/sessions/2026-06-30-architektur-analyse-bild-korrekturen.md`** (Run-ID `wf_1422bec5-451`).
+- **Schreibt** die Analyse nach **`thesis/diplomarbeit/docs/sessions/20260630-architektur-analyse-bild-korrekturen.md`** (Run-ID `wf_1422bec5-451`).
 - **Nächste Session:** dieses Analyse-Dokument zuerst lesen — es liefert die code-geerdete Grundlage für F1, F3–F7, F9 (Hierarchien, Pipeline, Mess-Lücke) und die SiL-Zitate für F8. Falls der Workflow nicht fertig wurde: erneut starten via `Workflow({scriptPath: ".../workflows/scripts/thesis-arch-figure-analysis-wf_1422bec5-451.js", resumeFromRunId: "wf_1422bec5-451"})` (gecachte Agenten kommen sofort zurück).
 
 ## 5. Weiterhin offen: die repetitiven Massen-Bildserien (als `% TODO` im Text verankert)

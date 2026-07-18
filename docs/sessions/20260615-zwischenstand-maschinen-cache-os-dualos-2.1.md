@@ -1,7 +1,7 @@
 # Zwischenstand 2026-06-15 — Test-Fleet, Cache/OS-Spektrum, Dual-OS-Experiment, B+-Baum, 2.1
 
 > Snapshot der neuen Erkenntnisse dieser Session (Kap.-1–3-Arbeit; AP-G2/G2a/G2b/M1). Single-Source
-> der Aufgabenplanung bleibt `2026-06-15-aufgabenbeschreibung-kapitel-1-3-kommentare.md`; dies ist die
+> der Aufgabenplanung bleibt `20260615-aufgabenbeschreibung-kapitel-1-3-kommentare.md`; dies ist die
 > elaborate Konsolidierung der Hardware-/OS-Befunde + der neuen Dual-OS-Entscheidung.
 
 ## 1. Test-Fleet (Autor-bestätigt 2026-06-15) + OS

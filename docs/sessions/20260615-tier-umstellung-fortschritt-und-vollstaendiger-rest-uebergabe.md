@@ -24,8 +24,8 @@ KEIN Wort-Ersetzen** (ein Agent-Versuch wurde verworfen — er machte Fehler + e
    — enthält: 4 Cluster + Zielbegriffe, oberste Ebene (Bibliothek≠Lebewesen≠Subject≠Host), Aufbau⊥Messung,
    Architektur-Landkarte, **§5/§6 Identifier-Mapping-Plan**, **§7 Fallstricke**, **§8 Reihenfolge**,
    **§9 Arbeits-Checkliste + STAND-Block**. Bei jeder „Tier"-Frage ZUERST hierher.
-2. **Konzeptionelle Zugehörigkeit:** `thesis/diplomarbeit/docs/sessions/2026-06-15-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md`
-3. **Audit-Bedarf-Übergabe:** `thesis/diplomarbeit/docs/sessions/2026-06-15-tier-definitionsluecke-grossaudit-bedarf-uebergabe.md`
+2. **Konzeptionelle Zugehörigkeit:** `thesis/diplomarbeit/docs/sessions/20260615-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md`
+3. **Audit-Bedarf-Übergabe:** `thesis/diplomarbeit/docs/sessions/20260615-tier-definitionsluecke-grossaudit-bedarf-uebergabe.md`
 4. **Metapher-Hauptquelle (bereits umgestellt, als Vorbild):** `docs/architektur/14_achsen_komposition_organ_metapher.md`
 5. **3-Ebenen-Modell (Code-Wahrheit):** `Code/external/comdare-cache-engine/docs/architecture/34_KONSOLIDIERTER_MASTER_IST_STAND.md` (§1)
    + `anatomy/anatomy_base.hpp` + `builder/experiment_tree/genus_binding_traits.hpp`

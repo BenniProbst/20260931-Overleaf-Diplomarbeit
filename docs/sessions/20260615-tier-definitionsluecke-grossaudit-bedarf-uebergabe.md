@@ -2,7 +2,7 @@
 
 **Datum:** 2026-06-15
 **Workstream:** Diplomarbeit (Text-/Doku-Agent) — parallel zum Implementierungs-Agenten (Code)
-**Anker-Doku:** [`2026-06-15-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md`](2026-06-15-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md) (maßgeblicher Hinweis: 3-Ebenen-Modell, Gattungen/Lebewesen-Unterklassen, Achsen-Sätze, Hash-Lehrbeispiel)
+**Anker-Doku:** [`20260615-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md`](20260615-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md) (maßgeblicher Hinweis: 3-Ebenen-Modell, Gattungen/Lebewesen-Unterklassen, Achsen-Sätze, Hash-Lehrbeispiel)
 **Status:** Auftrag begonnen, **bewusst vor der codebasis-weiten Umstellung pausiert** — es fehlt der vollständige Code-Kontext (siehe §4 Groß-Audit-Bedarf).
 
 ---
@@ -69,7 +69,7 @@ Die Bestandsaufnahme (Explore-Agent, diese Session) hat **mindestens DREI** dist
 | prt-art Code | ~5 (Kommentare) | — | — | `CacheTier`, `tier_for_offset/_key`, `TierBudget` |
 | Manuskript `thesis/` | ~50 (noch offen) | ~15 (**erledigt**) | ~1 | 0 |
 
-**Top-Dateien (Metapher-dicht):** `docs/architektur/14_achsen_komposition_organ_metapher.md` (~150!), `2026-06-15-konzeptionelle-...md` (~120, nutzt selbst „Tier-Unterklasse"), cache-engine `docs/architecture/30_audit_...md` (~80), `34_KONSOLIDIERTER_MASTER_IST_STAND.md` (~60), `anleitung_messwerte_erzeugen.md` (~40).
+**Top-Dateien (Metapher-dicht):** `docs/architektur/14_achsen_komposition_organ_metapher.md` (~150!), `20260615-konzeptionelle-...md` (~120, nutzt selbst „Tier-Unterklasse"), cache-engine `docs/architecture/30_audit_...md` (~80), `34_KONSOLIDIERTER_MASTER_IST_STAND.md` (~60), `anleitung_messwerte_erzeugen.md` (~40).
 
 **Hinweis Identifier (Zweitprio, nur Kommentar-Check, Code bleibt technisch korrekt):** `AnatomyGenus`, `genus_binding_traits.hpp`, `*Anatomy`, `test_genus_*.cpp` — enthalten NICHT „Tier", sind aber metapher-bezogen. NICHT umbenennen, nur Kommentare prüfen.
 
@@ -107,6 +107,6 @@ Die Bestandsaufnahme (Explore-Agent, diese Session) hat **mindestens DREI** dist
 
 ## 9. Verweise
 
-- Anker: `docs/sessions/2026-06-15-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md` (§7 enthält die „Tier"-Doppeldeutigkeits-Regel, §9 Formulierungs-Landkarte, §10 Richtlinien — **selbst noch mit „Tier-Unterklasse" durchsetzt, muss in der Umstellung mit**).
+- Anker: `docs/sessions/20260615-konzeptionelle-algorithmus-zugehoerigkeit-massgeblicher-hinweis.md` (§7 enthält die „Tier"-Doppeldeutigkeits-Regel, §9 Formulierungs-Landkarte, §10 Richtlinien — **selbst noch mit „Tier-Unterklasse" durchsetzt, muss in der Umstellung mit**).
 - Architektur autoritativ: `docs/architektur/14_achsen_komposition_organ_metapher.md`; cache-engine `docs/architecture/34_KONSOLIDIERTER_MASTER_IST_STAND.md` (3-Ebenen-Modell §1) + `14_*` + `30_*`.
 - Memory: `reference_anatomie_gattungen.md` (3 Gattungen + 5 Lebewesen-Unterklassen, Achsen-Sätze 19/15/11/13/7, Tier-Doppeldeutigkeits-Note).

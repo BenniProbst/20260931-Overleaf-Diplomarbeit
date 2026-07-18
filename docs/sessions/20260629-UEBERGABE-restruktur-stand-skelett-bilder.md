@@ -1,8 +1,8 @@
 # ÜBERGABE — Habich-Restrukturierung: Stand nach Skelett + erste Bilder (2026-06-29)
 
 > **Lies ZUERST** die drei Referenz-Dokumente dieser Session:
-> 1. `2026-06-29-habich-audit-kritik-und-restruktur-plan.md` — die vollständige Habich-Kritik (+ §9 vertieftes Feedback).
-> 2. `2026-06-29-restruktur-detailplan-gliederung-und-bildliste.md` (**v3**) — Soll-Gliederung + ~80-Bilder-Programm.
+> 1. `20260629-habich-audit-kritik-und-restruktur-plan.md` — die vollständige Habich-Kritik (+ §9 vertieftes Feedback).
+> 2. `20260629-restruktur-detailplan-gliederung-und-bildliste.md` (**v3**) — Soll-Gliederung + ~80-Bilder-Programm.
 > 3. Dieses Dokument — Ist-Stand, TODOs, Fallstricke, Direktiven.
 >
 > **Memory-Direktiven (auto-recalled):** [[project_thesis_habich_restruktur_general_to_special]] (die Struktur-Direktive),
@@ -12,8 +12,8 @@
 ---
 
 ## 0. Sicherheitsnetz (zuerst verinnerlichen)
-- **Backup-Tag `backup-2026-06-29-pre-habich-restruktur`** (Commit `a361622`) = exakter Vor-Umbau-Stand (8 Kapitel), auf **beiden** Remotes.
-  Wiederherstellung: `git -C thesis/diplomarbeit checkout backup-2026-06-29-pre-habich-restruktur`.
+- **Backup-Tag `backup-20260629-pre-habich-restruktur`** (Commit `a361622`) = exakter Vor-Umbau-Stand (8 Kapitel), auf **beiden** Remotes.
+  Wiederherstellung: `git -C thesis/diplomarbeit checkout backup-20260629-pre-habich-restruktur`.
 - **Alt-Inhalt ist NICHT gelöscht:** `kapitel/{de,en}/01_introduction.tex … 08_conclusion.tex` + `anhang/{de,en}/A..F` existieren weiter,
   sind aber **un-included** (nicht in `diplomarbeit.tex`). Sie sind die **Inhalts-Quelle** für Stufe 3.
 - **Git-Stand Ende Session:** Thesis-HEAD `023abb8`, BASE-HEAD `c625588`, beide auf GitHub(origin)+GitLab(gitlab).

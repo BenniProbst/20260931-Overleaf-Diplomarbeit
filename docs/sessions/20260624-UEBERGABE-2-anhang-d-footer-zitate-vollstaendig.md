@@ -1,7 +1,7 @@
 # KONTEXT-ÜBERGABE 2 — Thesis-Workstream (Stand 2026-06-24, Anhang-D-Footer/Zitate VOLLSTÄNDIG)
 
 > Für die nächste Session (Text-Agent der Diplomarbeit „Aktive cache-bewusste Hardware-Adaption").
-> Self-contained. Direkte Fortsetzung von `2026-06-24-UEBERGABE-anhang-d-konsolidierung-zitate-metapher.md`
+> Self-contained. Direkte Fortsetzung von `20260624-UEBERGABE-anhang-d-konsolidierung-zitate-metapher.md`
 > (= „Übergabe 1", HEAD damals `61e0666`). Diese Session hat die dort begonnene Anhang-D-Zitate-Arbeit
 > **vollständig abgeschlossen**. Lies Übergabe 1 für die Vorgeschichte (Lebewesen-Metapher, Architektur-Wahrheit);
 > diese Übergabe 2 dokumentiert die Footer-/Allokator-/SIMD-Zitate-Vollendung.
