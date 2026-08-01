@@ -67,11 +67,19 @@ Vorverarbeitung und Seed-Regel für die synthetischen Miss-, Update- und Delete-
 Die Messungen zielen auf eine lokale Workstation zur Entwicklungs-Verifikation und den
 TU-Dresden-ZIH-Cluster (Barnard-CPU-Knoten mit Intel Sapphire Rapids, Capella GPU) für die vollständigen Sweeps, plus die
 Plattformen der Rang-3-Hardware-Arbeiten (Ryzen~9~9950X3D, Intel~i9~14900KS und eine HBM-Plattform). Ein \texttt{IPlatformProbe} % chktex 29
-(Phase~1) meldet je Plattform die lauffähige Teilmenge der Achsen (etwa AVX-512 nur dort, wo verfügbar, HBM-aware nur auf HBM-Hardware); je
+(Phase~1) meldet je Plattform die lauffähige Teilmenge der Achsen (etwa AVX-512 nur dort, wo verfügbar,
+HBM-aware nur auf HBM-Hardware), wobei der Ausschluss einer nicht verfügbaren Erweiterung stets
+\emph{maschinenseitig} fällt --- mit Warnung und benannter Fehlerklasse, nie als stiller Profil-Filter,
+denn das Experiment-Profil bleibt für alle Maschinen gleich; je
 Plattform werden ein Scalar-, ein
 AVX2- und --- auf Barnard --- ein AVX-512-Build vorbereitet, und auf Hybrid-CPUs werden P- und E-Cores
 getrennt vermessen (über die eigenen Zähler-Domänen \texttt{cpu\_core} und \texttt{cpu\_atom}) statt
-zusammenaggregiert. Auf den Produktions-Zielmaschinen wird zudem jede Messung unter \emph{zwei
+zusammenaggregiert. Der produktive Mess-Betrieb selbst ist ein \emph{Zwei-Maschinen-Betrieb} --- eine
+AMD-Maschine (der genannte Ryzen~9~9950X3D) neben einer Intel-Maschine ---, und die zählerbasierte
+Erhebung führt dafür zwei getrennte Hersteller-Lanes (AMD und Intel), die hart gegatet sind: Erst wenn
+beide Lanes ihre Zähler-Voraussetzungen nachgewiesen haben, arbeitet eine Maschinen-Lane ihren
+Mess-Strang ab --- eine stille Teil-Messung nur eines Herstellers gibt es nicht. Auf den
+Produktions-Zielmaschinen wird zudem jede Messung unter \emph{zwei
 Betriebssystem-Regimes} erhoben, um Produktions-Treue von Mess-Tiefe zu trennen: Ein \emph{immutables}
 Betriebssystem (Talos) spiegelt den Produktiv-Einsatz und erzwingt boot-/übersetzungsstatische
 Cache-Einstellungen (Abschnitt~\ref{sec:hardware-history}); ein \emph{root-Linux mit vollem
@@ -82,6 +90,15 @@ unter beiden Regimes identisch und sichern die Vergleichbarkeit; die PMC-Kategor
 privilegierten Regime erhoben und je Plattform mit Betriebssystem, Kernel und Zähler-Domäne
 protokolliert.
 
+Der Umfang des vollständigen Baus ist als \emph{Soll} festgelegt: Je System-Permutation --- je im
+Profil deklarierter Kombination der Bau-Steuergrößen aus Optimierungsstufe und SIMD-Erweiterung
+(Abschnitt~\ref{sec:axis-triad}) --- werden die $2^{17} = 131072$ Organ-Permutationen des kanonischen
+Vermessungs-Katalogs gebaut werden (Abschnitt~\ref{sec:mess-chain}). Wie viele solcher Bau-Varianten
+anstehen, entscheidet allein das Profil; im Stand dieser Arbeit deklariert es vier (zwei
+Optimierungsstufen mal zwei SIMD-Stufen), wobei die aggressivste Optimierungsstufe bewusst fehlt, weil
+sie den IEEE-754-Gleitkomma-Determinismus des Apparats bräche. Ergebnisse dieser Voll-Bau-Läufe stehen
+aus (Abschnitt~\ref{sec:eval-results}).
+
 Faire Vergleichbarkeit ist über feste Regeln gesichert: Jeder Vergleich trennt einen gemeinsamen
 Minimalmodus (Common-Denominator: externe Werte-Handles, keine PRT-ART-Spezialpfade) vom
 PRT-ART-Native-Modus (Inline-Umschaltung und adaptive Seitentyp-Wahl je Verzweigungspunkt); alle
@@ -91,6 +108,18 @@ Workload protokolliert. Fehlende Fähigkeiten einer Baseline --- etwa Bereichs-S
 als N/A ausgewiesen statt verdeckt emuliert; für jede Fremdbibliothek werden Compiler, Flags, ISA-Pfad,
 Allokator und Commit-Hash mitgeloggt, und jede Konfiguration wird in mehreren getrennten Läufen mit über
 HDR-Histogramme bestimmten Perzentilen vermessen.
+
+Auch der Mess-\emph{Betrieb} ist Teil dieser Fairness-Regeln. Die Messung bleibt strikt vom Bau
+getrennt: Mess-Läufe starten nie automatisch mit einem grünen Bau, sondern werden ausdrücklich
+ausgelöst --- ein grüner Bau beweist Bau-Fähigkeit, kein Mess-Ergebnis. Während der Debug-Modus zur
+Verifikation parallel über alle Threads einer Maschine fahren darf, misst der Mess-Modus mit genau
+\emph{einem} Mess-Thread; das Threading der Gattung selbst bleibt dabei der Tier-Binary überlassen,
+statt vom Harness überschrieben zu werden. Ein im Lager vorgefundenes Binary wird nur dann
+übersprungen, wenn sein grünes Prüf-Testat am Binary inventarisiert ist, und vor jeder Messung steht
+die Konformitätsprüfung am Prüf-Dock (Abschnitt~\ref{sec:impl-contracts}); Bau- wie Mess-Läufe werden
+je Maschine in Meilenstein-Batches von je 4096 Binaries am Stück abgearbeitet, mit gleichverteilter
+Zuteilung der gemeinsam baubaren Binaries über die Maschinen und inventarisierter Wiederaufnahme nach
+Unterbrechung.
 
 Über die drei Hypothesen hinaus erhält die Auswertung eine vierte, eigenständige
 \emph{Evaluations-Dimension}: den heuristischen Gegenbeweis. Sein Konzept ist in
@@ -157,10 +186,26 @@ Reihe \texttt{A\_defined} entspricht das je einem SOTA-Profil) und
 \texttt{diagram\_generator}-Diagramme (A4-bewusste TikZ-Balkendiagramme, Scatter-Plots, Heatmaps), die das
 Manuskript über \texttt{\textbackslash{}input\{tikz/<spec\_id>/\ldots\}} und
 \texttt{\textbackslash{}input\{tabellen/<spec\_id>\ldots\}} aus den sprachneutralen Verzeichnissen einbindet.
+Die CSV-Codierung ist dabei der implementierte Stand; als künftiger Default der Auswertung ist die
+xlsx-Codierung beschlossen: Ein eigener Writer wird --- als Factory über den Ausgabe-Encodierungen ---
+je Lauf \emph{eine} Datei mit einem Blatt je gewählter Unter-Achsen-Permutation und einem Info-Blatt
+(System-Informationen der messenden Maschine, verwendete Haupt-Achsen) schreiben; die CSV-Ausgabe
+bleibt als einstellbarer Fallback derselben Factory erhalten (je Blatt dann eine eigene Datei), und
+Spalten, deren Wert sich innerhalb eines Laufs nie ändert, wandern in die Metadaten, statt in jeder
+Zeile wiederholt zu werden.
 Die drei Messreihen werden dann ausgewertet: Reihe~A (PRT-ART vs.\ Stand der Technik, mit den
 Evaluations-Hypothesen H1--H3 aus Abschnitt~\ref{sec:eval-method}), Reihe~B (systematische Variation der
 Cache-Engine-Permutationen, gespeist aus dem Full Join der Stufe~3) und Reihe~C (Merge/Regression alt
-gegen neu, build-übergreifend; Tabelle~\ref{tab:stage-series}).
+gegen neu, build-übergreifend; Tabelle~\ref{tab:stage-series}). Quer zu dieser Zuordnung liegt das in
+der Anwender-XML deklarierte \emph{Mess-Schema des Prüflings} mit seinen drei Modi: Im
+\emph{Ersetzungs}-Modus ersetzen die Prüflings-Achsen die Standard-Belegung der Cache-Engine
+vollständig (der Default der Stufe~2), im \emph{Hybrid}-Modus wird der gemeinsame
+Cache-Engine-Prüfling-Hybrid je Prüfling vermessen, und der \emph{Full-Join}-Modus der Stufe~3
+kombiniert alle Achsen-Varianten, ohne etwas zu verwerfen. Reihe~A arbeitet in den ersten beiden Modi,
+Reihe~B im dritten; die Hybrid- und Full-Join-Stände bleiben an der Binary selbst unterscheidbar, denn
+ihre Misch-Strategie samt Prüfling hält die vierte Stempel-Zeile fest
+(Abschnitt~\ref{sec:stamp-model}), die bei reinen Ersetzungs- wie reinen Cache-Engine-Bauten ehrlich
+leer bleibt.
 
 % Nach dem ersten messung_driver-Lauf hier einfuegen:
 %   \input{tikz/A_full/cycles_per_permutation.tikz}
@@ -174,9 +219,12 @@ Verbesserungen \emph{einzelner} Algorithmus-Bestandteile bislang nicht trennbar,
 ihren Nutzen in einer eigenen, inkompatiblen Messumgebung belegt. Indem das Achsen-Framework jeden
 Bestandteil als austauschbare Achse über einer sonst konstanten Struktur isoliert, wird der Beitrag jeder
 Entwurfsentscheidung erstmals unter sonst gleichen Bedingungen separierbar und messbar zurechenbar. Anhand
-der Records je Permutation quantifiziert die Analyse auf der Micro-Granularität, welche Achse am meisten zur
-Performance-Varianz beiträgt; Makro- und Gesamt-Benchmarking ergänzen die Operations- und die
-YCSB-Lastprofil-Ebene, und aus der Rangbildung über die drei Granularitäten folgt die Empfehlung von
+der Records je Permutation quantifiziert die Analyse auf der Mikro-Granularität --- der Vermessung
+jeder Achse über ihr \emph{Achsen-Interface}, die Funktionsmenge, die alle Algorithmen dieser Achse
+liefern müssen (Abschnitt~\ref{sec:mess-chain}) ---, welche Achse am meisten zur Performance-Varianz
+beiträgt; Makro- und Gesamt-Benchmarking ergänzen die Ebene der Gattungs-Interface-Operationen und die
+YCSB-Lastprofil-Ebene, die Wallclock-Gegenmessung der Achsen-Interfaces prüft die interne Mikro-Messung
+von außen, und aus der Rangbildung über die drei Granularitäten folgt die Empfehlung von
 Standard-Konfigurationen je Workload-Klasse. Die Ergebnisse werden schließlich vor dem Leitmotiv der Arbeit diskutiert --- dem
 Übergang vom heuristischen zum informierten Cache-Management, also der Frage, ob telemetrie-getriebene,
 automatisch adaptierte Konfigurationen statisch gewählte übertreffen. Kapitel~\ref{ch:conclusion} zieht
