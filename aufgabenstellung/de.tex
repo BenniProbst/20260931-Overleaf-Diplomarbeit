@@ -40,7 +40,7 @@ auswerten kann.
 \minisec{Zielsetzung}
 Ziel der Arbeit ist es, ein solches Prinzip (ein Rahmenwerk) zu finden, zu entwerfen und
 prototypisch als Experimentier-Framework umzusetzen, der mit Konzentrationspunkt auf eine dynamische
-Zusammensetzung der verteilten Algorithmus Konzepte: (i) cache-bewusste Suchalgorithmen in
+Zusammensetzung der verteilten Algorithmus-Konzepte: (i) cache-bewusste Suchalgorithmen in
 austauschbare Entwurfsbestandteile zerlegt, (ii) Algorithmen des Standes der Technik als explizite
 Konfigurationen (Punkte im Entwurfsraum) rekonstruiert, (iii) cache-line-bewusstes Verhalten sowohl
 an den einzelnen direkt und indirekt betroffenen Stellen als auch für den gesamten Algorithmus auf
@@ -53,23 +53,31 @@ wird, allerdings nur einige neue Aspekte innerhalb der Klassifizierung von Sucha
 und keinen vollständigen Algorithmus.
 
 Die hier geforderte Trennbarkeit der einzelnen Algorithmus-Bestandteile wird in der vorliegenden
-Arbeit durch das Achsen-Framework (Kapitel~\ref{ch:foundations}) und die drei-granulare Mess-Methodik
-(Kapitel~\ref{ch:measurement}) realisiert.
+Arbeit --- aufbauend auf den Grundlagen aus Kapitel~\ref{ch:foundations} --- durch das
+Achsen-Framework und die drei-granulare Mess-Methodik (Kapitel~\ref{ch:measurement}) realisiert.
 
 \minisec{Teilaufgaben}
 \begin{enumerate}
   \item Systematische Erfassung der allgemeinen Entwurfsbestandteile von Suchalgorithmen ---
   insbesondere der cache-bewussten --- und Identifikation der Stellen, an denen cache-line-bewusste
   und suchalgorithmus-spezifische Entscheidungen wirksam werden. Dazu zählt die systematische
-  Untergliederung der Entwufsbestandteile in Entwurfsebenen einer verallgemeinerten
-  Algorithmus-Kategorisierung
+  Untergliederung der Entwurfsbestandteile in Entwurfsebenen einer verallgemeinerten
+  Algorithmus-Kategorisierung.
   \item Rekonstruktion von Entwürfen des Stands der Technik --- möglichst aus dem Originalcode der
   jeweiligen Veröffentlichung und Original Compiler Binary linking --- (ART, HOT, Masstree,
   CoCo-trie, START, B\textsuperscript{2}-Tree, Wormhole, SuRF sowie weitere Verfahren) als
   explizite, vergleichbare Konfigurationen.
   \item Entwurf und Implementierung von PRT-ART als Prüfling mit mehreren eigenen
   Entwurfsbestandteilen, der gegen den erfassten Stand der Technik antritt.
-  % Wir haben in einer Erweiterung definiert, dass die Kette nun per XML beginnt und daraus mithilfe eines Planers eine CacheEngineBuilder für das betreffende System baut, die dann ihrerseits alle erdenklichen Binary Permutationen baut, die dann auf die beste gemessene System-Binary und System-Binary-Rekombination auswerten, die dann per finaler Messung der einen Binary oder hybrid-Binary-Rekombinationen eine Auswertung über CSV/xlsx Dateien generieren, die dann in Latex und Diagramme übersetzt werden.
+  \item Erweiterung der Kette zu einem durchgehend deklarativ gesteuerten Gesamtablauf: Die Kette
+  beginnt mit einer XML-Beschreibung des Experiments, aus der für das betreffende System ein
+  automatisierter, plattformbezogener System-Bau abgeleitet wird, der seinerseits alle erdenklichen
+  Binary-Permutationen der Entwurfsbestandteile erzeugt. Deren Messergebnisse werden auf die beste
+  gemessene System-Binary und System-Binary-Rekombination hin ausgewertet; eine finale Messung der
+  einen Binary bzw.\ hybrider Binary-Rekombinationen erzeugt eine Auswertung über CSV-/xlsx-Dateien,
+  die abschließend in LaTeX und Diagramme übersetzt wird. Dass deklarative
+  Konfigurationsbeschreibungen den automatisierten Aufbau modularer Systemvarianten steuern, ist ein
+  etabliertes Konstrukt~\cite{czarnecki2000generative, apel2013feature}.
   \item Aufbau einer reproduzierbaren Mess-Pipeline (Binary~$\to$~CSV~$\to$~LaTeX~$\to$~Diagramm)
   mit profilbewusstem Workload-Routing aller im Stand der Technik gefundenen Workload-Frameworks
   über \emph{alle} verfügbaren Workloads und Hardware-Counter-Erfassung.
@@ -77,12 +85,15 @@ Arbeit durch das Achsen-Framework (Kapitel~\ref{ch:foundations}) und die drei-gr
   verpflichtenden Messreihen --- (A)~Prüfling gegen den Stand der Technik, (B)~systematische
   Variation der Entwurfsentscheidungen, (C)~Merge/Regression alter gegen neue Varianten ---, wobei
   jede Reihe in drei Granularitäten erhoben wird: \emph{Micro-Benchmarking} (jeder einzelne
-  Entwurfsbestandteil innerhalb der Suchalgorithmus-Hülle und innerhalb der Algorithmus-Kategorie-Hülle wird innerhalb jeder gemeinsamen Interface-Funktion innerhalb seiner
-  Kategorie, isoliert gegen Lastprofile gemessen, Auswertungsvergleich der Algorithmen der Kategorie der Interface-Funktion untereinander wird durchgeführt, unter Einhaltung Latenz-bedachter best practices in der Forschung an Datenbanken), \emph{Makro-Benchmarking} (die einzelnen
-  Interface-Operationen des Suchalgorithmus als Ganzes werden gegen Beispiellasten bzw. Test-Teilbereiche der
-  Algorithmus-Bestandteile über die Interface-Funktionen der Algorithmus Kategorie, z.\,B.\ Einfügen, Punktsuche, Löschen gemessen) und \emph{Gesamt-Benchmarking}
-  (etablierte YCSB-ähnliche Lastprofile und vergleichbare Frameworks über jede Rekombination der
-  Entwurfsbestandteile).
+  Entwurfsbestandteil wird --- innerhalb der Suchalgorithmus-Hülle wie der
+  Algorithmus-Kategorie-Hülle --- in jeder gemeinsamen Interface-Funktion seiner Kategorie isoliert
+  gegen Lastprofile gemessen; die Algorithmen der Kategorie werden je Interface-Funktion
+  untereinander vergleichend ausgewertet, unter Einhaltung latenz-bedachter Best Practices der
+  Datenbankforschung), \emph{Makro-Benchmarking} (die einzelnen Interface-Operationen des
+  Suchalgorithmus als Ganzes --- z.\,B.\ Einfügen, Punktsuche, Löschen --- werden über die
+  Interface-Funktionen der Algorithmus-Kategorie gegen Beispiellasten bzw.\ Test-Teilbereiche der
+  Algorithmus-Bestandteile gemessen) und \emph{Gesamt-Benchmarking} (etablierte YCSB-ähnliche
+  Lastprofile und vergleichbare Frameworks über jede Rekombination der Entwurfsbestandteile).
   \item Auswertung, an welchen Stellen und in welchen Kombinationen cache-line-bewusste
   Entscheidungen für welche datentyp-spezifischen Lastmuster vorteilhaft oder nachteilig sind ---
   ermittelt aus der Rangbildung über die drei Benchmarking-Granularitäten und aufbereitet als
