@@ -4,35 +4,51 @@
 % danach Achsen-Implementierung (je Achse das Gesamtkonzept-Bild) und alle Ebenen des Mess-Systems.
 
 Dieses Kapitel steigt in das Detail: zuerst die Repository-Architektur, dann jede Schlüsselstelle von PRT-ART
-einzeln und bildhaft, schließlich die Achsen-Implementierung und die Ebenen des Mess-Systems.
+einzeln und bildhaft, anschließend die Achsen-Implementierung mit der \emph{einen} Architektur im Code und den
+Ebenen des Mess-Systems, schließlich die Qualitätssicherung über Contract-Tests je Schicht und der
+Mess-Querschnitt der System-Achsen im Code.
 
 \section{Drei-Repository-Architektur}\label{sec:repos}
 Die Implementierung verteilt sich auf drei Git-Repositorien mit klar getrennten Verantwortlichkeiten:
 \begin{itemize}
   \item \texttt{comdare-cache-engine} --- \textbf{wie} gemessen wird: die Bausteine-Bibliothek und der
   Builder (XML-Config-Parser, \texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile}-Codegenerierung,
-  Permutations-Schleife, Modul-Loader und der sieben-phasige \texttt{ExperimentDriver}), die ABI-Header,
-  30~SOTA-Profile unter \texttt{algorithm\_profiles/sota} und die Test-Suites; der Quellbaum folgt einem
-  Pitchfork-Layout (\texttt{apps/}, \texttt{libs/}, \texttt{libs/common}).
+  Permutations-Schleife, Modul-Loader und der sieben-phasige \texttt{ExperimentDriver}), die
+  Bibliotheken \texttt{search\_\allowbreak{}engine} und \texttt{execution\_\allowbreak{}engine}, die
+  ABI-Header unter \texttt{abi/} (\texttt{baustein\_\allowbreak{}variants},
+  \texttt{resolve\_\allowbreak{}baustein}, \texttt{module\_\allowbreak{}abi\_\allowbreak{}v1}),
+  die 30~SOTA-Profile unter \texttt{algorithm\_profiles/sota} und die Test-Suites; der Quellbaum folgt einem
+  Pitchfork-Layout (\texttt{apps/} für ausführbare Dateien, \texttt{libs/} für Bibliotheken,
+  \texttt{libs/common} für querschnittlichen Code).
   \item \texttt{comdare-prt-art} --- der \textbf{Prüfling}: die hybride \texttt{PrtArtSearchEngine}
   (Vector/Map/Tuple-API), ihre ABI-Adapter und ihre Bausteine (4+1+2-Allokator-Pools --- sieben Pools:
   vier Größenklassen-Pools A--D, ein Rest-Pool R und zwei reservierte Wert-Pools ---, OLC mit
   reservierten Blöcken, MultiLevel-Layout, pfadorientiertes Prefetch, DensityTracker,
-  Hypothesen-Metriken H1/H2/H3); Pool-, Prefetch- und Layout-Komponenten sind dabei derzeit
-  Deskriptor-Skelette ohne echte Speicheranbindung.
+  Hypothesen-Metriken H1/H2/H3) sowie die prüflingseitigen Vergleichs-Re-Implementierungen der
+  Rang-2/3-Paper ohne öffentlichen Quellcode (\texttt{legacy\_\allowbreak{}reimpl}, P11--P27), die im
+  SOTA-Beitrittstest gegen die echten Adapter der Cache-Engine verglichen werden; Pool-, Prefetch- und
+  Layout-Komponenten sind dabei derzeit Deskriptor-Skelette ohne echte Speicheranbindung --- der
+  Prefetch-Baustein überschreibt gleichwohl bereits den Prefetch-Slot des Mess-Apparats, während Pool
+  und Layout dort noch über den Cache-Engine-Standard laufen (Abschnitt~\ref{sec:prtart-impl}).
   \item \texttt{probst-Diplomarbeit-cache-engine} --- \textbf{was} getestet wird: der
   \texttt{messung\_driver}, die Experiment-Konfigurationen, die Auswertungs-Pipeline und das Manuskript.
 \end{itemize}
+Die vier Subsysteme (Mess-Treiber, CacheEngineBuilder, CacheEngine, Prüfling) liegen dabei orthogonal
+zu dieser Drei-Repository-Aufteilung: Builder und CacheEngine teilen sich \texttt{comdare-cache-engine}
+--- der Builder als ausführbare Datei (\texttt{apps/}) über seiner Builder-Bibliothek
+(\texttt{libs/\allowbreak{}cache\_\allowbreak{}engine/\allowbreak{}builder}), die CacheEngine als Bibliothek (\texttt{libs/\allowbreak{}cache\_\allowbreak{}engine}).
 Quer dazu trennt die Terminologie zwei Engine-Begriffe, die nicht kurzgeschlossen werden dürfen. Die
-\texttt{CacheEngine} (\texttt{cache-engine/libs}) ist die \emph{Bibliothek der Achsen-Bausteine}:
+\texttt{CacheEngine} (\texttt{libs/\allowbreak{}cache\_\allowbreak{}engine}) ist die \emph{Bibliothek der Achsen-Bausteine}:
 Sie stellt je Achse die austauschbaren Entwurfsbestandteile als Concept-/CRTP-Komponenten bereit und
 enthält \emph{keine} Mess-Logik. Die \texttt{ExecutionEngine} hingegen ist die quer zu allen Achsen
-liegende \emph{Ausführungs- und Mess-Infrastruktur}: Als abstrakte messbare Wurzel (\texttt{IExecutionEngine},
-Abschnitt~\ref{sec:measurement-system}) liefert der konkrete Laufzeit-Adapter
-\texttt{SearchAlgorithmAbiAdapter<A>} über die \texttt{SearchAlgorithmAnatomy} die
+liegende \emph{Ausführungs- und Mess-Infrastruktur}: Ihre abstrakte messbare Wurzel ist
+\texttt{IExecutionEngine} (Abschnitt~\ref{sec:measurement-system}); der konkrete Laufzeit-Adapter
+\texttt{SearchAlgorithmAbiAdapter<A>} liefert über die \texttt{SearchAlgorithmAnatomy} die
 OS-Primitiven (cache-line-ausgerichtete Allokation, NUMA-konformes Read-Pinning, kohärenz-bewusstes
 Schreiben); die Mess- und Observer-Kopplungen des Adapters sind über
-\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gegated, und den Mess-Aggregator führt der
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gegated --- daraus entstehen drei
+Auslieferungsvarianten derselben Permutation (Debug mit Observer, Messung mit Aggregator, Release ohne
+Mess-Kopplungen) ---, und den Mess-Aggregator führt der
 \texttt{ExperimentDriver} host-seitig (eine CMake-Option
 \texttt{COMDARE\_\allowbreak{}EXPERIMENT\_\allowbreak{}MODE} existiert, verdrahtet dieses Gating derzeit
 aber nicht). Kurz: Die \texttt{CacheEngine} liefert die \emph{Bausteine}, die
@@ -41,7 +57,7 @@ aber nicht). Kurz: Die \texttt{CacheEngine} liefert die \emph{Bausteine}, die
 \section{PRT-ART im Detail}\label{sec:prtart-impl}
 Aufbauend auf dem bekannten Stand der Technik beschreiben wir jede Schlüsselstelle von PRT-ART einzeln und
 bildhaft.
-PRT-ART steuert mehrere eigene Schlüsselstellen bei, je an ihrer Achse verortet (zwei davon auf T10). Auf der
+PRT-ART steuert sechs eigene Schlüsselstellen bei, zwei davon auf T10. Auf der
 \emph{Allokator-Achse} ersetzt ein \emph{4+1+2-Pool-Allokator} (vier Größenklassen-Pools, ein Rest-Pool
 plus zwei reservierte Wert-Pools) die algorithmus-fest verdrahtete Allokation durch eine cache-line-ausgerichtete,
 fragmentierungsarme Free-List. Auf der \emph{Nebenläufigkeits-Achse} --- selbst gegliedert in Pattern
@@ -63,9 +79,15 @@ Pfadkompressions-Redirect und ChainRef-Wert-Handle), während 4+1+2-Pool-Allokat
 im Mess-Pfad über den Cache-Engine-Standard laufen, bis ihre Anbindung (Folgeschritt~E6) landet
 (Abschnitt~\ref{sec:prtart-demo}).
 Auf eine Galerie verdichtet zeigt Abbildung~\ref{fig:prtart-gallery} die sechs eigenen Schlüsselstellen
-von PRT-ART, je an ihrer Achse verortet.
+von PRT-ART, je an ihrer Achse verortet. Die verbleibenden zwei der acht Bausteinschichten aus der
+Beitragsliste (Abschnitt~\ref{sec:contributions}) --- die Inline-/External-/ChainRef-Wert-Handles und
+die Signaling-Bit-Serialisierung --- treten nicht als eigene Galerie-Punkte auf: Erstere stellen den im
+Apparat überschriebenen ChainRef-Slot (T11), Letztere ist als
+\texttt{Var\allowbreak{}Len\allowbreak{}Serialization}-Baustein mit Signalisierungsbits in
+Anhang~\ref{app:blocks} katalogisiert.
 \begin{figure}[htbp]\centering
-\resizebox{0.97\linewidth}{!}{%
+% Kein \resizebox: die Zeichnung ist ~14.9cm schmal; ein Aufblasen auf 0.97\linewidth (x1.04) vergroesserte
+% die \footnotesize-Schrift ueber den Fliesstext hinaus. Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,
   pa/.style={draw,rounded corners,fill=orange!10,minimum width=4.7cm,minimum height=2.25cm,text width=4.4cm,align=center,inner sep=3pt}]
   \node[pa] (p1) at (0,0){\textbf{4+1+2-Pool-Allokator}\\{\scriptsize Achse T6}\\[2pt]{\tiny vier Größenklassen-Pools $+$ Rest-Pool $+$ zwei reservierte; cache-line-ausgerichtete, fragmentierungsarme Free-List statt fest verdrahteter Allokation}};
@@ -74,8 +96,8 @@ von PRT-ART, je an ihrer Achse verortet.
   \node[pa] (p4) at (0,-2.85){\textbf{MultiLevel-Layout}\\{\scriptsize Achse T5}\\[2pt]{\tiny mehrstufiges Speicher-Layout über die Knotenebenen; layout-getriebener Stride (CLA 64-Byte vs.\ AoS 16-Byte)}};
   \node[pa] (p5) at (5.1,-2.85){\textbf{Kohärenz-bewusste Telemetrie}\\{\scriptsize Achse T10}\\[2pt]{\tiny Leaf-Only-Zähler (Haupt), Sampling (jeder $N$-te), Offline-Recompute; Per-Node-Zähler nur als Anti-Pattern}};
   \node[pa] (p6) at (10.2,-2.85){\textbf{DensityTracker $+$ H1/H2/H3}\\{\scriptsize Achse T10 (eigene Organe)}\\[2pt]{\tiny eigene Mess-Organe: Belegungsdichte-Tracker und die drei Hypothesen-Metriken des Prüflings}};
-\end{tikzpicture}} % chktex 31
-\caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+1+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die Kacheln zeigen die \emph{Bausteine des Prüfling-Repos}; im Apparat überschrieben sind derzeit T7/T8/T10, die Bausteine zu T5/T6 laufen dort noch über den Cache-Engine-Standard (E6). Die übrigen vierzehn Kompositions-Achsen bezieht der Prüfling über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
+\end{tikzpicture}
+\caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+1+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie (T10) samt DensityTracker und den Hypothesen-Metriken H1/H2/H3. Die Kacheln zeigen die \emph{Bausteine des Prüfling-Repos}; im Apparat überschrieben sind derzeit T7/T8/T10, die Bausteine zu T5/T6 laufen dort noch über den Cache-Engine-Standard (E6). Zusätzlich überschreibt der Prüfling Pfadkompressions-Redirect (T3), ChainRef-Wert-Handle (T11) und die Build-Achse Seitentyp; die übrigen vierzehn Kompositions-Achsen (derzeit einschließlich T5/T6) bezieht er über den Compile-Time-Fallback aus der Cache-Engine.}\label{fig:prtart-gallery}
 \end{figure}
 
 \section{Achsen-Implementierung und Mess-System-Ebenen}\label{sec:axes-impl}
@@ -83,22 +105,163 @@ Jede Achse wird als generalisiertes Interface implementiert; daneben liegen die 
 Codegenerierung bis zur Sieben-Phasen-Pipeline.
 Jede Achse ist ein Topic-Verzeichnis, das ein zweischichtiges \emph{Concept} (ein breites Topic-Concept
 und ein enges Achsen-Concept) sowie eine durch eine \texttt{requires}-Klausel abgesicherte
-\emph{CRTP-Basisklasse} enthält. Die Prüfling-gegen-Standard-Auswahl wird für die elf
+\emph{CRTP-Basisklasse} enthält. Die Prüfling-gegen-Standard-Auswahl wird für die vierzehn
 PRT-ART-Fallback-Achsen zur Übersetzungszeit über \texttt{resolve\_baustein.hpp} (Concept-geprüftes
-\texttt{if constexpr} über Tag-Spezialisierungen) aufgelöst,
+\texttt{if constexpr} über Tag-Spezialisierungen; der literale Tag-Katalog der historischen
+Elf-Achsen-Vorstufe besteht dort nur als \texttt{baustein\_variants}-Fallback fort) aufgelöst,
 sodass der Hot-Path weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches enthält --- die zero-cost
-abstraction aus Abschnitt~\ref{sec:software-means}. Jeder SOTA-Entwurf und jeder Allokator wird über einen
+abstraction aus Abschnitt~\ref{sec:anatomy-model}. Jeder SOTA-Entwurf und jeder Allokator wird über einen
 dünnen \emph{Adapter} integriert, der die Original-Implementierung hinter dem Engine-ABI bereitstellt:
 Allokator-Vendors werden über per-Vendor-Include-Shims (\texttt{\#if COMDARE\_AXIS\_06\_USE\_<X>} mit
 Forward-Stubs), SOTA-Bausteine über constexpr-Enable-Flags samt \texttt{mp\_filter}
 (\texttt{COMDARE\_AXIS\_*\_USE\_}-/\texttt{ENABLE\_}-Flag-Familie) übersetzungszeitlich zu- oder
-abgeschaltet, jeweils mit sicherem Fallback (etwa \texttt{std::malloc} oder einer Re-Implementierung),
-sodass der Build eigenständig lauffähig bleibt --- \texttt{COMDARE\_HAVE\_<X>} besteht nur noch als
-historisches Detektions-Define; die Integration des
+abgeschaltet, jeweils mit sicherem, familienweise gewähltem Fallback --- Allokator-Adapter ersetzen den
+fehlenden Vendor durch \texttt{std::malloc}/\texttt{std::free}, Datenstruktur-Adapter durch einen Stub,
+der bei Benutzung kontrolliert eine \texttt{std::runtime\_error}-Ausnahme wirft ---,
+sodass der Build eigenständig lauffähig bleibt. Das frühere Detektions-Define
+\texttt{COMDARE\_HAVE\_<X>} besteht nur noch historisch. Die Integration des
 hierarchischen Prefetching~\cite{zhang2025hierarchical} liefert zusätzlich einen Call-Graph-Analyzer zur
 Übersetzungszeit (\texttt{p27\_bundle\_finder}, ein C++23-Port des Original-Werkzeugs \texttt{hp\_soft},
 der Funktionen mit Subtree-Footprint oberhalb eines Schwellwerts als Bundle-Einstiegspunkte identifiziert).
 
+Die neunzehn Kompositions-Achsen sind dabei nicht abstrakt, sondern je ein konkretes \emph{Strategie-Concept}
+mit mehreren austauschbaren Bausteinen, aus denen eine konkrete Composition je Slot genau einen wählt.
+Abbildung~\ref{fig:axes-gallery} fasst alle neunzehn als Galerie zusammen --- je Achse der Kurzname, die
+Sub-Achsen-Familie und eine repräsentative Auswahl der Bausteine; die vollständige Bausteine-Matrix mit
+allen Herkunfts-Quellen führt Anhang~\ref{app:blocks}, die SOTA-Beiträge je Achse Tabelle~\ref{tab:axes-overview}.
+Dass keine Composition ein Organ auslässt, erzwingt das \texttt{IsComposition}-Concept: Es verlangt je
+Algorithmus die Belegung genau dieser neunzehn Organe --- der siebzehn Such-Achsen plus der beiden
+Queuing-Achsen ---, sodass keine Composition übersetzt, die eine Achse offenlässt; der vollständige
+Organ-Satz ist damit keine Konvention, sondern eine übersetzungszeitlich geprüfte Bedingung.
+% AXIS-T0..T18-Galerie: fig:axes-gallery (4.3) ERLEDIGT
+\begin{figure}[htbp]\centering
+% Kein \resizebox: die Galerie ist von 5x4 auf 4x5 Kacheln umgebrochen (~15.9cm statt ~17.8cm breit,
+% Kacheln 3.35->3.75cm, Raster 4.05cm) und passt nativ in \textwidth (16cm); so bleibt die
+% \footnotesize-Schrift unskaliert statt per resizebox (x0.90) verkleinert. Regel: resizebox nur zum
+% VERKLEINERN (vgl. fig:m-model).
+\begin{tikzpicture}[font=\footnotesize,
+  ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt}]
+  \node[ax] (t0) at (0,0){\textbf{T0 Suchalgorithmus}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(21: 17 Basis $+$ 4 per-K)}\\{\tiny\itshape Std.\ Array256}};
+  \node[ax] (t1) at (4.05,0){\textbf{T1 Cache-Travers.}\\{\tiny CT1--CT2}\\{\tiny Linear-Fanout, Hash-Lookup, Binär-Fanout}\\{\tiny\itshape Std.\ Linear}};
+  \node[ax] (t2) at (8.1,0){\textbf{T2 Slot-Mapping}\\{\tiny MP1--MP2}\\{\tiny Direkt-Platzierung, Pool-relativ}\\{\tiny\itshape Std.\ Direkt}};
+  \node[ax] (t3) at (12.15,0){\textbf{T3 Pfadkompression}\\{\tiny PC1--PC3}\\{\tiny Keine, Byte-weise (ART), Patricia}\\{\tiny\itshape Std.\ Keine}};
+  \node[ax] (t4) at (0,-2.4){\textbf{T4 Knotentyp}\\{\tiny NT1--NT3}\\{\tiny Node4 / 16 / 48 / 256}\\{\tiny\itshape Std.\ Node256}};
+  \node[ax] (t5) at (4.05,-2.4){\textbf{T5 Speicher-Layout}\\{\tiny HM1--HM4}\\{\tiny AoS, Cache-Line-aligned, SoA, Bitmap (LOUDS), AoSoA}\\{\tiny\itshape Std.\ Cache-Line}};
+  \node[ax] (t6) at (8.1,-2.4){\textbf{T6 Allokator}\\{\tiny AA1--AA7}\\{\tiny Hoard, Slab, Mimalloc, Jemalloc, TCMalloc, Buddy \dots\,(25)}\\{\tiny\itshape Std.\ Std-Malloc}};
+  \node[ax] (t7) at (12.15,-2.4){\textbf{T7 Prefetch}\\{\tiny PF1--PF3}\\{\tiny Keine, Distanz-Schätzer (ART), Hardware, Pfad-orient.}\\{\tiny\itshape Std.\ Keine}};
+  \node[ax] (t8) at (0,-4.8){\textbf{T8 Nebenläufigkeit}\\{\tiny CC1--CC2}\\{\tiny Keine, Blocking, R/W, OLC, Lock-free, RCU, Hazard}\\{\tiny\itshape Std.\ Keine}};
+  \node[ax] (t9) at (4.05,-4.8){\textbf{T9 Serialisierung}\\{\tiny SR1--SR3}\\{\tiny Roh-Binär, VarLen (LEB128), Succinct, LZ4/Delta}\\{\tiny\itshape Std.\ Roh-Binär}};
+  \node[ax] (t10) at (8.1,-4.8){\textbf{T10 Telemetrie}\\{\tiny TM1--TM3}\\{\tiny Leaf-Only-Zähler, Density-Tracker, HDR-Histogramm}\\{\tiny\itshape Std.\ Leaf-Only}};
+  \node[ax] (t11) at (12.15,-4.8){\textbf{T11 Wert-Handle}\\{\tiny VH1--VH3}\\{\tiny Inline, Extern-Pool, RCU-Shared, MVCC, Chain-Ref}\\{\tiny\itshape Std.\ Inline}};
+  \node[ax] (t12) at (0,-7.2){\textbf{T12 ISA}\\{\tiny IS1--IS3}\\{\tiny Amd64 (SSE2), AArch64 (NEON), PowerPC, RISC-V}\\{\tiny\itshape Std.\ Amd64}};
+  \node[ax] (t13) at (4.05,-7.2){\textbf{T13 Index-Org.}\\{\tiny io1--io3}\\{\tiny Clustered, Heap, IOT (embedded), Non-Clustered}\\{\tiny\itshape Std.\ Heap}};
+  \node[ax] (t14) at (8.1,-7.2){\textbf{T14 I/O-Dispatch}\\{\tiny IO1--IO3}\\{\tiny In-Memory, Buffered, Direct (O\_DIRECT), Mmap}\\{\tiny\itshape Std.\ In-Memory}};
+  \node[ax] (t15) at (12.15,-7.2){\textbf{T15 Migration}\\{\tiny MG1--MG3}\\{\tiny Keine, Hot/Cold, Tier-basiert, Adaptiv (ML)}\\{\tiny\itshape Std.\ Keine}};
+  \node[ax] (t16) at (0,-9.6){\textbf{T16 Filter}\\{\tiny FT1--FT3}\\{\tiny Bloom, Cuckoo, Range-SuRF (LOUDS), Xor}\\{\tiny\itshape (kein None)}};
+  \node[ax] (t17) at (4.05,-9.6){\textbf{T17 Op.-Puffer}\\{\tiny QS1--QS6}\\{\tiny Kein, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Std.\ Kein-Puffer}};
+  \node[ax] (t18) at (8.1,-9.6){\textbf{T18 Flush-Policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptiv-LSM}\\{\tiny\itshape Std.\ Lazy}};
+  \node[draw,rounded corners,fill=green!8,minimum width=3.75cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt] (leg) at (12.15,-9.6){\textbf{Lesart}\\{\tiny Jede Achse $=$ ein \texttt{Concept} mit austauschbaren Bausteinen (\emph{Strategy}); eine Composition wählt je Slot genau einen.}};
+\end{tikzpicture}
+\caption{Galerie der neunzehn Kompositions-Achsen (T0--T18): je Achse das Implementierungs-Konzept --- Kurzname, Sub-Achsen-Familie und eine repräsentative Auswahl der austauschbaren Bausteine. Jede Achse ist ein \texttt{Concept}-Interface mit mehreren Strategie-Bausteinen (\emph{Strategy}-Muster); eine konkrete Composition belegt je Slot genau einen. Der \emph{Standard} (\enquote{Std.}) ist eine abgeleitete Vergleichs-Baseline, kein Code-Flag; bei den großen Achsen T0/T6/T17 ist die Gesamt-Bausteinzahl in Klammern angegeben. Die vollständige Matrix mit Herkunfts-Quellen führt Anhang~\ref{app:blocks}.}\label{fig:axes-gallery}
+\end{figure}
+
+\subsection{Die eine Architektur im Code}\label{sec:impl-architecture}
+Die \emph{eine} Architektur aus Abschnitt~\ref{sec:anatomy-model} wird auf Code-Ebene über eine ABI-stabile \emph{Hülle} nach außen sichtbar. Das Lebewesen
+\texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind nur zwei
+Sichten desselben Gegenstands über die Modulgrenze, kein paralleles Konstrukt: Die Schichtung
+\texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine} trennt die Rollen (vgl.\ Abschnitt~\ref{sec:repos}) ---
+die \texttt{CacheEngine} als Achsen-Bausteine-Bibliothek, die \texttt{ExecutionEngine} als Wurzel der
+Ausführungs- und Mess-Werkzeuge (OS-Primitiven; im Experiment-Modus der Mess-Aggregator über genau eine
+Beobachter-Schnittstelle) und die \texttt{SearchEngine} als die über genau diese Schnittstelle vermessene
+Such-API-Sicht (Abbildung~\ref{fig:one-architecture}). Achsenlose \emph{Viren} stehen als Geschwister
+unter derselben Wurzel, tragen aber keine Anatomie.
+
+\begin{figure}[!htbp]
+  \centering
+  % Kein \resizebox: die Zeichnung ist ~15.5cm schmal und passt nativ in \textwidth (16cm); das fruehere
+  % \resizebox{0.95\textwidth} (x0.98) skalierte die \footnotesize-Schrift nur unnoetig gegen den
+  % Fliesstext. Regel: resizebox nur zum VERKLEINERN echter Ueberbreite (vgl. fig:m-model).
+  \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=3pt, text width=3.5cm}]
+    \node[box,fill=blue!8,text width=5.3cm] (root) at (0,0) {\texttt{IExecutionEngine} --- \textbf{Treiber der Messung}\\{\scriptsize \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown}; messbarer Vertrag: Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
+    \node[box] (ana) at (-4.4,-2.1) {\texttt{IAnatomyBase}\\{\scriptsize Lebewesen (Anatomie-Gattungen)}};
+    \node[box] (vir) at (4.4,-2.1) {\texttt{IVirus\-Execution\-Engine}\\{\scriptsize Virus (achsenlos, dennoch messbar)}};
+    \node[box] (sa) at (-6.2,-4.1) {SearchAlgorithm-Gattung\\{\scriptsize $\equiv$ \enquote{Lebewesen} (Säugetier)}};
+    \node[box] (cont) at (-2.0,-4.1) {Container-Gattung\\{\scriptsize Set/Sequence/Adapter/View}};
+    \node[box] (graph) at (2.2,-4.1) {Graph-Gattung\\{\scriptsize eigener Organsatz}};
+    \node[box] (body) at (-7.4,-6.1) {\texttt{Search\-Algorithm\-Anatomy<C>}\\{\scriptsize \emph{Körper}: Komposition $+$ \emph{Verdrahtung} der 19 Organe}};
+    \node[box] (abi) at (-3.4,-6.1) {\texttt{Search\-Algorithm\-Abi\-Adapter<A>}\\{\scriptsize ABI-Laufzeit-Sicht (\enquote{SearchEngine})}};
+    \node[box,fill=orange!8] (comp) at (-7.4,-7.9) {konkrete Composition (z.\,B.\ \texttt{ArtComposition})\\{\scriptsize Ebene 4: Belegung \emph{aller} 19 Achsen $=$ ein Tier}};
+    \node[box,fill=orange!16] (bin) at (-7.4,-9.9) {Tier-Binary \texttt{comdare\_perm\_\-<fp>.dll}\\{\scriptsize Ebene 5: je Permutation kompiliert $+$ 3 Build-Achsen}};
+    \draw[->] (root) -- (ana);
+    \draw[->] (root) -- (vir);
+    \draw[->] (ana) -- (sa);
+    \draw[->] (ana) -- (cont);
+    \draw[->] (ana) -- (graph);
+    \draw[->] (sa) -- (body);
+    \draw[->] (sa) -- (abi);
+    \draw[->] (body) -- (comp);
+    \draw[->] (comp) -- (bin);
+  \end{tikzpicture}
+  \caption{Die \emph{eine} Architektur als einzige Hierarchie ohne Parallel-Bäume. An der Wurzel steht
+  \texttt{IExecutionEngine} als \emph{Treiber der Messung} --- der universelle messbare Vertrag
+  (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) über alle drei Engine-Arten Anatomy,
+  Virus und Hybrid; unter ihm verzweigen die anatomie-tragenden \emph{Gattungen} (SearchAlgorithm,
+  Container, Graph) und die achsenlosen \emph{Viren}. \texttt{SearchAlgorithm} \emph{ist} das fokale
+  Lebewesen (Säugetier); seine Anatomie ist sein \emph{Körper} --- die feste Komposition \emph{und
+  Verdrahtung} der 19 Organe ---, und \enquote{SearchEngine} nur dessen ABI-Laufzeit-Sicht. Der
+  Säugetier-Ast ist bis zum Individuum ausgezogen: eine konkrete Achsen-Composition (Ebene~4) wird je
+  Permutation als eigenständige Tier-Binary kompiliert (Ebene~5). Container (schlüsselloser Speicher) und
+  Graph tragen eigene Organsätze.}\label{fig:one-architecture}
+\end{figure}
+
+Konkret ist die Modulgrenze eine C-stabile Schnittstelle, die je Permutation genau ein Lebewesen
+exportiert; ihre variadische Hybrid-API spezialisiert sich nach Parameterzahl, und komplexe Schlüssel
+werden von einer Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert
+(Abbildung~\ref{fig:abi}). Wie diese und die übrigen Code-Interfaces im Detail zusammenhängen, fasst die
+UML-Landkarte in Abbildung~\ref{fig:uml-interfaces} zusammen.
+
+\begin{figure}[!htbp]
+\begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
+// C-stabile Modulgrenze: exportiert genau EIN Lebewesen je Permutation
+extern "C" IAnatomyBase* comdare_create_anatomy();
+
+// Variadische Hybrid-API je Parameterzahl (Schluessel K, Werte V):
+//   1 Parameter  ->  std::vector<V>
+//   2 Parameter  ->  std::map<K, V>
+//   N > 2        ->  std::map<K,std::tuple<V1,...,VN>>
+template<class... Ts> class SearchEngine;   // ABI-Laufzeit-Sicht des Lebewesens
+\end{lstlisting}
+  \caption{Die ABI-stabile C-Modulgrenze und die variadische Hybrid-API\@. Komplexe Schlüssel werden
+  von einer Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge reduziert.}\label{fig:abi}
+\end{figure}
+
+\begin{figure}[htbp]\centering
+% Kein \resizebox: die Zeichnung ist ~15.3cm schmal; ein Aufblasen auf 0.96\linewidth (x1.006) vergroesserte
+% die \scriptsize-Schrift ueber den Fliesstext hinaus. Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  iface/.style={draw,rounded corners,fill=blue!7,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize},
+  comp/.style={draw,fill=green!8,minimum width=4.0cm,minimum height=0.72cm,font=\ttfamily\scriptsize}]
+  \node[font=\bfseries\scriptsize] at (-4.9,4.7){Engine-/Anatomie-Hierarchie};
+  \node[iface,minimum height=1.0cm] (exec) at (-4.9,3.95){IExecutionEngine\\{\normalfont\scriptsize Treiber der Messung}};
+  \node[iface] (anat) at (-4.9,2.55){IAnatomyBase};
+  \node[iface] (virus) at (-0.6,3.95){IVirusExecutionEngine};
+  \node[comp] (body) at (-4.9,1.4){SearchAlgorithmAnatomy<C>};
+  \node[comp] (abi) at (-4.9,0.25){SearchAlgorithmAbiAdapter<A>};
+  \node[iface,fill=orange!10] (drive) at (-4.9,-0.95){IDriveableTier / IObservableTier};
+  \draw[->] (exec)--(anat); \draw[->] (exec.east) to[bend left=10] (virus.west);
+  \draw[->] (anat)--(body); \draw[->] (body)--(abi); \draw[->] (abi)--(drive);
+  \node[font=\bfseries\scriptsize] at (4.9,4.7){Implementierungs-Muster je Achse ($\times$19)};
+  \node[iface] (topic) at (4.9,3.9){TopicConcept $\wedge$ AxisConcept};
+  \node[comp] (crtp) at (4.9,2.7){AxisBase<Derived> (CRTP)};
+  \node[comp] (variant) at (4.9,1.5){mp\_list<Baustein$_{1..k}$>};
+  \node[iface] (resolve) at (4.9,0.3){resolve\_baustein<Tag>};
+  \draw[->] (topic)--(crtp); \draw[->] (crtp)--(variant); \draw[->] (variant)--(resolve);
+  \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{komponiert 19 Achsen} (topic.west);
+\end{tikzpicture}
+\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase} und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der neunzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird; rechts das je Achse wiederholte Implementierungs-Muster --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die \texttt{mp\_list}-Baustein-Familie und die Übersetzungszeit-Auflösung \texttt{resolve\_baustein}, die je Achse zwischen Prüfling-Slot und Cache-Engine-Standard wählt.}\label{fig:uml-interfaces}
+\end{figure}
+
+\subsection{Vom Profil zur Tier-Binary: Builder und Mess-Pipeline}\label{sec:impl-pipeline}
 Der Builder überführt jedes Profil in ein vorkompiliertes C++23-Modul; jede Permutation ist durch eine
 bit-gepackte \emph{Permutations-Flag}-Struktur identifiziert, die mit der N-Phasen-Verfeinerung von neun
 Bänken (rund 50~Bit) auf einen breiteren \emph{Permutations-Identifier} mit vierzehn Bänken (82~Bit)
@@ -107,21 +270,23 @@ und Sub-Bank-Bitfeldern wächst; die neunzehn Kompositions-Achsen identifiziert 
 ungültige Kombinationen vor jeder Modulerzeugung aus. Über diese Bausteine läuft die
 \emph{Sieben-Phasen-Mess-Pipeline} (Abbildung~\ref{fig:pipeline}) des \texttt{ExperimentDriver} je Reihe: (1)~\textbf{Enumerate}
 (XML-Configs parsen, Permutationsliste aufbauen), (2)~\textbf{Codegen} (ein \texttt{comdare\_perm\_<fp>.cpp}
-je Permutation), (3)~\textbf{Compile}, (4)~\textbf{Load} (LoadLibrary/dlopen aller Module),
+je Permutation, plus \texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile} für
+die SOTA-Profile), (3)~\textbf{Compile}, (4)~\textbf{Load} (LoadLibrary/dlopen aller Module),
 (5)~\textbf{Execute} (\texttt{create\_instance} + profilbewusstes \texttt{run\_workload}),
 (6)~\textbf{Measure} (binäre Mess-Records aggregieren) und (7)~\textbf{Persist}
 (\texttt{measurements.csv}/\texttt{.json}); zwei opt-in-Phasen kompilieren fehlende Module hot und
-verifizieren den ABI-Vertrag je Modul. Die nachgelagerte Auswertungs-Werkzeugkette ist eine Folge kleiner
+verifizieren den ABI-Vertrag je Modul. Die nachgelagerte Auswertungs-Werkzeugkette
+(Abbildung~\ref{fig:toolchain}) ist eine Folge kleiner
 Programme --- \texttt{sample\_data\_generator} (deterministische Testdaten ohne reale Hardware) $\to$
 \texttt{messung\_driver} (steuert die Reihen) $\to$ \texttt{binary\_to\_csv} (deserialisiert die binären
 Mess-Records) $\to$ \texttt{csv\_to\_latex} (booktabs-Tabellen mit Algorithmus-Steckbriefen je Permutations-ID)
 $\to$ \texttt{diagram\_generator} (A4-bewusste TikZ-Plots) $\to$ \texttt{latex\_to\_pdf} ---; die
 Mess-Kopplungen sind über das \texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}-Gating vom
-Produktiv-Pfad getrennt, sodass dieser keinen Mess-Overhead trägt, und Continuous Integration (GitLab CI plus
+Produktiv-Pfad getrennt (Abschnitt~\ref{sec:repos}), und Continuous Integration (GitLab CI plus
 gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
-% AXIS-T0..T18-Galerie: fig:axes-gallery (4.3) ERLEDIGT
 \begin{figure}[htbp]\centering
-\resizebox{\linewidth}{!}{%
+% Kein \resizebox: die Zeichnung ist ~13.5cm schmal; ein Aufblasen auf \linewidth (x1.19) vergroesserte
+% die \footnotesize-Schrift ueber den Fliesstext hinaus. Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   ph/.style={draw,rounded corners,fill=blue!6,minimum width=1.6cm,minimum height=0.85cm},
   hi/.style={draw,rounded corners,fill=orange!18,very thick,minimum width=1.6cm,minimum height=0.85cm},
@@ -146,7 +311,7 @@ gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
   \node[pb] (b1) at (2.0,-3.95){\textbf{BUILD} \texttt{Build\-Orchestrator}: baut \emph{alle} Tier-Binaries zuerst (resumierbar, RAM-gewahr)};
   \node[pb] (b2) at (8.0,-3.95){\textbf{MEASURE} \texttt{perm\_runner}: laedt $+$ misst jede Tier-Binary einzeln (1 DLL/Prozess, via \texttt{IObservableTier})};
   \draw[->,very thick] (b1)--node[above,font=\scriptsize]{Tier-Binaries} (b2);
-\end{tikzpicture}} % chktex 31
+\end{tikzpicture}
 \caption{Die Mess-Pipeline in zwei Ausprägungen. \textbf{Pfad~A} (oben) ist die in-process
 Sieben-Phasen-Pipeline des \texttt{ExperimentDriver} je Messreihe (Enumerate $\to$ Codegen $\to$ Compile
 $\to$ Load $\to$ Execute $\to$ Measure $\to$ Persist; zwei opt-in-Phasen kompilieren fehlende Module hot
@@ -157,39 +322,149 @@ trennt beide Aufgaben out-of-process: der \texttt{BuildOrchestrator} baut \emph{
 (resumierbar, RAM-gewahr), danach lädt und misst \texttt{perm\_runner} jede Binary einzeln (eine DLL je
 Prozess) über die Beobachter-Schnittstelle \texttt{IObservableTier}.}\label{fig:pipeline}
 \end{figure}
-Die neunzehn Kompositions-Achsen sind nicht abstrakt, sondern je ein konkretes \emph{Strategie-Concept}
-mit mehreren austauschbaren Bausteinen, aus denen eine konkrete Composition je Slot genau einen wählt.
-Abbildung~\ref{fig:axes-gallery} fasst alle neunzehn als Galerie zusammen --- je Achse der Kurzname, die
-Sub-Achsen-Familie und eine repräsentative Auswahl der Bausteine; die vollständige Bausteine-Matrix mit
-allen Herkunfts-Quellen führt Anhang~\ref{app:blocks}, die SOTA-Beiträge je Achse Tabelle~\ref{tab:axes-overview}.
 \begin{figure}[htbp]\centering
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}[font=\footnotesize,
-  ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt}]
-  \node[ax] (t0) at (0,0){\textbf{T0 Suchalgorithmus}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(21: 17 Basis $+$ 4 per-K)}\\{\tiny\itshape Std.\ Array256}};
-  \node[ax] (t1) at (3.6,0){\textbf{T1 Cache-Travers.}\\{\tiny CT1--CT2}\\{\tiny Linear-Fanout, Hash-Lookup, Binär-Fanout}\\{\tiny\itshape Std.\ Linear}};
-  \node[ax] (t2) at (7.2,0){\textbf{T2 Slot-Mapping}\\{\tiny MP1--MP2}\\{\tiny Direkt-Platzierung, Pool-relativ}\\{\tiny\itshape Std.\ Direkt}};
-  \node[ax] (t3) at (10.8,0){\textbf{T3 Pfadkompression}\\{\tiny PC1--PC3}\\{\tiny Keine, Byte-weise (ART), Patricia}\\{\tiny\itshape Std.\ Keine}};
-  \node[ax] (t4) at (14.4,0){\textbf{T4 Knotentyp}\\{\tiny NT1--NT3}\\{\tiny Node4 / 16 / 48 / 256}\\{\tiny\itshape Std.\ Node256}};
-  \node[ax] (t5) at (0,-2.4){\textbf{T5 Speicher-Layout}\\{\tiny HM1--HM4}\\{\tiny AoS, Cache-Line-aligned, SoA, Bitmap (LOUDS), AoSoA}\\{\tiny\itshape Std.\ Cache-Line}};
-  \node[ax] (t6) at (3.6,-2.4){\textbf{T6 Allokator}\\{\tiny AA1--AA7}\\{\tiny Hoard, Slab, Mimalloc, Jemalloc, TCMalloc, Buddy \dots\,(25)}\\{\tiny\itshape Std.\ Std-Malloc}};
-  \node[ax] (t7) at (7.2,-2.4){\textbf{T7 Prefetch}\\{\tiny PF1--PF3}\\{\tiny Keine, Distanz-Schätzer (ART), Hardware, Pfad-orient.}\\{\tiny\itshape Std.\ Keine}};
-  \node[ax] (t8) at (10.8,-2.4){\textbf{T8 Nebenläufigkeit}\\{\tiny CC1--CC2}\\{\tiny Keine, Blocking, R/W, OLC, Lock-free, RCU, Hazard}\\{\tiny\itshape Std.\ Keine}};
-  \node[ax] (t9) at (14.4,-2.4){\textbf{T9 Serialisierung}\\{\tiny SR1--SR3}\\{\tiny Roh-Binär, VarLen (LEB128), Succinct, LZ4/Delta}\\{\tiny\itshape Std.\ Roh-Binär}};
-  \node[ax] (t10) at (0,-4.8){\textbf{T10 Telemetrie}\\{\tiny TM1--TM3}\\{\tiny Leaf-Only-Zähler, Density-Tracker, HDR-Histogramm}\\{\tiny\itshape Std.\ Leaf-Only}};
-  \node[ax] (t11) at (3.6,-4.8){\textbf{T11 Wert-Handle}\\{\tiny VH1--VH3}\\{\tiny Inline, Extern-Pool, RCU-Shared, MVCC, Chain-Ref}\\{\tiny\itshape Std.\ Inline}};
-  \node[ax] (t12) at (7.2,-4.8){\textbf{T12 ISA}\\{\tiny IS1--IS3}\\{\tiny Amd64 (SSE2), AArch64 (NEON), PowerPC, RISC-V}\\{\tiny\itshape Std.\ Amd64}};
-  \node[ax] (t13) at (10.8,-4.8){\textbf{T13 Index-Org.}\\{\tiny io1--io3}\\{\tiny Clustered, Heap, IOT (embedded), Non-Clustered}\\{\tiny\itshape Std.\ Heap}};
-  \node[ax] (t14) at (14.4,-4.8){\textbf{T14 I/O-Dispatch}\\{\tiny IO1--IO3}\\{\tiny In-Memory, Buffered, Direct (O\_DIRECT), Mmap}\\{\tiny\itshape Std.\ In-Memory}};
-  \node[ax] (t15) at (0,-7.2){\textbf{T15 Migration}\\{\tiny MG1--MG3}\\{\tiny Keine, Hot/Cold, Tier-basiert, Adaptiv (ML)}\\{\tiny\itshape Std.\ Keine}};
-  \node[ax] (t16) at (3.6,-7.2){\textbf{T16 Filter}\\{\tiny FT1--FT3}\\{\tiny Bloom, Cuckoo, Range-SuRF (LOUDS), Xor}\\{\tiny\itshape (kein None)}};
-  \node[ax] (t17) at (7.2,-7.2){\textbf{T17 Op.-Puffer}\\{\tiny QS1--QS6}\\{\tiny Kein, Append, FIFO/LIFO, Ring, Priority \dots\,(15)}\\{\tiny\itshape Std.\ Kein-Puffer}};
-  \node[ax] (t18) at (10.8,-7.2){\textbf{T18 Flush-Policy}\\{\tiny FS1--FS4}\\{\tiny Eager, Lazy, Watermark, Timed, Adaptiv-LSM}\\{\tiny\itshape Std.\ Lazy}};
-  \node[draw,rounded corners,fill=green!8,minimum width=3.35cm,minimum height=2.0cm,text width=3.15cm,align=center,inner sep=2pt] (leg) at (14.4,-7.2){\textbf{Lesart}\\{\tiny Jede Achse $=$ ein \texttt{Concept} mit austauschbaren Bausteinen (\emph{Strategy}); eine Composition wählt je Slot genau einen.}};
-\end{tikzpicture}} % chktex 31
-\caption{Galerie der neunzehn Kompositions-Achsen (T0--T18): je Achse das Implementierungs-Konzept --- Kurzname, Sub-Achsen-Familie und eine repräsentative Auswahl der austauschbaren Bausteine. Jede Achse ist ein \texttt{Concept}-Interface mit mehreren Strategie-Bausteinen (\emph{Strategy}-Muster); eine konkrete Composition belegt je Slot genau einen. Der \emph{Standard} (\enquote{Std.}) ist eine abgeleitete Vergleichs-Baseline, kein Code-Flag; bei den großen Achsen T0/T6/T17 ist die Gesamt-Bausteinzahl in Klammern angegeben. Die vollständige Matrix mit Herkunfts-Quellen führt Anhang~\ref{app:blocks}.}\label{fig:axes-gallery}
+% Kein \resizebox: die Kette ist bewusst zweizeilig gebrochen (~11.3cm schmal),
+% damit die Schrift unskaliert bleibt. Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  tool/.style={draw,rounded corners,fill=blue!6,minimum height=0.7cm,inner sep=5pt,font=\ttfamily\scriptsize}]
+  \node[tool] (t1) at (0,0){sample\_data\_generator};
+  \node[tool] (t2) at (4.35,0){messung\_driver};
+  \node[tool] (t3) at (8.1,0){binary\_to\_csv};
+  \node[tool] (t4) at (0,-1.5){csv\_to\_latex};
+  \node[tool] (t5) at (4.35,-1.5){diagram\_generator};
+  \node[tool] (t6) at (8.1,-1.5){latex\_to\_pdf};
+  \draw[->,thick] (t1)--(t2);
+  \draw[->,thick] (t2)--(t3);
+  \draw[->,thick] (t3.south) -- ++(0,-0.4) -- ([yshift=0.4cm]t4.north) -- (t4.north);
+  \draw[->,thick] (t4)--(t5);
+  \draw[->,thick] (t5)--(t6);
+\end{tikzpicture}
+\caption[Die nachgelagerte Auswertungs-Werkzeugkette]{Die nachgelagerte Auswertungs-Werkzeugkette als Sechs-Stufen-Kette:
+\texttt{sample\_data\_generator} erzeugt deterministische Testdaten, \texttt{messung\_driver} steuert
+die Messreihen, \texttt{binary\_to\_csv} deserialisiert die binären Mess-Records,
+\texttt{csv\_to\_latex} rendert die booktabs-Steckbriefe je Permutations-ID,
+\texttt{diagram\_generator} die A4-bewussten TikZ-Diagramme, und \texttt{latex\_to\_pdf} setzt das
+Manuskript.}\label{fig:toolchain}
 \end{figure}
 
-Damit ist der Apparat vollständig beschrieben --- von den Repositorien über den Prüfling bis zu den
-neunzehn Achsen und ihren Mess-System-Ebenen. Kapitel~\ref{ch:eval} legt die Methodik offen, mit der
-dieser Apparat bewertet wird.
+\section{Qualitätssicherung: Contract-Tests je Schicht}\label{sec:impl-contracts}
+Das Schichtenmodell E4--E0 mit seinen eingefrorenen Interface-Verträgen hat
+Abschnitt~\ref{sec:anatomy-layers} als Konzept entwickelt; dieser Abschnitt beschreibt seine Umsetzung
+als Prüf-Infrastruktur. Der Anlass ist eine konkrete Projekterfahrung: Zwei Implementierungs-Inkremente,
+die mehrere Schichten gleichzeitig veränderten, mussten vollständig zurückgenommen werden, weil ihre
+Fehler aus Wechselwirkungen zwischen den Ebenen stammten, die weder lokale Tests noch zeilenweises
+Review sichtbar machten. Für ein System mit einem Produktraum von über $10^{14}$ Kombinationen sind
+Mehr-Ebenen-Änderungen damit praktisch nicht abnehmbar; die Konsequenz ist, jede Schicht einzeln
+fertigzustellen --- mit explizit eingefrorenem Interface-Vertrag zur Nachbar-Ebene, eigenem
+Test-Harness und eigener Abnahme-Definition.
+
+Das tragende Prüfprinzip lautet: \emph{Jede Schicht wird gegen einen übersetzungszeitlichen Ersatz
+ihrer Nachbar-Ebene getestet.} Die Contract-Tests sind gewöhnliche Testziele der Build-Pipeline; die
+Nachbar-Ebene ersetzt dabei je ein \emph{Fake} --- eine Template- und Concept-basierte Attrappe im
+Test-Scope, kein Laufzeit-Umschalter im Produktiv-Code. So kann eine Schicht fertig und abgenommen
+sein, bevor die tiefere Ebene ihre Werte überhaupt konsumiert, und die Prüffrage jeder Grenze ---
+reicht die Schicht ihre Definition \emph{verlustfrei} an die nächste weiter?
+(Abschnitt~\ref{sec:anatomy-layers}) --- wird vom Entwurfsgrundsatz zum ausführbaren Abnahme-Test.
+
+Je Schicht konkretisiert sich das so: Für die Definitions- und Auswertungs-Schicht~E4 prüft der
+Harness die Übersetzung der deklarativen XML-Profile in die Achsen-Ebenen-Struktur ---
+Golden-Fixtures vergleichen die aus einem Profil emittierten Achsen-Ebenen strukturell gegen eine
+erwartete Referenz, wobei ein Fake-E3 den Permutationsbaum ersetzt; weder Baum-Aufbau noch
+Bau-Aufträge sind nötig, um die Grenze E4$\to$E3 abzunehmen. Für den
+Permutations-B\textsuperscript{+}-Baum~E3 prüft der Harness die Bijektion der Binary-Identität: Aus
+Achsen-Ebenen-Fixtures wird die Permutations-Enumeration gefahren und je Pfad der mixed-radix-kodierte
+Binary-Identifier hin- und zurückübersetzt (Zählung plus Signatur-Roundtrip) --- gegen ein Fake-E2,
+das keine einzige Binary baut; dazu tritt ein Konformitäts-Gate im Voll-Lauf-Pfad, das jede
+importierte Binary vor der Messung gegen den eingefrorenen Vertrag prüft. Für die Tier-Binaries~E2 ist
+der Vertrag die ABI selbst: Eine emittierte Referenz-DLL wird geladen und muss die eingefrorene
+Schnittstellen-Folge erfüllen --- \texttt{IAnatomyBase}, \texttt{IObservableTier} und
+\texttt{IResourceControllableTier} samt korrekter Fähigkeits-Auskunft ---, und eine
+Stellgrößen-Anfrage oberhalb der gemeldeten Fähigkeiten muss deterministisch mit dem eingefrorenen
+Fehlerwert der apply-Antwort (\texttt{apply}\,$==$\,5) quittiert werden, statt still angenommen zu
+werden; das zugehörige Fake-E1 legt die Laufzeit-Stellgrößen an und appliziert sie, verlangt aber
+keine Konsum-Wirkung --- die gehört zur Abnahme von E1. Für die Laufzeit-Konfiguration~E1 schließlich
+prüfen Edge-Tests die Randfälle des dynamischen Regimes: dass ein wiederverwendetes Tier zwischen zwei
+Läufen vollständig zurückgesetzt wird, dass ein Pool-Budget unterhalb des lebenden Datenbestands
+ehrlich behandelt statt still verletzt wird und dass jede applizierte Stellgröße als benannte Spalte
+in der persistierten Ergebnis-Datei sichtbar ist --- geprüft an der CSV-Ausgabe, nicht am
+In-Process-Zustand ---, dazu der Erhalt der Zwei-Phasen-Operationsschleife (verworfener Warmlauf,
+Messlauf) als Invariante.
+
+Die Fertigstellung folgt der Schichtung top-down --- E4, E3, E2, dann der Mess-Querschnitt~M
+unmittelbar vor E1 ---, und die Infrastruktur~E0 wird bewusst zuletzt konsolidiert
+(Abschnitt~\ref{sec:anatomy-layers}); die Grenze E3$\to$E2 ist im heutigen Stand bereits
+golden-getestet, die übrigen Harnesse sind als Abnahme-Definition der laufenden
+Schicht-Fertigstellung festgelegt. Der Querschnitt~M besitzt dabei einen eigenen Harness, der ohne
+jede Tier-Binary auskommt: Eine synthetische Mess-Quelle wird über die System-Achsen-Wurzel getrieben
+und ihre Werte bis in die Ergebnis-Spalten verfolgt; seine Code-Gestalt beschreibt der folgende
+Abschnitt.
+
+\section{Mess-Querschnitt: System-Achsen im Code}\label{sec:impl-system-axes}
+Die System-Achsen --- konzeptionell das \emph{Blut} des Apparats, das alle Schichten durchdringt, ohne
+je die Binary-Identität zu berühren (Abschnitt~\ref{sec:measurement-system}) --- besitzen im Code eine
+eigene gemeinsame Wurzel, getrennt von der Anatomie-Hierarchie: die CRTP-Basis \texttt{SystemAxis}
+(Datei \texttt{system\_axis.hpp}). Sie ist als zero-cost abstraction gebaut --- eine leere,
+nicht-polymorphe Basis ohne virtuelle Aufrufe im Hot-Path, deren Konformität ein eigenes Concept
+erzwingt --- und übersetzt die Konzept-Invarianten in übersetzungszeitliche Vollständigkeits-Gates:
+Ein \texttt{consteval}-Gate prüft, dass jede der sechzehn Mess-Kategorien genau einem der beiden
+Regimes zugeordnet ist (neun zeit- und observer-basierte, sieben zählerbasierte PMC-Kategorien,
+Abschnitt~\ref{sec:measurement-system}), und ein zweites weist jede System-Achse zurück, die
+Kategorien beider Regimes mischt --- das Regime-Misch-Verbot bricht so die Übersetzung statt erst die
+Auswertung.
+
+Die sechzehn Mess-Kategorien führt eine einzige \texttt{constexpr}-Registry
+(\texttt{measurement\_\allowbreak axis\_\allowbreak registry.hpp}): je Kategorie der Name und das aus der einen Quelle
+abgeleitete Regime. Ein statisches Gate erzwingt, dass der Tabellen-Index mit dem Kategorie-Wert
+übereinstimmt, kein Name leer ist und kein Regime von der Wurzel-Zuordnung abweicht --- eine
+siebzehnte Kategorie oder eine stille Index-Drift wird damit zum Übersetzungsfehler. Die
+Registry-Namen sind zugleich das Berichts-Vokabular der Auswertungs-Schicht (die Spalten-Namen der
+E4-Berichte), und eine compile-time-Iteration über alle Einträge stellt die Registry der
+Metaprogrammierung zur Verfügung.
+
+Die Erhebung abstrahiert eine vendor-neutrale Mess-Quellen-Schnittstelle
+(\texttt{i\_\allowbreak measurement\_\allowbreak source.hpp}). \texttt{IMeasurementSource} beschreibt eine Quelle über ihre
+\emph{strukturellen} Fähigkeiten --- welche der zehn Ereignis-Semantiken (Zyklen, Instruktionen,
+L1-/L2-/L3-Cache-, dTLB- und Branch-Misses, Speicher-Stalls, Kohärenz-Invalidierungen, Energie) sie
+überhaupt ausdrücken kann --- und liefert je Messintervall ein \texttt{MeasuredDelta} mit
+\emph{per-Ereignis-Gültigkeit}: Der Wert Null mit gesetztem Gültigkeits-Flag ist eine echte
+Null-Messung; ein nicht gesetztes Flag heißt \emph{nicht gemessen}. Die Fähigkeits-Auskunft verspricht
+dabei nie eine Mess-Garantie --- die Wahrheit je Messung tragen allein die Gültigkeits-Flags. Als
+garantierter, ausdrücklich \emph{degradierter} Fallback existiert die Wall-Clock-Quelle
+(\texttt{WallClockSource}): Sie liefert nur einen Nanosekunden-Proxy für die Zyklen und lässt alle
+Hardware-Ereignisse ehrlich ungültig; die Bestands-PMC-Familie bindet ein Adapter an, der nur die
+sieben strukturell ausdrückbaren Kanäle bewirbt.
+
+Die honest-0-Doktrin (Abschnitt~\ref{sec:measurement-system}) ist in diesen Bausteinen einprogrammiert
+statt dokumentiert. Die Wall-Clock-System-Achse verweigert es, ihren Mittelwert als Perzentil zu
+etikettieren: Anfragen nach p50 bis p999 beantwortet sie ungültig, denn die durch die Operationszahl
+geteilte Gesamtzeit ist ein Mittelwert, und ein als Perzentil ausgegebener Mittelwert wäre ein
+Phantomwert --- echte Perzentile liefert erst das HDR-Histogramm. Die Cache-Line-Auslastung wird als
+echte Auslastungs-Ratio erhoben --- genutzte Nutzdaten-Bytes gegen belegte Cache-Lines mal
+Zeilenbreite ---, nicht als roher Zeilen-Zähler, der gerade die \emph{inverse} Metrik wäre.
+Speicher-Fußabdruck und Fill-Buffer-Auslastung bleiben ungültig, bis eine echte Peak-Spalte
+beziehungsweise eine Hardware-Quelle existiert (der Software-Operations-Puffer der Pufferungs-Achse
+ist kein Proxy für den Hardware-Line-Fill-Buffer), und IPC/CPI bleibt ungültig, solange das
+Zähler-POD keine Instruktions- und Zyklen-Spalten trägt.
+
+Am Auswertungs-Ende des Querschnitts liegt der Keim der Kurvenanpassung aus
+Abschnitt~\ref{sec:heuristics-curves} als Skeleton vor (\texttt{curve\_fit.hpp}): Eine
+Mess-Achsen-Kurve über die Working-Set-Größe wird per kleinster Quadrate an das Modell
+$y = a\log_2 x + b$ angepasst --- die für Cache-Hierarchie-Kurven erwartete Form. Auch hier gilt
+ehrliche Leere statt Phantom-Fit: Der Fit-Status unterscheidet \emph{keine Daten},
+\emph{unterbestimmt} (weniger als zwei Punkte oder keine Streuung der x-Werte) und \emph{ungültige
+Daten} (undefinierter Logarithmus, nicht-endliche Werte) ausdrücklich vom Erfolgsfall --- nie ein
+\emph{Ok} mit NaN-Koeffizienten ---, und der Ergebnis-Leser übernimmt nur streng numerische Zellen
+und zählt übersprungene Zeilen als Diagnose mit, statt sie still zu Phantom-Punkten zu machen.
+
+Vollzogen sind damit die Wurzel samt Gates, die Registry, die Quellen-Abstraktion mit degradiertem
+Fallback und der Fit-Keim; die Verdrahtung dieser Querschnitts-Bausteine in Runner und Prüf-Dock
+sowie die Abbildung der Registry-Namen auf die Bestands-Spalten der Ergebnis-Dateien sind die
+nächsten Schicht-Inkremente (Abschnitt~\ref{sec:impl-contracts}). Die drei Konzept-Invarianten ---
+System-Achsen sind nicht permutierbar, stehen nicht im Permutationsbaum und berühren nie die
+Binary-Identität --- wahrt dabei die Bauform selbst: Die Wurzel dockt nur lesend an die
+host-seitigen Ergebnis-Strukturen an und bleibt der ABI-Grenze gegenüber unsichtbar.
+
+Damit ist der Apparat vollständig beschrieben --- von den Repositorien über den Prüfling und die
+neunzehn Achsen bis zu den Mess-System-Ebenen, ihrer schichtweisen Qualitätssicherung und dem
+Mess-Querschnitt im Code. Kapitel~\ref{ch:eval} legt die Methodik offen, mit der dieser Apparat
+bewertet wird.

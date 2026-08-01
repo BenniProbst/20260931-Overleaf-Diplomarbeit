@@ -1,188 +1,149 @@
 \chapter{Architekturentscheidungen}\label{app:adr}
 
-% Architecture Decision Records ADR-1..ADR-12, faktentreu extrahiert aus den
-% konsolidierten, user-verifizierten Entscheiden im Projekt-Ledger
-% (DIPLOMARBEIT-ZIELE-OFFENE-PUNKTE-LEDGER.md, §18/§19/§20 + Goal V6), 2026-07-16/17.
-% Nur dokumentierte Entscheide; keine erfundene Architektur. Die frühere F1--F15-Runde
-% (docs/bausteine/04_...) ist historisch und teils superseded (neuere Fakten schlagen ältere).
-% Inhaltsgleich mit anhang/en/E_architecture_decisions.tex.
+% [#90/AP-B5] Kompakte ADR-Sammlung (Architecture Decision Records), aus den Kapiteln nachgezeichnet.
+% Nur dokumentierte Entscheidungen; jede ADR belegt per \ref auf den tragenden Thesis-Abschnitt.
+Dieser Anhang sammelt die tragenden Entwurfsentscheidungen der Arbeit als kompakte
+\emph{Architecture Decision Records} (ADRs): je Entscheidung der Kontext, in dem sie fiel, die
+Entscheidung selbst und ihre wichtigste Konsequenz. Ziel ist die schnelle Nachvollziehbarkeit ---
+\emph{warum} der Apparat so gebaut ist, wie ihn die Kapitel beschreiben; die ausführliche
+Herleitung und Begründung liegt jeweils im per \emph{Beleg} referenzierten Abschnitt des
+Haupttextes und wird hier nicht wiederholt.
 
-Dieser Anhang hält die tragenden Architekturentscheidungen als Architecture Decision Records
-(ADRs) fest. Jede ADR nennt Kontext, Entscheidung und Konsequenzen und trägt das Datum, an dem sie
-fixiert wurde. Die Entscheidungen sind die konsolidierten, verifizierten Festlegungen des
-Architekten (des Autors in betreuender Rolle); sie wurden über die Entwurfs-Sitzungen des
-2026-07-16/17 etabliert und lösen eine frühere Entscheidungsrunde ab, wo sie ihr widersprechen. Die
-von ihnen bestimmte Code-Struktur dokumentiert Anhang~\ref{app:code}.
+\begin{description}
 
-\section{ADR-1: Rekursive Dock-Architektur}\label{asec:adr-dock}
-\emph{Datum: 2026-07-16/17.}
-\paragraph{Kontext.} Das Framework muss sowohl Messsysteme komponieren als auch die einzelnen
-Tier-Binaries antreiben --- auf zwei verschiedenen Granularitäten --- und dabei jede Grenze
-binär-stabil halten.
-\paragraph{Entscheidung.} Dasselbe Dock-/ABI-stabile-.so-/Vertrags-Muster wird rekursiv auf zwei
-Ebenen angewandt. Das \emph{Experiment-Dock} (Planer~$\leftrightarrow$~CacheEngineBuilder, CEB) ist
-\emph{eindimensional}: Der Planer steuert die Einstellungen der von ihm kompilierten CEB und hat
-keinen Rückkanal. Das \emph{Prüf-Dock} (CEB~$\leftrightarrow$~Tier-Binary) ist \emph{bidirektional}:
-Die CEB treibt die Tier-Binary an, und die Tier-Binary meldet ABI-stabil zurück. Die CEB ist selbst
-eine system-achsen-versionierte Shared-Object-Datei; sie schreibt die angeforderten Aufgaben und
-Messwerte selbst an das in der Experiment-XML angegebene Ziel, nicht über das eindimensionale
-Experiment-Dock.
-\paragraph{Konsequenzen.} Der Anatomy-Major reitet am Experiment-Planer-Dock. Die beiden Ebenen
-teilen ihre Concepts, sodass das Muster echt rekursiv ist. Der Ergebnis-Rückschrieb ist vom
-Antriebspfad entkoppelt.
+  \item[ADR-1 --- C-stabile Modulgrenze statt C++-Modul-ABI]\hfill\\
+  \textbf{Kontext:} Jede Permutation wird als eigenständige Tier-Binary kompiliert und zur Laufzeit
+  geladen; C++23-Module strukturieren zwar die Übersetzungseinheiten, garantieren für sich genommen
+  aber keine portable ABI-Stabilität~\cite{wg21_modules_abi}.
+  \textbf{Entscheidung:} Eine einheitliche C-Modulgrenze
+  (\texttt{comdare\_create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exportiert je Permutation genau
+  ein Lebewesen; dahinter liegt die dreischichtige Abstraktionskette
+  \texttt{CacheEngine} $\to$ \texttt{ExecutionEngine} $\to$ \texttt{SearchEngine}.
+  \textbf{Konsequenz:} Die ABI-Stabilität stellt die C-Grenze her, nicht das Modulsystem; der
+  ABI-Vertrag wird je Modul prüfbar (opt-in ABI-Verify).
+  \textbf{Beleg:} Abschnitte~\ref{sec:contributions}, \ref{sec:anatomy-patterns}
+  und~\ref{sec:impl-architecture}.
 
-\section{ADR-2: Compile-time-only-Komposition (CRTP + Concept-Guard)}\label{asec:adr-crtp}
-\emph{Datum: 2026-07-16 (durchgängige Doktrin).}
-\paragraph{Kontext.} Der Entwurfsraum wird durch Permutation wieder zusammengesetzt, nicht durch
-Laufzeit-Adaption; der Hot-Path darf nicht für dynamisches Dispatch zahlen.
-\paragraph{Entscheidung.} Im Hot-Path ist die Komposition compile-time-only: Achsen sind
-concept-geschützte CRTP-Basen, ohne vtable und ohne Runtime-Switch. Jede
-Compile-time-zu-Runtime-Degradierung wird zurückkorrigiert. Laufzeit-Polymorphie ist nur intern
-erlaubt, nie an den Produkt-Schnittstellen oder der ABI\@. Es werden nur benannte
-Lehrbuch-Design-Patterns verwendet; musterlose Konstruktionen sind verboten.
-\paragraph{Konsequenzen.} Jede komponierte Konfiguration wird je Punkt monomorphisiert; das
-Achsen-Dach \texttt{topics::Axis} setzt den Guard durch (leer, nicht-polymorph), sodass eine
-versehentlich eingeschleppte vtable nicht kompiliert. Die verwaiste Runtime-vtable-Scheduling-Strategie
-wird deprecated und ersetzt (siehe ADR-7).
+  \item[ADR-2 --- Compile-Time-Permutation über Typlisten statt Laufzeit-Adaption]\hfill\\
+  \textbf{Kontext:} Neunzehn Kompositions-Achsen spannen einen Produktraum von über $10^{14}$
+  Kombinationen auf; der Hot-Path darf weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches tragen.
+  \textbf{Entscheidung:} Die Permutation läuft übersetzungszeitlich über
+  Boost.MP11-Typlisten (\texttt{mp\_list}) und concept-geprüftes \texttt{if constexpr}
+  (\texttt{resolve\_baustein}) --- kein Runtime-Tag, kein \texttt{std::variant}; der literale
+  \texttt{std::variant}-Katalog besteht nur als historische Elf-Achsen-Vorstufe
+  (\texttt{baustein\_variants}-Fallback).
+  \textbf{Konsequenz:} Die Achsen-Abstraktion bleibt eine zero-cost abstraction.
+  \textbf{Beleg:} Abschnitte~\ref{sec:contributions}, \ref{sec:anatomy-patterns}
+  und~\ref{sec:axes-impl}.
 
-\section{ADR-3: Allokatoren sind Algorithmen der Allokator-Achse}\label{asec:adr-alloc}
-\emph{Datum: 2026-07-16.}
-\paragraph{Kontext.} Allokation ist eine der cache-bewussten Entwurfsentscheidungen und muss
-gleichrangig mit den anderen Achsen messbar sein.
-\paragraph{Entscheidung.} Eine Allokator-Hülle \emph{ist} die Algorithmus-Wahl, modelliert als
-compile-time-Strategie auf der Allokator-Achse (\texttt{axis\_06}). Alle Vendor-Hüllen liegen in
-einer zentralen Typliste; ein compile-time-Filter wählt die aktivierte Teilmenge, und die
-Codegenerierung backt genau eine Wahl in jede Per-Permutations-Binary.
-\paragraph{Konsequenzen.} Die Allokator-Wahl ist ein statischer Achsen-Wert, nie ein Runtime-Switch;
-das hält die Per-Permutations-Messung fair und motiviert direkt die DLL-Load-Entscheidung (ADR-5),
-denn jede Shared-Object-Datei muss ihr eigenes Allokator-Archiv tragen.
+  \item[ADR-3 --- Drei-Ebenen-Modell als die \emph{eine} Architektur]\hfill\\
+  \textbf{Kontext:} Anatomie-Metapher und technische Engine-Sicht drohen zu parallelen
+  Modellbäumen auseinanderzulaufen.
+  \textbf{Entscheidung:} Es gibt genau eine Hierarchie ohne Parallel-Bäume --- Gattung
+  (Außen-Interface, das Prüf-Dock) $\to$ Gattungs-Unterklasse (fester Achsen-Satz) $\to$
+  Achsen-Organe --- unter \texttt{IExecutionEngine} als gemeinsamer messbarer Wurzel; eine eigene
+  Gattung entstünde erst, wenn sich der Basis-Achsen-Satz grundlegend unterschiede.
+  \textbf{Konsequenz:} \enquote{SearchEngine} ist nur die ABI-Laufzeit-Sicht desselben Lebewesens,
+  kein zweites Modell.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-model}, \ref{sec:anatomy-levels}
+  und~\ref{sec:impl-architecture}.
 
-\section{ADR-4: Vier Ebene-1-Gattungen, je mit Kopf-Framework}\label{asec:adr-genera}
-\emph{Datum: 2026-07-16/17.}
-\paragraph{Kontext.} Strukturell verschiedene Datenstrukturen (geordnete Map, sequenzieller
-Container, Set, Graph) müssen als Punkte desselben Entwurfsraums hinter einem Interface ausgedrückt
-werden, ohne ihre distinkten Außenhüllen einzuebnen.
-\paragraph{Entscheidung.} Es gibt vier Ebene-1-Gattungen --- Map (die Suchalgorithmus-Hülle),
-(sequenzieller) Container, Set und Graph ---, jede mit einem eigenen Kopf-Framework aus gemeinsamen
-Gattungs-Concepts. Jede Gattung ist ein eigenes Genus mit eigener ABI und nur teilweise
-wiederverwendeten Observern; Gattungen schneiden sich nicht, dürfen sich aber gegenseitig verwenden.
-Ein \emph{Set} ist ein eigenes Genus mit eigener ABI (kein Subtyp von Sequence); ein \emph{View} ist
-eine reine Lese-Projektion eines sequenziellen Containers.
-\paragraph{Konsequenzen.} Die Promotion von Set aus einem Unter-Genus des Containers zur
-Ebene-1-Gattung ist Teil des koordinierten ABI-Bumps (ADR-7); die Gattungen und ihre Durchsetzung
-sind unverhandelbar.
+  \item[ADR-4 --- Durchreich-Doktrin und erzwungene Vollbelegung]\hfill\\
+  \textbf{Kontext:} Nicht-baumartige Verfahren (etwa die Hash-Gegenprobe) tragen baum- und
+  trie-spezifische Achsen wie Pfadkompression oder Knotentyp nicht sinnvoll.
+  \textbf{Entscheidung:} Solche Achsen fallen nicht weg, sondern werden als Durchreich-Varianten
+  (\texttt{None}) belegt; das \texttt{IsComposition}-Concept erzwingt übersetzungszeitlich die
+  Belegung aller neunzehn Organe, sodass keine Composition mit offener Achse übersetzt.
+  \textbf{Konsequenz:} Nicht-baumartige Verfahren erfordern keine eigene Gattung, sondern ein
+  eingeschränktes Achsen-Subset derselben Gattung.
+  \textbf{Beleg:} Abschnitte~\ref{sec:sota-instances}, \ref{sec:anatomy-levels}
+  und~\ref{sec:axes-impl}.
 
-\section{ADR-5: DLL-Laden über Option B (self-gelinktes Vendor-Archiv)}\label{asec:adr-dll}
-\emph{Datum: 2026-07-17.}
-\paragraph{Kontext.} Der Laufzeit-Bau-Pfad für eine Per-Permutations-Shared-Object-Datei linkte das
-Vendor-Allokator-Archiv nicht, sodass \texttt{dlopen} an undefinierten Allokator-Symbolen scheiterte
-und keine Messungen erzeugt wurden.
-\paragraph{Entscheidung.} Jede Permutations-Shared-Object-Datei linkt ihr eigenes
-Vendor-Allokator-Archiv selbst (Option~B). Die verworfene Option~A (Host-seitiger Symbol-Export via
-\texttt{-rdynamic}) erwies sich an fünf Stellen als doktrin-widrig: Sie bricht die
-Allokator-als-Algorithmus-Achse durch eine prozessweite Allokator-Instanz mit Arena-Kontamination
-zwischen Permutationen, bricht den Destroy-Vertrag, verletzt die self-contained-ABI, bricht die
-Wahrheitsfähigkeit der Build-Variant-Metadaten und koppelt statisches Dispatch an
-Runtime-Symbol-Auflösung.
-\paragraph{Konsequenzen.} Jede Shared-Object-Datei wird unter \texttt{RTLD\_LOCAL} mit privaten
-Allokator-Symbolen geladen, was faire Per-Bibliothek-Isolation und einen sauberen Teardown gibt. Der
-Fix ist rein additiv und ABI-kompatibel; er stellte die Nicht-Null-Mess-Ausgabe wieder her und
-entsperrte den echten Mess-Lauf (siehe Anhang~\ref{app:measurements}).
+  \item[ADR-5 --- Schichtenmodell E4--E0 mit eingefrorenen Verträgen und Contract-Tests]\hfill\\
+  \textbf{Kontext:} Zwei Implementierungs-Inkremente über mehrere Ebenen gleichzeitig mussten
+  vollständig zurückgenommen werden; bei über $10^{14}$ Kombinationen sind Mehr-Ebenen-Änderungen
+  praktisch nicht abnehmbar.
+  \textbf{Entscheidung:} Die Experiment-Pipeline gliedert sich in die Schichten E4--E0 (plus
+  Querschnitt~M); jede Schicht wird einzeln fertiggestellt, mit explizit eingefrorenem
+  Interface-Vertrag zur Nachbar-Ebene, und gegen einen übersetzungszeitlichen Ersatz (Fake) der
+  Nachbar-Ebene contract-getestet.
+  \textbf{Konsequenz:} Jede Ebene ist einzeln abnehmbar, bevor die nächste beginnt; die Grenze
+  E3$\to$E2 ist bereits golden-getestet.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-layers} und~\ref{sec:impl-contracts}.
 
-\section{ADR-6: System-Achsen über Tier-Binary-Achsen (die Soll-Schichtung)}\label{asec:adr-layering}
-\emph{Datum: 2026-07-16/17.}
-\paragraph{Kontext.} Die CEB-Ebenen-Konfigurations-Achsen lagen verstreut und flach: Alle Achsen
-wurden in eine flache Liste reflektiert, ohne gemeinsame Schicht, die die System-Ebene von der
-Organ-Ebene trennt.
-\paragraph{Entscheidung.} System-Achsen (auf CEB-Ebene, compile-time-statisch, versioniert) liegen
-\emph{über} den Tier-Binary-Achsen (Organe plus Governor/Prefetcher). Die CEB wird unter ihren
-System-Achsen gebaut, die ihrerseits bestimmen, wie die untergeordneten Tier-Binaries statisch
-gebaut werden; die Kompile-Reihenfolge ist System-Konfiguration zuerst, dann die
-Mess-/Heuristik-Konfiguration. Die CEB-Konfigurations-System-Achsen sind: Scheduling, Hardware/ISA,
-Telemetrie-Regime, Last und Last-Frameworks, Compiler (\texttt{gcc}\,$\vert$\,\texttt{clang}) und
-Erweiterungshardware (siehe ADR-12) --- sechs insgesamt. System-Achsen erhalten eine eigene
-abstrakte Wurzel (\enquote{Blut}); Organ- und System-Achsen werden nie vermischt.
-\paragraph{Konsequenzen.} Eine eigene System-Achsen-Ebene wird über den neunzehn Organ-Achsen
-abgespalten; diese Schichtung wurde ABI-kompatibel und ohne Major-Bump eingezogen und schließt die
-Schichtungs-Lücke zwischen Modell und Implementierung.
+  \item[ADR-6 --- honest-0-Doktrin: ehrliche Null bzw.\ ehrliche Leere]\hfill\\
+  \textbf{Kontext:} Nicht wirklich erhebbare Werte (Zähler ohne Hardware-Zugriff, Achsen ohne
+  echten Laufzeit-Parameter) laden zu plausiblen Phantomwerten ein, die die Heuristik-Ableitung
+  systematisch vergiften würden.
+  \textbf{Entscheidung:} Das System meldet ehrlich ungültig oder leer statt eines Phantomwerts ---
+  per-Ereignis-Gültigkeits-Flags je Messung; die Wall-Clock-Quelle verweigert es etwa, ihren
+  Mittelwert als Perzentil zu etikettieren.
+  \textbf{Konsequenz:} Lücken bleiben sichtbar und gezielt schließbar; die Doktrin ist in den
+  Bausteinen einprogrammiert statt nur dokumentiert.
+  \textbf{Beleg:} Abschnitte~\ref{sec:measurement-system} und~\ref{sec:impl-system-axes}.
 
-\section{ADR-7: Der eine koordinierte 4\,$\to$\,5-ABI-Bump}\label{asec:adr-abi}
-\emph{Datum: 2026-07-17.}
-\paragraph{Kontext.} Vier Änderungen brechen jeweils dieselbe ABI-Grenze (Modul-Symbole, POD-Layouts,
-den Gattungs-Diskriminator und die \texttt{binary\_id}-Konvention). Einzeln würden sie die
-eingefrorene ABI-Grenze viermal berühren und den Golden-Satz viermal neu materialisieren.
-\paragraph{Entscheidung.} Sie werden zu einem koordinierten Anatomy-Major-Bump (4\,$\to$\,5) am
-Experiment-Planer-Dock gebündelt: Telemetrie aus der \texttt{binary\_id} in eine System-Achse
-herausgelöst; die Set-Ebene-1-Promotion; die native Set-ABI; und Scheduling als % chktex 13 (Absatztitel-Punkt, kein Satzende)
-compile-time-CRTP-System-Achse (ersetzt die verwaiste Runtime-vtable). Der Magic-Marker rückt vor,
-sodass der Lader alle Alt-Major-Bibliotheken sauber verwirft. Dies ist der eine reservierte
-Major-Bump; er erfolgt nur unter der koordinierten Freigabe, mit einem Backup und Review.
-\paragraph{Konsequenzen.} Das Prüf-Dock wird zum einzigen bidirektionalen Vertragsträger (der frühere
-Iterator-Bypass wird vereinheitlicht). Dokumentation und Messdaten werden nie gelöscht; der Bump
-trägt je Increment einen Verifikations-Checkpoint, der den konkreten POD/ABI-Diff zeigt.
+  \item[ADR-7 --- Drei-Repository-Split mit orthogonalen Subsystemen]\hfill\\
+  \textbf{Kontext:} Mess-Apparat, Prüfling und Auswertung haben getrennte Verantwortlichkeiten
+  und Lebenszyklen.
+  \textbf{Entscheidung:} Drei Repositorien --- \texttt{comdare-cache-engine} (\emph{wie} gemessen
+  wird), \texttt{comdare-prt-art} (der Prüfling) und \texttt{probst-Diplomarbeit-cache-engine}
+  (\emph{was} getestet wird) ---, \texttt{comdare-cache-engine} dabei mit Pitchfork-Quellbaum-Layout;
+  die vier Subsysteme
+  (Mess-Treiber, CacheEngineBuilder, CacheEngine, Prüfling) liegen orthogonal zu dieser Aufteilung.
+  \textbf{Konsequenz:} Builder und CacheEngine teilen sich ein Repo als ausführbare Datei bzw.\
+  Bibliothek; die Rollen bleiben klar getrennt.
+  \textbf{Beleg:} Abschnitt~\ref{sec:repos}.
 
-\section{ADR-8: Messdaten-erhaltender Umbau des Golden-Satzes}\label{asec:adr-golden}
-\emph{Datum: 2026-07-17.}
-\paragraph{Kontext.} Der Golden-Pilot-Satz ist eine fixe 320-Punkt-Konfiguration, die zugleich als
-Round-Trip-Gate dient. Der koordinierte ABI-Bump (ADR-7) bricht ihn dreifach (System-Achsen verlassen
-den Pfad, der Gattungs-Diskriminator ändert sich, der Major rückt vor).
-\paragraph{Entscheidung.} Der Golden-Satz wird bewusst zerlegt und umgebaut statt byte-identisch
-erhalten, aber strikt messdaten-erhaltend: Die alten Fixtures und ihre Mess-CSV/-PDF werden additiv
-eingefroren und unangetastet gelassen; die Serialisierung wird \emph{erweitert, nicht ersetzt}; der
-Satz wird einmalig je Gattung neu materialisiert; und das Gate wird umgehängt, wobei der alte Satz
-als historische Referenz erhalten bleibt.
-\paragraph{Konsequenzen.} Kein Mess-Datum geht je verloren; die frühere Round-Trip-Invariante wird nur
-innerhalb des einen koordinierten Bumps durch den messdaten-erhaltenden Umbau ersetzt.
+  \item[ADR-8 --- Familienweise Adapter-Fallbacks für eigenständig lauffähige Builds]\hfill\\
+  \textbf{Kontext:} Fremd-Code (Allokator-Vendors, SOTA-Bausteine) ist nicht auf jeder Plattform
+  und in jedem Build verfügbar oder aktiviert.
+  \textbf{Entscheidung:} Übersetzungszeitliche Flag-Familien schalten Adapter zu oder ab, jeweils
+  mit sicherem, familienweise gewähltem Fallback: Allokator-Adapter ersetzen den fehlenden Vendor
+  durch \texttt{std::malloc}/\texttt{std::free}, Datenstruktur-Adapter durch einen Stub, der bei
+  Benutzung kontrolliert eine \texttt{std::runtime\_error}-Ausnahme wirft.
+  \textbf{Konsequenz:} Der Build bleibt ohne jede Fremd-Aktivierung eigenständig lauffähig.
+  \textbf{Beleg:} Abschnitt~\ref{sec:axes-impl}.
 
-\section{ADR-9: Serialisierung --- flache Systemachsen-Ordner, tiefer Tier-Baum, dynamik-only-Spalten}\label{asec:adr-serial}
-\emph{Datum: 2026-07-16.}
-\paragraph{Kontext.} Jede Achse als CSV-Spalte zu kodieren ist redundant, weil die statischen und
-System-Achsen innerhalb eines Laufs konstant sind.
-\paragraph{Entscheidung.} System-Achsen werden \emph{flach} als Ordnerstruktur serialisiert; die
-Tier-Binary-Achsen bilden zusammen mit der CSV einen \emph{tieferen} serialisierten
-Permutationsbaum. Statische compile-time-Achsen und System-Achsen werden nicht zu Spalten; sie wandern
-in Ordner- und Datei-Beschriftungen und in ein Sidecar-Manifest. Nur die dynamischen Unter-Achsen
-(Workload, Resource-Control, P/E-Core, NUMA, Multithreading) bleiben Spalten. On-Disk ist dies ein
-Baum plus Index; Ergebnisse werden erst in den Build-Pfad geschrieben und dann atomar an das eine in
-der Experiment-XML genannte Ausgabe-Ziel kopiert.
-\paragraph{Konsequenzen.} Das Ergebnis-Layout ist kompakt und redundanzfrei; die Provenienz der
-statischen und System-Wahlen liegt neben der Binary, statt jede Zeile aufzublähen.
+  \item[ADR-9 --- Mess-Gating und drei Auslieferungsvarianten]\hfill\\
+  \textbf{Kontext:} Mess- und Observer-Kopplungen kosten Zeit und dürfen den Produktiv-Pfad
+  nicht belasten.
+  \textbf{Entscheidung:} Die Mess-Kopplungen des Laufzeit-Adapters sind über
+  \texttt{COMDARE\_MEASUREMENT\_ON} gegated; daraus entstehen drei Auslieferungsvarianten derselben
+  Permutation (Debug mit Observer, Messung mit Aggregator, Release ohne Mess-Kopplungen), und den
+  Mess-Aggregator führt der \texttt{ExperimentDriver} host-seitig.
+  \textbf{Konsequenz:} Der Produktiv-Pfad bleibt mess-frei und trägt keinen Mess-Overhead.
+  \textbf{Beleg:} Abschnitte~\ref{sec:repos} und~\ref{sec:impl-pipeline}.
 
-\section{ADR-10: Fehler-Sichtbarkeit --- \texttt{failed}-Zelle statt null}\label{asec:adr-failure}
-\emph{Datum: 2026-07-16.}
-\paragraph{Kontext.} Ein still fehlender Wert ist nicht von einer echten Null zu unterscheiden, was
-eine verprogrammierte Achse oder eine ISA/OS-Inkompatibilität verschwinden ließe.
-\paragraph{Entscheidung.} Ein gescheiterter Achsen-Algorithmus liefert den literalen Zellenwert
-\enquote{failed} (nie null), zusammen mit einem aggregierten Log neben der CSV\@. Der Harness misst die
-übrigen Konfigurationen weiter.
-\paragraph{Konsequenzen.} Verprogrammierung und Plattform-Inkompatibilitäten werden in den
-Ergebnis-Tabellen sichtbar; Messung wird nie durch Schreiben von Nullen abgeschaltet.
+  \item[ADR-10 --- \texttt{std::map}-Vertrag als gemeinsamer Nenner mit Konformitäts-Gatter]\hfill\\
+  \textbf{Kontext:} Strukturell verschiedene Suchalgorithmen sind nur über eine gemeinsame, gut
+  verstandene Außen-Schnittstelle fair vergleichbar.
+  \textbf{Entscheidung:} Alle Verfahren werden auf den C++-Vertrag der geordneten Map
+  \texttt{std::map<Key,\,Value>} abgebildet (parallel \texttt{std::vector} als
+  Container-Vergleichsfall); ein Konformitäts-Gatter prüft diesen Vertrag vor jeder Messung.
+  \textbf{Konsequenz:} Nur Vergleichbares wird verglichen; die Achsen beschreiben ausschließlich
+  das innere Verhalten hinter der festen Schnittstelle.
+  \textbf{Beleg:} Abschnitt~\ref{sec:measurement-system}.
 
-\section{ADR-11: Mess-Modi --- Debug parallel, Messung Ein-Thread}\label{asec:adr-modes}
-\emph{Datum: 2026-07-16.}
-\paragraph{Kontext.} Debugging profitiert von voller Parallelität, während eine faire Latenz-Messung
-harness-induziertes Scheduling-Rauschen vermeiden muss.
-\paragraph{Entscheidung.} Im Debug-Modus laufen alle Threads parallel; im Mess-Modus wird ein
-einzelner Mess-Thread verwendet, wobei das Gattungs-Threading aus der Tier-Binary genommen und nicht
-vom Harness überschrieben wird. Messung wird nie durch Schreiben von Nullen abgeschaltet. Aus
-derselben Experiment-XML generiert der Planer synchron entweder den CI-Code oder den lokalen
-CMake-Code.
-\paragraph{Konsequenzen.} Die Mess-Runner werden als ISA\,$\times$\,OS\,$\times$\,System-Achsen
-angelegt, disjunkt und parallel über ISA, mit Nebenläufigkeit eins je Mess-Maschine.
+  \item[ADR-11 --- Entwurfsmuster-Auswahl mit Negativliste; Command nur im Hybrid-Modus]\hfill\\
+  \textbf{Kontext:} Der Apparat ist bewusst eine Komposition benannter Entwurfsmuster; unklare
+  Muster-Rollen würden die Architektur verwässern.
+  \textbf{Entscheidung:} Verwendet werden u.\,a.\ \emph{Strategy}, \emph{Abstract Factory},
+  \emph{Composite}, \emph{Iterator}, \emph{Adapter}, \emph{Observer}, \emph{Decorator},
+  \emph{Memento} und CRTP; \emph{nicht} verwendet werden \emph{Singleton}, \emph{Flyweight} und
+  \emph{Bridge}, und das \emph{Command}-Muster tritt ausschließlich als Befehls-Kanal des
+  Hybrid-Modus auf.
+  \textbf{Konsequenz:} Jedes Muster hat genau eine benannte Rolle in der Verkabelung des Apparats.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-patterns} und~\ref{sec:heuristics-modes}.
 
-\section{ADR-12: Erweiterungshardware-System-Achse und Compiler-Achse (Q2, Option C)}\label{asec:adr-q2}
-\emph{Datum: 2026-07-17.}
-\paragraph{Kontext.} Befehlssatz-Erweiterungen (etwa die SIMD-Breite) verändern die kompilierte
-Tier-Binary und damit ihre Messungen und müssen explizit kontrolliert werden, ohne die
-\texttt{binary\_id} zu verunreinigen.
-\paragraph{Entscheidung.} Option~C: Die CEB erhält ihren Rahmen vom Experiment-Planer, permutiert aber % chktex 13 (Absatztitel-Punkt, kein Satzende)
-den Erweiterungshardware-Wert (zunächst die SIMD-Erweiterung) selbst zu ihrer Laufzeit und baut+misst
-je Wert Tier-Binaries zur Compile-Zeit. Die Erweiterungshardware (SIMD, später GPU) ist daher eine
-eigene System-Achse; ihr Wert wird als Compiler-Flags an der Compile-Funktions-Naht übergeben, ihre
-Provenienz im Build-Variant-Sidecar festgehalten, und sie geht nie in die \texttt{binary\_id} ein. Der
-Compiler (\texttt{gcc}\,$\vert$\,\texttt{clang}) ist eine weitere volle System-Achse, damit der Planer
-mit beiden Compilern bauen und vergleichen kann.
-\paragraph{Konsequenzen.} Dies ergibt die sechste CEB-System-Achse (Erweiterungshardware) und die
-Compiler-Achse aus ADR-6; die Hardware/ISA-Kopplung treibt die \texttt{-march}/\texttt{-mavx}-Wahl an
-der Compile-Naht, und die versionierten Build-Variant-Metadaten (mit einem AVX10-Feld) dokumentieren
-jede statische Kompilation neben ihrer Binary.
+  \item[ADR-12 --- Mess-Regime-Doppel: immutables Talos und root-Linux]\hfill\\
+  \textbf{Kontext:} Produktions-Treue und Mess-Tiefe stehen im Konflikt: Ein produktionsnahes
+  System verwehrt gerade den Hardware-Zähler-Zugriff, den tiefe Messungen brauchen.
+  \textbf{Entscheidung:} Auf den Produktions-Zielmaschinen wird jede Messung unter zwei
+  Betriebssystem-Regimes erhoben: einem immutablen Betriebssystem (Talos) als Produktiv-Spiegel
+  und einem root-Linux mit vollem Hardware-Zähler-Zugriff (\texttt{perf}/MSR).
+  \textbf{Konsequenz:} Die zeit- und observer-basierten Kategorien laufen unter beiden Regimes
+  identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
+  privilegierten Regime erhoben.
+  \textbf{Beleg:} Abschnitte~\ref{sec:eval-method} und~\ref{sec:contributions}.
+
+\end{description}

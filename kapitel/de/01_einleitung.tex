@@ -17,10 +17,9 @@ Spannungsfeld erwächst die Leitfrage der Arbeit.
   \node[lvl, minimum width=6.0cm, fill=blue!5]  at (0,-0.4) {Hauptspeicher --- $\sim$100\,ns};
   \draw[->,thick] (6.4,2.2) -- (6.4,-0.6) node[midway,right,align=left]{Latenz\\wächst};
 \end{tikzpicture}
-\caption{Die \enquote{Cache-Wand}: die Zugriffslatenz wächst über die Speicher-Hierarchie um rund zwei Größenordnungen --- nicht die Operationszahl, sondern das Cache-Verhalten bestimmt die Laufzeit.}\label{fig:cache-wall}
+\caption{Die \enquote{Cache-Wand}: die Zugriffslatenz wächst über die Speicher-Hierarchie um rund zwei Größenordnungen.}\label{fig:cache-wall}
 \end{figure}
-Konkret bilden Suchalgorithmen und Indexstrukturen das Rückgrat moderner Hauptspeicher-Datenbanken;
-trie-basierte Indizes und cache-line-optimierte Verarbeitung stehen im Zentrum dieser Arbeit. Seit dem
+Im Zentrum dieser Arbeit stehen trie-basierte Indizes und cache-line-optimierte Verarbeitung. Seit dem
 Adaptive Radix Tree (ART)~\cite{leis2013art} von 2013 hat sich die Forschung ausdifferenziert:
 Trie-Höhen-Optimierung (HOT~\cite{binna2018hot}), hybride B\textsuperscript{+}-Strukturen
 (Masstree~\cite{mao2012masstree}, B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}),
@@ -35,10 +34,11 @@ liegt. Weil so vieles auf cache-line-optimiertem Verhalten beruht, liegt eine Se
 Suchalgorithmus-Bestandteile in \emph{Achsen} nahe --- eine rückwärtsgerichtete Abstraktion bekannter
 Bausteine in wiederverwendbare Module über die wichtigsten Arbeiten des Standes der Technik hinweg.
 
-Diese Bausteine lassen sich als austauschbare Entwurfsdimensionen eines großen Entwurfsraums
-(\emph{design space}) auffassen~\cite{idreos2018periodic, idreos2018datacalculator}. Strukturell
+Diese Arbeit vollzieht diese Segmentierung mit einem Rahmenwerk, dessen Bausteine sich als austauschbare
+Entwurfsdimensionen eines großen Entwurfsraums (\emph{design space}) auffassen
+lassen~\cite{idreos2018periodic, idreos2018datacalculator}. Strukturell
 verschiedene Suchverfahren --- von baumartigen Indizes bis zu nicht-baumartigen Hash-Tabellen, samt
-Spezialeigenschaften wie Cache-Lines --- werden so als Punkte desselben Entwurfsraums vergleichbar;
+Spezialeigenschaften wie Cache-Line-Bewusstheit --- werden so als Punkte desselben Entwurfsraums vergleichbar;
 nicht-baumartige Verfahren belegen dabei ein eingeschränktes Subset der Dimensionen über demselben
 Suchalgorithmus-Interface, als wären sie der einzige Fächer einer Baum-Wurzel. Als Prüfling für die
 Stand-der-Technik-Zugehörigkeit dient PRT-ART, ein Probst-Redirect-Tree-/ART-Hybrid und eine abstrakte,
@@ -48,6 +48,7 @@ unvollständige Ansammlung neuartiger Suchalgorithmus-Bestandteile.
 Cache-Bewusstheit ist in heutigen Suchstrukturen entweder fest verdrahtet oder ganz ignoriert; vor allem
 aber lässt sich nicht \emph{trennen}, welche einzelne Entwurfsentscheidung welchem Lastmuster nützt --- das
 \emph{Trennbarkeits-Problem}, der rote Faden dieser Arbeit.
+% Beim Gegenlesen trennt diese Figur einen Satz ungünstig in der Mitte. Die Figur sollte nach einem ganzen Satz eingeblendet werden.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth]
   \node[draw, fill=black!75, text=white, minimum width=2.4cm, minimum height=2.2cm] (mono) at (0,0){Algorithmus\\(Monolith)\\[1mm]{\Large ?}};
@@ -64,16 +65,17 @@ Bestehende cache-bewusste Index-Entwürfe optimieren ein oder wenige Aspekte iso
 Ergebnisse, die sich über Veröffentlichungen hinweg schwer vergleichen lassen, da jede Arbeit eigene
 Datenstrukturen, Workloads und Mess-Methodiken verwendet. Die Gewichtungen der Verbesserungen einzelner
 Algorithmus-Bestandteile bleiben dabei untrennbar: Ein gemeldeter Leistungsgewinn lässt sich nicht
-eindeutig auf einen einzelnen Bestandteil (Knotentyp, Layout, Value-Ablage, Prefetching) zurückführen,
+eindeutig auf einen einzelnen Bestandteil (Seitentyp, Layout, Value-Ablage, Prefetching) zurückführen,
 weil die Bestandteile in den Original-Entwürfen verflochten bleiben. Es fehlt ein gemeinsamer Rahmen,
 der (i)~solche Entwürfe in austauschbare Achsen zerlegt, (ii)~publizierte Algorithmen als explizite
 Konfigurationen rekonstruiert und (iii)~sowohl einzelne Achsen als auch ganze Algorithmen auf einer
 einheitlichen, fairen Basis vermessen kann.
 
+% Die Forschungsfragen müssen in Richtung der Trennung ser Mess-, System- und Organ-Achsen erweitert überarbeitet und aufgetrennt werden. Die Belange jeder Achsen-Kategorie müssen einzeln nach dem neuen Kenntnisstand des Codes berücksichtigt werden.
 \section{Forschungsfragen}\label{sec:rqs}
 Aus der Aufgabenstellung und dem Ziel der Cache-Line-Optimierung ergeben sich --- aufgrund der
 Allgegenwärtigkeit des Einflusses der Cache-Line-Einstellungen --- eine Hauptfrage (FF0) und vier
-messbare Teilfragen (FF1--FF4); ergänzende Aspekte sind als \emph{Teilfragen} zugeordnet.
+messbare Forschungsfragen (FF1--FF4); ergänzende Aspekte sind ihnen als vertiefende \emph{Teilfragen} zugeordnet.
 \begin{description}
   \item[FF0 (Hauptfrage)] Wie stark verbessern \emph{aktive, messgetriebene} cache-bewusste
   Entscheidungen --- Seitentyp, Speicher-Layout, Value-Ablage und Prefetching --- die Leistung
@@ -95,6 +97,7 @@ messbare Teilfragen (FF1--FF4); ergänzende Aspekte sind als \emph{Teilfragen} z
   Knoten-/Cache-Line-Größe (eine Cache-Line bei CSS/CSB\textsuperscript{+} gegenüber bis zu sechzehn
   bei Hankins/Patel) durch achsen-isolierte, unter sonst gleichen Bedingungen permutierte Messung
   bias-frei nachmessen, statt sie aus inkompatiblen Original-Setups zu übernehmen?
+  % Wie sieht es unter diesem Punkt auch neben der 
   \item[FF3 (Prüfling-Vergleich)] Gewinnt der Prüfling PRT-ART gegenüber den acht Rang-1-Entwürfen
   im Stand der Technik (\emph{State of the Art}, kurz SOTA\@; ART, HOT, Masstree, CoCo-Trie, START,
   B\textsuperscript{2}-Baum, Wormhole,
@@ -109,12 +112,13 @@ messbare Teilfragen (FF1--FF4); ergänzende Aspekte sind als \emph{Teilfragen} z
   Umschaltregeln --- einschließlich der Reihenfolge
   Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
   je Füllstand und Suchtyp --- soll adaptiv gewechselt werden?
+  % Die Hauptachsen und Unterachsen müssen hier in der Frage schon indirekt angedeutet werden, dass für Latenz-kritische Messungen Laufzeitmessungen durch Compile-time Anforderungen gelöst werden müssen.
   \item[FF4 (Compile-Time vs.\ Laufzeit)] Welche Achsen-Eigenschaften müssen zur Übersetzungszeit
   fixiert werden, um plattform-optimierte, provenienz-nachweisbare Binaries je Permutation zu
   erzeugen, und welche können bzw.\ müssen zur Laufzeit gewählt werden (bit-codierter
   Permutations-Identifier, adaptive Layout-Selection), ohne die wissenschaftliche Vergleichbarkeit
-  (gleiche Compiler- und Flag-Basis) zu verletzen? Wird es durch die Messung möglich, ISA+OS
-  optimierte Binaries für eine Suchalgorithmus-Rekombination zu erzeugen, deren heuristische
+  (gleiche Compiler- und Flag-Basis) zu verletzen? Wird es durch die Messung möglich,
+  ISA+OS-optimierte Binaries für eine Suchalgorithmus-Rekombination zu erzeugen, deren heuristische
   Optimierung perfekt auf ihre Laufzeitumgebung zugeschnitten ist?
 \end{description}
 
@@ -124,17 +128,21 @@ austauschbare Entwurfsbestandteile zerlegen, Stand-der-Technik-Entwürfe als exp
 rekonstruieren, cache-line-bewusstes Verhalten sowohl je Bestandteil als auch für den ganzen Algorithmus
 auf gemeinsamer CPU-Basis messen und auswerten sowie den besten Gesamtalgorithmus nach einer autonomen
 Heuristik-Profil-Auswertung und Heuristik-Funktions-Modellierung als eigenständige Binary ausliefern.
+Der Code der Diplomarbeit ist dabei der \emph{formale Bediener} der Cache-Engine: Er lädt den Prüfling
+PRT-ART, kompiliert ihn per Metaprogrammierung gegen die Kernbestandteile der Cache-Engine, liefert
+ABI-stabile \emph{Lebewesen} (Suchalgorithmus-Instanzen) aus und treibt sie über das Prüf-Dock --- das
+Mess-Interface der Gattung (Kapitel~\ref{ch:measurement}) --- zur Messung.
 Das zugrunde liegende Architekturmodell
 --- die drei Ebenen (Gattungs-Interface, Gattungs-Unterklasse, Achsen-Organe), die vier Subsysteme und
-die ABI-stabile Auslieferung der Suchalgorithmus-\emph{Lebewesen} --- entwickelt
-Kapitel~\ref{ch:foundations}; das Konzept der Achsen-Architektur selbst ist aus einer Vorarbeit des
-Autors übernommen (zur Herkunft siehe Abschnitt~\ref{sec:software-means}), der Beitrag dieser Arbeit ist
+die ABI-stabile Auslieferung der Suchalgorithmus-\emph{Lebewesen} --- entwickeln
+Kapitel~\ref{ch:measurement} und Kapitel~\ref{ch:impl}; das Konzept der Achsen-Architektur selbst ist aus einer Vorarbeit des
+Autors übernommen (zur Herkunft siehe Abschnitt~\ref{sec:anatomy-model}), der Beitrag dieser Arbeit ist
 seine Übertragung auf cache-bewusste Suchstrukturen und seine mess-orientierte Realisierung. Die
 zentralen Beiträge sind:
 \begin{itemize}
   \item Eine ABI-stabile Modul-Schnittstelle: eine einheitliche C-Modulgrenze
   (\texttt{comdare\_\allowbreak{}create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exportiert je
-  Permutation genau ein Lebewesen (Suchalgorithmus-Binary); dahinter liegt eine dreischichtige
+  Permutation genau ein Lebewesen; dahinter liegt eine dreischichtige
   Abstraktionskette (CacheEngine $\to$ ExecutionEngine $\to$ SearchEngine) mit variadisch
   templatierten Hybrid-API-Spezialisierungen (1~Parameter $\Rightarrow$ \texttt{std::vector}-API\@;
   2~Parameter $\Rightarrow$ \texttt{std::map}-API\@; $N>2 \Rightarrow$
@@ -146,12 +154,12 @@ zentralen Beiträge sind:
   \item Dreißig SOTA-Algorithmus-Profile als persistierte XML-Konfigurationen (8~eigenständige
   Rang-1 + 22~Rang-2/3), die der \texttt{ExperimentDriver} automatisch in vorkompilierte
   C++23-Module überführt; perspektivisch soll der Profilsatz jede analysierte Veröffentlichung mit
-  mindestens einem Algorithmus-Profil abdecken.
+  eigenständigem Suchentwurf abdecken.
   \item PRT-ART als Prüfling mit acht eigenen Bausteinschichten (4+1+2-Pool-Allokator, optimistisches
   Lock-Coupling mit reservierten Blöcken, MultiLevel-Layout, pfadorientiertes Prefetch,
   DensityTracker, Hypothesen-Metriken H1/H2/H3, Inline/External/ChainRef-ValueHandles,
-  Signaling-Bit-Serialisierung); im Mess-Apparat führt der Prüfling davon sechs Schlüsselstellen als
-  eigene Organe --- die Build-Achse Seitentyp sowie Pfadkompression (Redirect), pfadorientiertes
+  Signaling-Bit-Serialisierung); im Mess-Apparat überschreibt der Prüfling sechs
+  Slots --- die Build-Achse Seitentyp sowie Pfadkompression (Redirect), pfadorientiertes
   Prefetch, OLC-Nebenläufigkeit, Telemetrie und den ChainRef-Value-Handle-Slot ---, während
   MultiLevel-Layout, Pool-Allokator und Serialisierung im Mess-Pfad derzeit über den
   Cache-Engine-Standard laufen (Abschnitt~\ref{sec:prtart-demo}).
@@ -176,10 +184,17 @@ zentralen Beiträge sind:
 
 \section{Aufbau der Arbeit}\label{sec:structure}
 Der Aufbau folgt dem Weg vom Allgemeinen zum Speziellen: Kapitel~\ref{ch:foundations} legt --- konzeptionell und
-bildhaft --- die Grundlagen (Suchbäume, Hardware, Software-Mittel der Abstraktion); Kapitel~\ref{ch:measurement}
-begründet daraus das Mess-System als Lösung und demonstriert es an PRT-ART\@; Kapitel~\ref{ch:impl} vertieft die
-Implementierung im Detail; Kapitel~\ref{ch:eval} wertet aus; Kapitel~\ref{ch:conclusion} schließt mit Fazit und
-Ausblick. Die Anhänge vertiefen begleitend: die Messreihen-Dokumentation (Anhang~\ref{app:measurements}),
+bildhaft --- die Grundlagen aus bekanntem Wissen: die Landschaft der Suchstrukturen, die
+Hardware-Eigenschaften der Speicherhierarchie, die Workload-Konventionen der Vergleichsliteratur, die
+Software-Mittel der Abstraktion und den Heuristik-Begriff. Kapitel~\ref{ch:measurement} entwickelt
+daraus die Konzepte eines cache-aware Mess-Systems: die Problemstellung und ihre Anforderungen, den
+Stand der Technik als Achsen-Instanzen, das Anatomie-Modell mit seinen Schichten, das Mess-System
+selbst, den Prüfling PRT-ART als Demonstrator und die heuristische Auswertung samt ihrer
+Betriebsmodi. Kapitel~\ref{ch:impl} setzt dieses Konzept als Software-Architektur um --- Repositorien,
+der Prüfling im Code, Achsen-Architektur und Übersetzungs-Pipeline, Schichten-Verträge mit
+Contract-Tests sowie die System-Achsen im Code. Kapitel~\ref{ch:eval} wertet entlang der
+Forschungsfragen aus, einschließlich des heuristischen Gegenbeweises; Kapitel~\ref{ch:conclusion}
+schließt mit Fazit und Ausblick. Die Anhänge vertiefen begleitend: die Messreihen-Dokumentation (Anhang~\ref{app:measurements}),
 die Code-Struktur (Anhang~\ref{app:code}), das Glossar (Anhang~\ref{app:glossary}), die vollständige
 Bausteine-Matrix (Anhang~\ref{app:blocks}), die Architekturentscheidungen (Anhang~\ref{app:adr}) und die
 Vergleichs-Interfaces (Anhang~\ref{app:interfaces}).

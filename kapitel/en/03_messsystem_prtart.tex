@@ -1,51 +1,102 @@
-\chapter{Measurement System with PRT-ART as Demonstration}\label{ch:measurement}
+\chapter{Concepts of a Cache-Aware Measurement System}\label{ch:measurement}
 
 % [SKELETON] cache-aware focus. The task assignment is made SELF-EXPLANATORY here (nobody reads it)
 % and draws on ALL concerns of Chapter 2. ALL tables live in this chapter.
 
-Building on the foundations from Chapter~\ref{ch:foundations}, this chapter introduces the actual concerns of the
-task and develops the measurement system as their \emph{solution} --- demonstrated on the probe PRT-ART\@.
+Building on the foundations from Chapter~\ref{ch:foundations}, this chapter first develops the problem
+statement and the requirements for a measurement system, and as their \emph{solution} the anatomy model
+and the measurement system built upon it --- demonstrated on the probe PRT-ART\@.
 
-\section{Concerns of the Task Assignment}\label{sec:task-concerns}
-The task demands decomposing and measuring cache-aware search algorithms such that the contribution of each design
-decision becomes visible in isolation. We make these concerns fully understandable here within the text --- without
-recourse to the task sheet --- in the context of the foundations from Chapter~\ref{ch:foundations}.
-At its core the task demands four steps: to \emph{decompose} cache-aware search algorithms into
-interchangeable design constituents, to \emph{reconstruct} state-of-the-art designs as explicit
-configurations, to \emph{measure} their cache-line-aware behaviour both per constituent and for the whole
-algorithm on a common basis, and from this to derive the best overall algorithm and \emph{deliver} it
-system-optimized. The cache-aware focus is no side condition but the guiding quantity: not asymptotic
-complexity but cache-line behaviour under real load decides performance (Chapter~\ref{ch:foundations}), and
-precisely this behaviour is to become measurable per axis in isolation.
+\section{Problem Statement and Requirements for a Measurement System}\label{sec:task-concerns}
+The starting point is the finding of the foundations (Chapter~\ref{ch:foundations}): the performance of
+cache-aware search structures is decided not by asymptotic complexity but by cache-line behaviour under
+real load. This behaviour, however, is the result of many interlocking design decisions --- how nodes
+branch, how pages are arranged in memory, how allocation, prefetching, and synchronization are done ---,
+and in the published methods these decisions have grown together monolithically: whoever measures a
+method always measures the whole bundle, never the individual decision. Precisely this is the problem
+statement of this thesis, the \emph{separability problem}: the contribution of each individual design
+decision to cache-line behaviour shall become visible in isolation --- per decision as well as for the
+whole algorithm.
 
-The state of the art (Chapter~\ref{ch:foundations}) thereby reveals the central gap: each of the studied
-works optimizes only a few axes in isolation, and in the studied corpus \emph{not a single method occupies
-all nineteen axes together}. Some axes are filled exclusively with baseline or textbook variants (the
-mapping between algorithm and cache traversal), others appear only as a \emph{measurement target} (the
-dTLB), the spatial search class is missing entirely, and axes such as I/O, migration, filtering, and
-buffering are each occupied individually but never together with the search axes in one design.
+The state of the art sharpens this problem in two directions. In substance, each of the studied works
+optimizes only a few design decisions in isolation, and in the studied corpus \emph{not a single method
+occupies all design dimensions together}: some dimensions are filled exclusively with baseline or
+textbook variants (the mapping between algorithm and cache traversal), others appear only as a
+\emph{measurement target} (the dTLB), the spatial search class is missing entirely, and decisions such as
+I/O, migration, filtering, and buffering are each occupied individually but never together with the
+search decisions in one design. Methodologically a second gap is added: results are reported in
+incomparable settings, and the frequent choice of scenario-specific, often favourably tailored load
+profiles hampers a fair cross-comparison; what is missing is a bias-reduced measurement of \emph{all}
+load profiles against \emph{all} methods on a common basis.
 
-Added to this is a methodological gap: results are reported in incomparable settings, and the frequent
-choice of scenario-specific, often favourably tailored load profiles hampers a fair cross-comparison. What
-is missing is a bias-reduced measurement of \emph{all} load profiles against \emph{all} methods on a common
-basis --- and what this thesis contributes is therefore the systematic, orthogonal axis decomposition of
-these designs together with a \emph{permuted measurement architecture} that reconstructs them as explicit
-configurations and measures them on a common basis; for cache-aware algorithms cannot be differentiated
-without a separation of the properties that decisively govern caching. Which of the catalogued instances
+From this double gap follow four requirements for a solution. It must, first, \emph{decompose}
+cache-aware search algorithms into interchangeable design constituents, so that each decision becomes
+individually graspable; second, \emph{reconstruct} the state-of-the-art designs as explicit
+configurations of these constituents, so that the known and the new become comparable in the same space;
+third, \emph{measure} the cache-line-aware behaviour per constituent as well as for the whole algorithm
+on a common basis --- all load profiles against all methods, bias-reduced; and fourth, derive the best
+overall algorithm from the measurements and \emph{deliver} it system-optimized. The cache-aware focus is
+no side condition but the guiding quantity: precisely the cache-line behaviour that decides performance
+shall become measurable in isolation per design decision.
+
+The measurement requirement sharpens, at the juxtaposition of cache-aware and cache-oblivious designs
+(Section~\ref{sec:hardware-history}), into a third, intermediate path: the actual cache properties (line
+size, hierarchy depth, topology) are \emph{determined} per target platform and enter a system-optimized
+binary as fixed quantities, while the \emph{configurable} cache-near settings (prefetch distance,
+batching and inline thresholds, pool budgets, and, where architecture and operating system permit, the
+hardware prefetcher) are permuted as axis parameters against an already-loaded
+binary --- graded by what hardware and operating system allow, from fully runtime-configurable (mutable
+Linux with MSR access) through boot- or compile-static (immutable operating systems) to fixed (read-only cache
+registers on ARM and RISC-V). Thus cache-oblivious behaviour is augmented with \emph{measured} locality
+knowledge.
+
+The four requirements condense into a target picture, the \emph{design space}: each partial decision ---
+say node type, memory layout, or allocator --- spans an axis of its own, and every state-of-the-art
+algorithm is a point in the Cartesian product of these axes (Figure~\ref{fig:design-space}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick]
+  \draw[->] (0,0) -- (4.8,0) node[right,font=\scriptsize,align=left]{node\\type (T4)};
+  \draw[->] (0,0) -- (0,3.3) node[above,font=\scriptsize]{layout (T5)};
+  \draw[->] (0,0) -- (-1.7,-1.3) node[below left,font=\scriptsize]{allocator (T6)};
+  \foreach \x in {1,2,3}\foreach \y in {1,2,3}{\fill[black!35] (\x,\y) circle (1.6pt);}
+  \fill[red] (2,2) circle (3.2pt);
+  \node[red,right] at (2.15,2.25){ART $=$ one point};
+  \node[draw,rounded corners,fill=blue!5,align=left,font=\scriptsize] at (3.5,2.95){\textbf{Legend:} 3 of\\19 axes (T0--T18)};
+  \node[align=center,font=\scriptsize] at (1.6,-2.2){Every state-of-the-art algorithm\\$=$ one point in the Cartesian product of the axes};
+\end{tikzpicture}
+\caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it. For illustration, three of the nineteen axes are chosen --- the real storage organ of node type~(T4), memory layout~(T5) and allocator~(T6); the full design space has nineteen dimensions.}\label{fig:design-space}
+\end{figure}
+
+Once the design space is spanned this way, the separability problem becomes solvable: varying a design
+decision means moving along exactly one axis while all others stay fixed --- its contribution becomes
+measurable in isolation. What this thesis contributes is consequently the systematic, orthogonal axis
+decomposition of the known designs together with a \emph{permuted measurement architecture} that
+reconstructs them as explicit configurations and measures them on a common basis; for cache-aware
+algorithms cannot be differentiated without a separation of the properties that decisively govern
+caching. The four requirements at the same time describe a processing chain --- from the definition of an
+axis assignment through its generation and measurement to the evaluation ---, and a system of this size
+remains manageable only if these stations are developed as separate layers with fixed contracts; the
+layer model for this is developed in Section~\ref{sec:anatomy-layers}. Which of the catalogued instances
 the framework adopts and which it replaces as obsolete is developed dialectically by the following
-Section~\ref{sec:sota-instances} (thesis--antithesis--synthesis); the measurement system itself
-(Section~\ref{sec:measurement-system}) is the solution that closes this gap.
+Section~\ref{sec:sota-instances}; the solution concept
+(Section~\ref{sec:anatomy-model}) and the measurement system built upon it
+(Section~\ref{sec:measurement-system}) are the solution that closes the double gap.
 
 \section{State of the Art as Axis Instances}\label{sec:sota-instances}
-The known methods now appear systematically as axis compositions; the complete catalogues live here.
+The methods known from Chapter~\ref{ch:foundations} now appear systematically as axis compositions;
+the complete catalogues of this dissection are gathered in the present section.
 This adoption proceeds \emph{dialectically} (thesis--antithesis--synthesis): per axis a foreign organ is
 \emph{adopted} (thesis) or an obsolete assumption is \emph{replaced} (antithesis), from which the own
 contribution emerges as synthesis. The guiding idea is the \enquote{third way} from
-Section~\ref{sec:hardware-history} --- measured locality knowledge instead of hard-wired or ignored cache
+Section~\ref{sec:task-concerns} --- measured locality knowledge instead of hard-wired or ignored cache
 awareness ---, which makes each axis explicit as an orthogonal, permutable, and individually measurable
 organ. For many axes the antithesis is not an obsolete foreign instance but the implicit assumption of not
 regarding the decision as selectable at all; the synthesis then consists in making it an explicit axis in
-the first place (marked \enquote{---} in the replaced column). Table~\ref{tab:dialectic} summarizes this
+the first place (marked \enquote{---} in the replaced column). Two cluster assignments are deliberate
+approximations: the cache-traversal axis~(T1) draws its inspiration from the layout theory as well as
+from prefetching, and the reclamation sub-axis of the allocator~(T6) shares its sources with the
+synchronization~(T8) --- an inter-organ wiring, not a cluster violation.
+Table~\ref{tab:dialectic} summarizes this
 adoption per composition axis.
 
 {\footnotesize
@@ -67,7 +118,7 @@ T2 Mapping (B) & linear 1:1 mapping; hash redirect, permutation index & --- & di
 T3 Path-Compression (A) & byte-wise (ART), Patricia (HOT), macro node (CoCo), multi-byte (START) & uncompressed raw path & compression granularity selectable \\
 T4 Node-Type (A) & ART Node4/16/48/256 & fixed node size & adaptive node class + storage delegation \\
 T5 Memory-Layout (B) & AoS-aligned, SoA, LOUDS bit-packed, CSS/CSB\textsuperscript{+}, AoSoA & --- & four layout dimensions permutable \\
-T6 Allocator (C) & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/Hazard & algorithm-hardwired allocator & allocation as shared interface organ (seven sub-families) \\
+T6 Allocator (C) & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/Hazard & algorithm-hardwired allocator & allocation as shared interface organ (seven sub-axes) \\
 T7 Prefetch (D) & distance estimator (ART), hardware (Wormhole), stride (Chen), adaptive & prefetch not isolated as an axis & path-oriented bundle prefetch (own) \\
 T8 Concurrency (E) & OLC (ART), RCU, hazard pointers; lock-/wait-free & coarse locking as the only assumption & pattern $\perp$ reclamation as two sub-axes \\
 T9 Serialization (F) & raw binary, varint (ART), succinct (LOUDS/FST), LZ77 & --- & encoding/compression selectable \\
@@ -111,7 +162,7 @@ contributions.
     T8 concurrency & CC1--CC2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
     T9 serialization & SR1--SR3 & P01,P09,P10; LZ77 \\
     \midrule
-    T10 telemetry & TM1--TM3 & P01,P02,P16,P26,P28; HdrHistogram (Gil Tene) \\
+    T10 telemetry & TM1--TM3 & P01,P02,P16,P17,P26,P28; HdrHistogram (Gil Tene) \\
     T11 value\_handle & VH1--VH3 & P01,P03,P07,P29 \\
     T12 isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (vendor-spec) \\
     T13 index\_organization & io1--io3 & Bayer/McCreight,Comer,Oracle \\
@@ -141,7 +192,9 @@ permutation index~\cite{mao2012masstree}. The \emph{path compression} (T3) insta
 variant~\cite{leis2013art}, the Patricia split~\cite{morrison1968patricia,binna2018hot}, the macro
 node~\cite{boffa2024coco}, and the multi-byte rewiring~\cite{fent2020start}, and the \emph{node-type axis}
 (T4) bundles the adaptive layouts from Node4/16/48/256~\cite{leis2013art} through HOT
-compound~\cite{binna2018hot} and the CSS/CSB\textsuperscript{+}/Hankins nodes to the PRT-ART family.
+compound~\cite{binna2018hot}, Internal/Border~\cite{mao2012masstree},
+Decision/Span~\cite{schmeisser2022b2tree}, LOUDS-Dense/Sparse~\cite{zhang2018surf}, and the
+CSS/CSB\textsuperscript{+}/Hankins nodes to the PRT-ART family.
 
 The \emph{memory-layout axis} (T5) ranges from the cache-line-aligned AoS through pointer-free
 arrangement~\cite{rao1999css}, sibling cluster~\cite{rao2000csb}, and embedded
@@ -187,11 +240,17 @@ bundle prefetch~\cite{zhang2025hierarchical}; the explicit hardware prefetch ins
 Wormhole~\cite{wu2019wormhole}. The \emph{ISA axis} (T12) and the build SIMD extension carry the vendor
 specifications (x86-64, AArch64, Power, RISC-V with SSE2/AVX2/AVX-512, NEON/SVE2, RVV). Two cross-cutting
 strategy axes record what an algorithm actively \emph{uses} and how it \emph{distributes} work --- the
-hardware strategy and the scheduling strategy ---, which Table~\ref{tab:hw-sched} assigns per paper. The
+\emph{hardware strategy} (SIMD family, cache-level targeting, NUMA, prefetch hardware, atomic family)
+and the \emph{scheduling strategy} (worker-pool layout, SIMD worker limit --- hardware-bound typically
+two of $N$ cores ---, heterogeneous P-/E-core dispatch, co-routines, and batch granularity) ---, which
+Table~\ref{tab:hw-sched} assigns per paper. The
 \emph{telemetry axis} (T10) instantiates density tracker~\cite{leis2013art}, insert
-counter~\cite{binna2018hot}, HdrHistogram, and path-read counter~\cite{zhang2024pathprefix}; the
-coherence-friendly leaf-only variants go back to Kuehn~\cite{kuehn2023bplustree}, while the counter in all
-nodes counts as an \emph{anti-pattern} (cache-line ping-pong).
+counter~\cite{binna2018hot}, HdrHistogram, path-read counter~\cite{zhang2024pathprefix}, and the
+probability hints (P16/P17 Bender~\cite{bender2000cobtree,bender2005coboblivious}); the
+coherence-friendly leaf-only variants go back to Kuehn (P28~\cite{kuehn2023bplustree}; personal
+communication 2023, beyond the published DaMoN-2023 state on the cache- and distribution-aware
+B\textsuperscript{+} layout), while the counter in all
+(including inner) nodes counts as an \emph{anti-pattern} (cache-line ping-pong).
 
 \begin{table}[!htbp]
   \centering\small
@@ -215,13 +274,19 @@ nodes counts as an \emph{anti-pattern} (cache-line ping-pong).
   \end{tabular}
 \end{table}
 
-The \emph{concurrency axis} (T8) splits into pattern and locking mode: from the serial zero point through
+The \emph{concurrency axis} (T8) splits into the two sub-axes pattern and reclamation
+(pattern $\perp$ reclamation, Table~\ref{tab:dialectic}): the patterns range from the serial zero point through
 coarse locking~\cite{dijkstra1965concurrent}, reader/writer locks~\cite{courtois1971readers}, and
 optimistic lock coupling~\cite{leis2016olc} to lock-free~\cite{michael1996queue},
 wait-free~\cite{herlihy1991waitfree}, as well as RCU~\cite{mckenney2001rcu} and
-hazard-pointer~\cite{michael2004hazard} methods. The \emph{I/O axis} (T14) instantiates
-buffered~\cite{stonebraker1981os}, direct, and memory-mapped I/O~\cite{crotty2022mmap}, the
-\emph{migration axis} (T15) hot/cold separation and multi-tier RAM$\to$NVM$\to$SSD migration, and the
+hazard-pointer~\cite{michael2004hazard} methods; the locking mode within a pattern
+distinguishes read-only, read-write, upgradeable, and optimistic validation. The \emph{I/O axis} (T14) instantiates
+buffered~\cite{stonebraker1981os}, direct, and memory-mapped I/O~\cite{crotty2022mmap}. The axis
+thereby builds on the block-transfer thinking of the external-memory tradition
+(Section~\ref{sec:hardware-history}): for I/O-efficient data-structure engineering, TPIE provides a
+reference library of the external-memory line (ESA 2002)~\cite{arge2002tpie}; the textbook foundation is supplied by
+Mehlhorn and Sanders~\cite{mehlhorn2008toolbox}. The
+\emph{migration axis} (T15) instantiates hot/cold separation and multi-tier RAM$\to$NVM$\to$SSD migration, and the
 \emph{buffering axes} (T17/T18) range from the Disruptor ring buffer~\cite{thompson2011disruptor} through
 the Bw-tree delta chain~\cite{levandoski2013bwtree}, the copy-on-write buffer~\cite{driscoll1989persistent},
 and the tombstone buffer~\cite{oneil1996lsm} to lock-free SPSC~\cite{lamport_spsc} and MPMC
@@ -229,6 +294,7 @@ queues~\cite{michael1996queue}. The \emph{index-organization axis} (T13) disting
 arrangement~\cite{bayer1972btree}, heap storage, and non-clustered secondary index~\cite{comer1979btree},
 the \emph{filter axis} (T16) the Bloom~\cite{bloom1970}, Cuckoo~\cite{fan2014cuckoo}, SuRF~\cite{zhang2018surf},
 and Xor filter~\cite{graf2020xor}.
+
 The \emph{loads}, too, appear as instances. The workloads used in the literature stem from \emph{several},
 mutually incomparable benchmark frameworks; Table~\ref{tab:wl-frameworks} maps them to the using
 publications. Most widespread is the Yahoo!\ Cloud Serving Benchmark (YCSB)~\cite{cooper2010ycsb}; besides
@@ -236,7 +302,8 @@ it appear the index benchmark SOSD~\cite{kipf2019sosd}, the TPC family~\cite{tpc
 SPEC~CPU~\cite{spec_cpu2017}, the scale-out suite CloudSuite~\cite{ferdman2012cloudsuite}, and --- for the
 allocator corpus --- mimalloc-bench~\cite{mimalloc_bench} and the classics Larson, threadtest, and shbench.
 Since these frameworks produce incomparable loads, the thesis abstracts them into a common set of load
-profiles.
+profiles; the frameworks not yet realized in the present measurement apparatus (TPC, SOSD, SPEC~CPU,
+CloudSuite, and the allocator suites) are attached via a \emph{dataset loader}.
 
 \begin{table}[!htbp]
   \caption{Benchmark frameworks and using publications}\label{tab:wl-frameworks}
@@ -295,9 +362,87 @@ distributions --- and are each derived from concrete publications.
   {\footnotesize Op-mix = shares of insert/lookup/delete/scan/RMW\@; neg\% = share of negative lookups.\par}
 \end{table}
 
-For each SOTA algorithm and each allocator a profile XML records the axis assignment, a key-value
+The state of the art dissected here rests on a fixed corpus: the analysis draws on 33~deeply analysed
+search-algorithm publications (P01--P33) and a parallel allocator corpus of 23~works (A01--A23), whose
+axis assignments are persisted as XML profiles in the \texttt{comdare-cache-engine} (three works enter
+only dissected, see below); the complete building-block and allocator matrices are given in the appendix. The axis-wise dissection of this corpus
+follows a web-verified provenance map over roughly 110~organ algorithms; every
+state-of-the-art algorithm thereby appears as a point in the
+Cartesian product of the axes (Figure~\ref{fig:design-space}). That the axis framework also carries
+non-tree-like methods is shown by a pure hash table as a counter-check within the SearchAlgorithm
+genus --- as two selectable T0 building blocks, of which exactly one is chosen per permutation and
+both of which are permuted: an open-addressing hash after Knuth (S14, implemented) and the
+SwissTable~\cite{abseil_swisstable} (envisioned as a building block of its own). The counter-check
+satisfies the point-query subset of the
+\texttt{std::map} interface (\texttt{find}/\texttt{insert}/\texttt{erase}); the order-based operations
+drop out by principle, since a hash table is unordered. Across this subset it occupies a limited axis
+subset: allocation, prefetch, concurrency, memory layout, and ISA-SIMD remain shared --- the latter axis
+concretely carries the SwissTable group lookup~\cite{abseil_swisstable} ---, while the tree- and
+trie-specific axes (path compression, node type, range index) do not drop out but are assigned
+pass-through variants (\texttt{None}); the counter-check thus requires no genus of its own.
+
+The publications stem from six thematic \emph{origin clusters} that here serve only the holistic placement
+of each living being before it is decomposed into its organs. The \emph{trie family} comprises ART
+(P01)~\cite{leis2013art}, HOT (P02)~\cite{binna2018hot}, Masstree (P03)~\cite{mao2012masstree}, CoCo-Trie
+(P04)~\cite{boffa2024coco}, START (P05)~\cite{fent2020start}, and the succinct tries LOUDS
+(P09)~\cite{jacobson1989louds} and SuRF (P10)~\cite{zhang2018surf}. The \emph{hybrid and
+B\textsuperscript{+} family} unites the B\textsuperscript{2}-tree (P06)~\cite{schmeisser2022b2tree},
+Wormhole (P07)~\cite{wu2019wormhole}, and the cache-sensitive CSS, CSB\textsuperscript{+}, and Hankins
+trees (P11--P13)~\cite{rao1999css,rao2000csb,hankins2003nodesize}. The \emph{layout theory} ranges from
+Samuel (P14)~\cite{samuel2005procaware} and Graefe/Larson (P15)~\cite{graefe2001btree} through the
+cache-oblivious designs of Bender et
+al.\ (P16/P17)~\cite{bender2000cobtree,bender2005coboblivious,bender2002treelayout,bender2002scanning,bender2002orderlist}
+to the layout-invariant trees of Saikkonen/Soisalon-Soininen
+(P18/P19)~\cite{saikkonen2008multilevel,saikkonen2016layout}. The \emph{prefetching} comprises \emph{B-Trees
+Are Back} (P20)~\cite{mueller2025btreesback}, the prefetching B\textsuperscript{+} trees of Chen et
+al.\ (P21/P22)~\cite{chen2001prefetch,chen2002fractal}, Khan (P23)~\cite{khan2010adaptive}, Naderan-Tahan
+(P24)~\cite{naderan2016adaptivefilter}, Mahling (P25)~\cite{mahling2025hotpath}, as well as Zhang
+(P26/P27)~\cite{zhang2024pathprefix,zhang2025hierarchical} and Kuehn (P28)~\cite{kuehn2023bplustree}. The
+\emph{synchronization} carries the optimistic lock coupling of ART (P08)~\cite{leis2016olc}, RCU
+(P29)~\cite{mckenney2001rcu}, and hazard pointers (P30)~\cite{michael2004hazard}; the hardware-near
+\emph{TU-Dresden line}, finally, Ungethüm (P31)~\cite{ungethuem2017survey}, Schmidt
+(P32)~\cite{schmidt2025hbm}, and VAMPIR (P33)~\cite{berthold2023vampir}. The parallel \emph{allocator
+corpus} (A01--A23) spans from the classics dlmalloc~\cite{lea1996dlmalloc}, Hoard~\cite{berger2000hoard},
+Slab together with its magazines/Vmem extension~\cite{bonwick1994slab,bonwick2001vmem}, and Michael's
+lock-free allocation~\cite{michael2004lockfree}
+through the multi-core-scalable mimalloc~\cite{leijen2019mimalloc}, jemalloc~\cite{evans2006jemalloc},
+TCMalloc~\cite{ghemawat2005tcmalloc}, snmalloc~\cite{lietar2019snmalloc}, scalloc~\cite{aigner2015scalloc},
+rpmalloc~\cite{jansson2017rpmalloc}, and lrmalloc~\cite{leite2018lrmalloc} to the cache-aware/predictable
+CAMA~\cite{herter2011cama}, NUMAlloc~\cite{yang2023numalloc}, StarMalloc~\cite{starmalloc2024}, and
+PIM-malloc~\cite{pimmalloc2026}.
+Figure~\ref{fig:sota-gallery} condenses the most important reconstructed search structures into a gallery
+--- per method its origin class, the characteristic structural idea and the axes at which it makes its main
+contribution; all thus appear as points in the common design space.
+\begin{figure}[htbp]\centering
+% No \resizebox: the previously ~16.9cm wide drawing is squeezed to ~15.9cm (tiles 4.0->3.8cm,
+% grid 4.3->4.05cm) and fits natively into \textwidth (16cm); this keeps the \footnotesize font unscaled
+% instead of shrunk via resizebox (x0.95). Rule: resizebox only to SHRINK (cf. fig:m-model).
+\begin{tikzpicture}[font=\footnotesize,
+  so/.style={draw,rounded corners,fill=orange!8,minimum width=3.8cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt}]
+  \node[so] (a1) at (0,0){\textbf{ART} {\scriptsize(P01)}\\{\tiny Trie}\\[1pt]{\tiny adaptive nodes 4/16/48/256, byte-wise branching, path compression}\\{\tiny\itshape axes T4, T3}};
+  \node[so] (a2) at (4.05,0){\textbf{HOT} {\scriptsize(P02)}\\{\tiny Trie}\\[1pt]{\tiny height-optimized dynamic span, compact SIMD nodes}\\{\tiny\itshape axes T4, T0}};
+  \node[so] (a3) at (8.1,0){\textbf{Masstree} {\scriptsize(P03)}\\{\tiny Trie $+$ B\textsuperscript{+}}\\[1pt]{\tiny trie of B\textsuperscript{+}-trees, 8-byte slices, B\textsuperscript{+}-leaf nodes}\\{\tiny\itshape axes T4, T11}};
+  \node[so] (a4) at (12.15,0){\textbf{CoCo-Trie} {\scriptsize(P04)}\\{\tiny Succinct}\\[1pt]{\tiny compact-collapsed trie, succinct-encoded paths}\\{\tiny\itshape axes T3, T4}};
+  \node[so] (b1) at (0,-2.4){\textbf{START} {\scriptsize(P05)}\\{\tiny Trie}\\[1pt]{\tiny self-tuning adaptive radix span}\\{\tiny\itshape axes T0, T4}};
+  \node[so] (b2) at (4.05,-2.4){\textbf{B\textsuperscript{2}-Tree} {\scriptsize(P06)}\\{\tiny Hybrid}\\[1pt]{\tiny B\textsuperscript{+} with binary inner nodes, cache-aware}\\{\tiny\itshape axes T4, T5}};
+  \node[so] (b3) at (8.1,-2.4){\textbf{Wormhole} {\scriptsize(P07)}\\{\tiny Hybrid}\\[1pt]{\tiny trie $+$ hash $+$ B\textsuperscript{+}-leaf, $O(\log L)$ point query}\\{\tiny\itshape axes T0, T2}};
+  \node[so] (b4) at (12.15,-2.4){\textbf{LOUDS} {\scriptsize(P09)}\\{\tiny Succinct}\\[1pt]{\tiny unary degree sequence, bitmap-encoded trie}\\{\tiny\itshape axes T9, T5}};
+  \node[so] (c1) at (0,-4.8){\textbf{SuRF} {\scriptsize(P10)}\\{\tiny Succinct}\\[1pt]{\tiny succinct range filter over LOUDS}\\{\tiny\itshape axes T16, T9}};
+  \node[so] (c2) at (4.05,-4.8){\textbf{CSS-Tree} {\scriptsize(P11)}\\{\tiny cache-sensitive}\\[1pt]{\tiny pointerless implicit tree, arithmetic navigation}\\{\tiny\itshape axes T4, T5}};
+  \node[so] (c3) at (8.1,-4.8){\textbf{CSB\textsuperscript{+}-Tree} {\scriptsize(P12)}\\{\tiny cache-sensitive}\\[1pt]{\tiny B\textsuperscript{+} with \emph{one} child-group pointer}\\{\tiny\itshape axes T4, T5}};
+  \node[draw,rounded corners,fill=blue!8,minimum width=3.8cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt] (c4) at (12.15,-4.8){\textbf{SwissTable}\\{\tiny Hash (control)}\\[1pt]{\tiny SIMD control bytes; non-tree, in the same axis system}\\{\tiny\itshape axes T0, T12}};
+\end{tikzpicture}
+\caption{Gallery of the most important reconstructed search structures: per method (with paper ID) its origin class, the characteristic structural idea and the axes at which it makes its main contribution. Trie, hybrid, succinct and cache-sensitive methods stand next to a non-tree hash control (SwissTable) --- all as points in the same axis design space. The complete axis dissection is given in Table~\ref{tab:axes-overview}.}\label{fig:sota-gallery}
+\end{figure}
+
+For each SOTA algorithm (\emph{state of the art} --- the published designs of
+Section~\ref{sec:overview}) and each allocator a profile XML records the axis assignment
+(\texttt{page}, \texttt{node}, \texttt{traversal}, \texttt{value\_handle}, \texttt{concurrency},
+\texttt{allocator}, \texttt{prefetch}, \texttt{telemetry}, \texttt{isa}, \texttt{layout},
+\texttt{reclamation}), a key-value
 signature, and an optional \texttt{<expected\_workload>} tag that overrides the measurement heuristic
-(Table~\ref{tab:sota-profiles}). Three of the 33 corpus works deliberately have no standalone profile but
+(Table~\ref{tab:sota-profiles}); all 30 SOTA profiles and all 10 allocator profiles are tagged. Three of
+the 33 corpus works deliberately have no standalone profile but
 enter only dissected: the optimistic lock coupling of ART~\cite{leis2016olc} as a concurrency organ, the
 succinct LOUDS representation~\cite{jacobson1989louds} as a memory-layout organ (e.g.\ in
 SuRF~\cite{zhang2018surf}), and the profiling tool VAMPIR~\cite{berthold2023vampir} as a measurement
@@ -347,48 +492,503 @@ technology; the remaining 30 each carry their own profile XML\@.
   {\footnotesize \texttt{expected\_workload} = YCSB workload class (A/B/C/E/F).\par}
 \end{table}
 
+Across the profiles these affinities distribute into 13$\times$~YCSB\_C (read-heavy), 9$\times$~YCSB\_A
+(zipf-distributed read and update), 6$\times$~YCSB\_E (range scans), and 2$\times$~YCSB\_B (95/5
+read/update); PRT-ART itself is tagged with YCSB\_F (read-modify-write, for the density-tracker
+updates).
+
 The core finding of this load-profile analysis is a systematic \emph{bias}: each publication chooses the
-load profile under which its own design performs best. Static, read-only-oriented tries and filters frame
-\enquote{build-once, 100\,\% positive lookups} and avoid updates; compressed methods make the negative-query
-share the primary axis; zipfian-centred works favour cache-aware reordering layouts; and write- or
-concurrency-heavy works conversely compete only where static structures fail. Fourteen of the publications
-provide no index load profile of their own at all. Only when \emph{all} load profiles run against
-\emph{all} living-being binaries --- the workload as a dynamic axis (Chapter~\ref{ch:eval}) --- can the
+load profile under which its own design performs best. Static, read-only-oriented tries and filters
+(HOT~\cite{binna2018hot}, CoCo~\cite{boffa2024coco}, B\textsuperscript{2}-tree~\cite{schmeisser2022b2tree},
+SuRF~\cite{zhang2018surf}, CSS~\cite{rao1999css}) frame \enquote{build-once, 100\,\% positive lookups} and
+avoid updates; compressed tries and filters (CoCo, B\textsuperscript{2}-tree, SuRF) make the negative-query
+share the primary axis, because they abort early on misses; zipfian-centred works (B-Trees Are
+Back~\cite{mueller2025btreesback}, Mahling~\cite{mahling2025hotpath}, Kuehn~\cite{kuehn2023bplustree})
+favour cache-aware reordering layouts; write- and concurrency-heavy works (ART~\cite{leis2013art},
+Masstree~\cite{mao2012masstree}, Wormhole~\cite{wu2019wormhole}, OLC-ART~\cite{leis2016olc},
+RCU~\cite{mckenney2001rcu}) conversely compete only where static structures fail; and prefetch- and
+hardware-near works (CSB\textsuperscript{+}~\cite{rao2000csb}, Chen~\cite{chen2001prefetch},
+Schmidt~\cite{schmidt2025hbm}) measure cache and TLB rather than algorithm logic, via node size and
+prefetch. Fourteen of the publications contribute no distinct load profile to the catalogue --- partly
+survey, theory, and hardware works without an index load profile of their own, partly works whose custom
+microbenchmarks are subsumed by profiles already catalogued. Only when \emph{all} load profiles run
+against \emph{all} living-being binaries (and the container hulls, Section~\ref{sec:anatomy-levels}) ---
+the workload as a dynamic axis (Chapter~\ref{ch:eval}) --- can the
 \enquote{winner only in its self-chosen home profile} be made visible and bias-reduced comparability be
 gained.
 
-Finally, the quality criteria of scientific measurement (Section~\ref{sec:software-means}), too, appear as
+Finally, the quality criteria of scientific measurement (cf.\ the definitional classes in Section~\ref{sec:measurement-system}), too, appear as
 concrete technologies.\ \emph{Hardware performance counters} (PMC, via \texttt{perf})~\cite{demelo2010perf}
-are nearly universal and deliver cache-miss rates, dTLB misses, branch misses, and IPC/CPI\@; \emph{profilers}
+are nearly universal and deliver cache-miss rates, dTLB misses, branch misses, and IPC/CPI --- the
+majority of the works P01--P28 report such counters ---; \emph{profilers}
 such as OTF2/VAMPIR~\cite{berthold2023vampir} and VTune~\cite{reinders2005vtune} collect trace-based runtime
 profiles, \emph{simulators} such as gem5~\cite{binkert2011gem5} provide hardware-accurate estimates where
-real counters are absent, and the \emph{HdrHistogram}~\cite{tene_hdrhistogram} collects the latency
+real counters are absent (so P25 Mahling~\cite{mahling2025hotpath}, P27
+Zhang~\cite{zhang2025hierarchical}), and the \emph{HdrHistogram}~\cite{tene_hdrhistogram} collects the latency
 percentiles (p50/p95/p99). On the collection the evaluation builds: instead of arithmetic means, median and
 percentiles are reported, differences tested for significance with the distribution-free
-\emph{Mann-Whitney U test}~\cite{mann1947utest} (with Holm correction~\cite{holm1979sequential}) and
+\emph{Mann-Whitney U test}~\cite{mann1947utest} (with Holm correction of the family-wise error
+rate~\cite{holm1979sequential}) and
 quantified via the effect measure \emph{Cliff's~$\delta$}~\cite{cliff1993dominance}, following the
 recommendations for scientific benchmarking~\cite{hoefler2015benchmarking}. A methodological line of its own
 is the hardware-near measurement methodology of TU Dresden (Habich group): Ungethüm et
 al.~\cite{ungethuem2017survey} systematize the hardware optimizations for database machines, Schmidt et
-al.~\cite{schmidt2025hbm} measure stride versus sequential accesses on HBM, and VAMPIR~\cite{berthold2023vampir}
+al.~\cite{schmidt2025hbm} measure stride versus sequential accesses on HBM with dTLB and L2/L3 counters,
+and VAMPIR~\cite{berthold2023vampir}
 profiles non-functional properties of heterogeneous memory. From all these technologies follows the set of
-measurement categories --- cache-line utilization, cache misses, dTLB misses, memory footprint, branch
-misses, IPC/CPI, latency, throughput, and energy ---, whose time- and observer-based subset the present
-apparatus already resolves, while the counter-based PMC categories remain bound to hardware-counter access;
-the complete measurement architecture is developed by the following measurement system
+measurement categories --- cache-line utilization, cache misses (L1/L2/L3), dTLB misses, memory footprint,
+branch misses, IPC/CPI, latency (mean and percentiles p50--p999), throughput, energy, and fill-buffer
+occupancy ---, whose time- and observer-based subset the present
+apparatus already resolves (wall clock, HdrHistogram, per-axis observers, the statistics triad of
+median/percentiles, significance test, and effect measure, the two-phase operation loop, and the
+conformity gate against \texttt{std::map}),
+while the counter-based PMC categories remain bound to hardware-counter access;
+the complete measurement architecture is developed by the measurement system
 (Section~\ref{sec:measurement-system}) and Chapter~\ref{ch:eval}.
 
+\section{Solution Concept: the Anatomy Model}\label{sec:anatomy-model}
+From the dialectical adoption of the state of the art emerges the solution concept of this thesis; this
+section develops it as the \emph{anatomy model} and in doing so defines the terminology and conceptual
+special constructs that carry the following sections.
+
+\subsection{Axis Composition and the Living-Being Metaphor}\label{sec:anatomy-metaphor}
+The central idea is to treat an algorithm not as a monolith but as a \emph{composition of orthogonal
+axes} --- each axis a partial decision of a cache-aware index (how pages are arranged, how nodes branch,
+how memory is allocated). A concrete algorithm is then a point in the Cartesian product of all axes, a
+state-of-the-art design an explicit configuration. The decisive property is \emph{modular
+exchangeability}: a new axis variant can be studied in isolation --- its effect measured per axis \emph{and}
+for the whole algorithm --- without reimplementing the others; this is precisely what solves the
+separability problem, since the contribution of each constituent becomes measurable in isolation while the
+other axes are held fixed. This decomposition rests on one observation and is carried by a metaphor.
+First, search algorithms share,
+in the large, the same \emph{tree anatomy} in different expressions --- from balanced search trees through
+tries and radix trees to custom constructs; even a sorted key--value list is, strictly speaking, a single
+leaf of a tree whose values point onward to data leaves. The tree structure is therefore universal across
+search-algorithm architectures and forms the canvas on which the axes are placed; non-tree-like search
+methods --- such as the hash counter-check of Section~\ref{sec:sota-instances} --- remain the same genus
+with a restricted profile, for a separate genus would arise only if the base axis set differed
+fundamentally. Second, a vivid metaphor treats a concrete algorithm as a \emph{living being} whose
+\emph{organs} are the axes --- and the measurement system as its medical diagnostics
+(Figure~\ref{fig:anatomy-bridge}). This metaphor is owed to the author's background in biomedical
+engineering and is meant to ease the analysis through vividness.
+
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
+  organism/.style={draw, rounded corners, minimum width=2.8cm, minimum height=3.4cm, fill=red!4},
+  org/.style={draw, circle, fill=red!15, minimum size=0.78cm, inner sep=0pt, font=\scriptsize},
+  axis/.style={draw, rounded corners, fill=green!10, minimum width=2.2cm, minimum height=0.55cm, font=\scriptsize}]
+  \node[organism] (body) at (0,-0.1){};
+  \node[font=\scriptsize] at (0,1.95){\textbf{living being} (anatomy)};
+  \node[org] (o1) at (0,0.9){heart};
+  \node[org] (o2) at (-0.65,-0.1){lung};
+  \node[org] (o3) at (0.65,-0.1){liver};
+  \node[org] (o4) at (0,-1.1){kidney};
+  \draw[->,very thick] (1.7,-0.1) -- (3.0,-0.1) node[midway,above,font=\scriptsize]{organ $\equiv$ axis};
+  \node[font=\scriptsize] at (5.4,1.95){\textbf{search algorithm} (axes)};
+  \node[axis] (a1) at (5.4,0.9){traversal};
+  \node[axis] (a2) at (5.4,0.2){layout};
+  \node[axis] (a3) at (5.4,-0.5){allocator};
+  \node[axis] (a4) at (5.4,-1.2){prefetch};
+  \node[draw, fill=blue!8, font=\scriptsize, align=center] (mess) at (8.3,-0.15){measurement\\system (``diagnostics'')};
+  \draw[->,blue] (mess) -- (a1); \draw[->,blue] (mess) -- (a2);
+  \draw[->,blue] (mess) -- (a3); \draw[->,blue] (mess) -- (a4);
+\end{tikzpicture}
+\caption{The anatomy bridge: just as a living being consists of interacting organs, a search algorithm is a composition of axis-organs; the measurement system takes the role of medical diagnostics and measures each organ in isolation.}\label{fig:anatomy-bridge}
+\end{figure}
+
+The permutation of axes then resembles a genetic experiment: exchanging organs between living beings
+produces new composite algorithms with hitherto unknown cache-line behaviour. The organs themselves are
+won from the state of the art --- the design building blocks of the known methods
+(Section~\ref{sec:overview}) are decomposed into orthogonal axes and collected in a shared axis matrix, so
+that each axis harvests the contributions of the entire corpus (Figure~\ref{fig:synth}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  paper/.style={draw,rounded corners,fill=orange!12,minimum width=1.8cm,minimum height=0.52cm},
+  ax/.style={draw,fill=green!12,minimum width=2.2cm,minimum height=0.5cm,font=\scriptsize}]
+  \node[font=\scriptsize,text=gray] at (0,2.95){state of the art};
+  \node[paper] (p1) at (0,2.2){ART};
+  \node[paper] (p2) at (0,1.5){HOT};
+  \node[paper] (p3) at (0,0.8){SuRF};
+  \node[paper] (p4) at (0,0.1){Masstree};
+  \node[paper] (p5) at (0,-0.6){Bw-tree};
+  \node[font=\scriptsize,text=gray] at (5.6,2.95){our axis matrix};
+  \node[ax] (x1) at (5.6,2.2){node type};
+  \node[ax] (x2) at (5.6,1.5){layout};
+  \node[ax] (x3) at (5.6,0.8){allocator};
+  \node[ax] (x4) at (5.6,0.1){prefetch};
+  \node[ax] (x5) at (5.6,-0.6){concurrency};
+  \foreach \p in {p1,p2,p3,p4,p5}{\foreach \x in {x1,x2,x3,x4,x5}{\draw[gray!22,->] (\p.east)--(\x.west);}}
+  \node[align=center,font=\scriptsize] at (2.8,-1.7){every algorithm decomposes into axis settings ---\\the matrix harvests the building blocks of the whole corpus};
+\end{tikzpicture}
+\caption{Synthesis state of the art $\to$ axes: the design building blocks of the known methods are decomposed into orthogonal axes; each axis collects the contributions of the entire corpus --- the inverse of Figure~\ref{fig:design-space} (there an algorithm is a point, here an axis is a collecting basin).}\label{fig:synth}
+\end{figure}
+
+The anatomy thus won is more than the enumeration of the organs: it is their \emph{wiring}. Each organ
+exports a generalized interface through which the others use its services without knowing its concrete
+realization --- thus the allocation organ provides a shared allocation interface that node layout, value
+placement, and serialization use for their memory needs (Figure~\ref{fig:axis-organ}). In
+software-engineering terms this is the \emph{feature interaction} of feature-oriented software product
+lines~\cite{apel2013feature,batory1992hierarchical}: an axis corresponds to a feature, a living being to a
+feature composition, a living-being type (the genus subclass, Section~\ref{sec:anatomy-levels}) to a static
+feature-set definition, a genus to a (search-)algorithm interface category, and the anatomy to the wiring
+between the features. Which axis uses which is shown by the
+inter-organ usage graph (Figure~\ref{fig:usage}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  organ/.style={draw,circle,minimum size=1.05cm,fill=green!7,inner sep=0pt}]
+  \node[organ,fill=blue!12,minimum size=1.3cm] (store) at (0,0){storage\\organ};
+  \node[organ] (alloc) at (-3.0,1.15){allocator};
+  \node[organ] (node) at (-3.0,0){node type};
+  \node[organ] (layout) at (-3.0,-1.15){layout};
+  \node[organ] (search) at (3.0,0){search};
+  \node[organ,fill=gray!8] (obs) at (2.0,-1.95){telemetry};
+  \draw[->,thick,blue] (alloc)--(store);
+  \draw[->,thick,blue] (node)--(store);
+  \draw[->,thick,blue] (layout)--(store);
+  \draw[->,thick,blue] (store)--(search) node[midway,above,font=\scriptsize,text=blue]{must};
+  \draw[->,dashed,gray] (store)--(obs) node[midway,right,font=\scriptsize]{can};
+  \node[font=\scriptsize,blue] at (0,-1.6){\texttt{StorageOrgan} interface};
+\end{tikzpicture}
+\caption{Axis $=$ organ, anatomy $=$ wiring: the storage organ (composed of node type, layout and allocator) exports a generalized \texttt{StorageOrgan} interface over which the search runs (solid, \emph{mandatory}); further organs such as telemetry \emph{can} use it via optional observer hooks (dashed, \emph{optional}), but need not.}\label{fig:axis-organ}
+\end{figure}
+
+Composing these pairwise couplings across all organs yields a directed inter-organ usage graph.
+\begin{figure}[htbp]\centering
+% No \resizebox: the drawing is only ~10.3cm wide; blowing it up to \linewidth (x1.55) would inflate
+% the \scriptsize font beyond the body text. Rule: resizebox only to SHRINK (cf. fig:m-model).
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  org/.style={draw,rounded corners,fill=green!8,minimum width=2.1cm,minimum height=0.66cm,font=\scriptsize},
+  hub/.style={draw,rounded corners,fill=blue!12,minimum width=3.2cm,minimum height=1.15cm,text width=3.0cm,align=center,font=\scriptsize,very thick}]
+  \node[hub] (store) at (0,0){\textbf{storage organ}\\\texttt{Layout\-Aware\-Chunked\-Store}\\{\scriptsize T4\,$\oplus$\,T5\,$\oplus$\,T6}};
+  \node[org] (alloc) at (-4.1,1.4){allocator (T6)};
+  \node[org] (node) at (-4.1,0){node type (T4)};
+  \node[org] (layout) at (-4.1,-1.4){layout (T5)};
+  \node[org] (search) at (4.1,0){search (T0)};
+  \node[org] (prefetch) at (4.1,1.4){prefetch (T7)};
+  \node[org,fill=gray!8] (obs) at (4.1,-1.4){telemetry (T10)};
+  \node[org,fill=gray!6] (conc) at (0,-2.6){concurrency (T8)};
+  \draw[->,very thick,blue] (alloc)--(store);
+  \draw[->,very thick,blue] (node)--(store);
+  \draw[->,very thick,blue] (layout)--(store);
+  \draw[->,very thick,blue] (store)--(search) node[midway,above,font=\scriptsize]{must};
+  \draw[->,dashed,gray] (store)--(prefetch) node[midway,above,font=\scriptsize]{can};
+  \draw[->,dashed,gray] (store)--(obs);
+  \draw[->,dotted,gray] (conc)--(store);
+\end{tikzpicture}
+\caption{Inter-organ usage graph (\enquote{which axis uses which}): there is exactly \emph{one} canonical
+hub --- the storage organ \texttt{LayoutAwareChunkedStore}, which composes node type~(T4), layout~(T5) and
+allocator~(T6)\@. \emph{Mandatorily} (solid) the store consumes these three axes, and the search~(T0) runs
+over it. All remaining couplings are \emph{optional} (dashed): prefetch~(T7) and telemetry~(T10) read the
+store only via \texttt{requires}-gated observer hooks --- an axis \emph{can} use foreign interfaces, but
+\emph{need} not. The coupling of concurrency~(T8) to the store is not (yet) wired in the code
+(dotted).}\label{fig:usage}
+\end{figure}
+
+\subsection{The Three-Level Model and the Three Genera}\label{sec:anatomy-levels}
+These organs are embedded in \emph{one} architecture --- a single, self-contained hierarchy without
+parallel trees. At its root stands the \texttt{ExecutionEngine} as the common, measurable abstraction over
+everything measurable; beneath it three levels can be distinguished: the \emph{genus} as the
+outward-visible algorithm interface (the \emph{probe dock}), beneath it the \emph{genus subclass} (also:
+\emph{tier subclass}) with a fixed axis set, beneath that the \emph{organs} themselves
+(Figure~\ref{fig:three-levels}).
+\enquote{Living being} and \texttt{SearchAlgorithm} denote the same entity --- metaphor and technical term
+---; the anatomy is not a second model but the \emph{body} of this living being: the fixed composition of
+its nineteen axis-organs.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  box/.style={draw,rounded corners,inner sep=3pt,minimum height=0.7cm}]
+  \node[box] (root) at (0,0){\texttt{IExecutionEngine}};
+  \node[box] (sa) at (-3.5,-1.6){SearchAlgorithm};
+  \node[box] (co) at (0,-1.6){Container};
+  \node[box] (gr) at (3.5,-1.6){Graph};
+  \node[box] (tier) at (-3.5,-3.2){mammal\\{\scriptsize 19 axes}};
+  \node[box] (cont2) at (0,-3.2){Set, Sequence,\\Adapter, View};
+  \draw[->] (root)--(sa);\draw[->] (root)--(co);\draw[->] (root)--(gr);
+  \draw[->] (sa)--(tier);\draw[->] (co)--(cont2);
+\end{tikzpicture}
+\caption{The three-level model: genus (level 1, outer interface) $\to$ tier subclass (level 2, fixed axis set) $\to$ organs/axes (level 3). The SearchAlgorithm genus carries the ``mammal'' with the nineteen axes; the Container genus the subclasses Set/Sequence/Adapter/View.}\label{fig:three-levels}
+\end{figure}
+
+At the topmost level there stand exactly three genera. The \texttt{SearchAlgorithm} genus --- the
+key-value-oriented probe dock and the focus of this thesis --- carries as its sole subclass the full
+nineteen-axis \enquote{mammal}; the \texttt{Container} genus (keyless storage) fans out into the
+subclasses Set, Sequence, Adapter, and View; the \texttt{Graph} genus carries its own, different organ set
+(Figure~\ref{fig:genera}). The kingdom \enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}) shown there as
+the root is the anatomy-bearing view immediately beneath the measurable root \texttt{IExecutionEngine} of
+Figure~\ref{fig:three-levels}; the code separation of the two interfaces is deepened in
+Chapter~\ref{ch:impl}. Non-tree-like methods thus require no genus of their own but occupy a
+restricted axis subset of the same genus.
+\begin{figure}[htbp]\centering
+% No \resizebox: the drawing is only ~13.6cm wide; blowing it up to \linewidth (x1.18) would inflate
+% the \scriptsize font beyond the body text. Rule: resizebox only to SHRINK (cf. fig:m-model).
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  gen/.style={draw,rounded corners,fill=blue!10,minimum width=2.7cm,minimum height=0.66cm,font=\bfseries\footnotesize},
+  sub/.style={draw,fill=green!8,minimum width=3.0cm,minimum height=0.62cm,font=\scriptsize},
+  tbd/.style={draw,fill=gray!12,minimum width=3.0cm,minimum height=0.7cm,font=\scriptsize},
+  drill/.style={draw,rounded corners,fill=orange!9,minimum width=5.7cm,minimum height=1.0cm,text width=5.3cm,align=left,font=\scriptsize}]
+  \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (1.4,1.55){kingdom \enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}, anatomy-bearing)};
+  % Level 1 --- genera (outer interface)
+  \node[gen] (g1) at (-1.7,0){SearchAlgorithm};
+  \node[gen] (g2) at (4.0,0){Container};
+  \node[gen] (g3) at (7.6,0){Graph};
+  \draw[->] (root)--(g1); \draw[->] (root)--(g2); \draw[->] (root)--(g3);
+  % Level 2 --- tier subclasses
+  \node[sub,fill=green!18] (s1) at (-1.7,-1.3){\textbf{mammal}\\{\scriptsize \texttt{map} hull $\cdot$ 19 axes}};
+  \node[sub] (c1) at (4.0,-1.05){bird $=$ Set {\scriptsize(\texttt{set})}};
+  \node[sub] (c2) at (4.0,-1.85){reptile $=$ Sequence {\scriptsize(\texttt{vector})}};
+  \node[sub] (c3) at (4.0,-2.65){invertebrate $=$ Adapter {\scriptsize(\texttt{stack})}};
+  \node[sub] (c4) at (4.0,-3.45){plant $=$ View {\scriptsize(\texttt{span})}};
+  \node[tbd] (gr1) at (7.6,-1.3){own organ set\\{\scriptsize subclasses open}};
+  \draw[->] (g1)--(s1); \draw[->] (g2)--(c1); \draw[->] (g2)--(c2); \draw[->] (g2)--(c3); \draw[->] (g2)--(c4); \draw[->] (g3)--(gr1);
+  % Levels 3--5 --- mammal branch down to the compiled individual
+  \node[drill] (l3) at (-1.6,-2.95){\textbf{Level 3 --- organs:} the 19 axes (node type, layout, allocator, prefetch, \dots) \emph{permute}};
+  \node[drill] (l4) at (-1.6,-4.25){\textbf{Level 4 --- concrete animal:} one assignment of \emph{all} axes $=$ one individual (ART, HOT, Masstree, SuRF, START, Wormhole; $+$5 paper bindings)};
+  \node[drill,fill=orange!20,very thick] (l5) at (-1.6,-5.65){\textbf{Level 5 --- animal binary:} compiled per permutation to \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, refined by 3 build axes (page type, SIMD, hardware)};
+  \draw[->,thick] (s1)--(l3); \draw[->,thick] (l3)--(l4); \draw[->,thick] (l4)--(l5);
+\end{tikzpicture}
+\caption[The three genera and the tier hierarchy down to the compiled binary]{The genus/tier hierarchy across five levels. \texttt{SearchAlgorithm}, \texttt{Container} and \texttt{Graph} are the three \emph{genera} (level~1, outer interface). Each genus hosts its \emph{own} tier subclasses (level~2): \texttt{SearchAlgorithm} exclusively the \enquote{mammal} (\texttt{map} hull, full nineteen-axis anatomy), \texttt{Container} every \emph{non}-mammal subclass (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} still-open ones. The mammal branch is drawn out here down to the individual: the nineteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone animal binary (level~5, additionally identity-refined by three build axes)\@. \emph{Every animal binary is thus an animal of its own}; the hierarchy reaches from the genus down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
+\end{figure}
+
+\subsection{Design Patterns and Compile-Time Patterns}\label{sec:anatomy-patterns}
+The actual contribution thus lies less in a single structure than in a \emph{tool}: instead of solving the
+comparison problem directly, this thesis first builds the \enquote{shovel} --- the permutation and
+measurement apparatus --- with which arbitrary axis combinations can be generated and fairly measured.
+Scientifically this apparatus situates itself in the software engineering of \emph{composition}: invasive
+software composition from gray-box components~\cite{assmann2003invasive}, generative
+programming~\cite{czarnecki2000generative}, and feature-oriented software product
+lines~\cite{apel2013feature,batory1992hierarchical}. The axis concept itself is adopted from prior work by
+the author (the Comdare\,/\,BEP~Venture~UG brand, originally for the deduplication optimization of the
+UltiHash database); the contribution of this thesis is its transfer to cache-aware search structures and
+its design-pattern-driven, measurement-oriented realization. In software-engineering terms the apparatus
+is a composition of named design patterns and two new compile-time patterns (Figure~\ref{fig:patterns}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
+  \node[draw,rounded corners,fill=green!5,minimum width=12.8cm,minimum height=1.7cm] (classic) at (0,0){};
+  \node[font=\bfseries\footnotesize] at (0,0.55){Classical design patterns (GoF) --- used throughout the code};
+  \node[font=\scriptsize] at (0,0.08){\emph{Strategy} (19 axes) $\cdot$ \emph{Abstract Factory}\,/\,\emph{Composite}\,/\,\emph{Iterator} (permutation tree)};
+  \node[font=\scriptsize] at (0,-0.42){\emph{Adapter} (foreign code) $\cdot$ \emph{Observer}\,/\,\emph{Decorator} (measurement hulls) $\cdot$ \emph{Memento} (CoW) $\cdot$ \emph{CRTP}\,/\,\emph{Template Method}};
+  \node[draw,rounded corners,fill=orange!8,minimum width=12.8cm,minimum height=2.0cm] (new) at (0,-2.75){};
+  \node[font=\bfseries\footnotesize] at (0,-1.95){New compile-time patterns (contribution of this thesis)};
+  \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-2.55){\textbf{1.}~\emph{lazy-sparse cartesian materialization} --- over $10^{14}$ axis combinations are only counted and each path materialized individually on demand in mixed radix};
+  \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-3.32){\textbf{2.}~\emph{type-driven source emission} --- from an axis composition type names are extracted, rendered to C++ source and loaded per permutation as a module across the ABI boundary};
+  \draw[->,thick] (classic)--(new) node[midway,right,font=\scriptsize]{composition};
+  \node[draw,rounded corners,fill=blue!6,minimum width=12.8cm,minimum height=1.6cm] (chain) at (0,-5.55){};
+  \node[font=\bfseries\footnotesize] at (0,-4.85){Per axis, dissected from the code --- refinement of \emph{Strategy} $+$ \emph{CRTP}\,/\,\emph{Template Method}};
+  \node[font=\scriptsize] at (0,-5.38){topic concept $\to$ axis concept $\to$ permutation concept $\to$ \texttt{AxisBase} (CRTP) $\to$ \texttt{mp\_list} registry};
+  \node[font=\scriptsize] at (0,-5.86){the \emph{literal} \texttt{std::variant} lives only in the eleven-axis \texttt{baustein\_variants} fallback (PRT-ART\,$\leftrightarrow$\,cache-engine)};
+  \draw[->,thick] (new)--(chain) node[midway,right,font=\scriptsize]{per axis};
+\end{tikzpicture}
+\caption{Design patterns as building blocks of the architecture: above the classical GoF patterns used throughout the code with their respective role, in the middle the two new compile-time patterns named in this thesis, below the code-dissected \emph{three-stage concept chain} per axis (topic concept $\to$ axis concept $\to$ cache-engine permutation concept $\to$ CRTP base $\to$ \texttt{mp\_list} registry) as a refinement of \emph{Strategy}/\emph{CRTP} --- where the \emph{literal} \texttt{std::variant} appears not here but only in the eleven-axis \texttt{baustein\_variants} fallback model. Their composition forms the design-pattern-driven, measurement-oriented architecture (Chapter~\ref{ch:impl}).}\label{fig:patterns}
+\end{figure}
+
+The classical patterns are not ornament but the wiring of the apparatus: \emph{Strategy} encapsulates each
+of the nineteen axes as an interchangeable algorithm, \emph{Abstract Factory}, \emph{Composite}, and
+\emph{Iterator} build and traverse the permutation tree, \emph{Adapter} binds foreign code behind the
+stable engine interface, and \emph{Observer} as well as \emph{Decorator} (non-intrusive measurement hulls)
+collect the measurements, while a \emph{Memento} (copy-on-write) secures the state between warm-up and
+measurement~\cite{gamma1994patterns}; not used, by contrast, are \emph{Singleton}, \emph{Flyweight}, and
+\emph{Bridge}, while the \emph{Command} pattern appears solely as the command channel of the hybrid mode
+(Section~\ref{sec:heuristics-modes}). Static polymorphism is provided by the \emph{Curiously Recurring
+Template Pattern} (CRTP) together with \emph{Template-Method} concept checks; concept-checked
+\texttt{if~constexpr} (\texttt{resolve\_baustein}) selects per axis between the probe and the cache-engine standard, and
+\emph{policy-based design} captures the composition as a tuple of axis policies~\cite{alexandrescu2001modern}. C++23 modules structure the translation units but by
+themselves do not yet guarantee portable ABI stability~\cite{wg21_modules_abi} --- only the C-stable
+module boundary establishes that.
+Beyond the established patterns, the thesis names two constructions for which a web search found no
+established term: the \emph{lazy-sparse cartesian materialization}, which counts the product space of over
+$10^{14}$ axis combinations only arithmetically and materializes each path individually on demand in mixed
+radix, rather than blowing up the compiler with the full type tree; and the \emph{type-driven source
+emission}, which extracts fully qualified type names from a compile-time axis composition, renders them to
+C++ source, and loads each permutation as a standalone module across the ABI boundary --- thus the probe
+PRT-ART is compiled, by metaprogramming, in matrix layers against the cache engine.
+
+How this \emph{one} architecture becomes visible in the code through an ABI-stable hull is deepened in
+Chapter~\ref{ch:impl} (Section~\ref{sec:impl-architecture}); before that, the following subsection orders the
+apparatus as a whole: in which layers it is organized from experiment definition to evaluation, and how
+it is completed.
+
+\subsection{Five Interface Layers: E4 down to E0}\label{sec:anatomy-layers}
+The anatomy model orders the \emph{measured}: what a living being is and which organs it consists of.
+Orthogonal to that, the apparatus that generates and measures such living beings needs a second ordering
+principle --- a view of the \emph{experiment pipeline} that transforms a declared axis assignment into
+measured results. This pipeline is organized into five layers E4 down to E0, complemented by the
+cross-cutting concern~M (Figure~\ref{fig:e-layers}). The numbering runs from the most abstract to the
+most concrete level. \emph{E4} is the definition and evaluation layer --- the level a user of the
+framework typically works with: experiments are described declaratively as XML profiles, and at the end
+of the pipeline the same layer receives the measurement results as a return channel and prepares them
+into tables and diagrams. \emph{E3} is the permutation B\textsuperscript{+}-tree: it unfolds the declared
+assignment into the experiment tree, where the compile-static axes determine the identity of the binary
+to be built and the dynamic axes span the runtime dimension. \emph{E2} are the tier binaries themselves:
+per permutation one standalone binary loaded across the ABI-stable interface (level~5 of the genus
+hierarchy, Figure~\ref{fig:genera}). \emph{E1} is the runtime configuration --- the most precise detail
+layer, in which the dynamic sub-axis parameters are varied on the already-loaded binary. \emph{E0},
+finally, is the infrastructure (build, tooling, and platform substrate); it is deliberately completed
+last. The measurement system permeates all layers as the cross-cutting concern~\emph{M} without being one
+itself --- this special role is deepened in Section~\ref{sec:measurement-system}.
+
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,
+  layer/.style={draw,rounded corners,minimum width=7.4cm,minimum height=0.86cm,align=center,font=\scriptsize}]
+  \node[layer,fill=orange!16] (e4) at (0,0)    {\textbf{E4} --- definition $+$ evaluation\\{\tiny XML profiles, result return channel --- the user view of the framework}};
+  \node[layer,fill=orange!12] (e3) at (0,-1.05){\textbf{E3} --- permutation B\textsuperscript{+}-tree\\{\tiny static axes $=$ binary identity, dynamic $=$ runtime dimension}};
+  \node[layer,fill=orange!8]  (e2) at (0,-2.1) {\textbf{E2} --- tier binaries\\{\tiny one standalone binary per permutation, ABI-stable interface}};
+  \node[layer,fill=orange!4]  (e1) at (0,-3.15){\textbf{E1} --- runtime configuration\\{\tiny dynamic sub-axis parameters on the loaded binary}};
+  \node[layer,fill=gray!10]   (e0) at (0,-4.2) {\textbf{E0} --- infrastructure\\{\tiny build and platform substrate; completed last}};
+  \draw[->] (-4.0,0) -- (-4.0,-3.15);
+  \node[font=\scriptsize,rotate=90] at (-4.35,-1.575){definition $\to$ execution};
+  \draw[->,dashed] (4.0,-3.15) -- (4.0,0);
+  \node[font=\scriptsize,rotate=90] at (4.35,-1.575){return channel: measurements};
+  \node[draw,rounded corners,fill=blue!8,minimum height=3.9cm,minimum width=0.75cm,font=\scriptsize] (m) at (5.15,-1.575){\rotatebox{90}{\textbf{M} --- measurement system (cross-cutting, \enquote{blood})}};
+\end{tikzpicture}
+\caption{The five interface layers of the experiment pipeline: from the declarative definition and
+evaluation layer~E4 (user view) through the permutation B\textsuperscript{+}-tree~(E3) and the tier
+binaries~(E2) to the runtime configuration~(E1); the infrastructure~(E0) carries everything and is
+completed last. The return channel leads the measurements back to the evaluation in E4; the measurement
+system permeates all layers as the cross-cutting concern~M (\enquote{blood},
+Section~\ref{sec:measurement-system}). Each layer is completed individually, with a frozen interface
+contract to its neighbouring level.}\label{fig:e-layers}
+\end{figure}
+
+Carrying this layering is its completion principle: each layer is completed \emph{individually}, with an
+explicitly \emph{frozen interface contract} to its respective neighbouring level --- the E4$\to$E3
+boundary, say, freezes how an XML definition is translated into axis levels, the E3$\to$E2 boundary how a
+tree path becomes a build order, and the E2$\to$E1 boundary which runtime knobs a binary accepts across
+the ABI\@. The test question per boundary is always: does the layer pass its definition on to the next
+\emph{losslessly}? A system with a product space of over $10^{14}$ combinations is too large for
+simultaneous changes across several levels; only the frozen contracts make each level individually
+acceptable before the next one begins. This principle corresponds to the matrix programming style of the
+apparatus (Section~\ref{sec:anatomy-patterns}): just as the probe is compiled in matrix layers against
+the cache engine, the apparatus itself is developed in interface layers against frozen contracts; how
+each layer is thereby tested individually --- against a substitute of its neighbouring level --- is shown
+in Section~\ref{sec:impl-contracts}.
+
+The E-layers are expressly to be distinguished from the three-level model
+(Section~\ref{sec:anatomy-levels}), however similar both may look at first glance: the three-level model
+is the \emph{anatomy view} --- it orders \emph{one} living being from the genus through the subclass to
+the organs and thus describes the structure of the measured. The E-layers are the \emph{pipeline view}
+--- they order the path of an experiment from the definition through tree, binary, and runtime back to
+the evaluation and thus describe the process of measuring. Both views are orthogonal to each other: the
+same living being that anatomically decomposes into genus, subclass, and organs passes through the layers
+E3 to E1 as a tier binary. Now that it is settled what is composed and in which layers the apparatus
+processes it, the following section turns to the question of how the living beings thus composed can be
+measured fairly.
+
 \section{The Measurement System}\label{sec:measurement-system}
-The measurement system separates four subsystems and tests in three stages that feed the three mandatory
-measurement series (not one-to-one, Table~\ref{tab:stage-series}); it reduces the permutation space
+To compare structurally different search algorithms \emph{fairly}, the thesis maps them all onto a single,
+well-understood interface: the C++ contract of the ordered map \texttt{std::map<Key,\,Value>} with point
+query (\texttt{find}), insertion/update (\texttt{insert}, \texttt{emplace}),
+deletion (\texttt{erase}), and order-based navigation (\texttt{lower\_bound}/\texttt{upper\_bound}, range
+iteration)~\cite{iso_cpp}. The axes describe the \emph{inner} behaviour behind this fixed interface, so
+that the comparison of two conformant \texttt{std::map} implementations becomes the central measurement
+act; in parallel the sequence hull \texttt{std::vector} (indexed access, resizing, contiguous storage)
+serves as a container comparison case, to check whether an axis composite also carries the container and
+not only the search semantics. Behind the fixed outer interface the system distinguishes several
+\emph{levels of dynamics} that determine \emph{when} an axis decision is made: the topmost split of compile
+time versus run time; the living-being type, which occupies only a subset of the axes; the axis algorithms
+compiled into a binary at compile time (static recombination); the dynamic sub-axes, whose runtime
+parameters (prefetch distance, batch size, inline threshold, pool budget) are varied without
+recompilation; and the static sub-axes as a compile-time choice among partial algorithms of differing
+complexity. The idea of regarding data structures not individually but as a design space shapes Idreos'
+\emph{Periodic Table of Data Structures}~\cite{idreos2018periodic} and the \emph{Data
+Calculator}~\cite{idreos2018datacalculator}: structures arise from the combination of few design
+primitives whose costs can be synthesized --- which coincides directly with the axis dissection of this
+thesis (Section~\ref{sec:sota-instances}), in which the classical families are mere reading groupings of
+orthogonal axis assignments. Against the static design-space enumeration of the Data Calculator and
+classical \emph{policy-based
+design}~\cite{alexandrescu2001modern}, however, this taxonomy expressly carries compile- and runtime-variable axis
+levels together; a web search found no established name for this grading (cf.\
+Section~\ref{sec:anatomy-patterns}).
+
+These building blocks are only as meaningful as their measurement. Scientific measurement is subject to
+established quality criteria~\cite{hoefler2015benchmarking}: \emph{reproducibility} (fixed seeds,
+deterministic order, documented configuration, so that runs are methodically repeatable and statistically
+comparable), \emph{validity} (internal: causally isolated effects; construct: the metric actually measures
+the intended concept; external: transferability to other platforms and loads), \emph{fairness} (identical
+keys, workloads, and warm-up; missing
+capabilities reported as \emph{N/A} rather than covertly emulated), and \emph{dispersion} as part of the
+statement (percentiles over HDR histograms instead of arithmetic means, with significance testing). On
+these criteria the measurement patterns used here build: a \emph{two-phase operation loop} separates a
+discarded warm-up from the actual measurement; collection is \emph{hybrid} --- isolated axis algorithms
+directly against one another, a composed living being centrally over an ABI-stable per-axis observer
+interface ---; and a \emph{conformance gate} checks the \texttt{std::map} contract before each measurement,
+so that only comparable things are compared. These concepts form the \emph{definitional classes} of
+measurement; their technical \emph{instances} --- hardware performance counters, OTF2/VAMPIR profiling, the
+TU-Dresden hardware measurement methodology --- have already been introduced as concrete technologies in
+Section~\ref{sec:sota-instances}.
+
+Within these definitional classes the measurement system separates two fundamentally different axis
+systems that must not be mixed. The \emph{organ axes} (T0--T18) are the \emph{measured}: organs of the
+living being, part of the genera, permutable --- every assignment changes the identity of the tier
+binary. The \emph{system axes}, by contrast, are the \emph{measurement instruments} themselves. In the
+anatomy metaphor they are not another organ but the \emph{blood}: they permeate the whole body, are
+always present as soon as measurement is on, and belong to no genus. From this follow three invariants:
+system axes are not permutable (they are non-interchangeable, central system constituents); they do not
+stand in the permutation tree; and they never touch the binary identity --- no measurement instrument may
+change \emph{what} is built. Conversely, the effects of the organ axes must never be blended with the
+effects of the measurement instruments. Conceptually the system axes therefore demand an own, common root
+separate from the anatomy hierarchy; consolidating the measurement constituents, today still scattered,
+under this root is part of the implementation (Section~\ref{sec:impl-system-axes}).
+
+Under this root the measurement categories (Section~\ref{sec:sota-instances}) --- differentiated in the
+apparatus into sixteen categories --- order themselves into a \emph{regime bipartition}: the time- and
+observer-based regime (runtime clocks and observer hulls; nine categories, among them latency, throughput
+and memory footprint) and the counter-based PMC regime (hardware performance counters; seven categories,
+among them cache, dTLB and branch misses as well as IPC/CPI). The regime is a property of the system
+axis, not of the measured organ: the same organ axis can be illuminated by both regimes. The
+observer-based subset is already resolved by the apparatus, the PMC subset remains bound to hardware
+counter access (Section~\ref{sec:sota-instances}).
+
+Both axis systems are bound by a methodological principle, the \emph{honest-0 doctrine} (honest zero or
+honest emptiness): where a value cannot truly be collected --- an organ axis without a real runtime
+parameter, a counter without hardware access, a measurement source that does not exist on the platform
+---, the system reports \emph{honestly invalid or empty} instead of a plausible phantom value. Better a
+measurement marked invalid than an invented effect: a phantom value would systematically poison the
+heuristic derivation (Section~\ref{sec:heuristics}), whereas an honest gap stays visible and can be
+closed deliberately. The principle holds throughout --- from the axis wiring (only axes with a genuinely
+measurable runtime knob report runtime effects; the rest count honestly as compile-static) to the
+availability reporting of the counter sources.
+
+What these measurement patterns concretely collect are three opposing components --- \emph{latency},
+\emph{throughput} and \emph{memory footprint} ---, against which every axis permutation spans as a
+trade-off profile: the same permutation that is a point in the design space in
+Figure~\ref{fig:design-space} appears here as a point inside the trade-off triangle
+(Figure~\ref{fig:measurement-triangle}). A fourth component, the one actually central for cache-aware
+search structures --- the cache-aware behaviour at the node, data and index level via hardware
+performance counters --- is not yet collected in the current implementation state (PMC capture is off by
+default) and therefore remains marked as a pending fourth measurement component.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
+  \coordinate (lat) at (0,3.0);
+  \coordinate (thr) at (-3.2,-0.9);
+  \coordinate (mem) at (3.2,-0.9);
+  \draw[thick,fill=blue!4] (lat)--(thr)--(mem)--cycle;
+  \node[above] at (lat){\textbf{Latency}\\{\scriptsize p50/p99}};
+  \node[below left] at (thr){\textbf{Throughput}\\{\scriptsize ops/s}};
+  \node[below right] at (mem){\textbf{Memory}\\{\scriptsize peak bytes}};
+  \fill[red] (0.5,0.7) circle (2.4pt);
+  \node[red,right,font=\scriptsize] at (0.65,0.7){one axis permutation};
+  \node[draw,dashed,rounded corners,fill=gray!8,align=center,font=\scriptsize,text width=4.6cm] (miss) at (0,-2.75){\textbf{missing (pending):}\\node/data/index level, cache-aware --- HW-PMC off by default};
+  \draw[->,dashed,gray] (miss)--(0,-0.9);
+\end{tikzpicture}
+\caption{The measurement trade-off triangle: every axis permutation spans against the three opposing
+measurement components latency, throughput and memory footprint, and is a point inside it (cf.\ the design
+space in Figure~\ref{fig:design-space}, where the same permutation is a point). The component actually
+central for cache-aware search structures --- the behaviour at the node, data and index level via hardware
+performance counters --- is not yet collected in the current implementation state (dashed).}\label{fig:measurement-triangle}
+\end{figure}
+
+Building on these measurement patterns, the measurement system separates four subsystems and tests in
+three stages that feed the three mandatory measurement series; it reduces the permutation space
 deliberately.
 Four formally separated subsystems with distinct responsibilities form the model: the
 \texttt{messung\_driver} (the evaluation orchestrator that runs the pipeline per mandatory measurement
 series A/B/C), the \texttt{CacheEngineBuilder} (an autonomous platform-measurement system that executes the
-seven-phase pipeline via its \texttt{ExperimentDriver}), the \texttt{CacheEngine} (the axis building-block library with the default
+seven-phase pipeline (Section~\ref{sec:impl-pipeline}) via its \texttt{ExperimentDriver}), the \texttt{CacheEngine} (the axis building-block library with the default
 implementations per axis), and the \texttt{probe} PRT-ART (which supplies some axis-organs itself and
 consumes cache-engine services for the rest). The \texttt{ExecutionEngine} is not a fifth subsystem but the
-shared measurable root (the \texttt{IExecutionEngine} interface) through which these four are connected.
+shared measurable root (the \texttt{IExecutionEngine} interface) through which these four are connected:
+beneath it, the probe and every engine register as \texttt{IExecutionEngine}, and the builder enumerates
+the permutation space per registered engine.
 Defining is the \emph{bidirectional} cache-engine\,$\leftrightarrow$\,probe relationship: the cache engine
 instantiates the probe per permutation configuration, and the probe calls cache-engine services (telemetry,
 prefetch, heuristics) at runtime during its own lookups. This symmetry carries the \emph{multi-probe}
@@ -397,7 +997,9 @@ pipeline (Figure~\ref{fig:m-model}).
 
 \begin{figure}[!htbp]
   \centering
-  \resizebox{0.97\textwidth}{!}{%
+  % No \resizebox: the drawing is only ~10cm wide; blowing it up to 0.97\textwidth inflated the
+  % \footnotesize font to an effective ~12pt (> body text) — inconsistent with the unscaled
+  % neighbouring figures (fig:three-stage, fig:heuristic-loop). Rule: resizebox only to SHRINK.
   \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt, minimum width=3.3cm},
     bm/.style={draw, rounded corners, align=center, font=\scriptsize, inner sep=3pt, text width=3.7cm, minimum height=1.6cm, fill=orange!13}]
     \node[comp,fill=blue!7,text width=4.7cm] (driver) at (0,0.6) {\texttt{messung\_driver} --- \textbf{WHAT}\\{\scriptsize thesis code: configs A/B/C $\cdot$ micro-bench $\cdot$ significance statistics}};
@@ -412,7 +1014,7 @@ pipeline (Figure~\ref{fig:m-model}).
     \draw[->] (engine) -- node[left,font=\scriptsize]{blocks} (build);
     \draw[->] (measure) -- node[right,font=\scriptsize]{measures} (probe);
     \draw[<->] (engine) -- node[below, font=\scriptsize, align=center] {(a)~instantiates\\(b)~calls services} (probe);
-  \end{tikzpicture}} % chktex 31
+  \end{tikzpicture}
   \caption{The M-model focused on the build and measurement phases. The outer \texttt{messung\_\-driver} loop
   (\emph{WHAT}, thesis code) feeds the configurations of the three measurement series A/B/C\@; the
   \texttt{CacheEngineBuilder} (\emph{HOW}, library) splits into the two genuinely interesting phases:
@@ -429,7 +1031,8 @@ The builder orchestrates a \emph{three-stage evaluation}: \textbf{Stage~1} (cach
 default variant per axis, \textbf{Stage~2} (probe only) replaces the overridden axes by the probe variants
 and otherwise keeps the defaults, and \textbf{Stage~3} (full join, non-redundant) combines default and all
 probe variants. Each stage can produce up to thousands of non-redundant permutation binaries that are
-loaded at runtime as ABI-stable C++23 modules; the present measurement run materializes a sparse, capped
+loaded at runtime across the C-stable module boundary as C++23 modules; the present measurement run
+materializes a sparse, capped
 subset of these (Figure~\ref{fig:three-stage}).
 
 \begin{figure}[!htbp]
@@ -455,8 +1058,9 @@ subset of these (Figure~\ref{fig:three-stage}).
 These stages do \emph{not} map one-to-one onto the three mandatory measurement series but feed them: the
 default binaries of Stage~1 (including the reconstructed SOTA profiles) and the probe binaries of Stage~2
 \emph{jointly} form the comparison series~A\@; the non-redundant full join of Stage~3 is the basis of the
-variation series~B\@; and the regression series~C is bound to no single stage but runs build-spanning over
-successive states of the same configuration (Table~\ref{tab:stage-series}).
+variation series~B\@; and the merge/regression series~C (old vs.\ new) is bound to no single stage but
+runs build-spanning as an old-versus-new comparison --- over successive states of the same configuration
+as well as over concrete merge points (Table~\ref{tab:stage-series}).
 
 \begin{table}[!htbp]
   \centering
@@ -468,7 +1072,7 @@ successive states of the same configuration (Table~\ref{tab:stage-series}).
     Stage~1 (cache-engine only) & default building blocks + SOTA profiles & A (baseline also for C) \\
     Stage~2 (probe only) & overridden axes = probe variants & A \\
     Stage~3 (full join) & default $\times$ probe, non-redundant & B \\
-    build-spanning & old vs.\ new of the same configuration & C \\
+    build-spanning & old vs.\ new (regression and merge points) & C \\
     \bottomrule
   \end{tabular}
 
@@ -479,29 +1083,35 @@ successive states of the same configuration (Table~\ref{tab:stage-series}).
 \end{table}
 
 The three measurement series --- all executed by the \texttt{messung\_driver} via the
-\texttt{ExperimentDriver} library --- are thus: \emph{series~A} (PRT-ART vs.\ state of the art) with the
-modes A\_defined (8 Rank-1 profiles) and A\_full (all 30 SOTA profiles); \emph{series~B} (systematic
+\texttt{ExperimentDriver} library, configured either as three fixed series or via an external
+\texttt{messreihen.xml} --- are thus: \emph{series~A} (PRT-ART vs.\ state of the art) with the
+modes A\_defined (fast verification against the 8 Rank-1 profiles) and A\_full (all 30 SOTA profiles;
+the standard, since only the full run delivers the bias-reduced measurement of all load profiles against
+all methods, Section~\ref{sec:task-concerns}); \emph{series~B} (systematic
 variation of the axis decisions all else held equal, to isolate the contribution of each axis); and
-\emph{series~C} (concrete merge points between PRT-ART building blocks and cache-engine permutations, e.g.\
-PRT-ART OLC + tcmalloc + ART page). Each series is collected in three granularities:
+\emph{series~C} (merge/regression old vs.\ new: concrete merge points between PRT-ART building blocks and
+cache-engine permutations --- e.g.\ the PRT-ART OLC with tcmalloc and the ART page, the 4+1+2 pool with
+the HOT page, the path prefetch with the B\textsuperscript{2}-tree page, or the multi-level layout with
+the Wormhole page ---, run build-spanning as an old-versus-new comparison). Each series is collected in three granularities:
 \emph{micro-benchmarking} compares each design constituent in isolation over the shared category interface,
-\emph{macro-benchmarking} measures the individual \texttt{std::map} operations, and \emph{overall
+\emph{macro-benchmarking} measures the individual \texttt{std::map} interface operations (insertion,
+point and range lookup, update, deletion) against example loads, and \emph{overall
 benchmarking} runs the YCSB load profiles over every recombination. Precisely this three-granularity
 methodology is the answer to the separability problem: by measuring each constituent first in isolation
 (micro) before it appears in the operation and overall context, the contributions are separated and become
 measurable in isolation instead of remaining blended in the overall throughput.
 
-The system reduces the space thus spanned deliberately. With the extension to nineteen axes plus around
-sixty-four sub-axes it grows to over $10^{14}$ permutations; three mechanisms dampen the explosion: the
+The system reduces the space thus spanned deliberately. With the N-phase extension from eleven to
+nineteen axes plus around
+sixty-four sub-axes it grows from around 5.5~billion to over $10^{14}$ permutations; three mechanisms dampen the explosion: the
 \texttt{<expected\_workload>} profile filter routes only compatible workloads, the \texttt{Defined} mode
-runs only the declared tuples (around 100--1000 per series, which enter the manuscript), and the
+(\texttt{MessreihenMode::Defined}) runs only the declared tuples (around 100--1000 per series, which enter the manuscript), and the
 \texttt{Full} or \texttt{Full-Sampled} mode (e.g.\ every thousandth permutation) runs only on the ZIH
 cluster, observing the axis compatibility reported by the platform probe.
 
 \section{PRT-ART as Demonstrator}\label{sec:prtart-demo}
-PRT-ART is the probe that shows the system holds: it supplies some organs itself and falls back on the default
-building blocks for the rest.
-PRT-ART is a \emph{probe}: an abstract living being that supplies some axis-organs itself and falls back
+PRT-ART is the \emph{probe} that shows the system holds: an abstract living being that supplies some
+axis-organs itself and falls back
 via a compile-time fallback (\texttt{resolve\_baustein.hpp}) on the cache-engine default building blocks
 where it does not override an axis; the hybrid \texttt{PrtArtSearchEngine<Ts\ldots>} API remains
 unaffected, and the runtime binding occurs via the execution-engine adapter, not via a separate
@@ -510,12 +1120,17 @@ as well as the organs path compression (redirect), value handle (ChainRef slot),
 pattern, and telemetry --- path-oriented (bundle) prefetch, optimistic lock coupling with reserved value
 blocks, and the hypothesis metrics H1/H2/H3 ---; its further own building blocks, the 4+1+2 pool allocator
 (free-list sub-axis) and the multi-level layout, live in the probe repo and currently run via the
-cache-engine default in the measurement path (binding as follow-up step~E6); for the remaining axes it
+cache-engine default in the measurement path (binding as follow-up step~E6 of the internal
+implementation planning; the identifier is independent of the interface layers E4--E0); for the
+remaining axes it
 reuses existing SOTA building blocks via the permutation configuration. Thus the probe shows that the measurement system holds: a novel
 living being arises from a few of its own organs plus the default toolkit (Figure~\ref{fig:prtart-demo}) and is measurable over the same
 probe dock as every reconstructed SOTA method.
 
 \begin{figure}[htbp]\centering
+% \resizebox STAYS: the drawing is naturally ~16.8cm wide (legend line) and thus WIDER than
+% \textwidth (16cm); here the resizebox legitimately SHRINKS (x0.94). Rule: resizebox only to SHRINK
+% (cf. fig:m-model).
 \resizebox{0.98\linewidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,align=center,
   prt/.style={draw,rounded corners,fill=orange!15,very thick,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize},
@@ -540,7 +1155,15 @@ probe dock as every reconstructed SOTA method.
 % B9 PRT-ART demonstrator: fig:prtart-demo (3.4) DONE; PRTART gallery: fig:prtart-gallery (4.2) DONE
 
 \section{Sharpening through Heuristics}\label{sec:heuristics}
-From the measurement series one can derive --- as an outlook mechanism --- the best axis composition per load and
+The measurement series deliver more than rankings: from them heuristics can be won that sharpen the
+measurement system step by step from a test bench into a self-optimizing delivery system. This section
+develops this sharpening as a concept in three stages --- the heuristic loop over learned load profiles,
+the four operating modes of the builder up to the hybrid mode as the target picture of this thesis, and
+the measurement-curve type system together with the filter chain and the measurement-error detection that
+feed these modes with data. Throughout, the accomplished and the planned are expressly kept apart.
+
+\subsection{Heuristic Loop and Learned Load Profiles}\label{sec:heuristics-loop}
+From the measurement series one can derive the best axis composition per load and
 data-type profile and store it as a reusable profile.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,align=center,
@@ -554,12 +1177,17 @@ data-type profile and store it as a reusable profile.
 \end{tikzpicture}
 \caption{The heuristic loop: from the measurement series the best axis composition per load profile is learned, stored as an XML load profile, and fed back via the workload filter into the next measurement.}\label{fig:heuristic-loop}
 \end{figure}
-\emph{This is an outlook mechanism, not a function implemented within this thesis.} Beyond mere ranking, a
-\emph{heuristic extraction} is envisioned as a follow-up phase after \textbf{Persist} that automatically
+\emph{The full loop is an outlook mechanism; what is implemented within this thesis is only a first
+increment of the automatic selection and binary delivery (\texttt{best\_binary\_selector},
+Section~\ref{sec:contributions}).} Beyond mere ranking, a
+\emph{heuristic extraction} is envisioned as a follow-up phase after \textbf{Persist} --- the last phase
+of the seven-phase pipeline (Section~\ref{sec:impl-pipeline}) --- that automatically
 derives from the collected measurements which axis configuration is best per workload and dataset. The
-intended mechanism is an ML classification in three steps: first, features are extracted per permutation
---- the load-profile and dataset features (workload type, key distribution, alphabet and prefix
-characteristics) and the axis assignment ---, with the best performance measured per load pattern as the
+intended mechanism is an ML classification in three steps: first, features are extracted from the
+measurement CSV per permutation
+--- the load-profile and dataset features (workload type, key distribution, write/read share, alphabet
+and prefix characteristics, as well as key and value data type) and the axis assignment ---, with the
+best performance measured per load pattern (say, throughput or tail latency) as the
 target; over these an \emph{ML classifier} learns the mapping from load-profile/axis features to the best
 configuration; and it delivers per workload/dataset class the recommended axis composition without
 re-running the entire permutation space. The result is persisted as a reusable \emph{XML load profile} ---
@@ -574,6 +1202,102 @@ database counterpart in OtterTune~\cite{vanaken2017ottertune} and the Database T
 compression~\cite{agrawal2005autoadmin}, the online runtime-near variant in Active
 Harmony~\cite{tapus2002activeharmony}; the term \enquote{software-in-the-loop} itself originates from the
 X-in-the-loop validation taxonomy~\cite{tibba2016xil}. The
-concrete realization of this selection and delivery mechanism remains reserved for future work
-(Chapter~\ref{ch:conclusion}). First, however, Chapter~\ref{ch:impl} deepens the concrete implementation
-of the building blocks introduced here.
+concrete realization of this ML-based selection mechanism remains reserved for future work
+(Chapter~\ref{ch:conclusion}); the loop itself, however, is only the first stage of a larger operating
+target picture, which the following subsection develops.
+
+\subsection{The Four Operating Modes of the Builder}\label{sec:heuristics-modes}
+The heuristic loop is the core of an operating regime of \emph{four} operating modes of the builder
+interface that build on one another. Of these four modes, the first is the apparatus's operation of
+today; modes two through four are the declared goal of this thesis and are recorded here as a concept.
+
+In the \emph{measurement mode} --- the operation that Section~\ref{sec:measurement-system} describes ---
+the builder runs the measurement series over the admitted permutations. After the measurement completes,
+the framework knows the properties of all admitted axis algorithms against the recombination of all
+admitted load-profile frameworks and workloads. The \emph{evaluation mode} condenses these measurements:
+from them emerge minimal strands of the permutations of all properties against one another for certain
+\emph{workload clusters} --- for groups of similar loads, only the small set of axis compositions that
+dominates them remains. How workloads are aggregated into clusters (which clustering methods carry) is
+deliberately left open and subject to further investigation.
+
+The \emph{working mode} is the production goal: the builder interface keeps all tier binaries relevant
+for the currently stochastically frequent workload load and interface function hot in main memory and
+switches, under the hood, the tier binary with its specifically optimal axis permutations at the
+ABI-stable interface --- the same binary-switching mechanism the measurement mode uses, only load-driven
+instead of measurement-driven. Level-correctly, the compile-time doctrine remains preserved: there is no
+runtime switch \emph{inside} the tier --- the binaries themselves remain compile-time-permuted; switching
+happens \emph{between} preloaded binaries at the deliberate ABI boundary. The probe dock of the genus
+(Section~\ref{sec:anatomy-levels}) is called the \emph{working dock} in this mode: the same interface
+through which the measurement mode tests now delivers the productive answers.
+
+The \emph{hybrid mode}, finally --- the goal of this thesis --- combines working mode and measurement.
+Its centrepiece is that the heuristic optimization is itself a \emph{system axis}
+(Section~\ref{sec:measurement-system}): it adopts, via metaprogramming, the genus of its tier binaries,
+is itself compiled into a tier binary, and docks at the builder's probe dock like every real tier; it
+passes commands via the \emph{Command} pattern~\cite{gamma1994patterns} on to the real tier binaries
+statically assigned to it. The recombination of the heuristic tier binaries to be used is itself
+permutable against the existing real tier binaries; the heuristic axis can therefore use the measured
+function curves for estimates and compile an optimal multidimensional recombination that is unambiguously
+usable as a search-algorithm hull through its ABI-stable genus interface --- towards the outside a
+\emph{virtual whole tier binary}, indistinguishable from a single binary. At the same time, the hybrid
+mode measures along: over the optimized recombination, the combined wall-clock time as well as macro- and
+micro-benchmarks are logged per measurement command across all tier binaries and operations.
+
+The hybrid mode thereby carries the \emph{heuristic counter-proof}: after the working mode is entered,
+the heuristic tier binary is measured anew --- its wall-clock behaviour compared against the best single
+binaries and against the reconstructed paper algorithms decides whether the heuristic recombination
+delivers what the curves promise. The goal of this thesis is thus stated twice over: to determine the
+best recombination or indeed the best single binary against all axis properties --- especially cache-line
+awareness --- and in the end to provide both in production-ready form, the best single binary \emph{and}
+the heuristic tier binary. All four modes shall thereby be documented automatically via the evaluation
+chain of the definition layer (Section~\ref{sec:anatomy-layers}); the measurement tables and diagrams of
+this thesis itself are the first product of this chain, and the assessment of the counter-proof is
+defined by Chapter~\ref{ch:eval}.
+
+\subsection{Measurement-Curve Type System, Filter Chain, and Measurement-Error Detection}\label{sec:heuristics-curves}
+For the evaluation and hybrid modes to carry, the evaluation needs more than flat result tables. As a
+target picture this thesis formulates a \emph{measurement-curve type system} for this; in the current
+state only its germ exists --- a curve fit over one axis and one x-dimension ---, the full structure is
+stated as a goal. Every tier-binary total permutation receives, per measurement axis, a wall-clock
+measurement curve over the working set --- say, the lookup latency as a function of the fill size ---,
+separated by load-profile framework, workload type, working-set size, operation type, and observer type;
+each axis is swept separately in the experiment tree, compile-statically as well as runtime-dynamically,
+so that each axis receives a complete overview of its properties and individual measurements. Taken
+together over all permutations, a multidimensional measurement database arises per tier binary, from
+which the heuristic curves of the loop (Section~\ref{sec:heuristics-loop}) are read. The cardinality of
+each dimension of this type system is to be strategically organized into classes and hierarchies:
+design-fixed constants (say, the nineteen organ axes and the sixteen measurement categories),
+profile-bound products (what an experiment profile admits as assignments), and runtime-free iteration
+spaces (the dynamic sampling points per static binary) --- so the system axes remain able to carry the
+evaluation across all levels.
+
+From the evaluations there emerges --- likewise as a target picture --- automatically a \emph{filter
+chain}: each chain link checks, based on the curves so far, whether a permutation family is pursued
+further, and otherwise passes the decision on to the next link --- the design pattern \emph{Chain of
+Responsibility}~\cite{gamma1994patterns}, located strictly in the builder, for the chain controls the
+\emph{generation} of the tier binaries: evaluation, filter, then the decision which permutations are
+built next and which are discarded. This chain is not implemented in the current code; it is recorded as
+a concept and follows after the first complete measurement runs.
+
+Finally, the hybrid mode needs a control of the measurement error that the measurement instances
+themselves introduce --- observers cost time. Three build variants of the same experiment are envisioned:
+first, observers in all tier binaries \emph{and} in the heuristic hybrid tier; second, observers only in
+the heuristic tier binary; third, observers in none --- only the wall clock. The differences between the
+three variants quantify the measurement error caused by the measurement instances. Complementarily
+follows a \emph{fourth step} of the final heuristic assembly: the tier binaries subordinate to the
+heuristic tier (not the finally optimized main binary) are rebuilt without micro- and macro-benchmarks
+and without observers and compared purely on the wall clock against all known tier-binary permutations
+and against the known paper algorithms --- with the paper comparison taking precedence. This too is a
+target picture: neither the build-variant matrix nor the complementary fourth step exists in the current
+code; what is laid is the foundation --- the per-compilation measurement switches and the honest validity
+marking per measured value in the sense of the honest-0 doctrine
+(Section~\ref{sec:measurement-system}).
+
+This keeps clearly apart what is accomplished and what is a goal: accomplished are the measurement
+apparatus of the measurement mode including the three-stage evaluation, the evaluation chain up to tables
+and diagrams, and the germ of the curve fit; still pending are the complete measurement runs; goals are
+the evaluation, working, and hybrid modes, the full measurement-curve type system, the filter chain, and
+the measurement-error control. The assessment of the heuristic counter-proof is taken up by
+Chapter~\ref{ch:eval}; the placement of the outlook beyond this thesis is given by
+Chapter~\ref{ch:conclusion}. First, however, Chapter~\ref{ch:impl} deepens the concrete implementation of
+the building blocks introduced here.
