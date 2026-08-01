@@ -349,3 +349,26 @@ Quelle: Owner-Antworten, übermittelt via Synthese-Auftrag 01.08.2026. Diese Dir
 - Literatur-BibTeX-Pruefauftraege vor Finalisierung: (a) MRT-2011-Autorenliste/Seiten via DBLP (dblp.org/pid/13/9160.html); (b) Czarnecki/Eisenecker 2000 Kapitel-/Seitenstelle fuer 'Konfigurationswissen+Generator' nachschlagen; (c) OMG MDA Guide 2.0 Dokumentnummer (ormsc/2014-06-01) unbestaetigt, 1.0.1 verifiziert; (d) Pohl/Boeckle/van der Linden 2005 ISBN/DOI nicht live verifiziert; (e) Mastering CMake nur noch Online-Fassung — Edition/Jahr fixieren oder Scott 'Professional CMake' (22nd Ed. 2025) zitieren; (f) kein peer-reviewed Maven-Paper — Buch+offizielle Doku zitieren, optional MSR-Studien zu Maven Central ergaenzen (nicht recherchiert).
 - Formulierungs-Vorsicht Goetz/MQuAT: Konfigurationsmodelle sind EMF/Ecore-basiert (XML via XMI), nicht woertlich 'XML-Konfigurationsdateien' — in Aufgabenstellung/K2 als 'deklarative (Konfigurations-)Modelle' formulieren.
 - Historische Organ-Achsen-Zaehlung divergiert je Quellen-Stand (15 Topics/17 Achsen Mai; ~19 Juli; 18 kanonisch) — Thesis muss jeden genannten Stand datieren.
+
+---
+## NACHTRAG (Manager, nach K0-Abnahme): TON-REFERENZ — die 5 Eich-Saetze
+
+(Aus dem Planungs-Workflow; fuer ALLE Folge-Kapitel-Agenten bindend.)
+1. "Cache-Bewusstheit ist in heutigen Suchstrukturen entweder fest verdrahtet oder ganz
+   ignoriert; vor allem aber laesst sich nicht \emph{trennen}, welche einzelne
+   Entwurfsentscheidung welchem Lastmuster nuetzt --- das \emph{Trennbarkeits-Problem},
+   der rote Faden dieser Arbeit." (de/01:48-50)
+2. "Fuer ein cache-line-bewusstes Layout ist die je Zielplattform ermittelte Line-Groesse
+   daher ein \emph{Eingabeparameter der Uebersetzung}, keine feste Annahme." (de/02:135-136)
+3. "System-Achsen sind nicht permutierbar (sie sind nicht austauschbare, zentrale
+   Systembestandteile); sie stehen nicht im Permutationsbaum; und sie beruehren niemals
+   die Binary-Identitaet --- kein Mess-Instrument darf veraendern, \emph{was} gebaut wird."
+   (de/03:938-940)
+4. "Lieber eine als ungueltig markierte Messung als ein erfundener Effekt: Ein Phantomwert
+   wuerde die Heuristik-Ableitung systematisch vergiften, waehrend eine ehrliche Luecke
+   sichtbar bleibt und gezielt geschlossen werden kann." (de/03:959-961)
+5. "Fehlende Faehigkeiten einer Baseline --- etwa Bereichs-Scans einer Hash-Tabelle ---
+   werden als N/A ausgewiesen statt verdeckt emuliert." (de/03, Baseline-Abschnitt)
+MERKPOSTEN an K3-Agent: Bestands-tikz-Fehler kapitel/en/03_messsystem_prtart.tex:833
+("E3 --- permutation B+-tree"-Node: 'Giving up on this path' + 'Extra }') — VORBESTAND,
+im K3-Paket fixen.
