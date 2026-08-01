@@ -1,212 +1,233 @@
 \chapter{Code Structure}\label{app:code}
 
-% Faithful map of the real source tree of the three repositories
-% (super = Diplomarbeit/Code, comdare-cache-engine, comdare-prt-art),
-% read-only cartography 2026-07-17. Every statement traces to a directory
-% or file that exists in the tree; no invented structure.
+This appendix documents the real source-code structure of the three repositories from
+Section~\ref{sec:repos} in a verifiable way at directory level. The code state was surveyed on
+11~July~2026 via directory listings (two to three levels deep); the authoritative commits are
+\texttt{c022ce05} (\texttt{comdare-cache-engine}), \texttt{faa4e76} (\texttt{comdare-prt-art}),
+and \texttt{ba3a9ae} (\texttt{probst-\allowbreak{}Diplomarbeit-\allowbreak{}cache-\allowbreak{}engine},
+super-repository). Build
+artefacts (\texttt{build*/}), IDE directories, and the vendored third-party code under
+\texttt{ext/} are hidden or collapsed into a single collective entry; all other paths listed
+here exist in the surveyed state. Paths are given relative to the respective repository root.
 
-This appendix documents the physical structure of the implementation as it exists in the
-source tree. It complements the conceptual description in the implementation chapter: where
-that chapter explains \emph{why} the framework is decomposed into interchangeable axes behind
-one ABI-stable interface, this appendix records \emph{where} each concept lives in the code.
-The listing is a faithful cartography of the real directories and headers; identifiers are
-given verbatim so that a reader can navigate the repositories directly.
+\section*{comdare-cache-engine --- building-block library and builder}
 
-\section{Three-repository topology}\label{asec:code-topology}
-The implementation is split across three Git repositories consumed as parallel submodules. The
-super-repository (\texttt{Diplomarbeit/Code}) is the \emph{application layer} that defines
-\emph{what} is measured; the cache engine is the reusable \emph{framework} that defines
-\emph{how}; and PRT-ART is the \emph{probe} (the thesis' own algorithm) under test.
-Table~\ref{tab:code:repos} summarises the three roles.
+The repository follows the Pitchfork layout: \texttt{apps/} contains the executables,
+\texttt{libs/} the libraries, and \texttt{libs/common} the cross-cutting code. The vendored
+third-party code of the A/P series is collected under \texttt{ext/} and is not expanded here.
 
-\begin{table}[htbp]
-  \centering
-  \caption{The three repositories and their roles}\label{tab:code:repos}
-  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{2.1cm} >{\raggedright\arraybackslash}p{6.4cm}@{}}
-    \toprule
-    \textbf{Repository} & \textbf{Role} & \textbf{Contents} \\
-    \midrule
-    \texttt{Diplomarbeit/Code} (super) & Application (\emph{what}) & Measurement driver, nine-stage result pipeline, the three mandatory experiment configurations, tests. \\
-    \texttt{comdare-cache-engine} (ce) & Framework (\emph{how}) & Axis library, anatomy model, builder/code generation, profile facade, concepts and the module ABI\@. \\
-    \texttt{comdare-prt-art} (prt-art) & Probe (\emph{what}) & The PRT-ART hybrid with its own building-block layers, consumed by the engine as one module. \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+{\footnotesize
+\begin{verbatim}
+comdare-cache-engine/                       state: commit c022ce05
+|-- adapters/               ABI adapters of the A/P series
+|                   (A01-hoard ... A20-dlmalloc, P01-ART ... P30-HazardPointers)
+|-- apps/                   executables (Pitchfork)
+|   |-- cache_engine_builder/   builder main program (main.cpp)
+|   |-- perm_runner/            runner for generated permutation modules
+|   `-- anatomy_codegen_tool/, catalog_codegen_tool/, adhoc_emitter/,
+|       f15_compare/, is_original_validator/   codegen and checking tools
+|-- libs/                   libraries (Pitchfork)
+|   |-- cache_engine/       CacheEngine: axis building blocks + builder library
+|   |   |-- axes/               one subdirectory per axis (alloc, layout,
+|   |   |                  prefetch_axis, telemetry_axis, concurrency_axis, ...)
+|   |   |-- builder/            codegen/, permutation_loop/, module_loader/,
+|   |   |                       experiment_driver/ (ExperimentDriver)
+|   |   |-- include/cache_engine/abi/   ABI headers (baustein_variants.hpp,
+|   |   |                       resolve_baustein.hpp, module_abi_v1.hpp, ...)
+|   |   `-- algorithm_profiles/ sota/ (33 profile files *.profile.xml),
+|   |                        allocators/, thesis_profiles/, permutation_axes.xml
+|   |-- common/             cross-cutting code: config/, measurement/, platform/,
+|   |                       serialization/ (xml_config_parser/), succinct/
+|   |-- execution_engine/   ExecutionEngine library (result_aggregator)
+|   |-- search_engine/   SearchEngine building blocks (node/, page/, traversal/,
+|   |                       operations/, memory_layout/, value_handle/, ...)
+|   `-- test_infra/         benchmark_suite/, test_data/, workload_generator/
+|-- ext/                    vendored third-party repositories of the A/P series
+|-- tests/                  unit/, integration/, generic_module_tests/,
+|                           module_specific_tests/, fixtures/
+|-- tools/      auxiliary tools (abi_stability_test/, permutation_codegen/, ...)
+`-- docs/                   architecture, status, and session documentation
+\end{verbatim}
+}
 
-\section{The cache engine (framework)}\label{asec:code-ce}
-The cache engine lives under \texttt{Code/external/comdare-cache-engine}. Its core is the
-library tree \texttt{libs/}; around it sit \texttt{apps/} (executables), \texttt{tools/} (build
-and provisioning helpers), \texttt{tests/}, \texttt{ext/} (vendored third-party algorithm code),
-\texttt{cmake/} and \texttt{adapters/}.
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Component} & \textbf{Path} & \textbf{Purpose} \\
+\midrule
+CacheEngineBuilder &
+\texttt{apps/\allowbreak{}cache\_engine\_builder/} &
+builder executable (configuration to permutation modules) \\
+ExperimentDriver &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}experiment\_driver/} &
+seven-phase experiment driver (host side) \\
+Code generation &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}codegen/} &
+\texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile} incl.\ templates \\
+Permutation loop &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}permutation\_loop/} &
+enumeration of the axis permutations \\
+Module loader &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}module\_loader/} &
+loading of the generated modules \\
+ABI headers &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}include/\allowbreak{}cache\_engine/\allowbreak{}abi/} &
+incl.\ \texttt{baustein\_\allowbreak{}variants.hpp}, \texttt{resolve\_\allowbreak{}baustein.hpp} \\
+XML config parser &
+\texttt{libs/\allowbreak{}common/\allowbreak{}serialization/\allowbreak{}xml\_config\_parser/} &
+parser for the profile and experiment XMLs \\
+Axis building blocks &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}axes/} &
+one subdirectory per axis \\
+SOTA profiles &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}algorithm\_profiles/\allowbreak{}sota/} &
+33 profile files (\texttt{*.profile.xml}): the 30 standalone SOTA algorithm profiles
+(Section~\ref{sec:sota-instances}) plus three files for the concurrency disciplines
+\texttt{olc}, \texttt{rcu}, and \texttt{hazard\_\allowbreak{}pointers} \\
+A/P-series adapters &
+\texttt{adapters/} &
+ABI adapters over the \texttt{ext/} third-party code (10~A, 12~P entries) \\
+\bottomrule
+\end{tabular}
+\end{center}
 
-\subsection{Three-layer libraries}\label{asec:code-libs}
-The search API is provided by a three-layer abstraction that is kept distinct from the anatomy
-model. Each layer is a separate library under \texttt{libs/} (Table~\ref{tab:code:libs}).
+\section*{comdare-prt-art --- probe}
 
-\begin{table}[htbp]
-  \centering
-  \caption{Libraries under \texttt{comdare-cache-engine/libs}}\label{tab:code:libs}
-  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{8.7cm}@{}}
-    \toprule
-    \textbf{Library} & \textbf{Role} \\
-    \midrule
-    \texttt{cache\_engine} & Top layer: the cache-aware composition, axes, anatomy, builder, profile facade, concepts and ABI\@. \\
-    \texttt{execution\_engine} & Middle layer: turns a composed configuration into an executable engine. \\
-    \texttt{search\_engine} & Bottom layer: the search primitives (algorithm strategies, node, page, traversal, value handle, fan-out, memory layout, operations). \\
-    \texttt{common} & Shared utilities, including a \texttt{measurement} subtree. \\
-    \texttt{test\_infra} & Test scaffolding shared across the suites. \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+The probe is organised as a header library under
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/}; each building block resides in
+its own thematic subdirectory.
 
-The remainder of this section drills into \texttt{libs/cache\_engine}, which carries the thesis'
-core contribution.
+{\footnotesize
+\begin{verbatim}
+comdare-prt-art/                            state: commit faa4e76
+|-- CMakeLists.txt, comdare_pruefling.cmake   build entry point (CMake)
+|-- prt_art/
+|   |-- include/prt_art/    building blocks of the probe (headers)
+|   |   |-- identity/           prt_art_search_engine.hpp (PrtArtSearchEngine),
+|   |   |                       prt_art_execution_engine_adapter.hpp,
+|   |   |                       prt_art_pruefling_factory.hpp
+|   |   |-- allocator/          pool_descriptor.hpp, pool_router.hpp, pool_set.hpp
+|   |   |-- concurrency/        olc_with_reserved_blocks.hpp
+|   |   |-- prefetch/           path_oriented_prefetch.hpp, redirect_prefetch.hpp,
+|   |   |                       distance_estimator.hpp
+|   |   |-- memory_layout/      multi_level_layout.hpp et al.
+|   |   |-- measurement/        density_tracker.hpp, hypothesis_metrics.hpp
+|   |   |-- telemetry/          leaf_only_counter.hpp
+|   |   `-- ...                 nodes/, slots/, traversal/, value_handle/,
+|   |                           internal_search/, serialization/, ...
+|   |-- legacy_reimpl/      14 re-implementations in the number band P11-P27
+|   |                       (P11-CSS-tree ... P27-Zhang-ASPLOS-Hierarchical)
+|   |-- algorithm_profiles/ prtart_pruefling.profile.xml,
+|   |                       permutation_axes_extension.xml
+|   |-- codegen/ + permutations_codegen/   codegen templates of the probe
+|   `-- tests/unit/         module-level tests
+|-- tests/unit/             repository-wide unit tests
+|-- cmake/                  build helper files
+`-- docs/                   sessions/ (development documentation)
+\end{verbatim}
+}
 
-\subsection{The axis roof and the nineteen organ axes}\label{asec:code-axes}
-All axis families share one semantics-free \emph{roof}, \texttt{topics/axis.hpp}: a marker
-concept \texttt{Axis<Derived>} (an empty CRTP base with no vtable) plus a family discriminator
-\texttt{AxisKind} (\texttt{organ}, \texttt{system\_measurement}, \texttt{system\_config}). The
-roof carries only identity; each family keeps its own semantics in its own sub-root so that organ
-and system axes are never mixed. The \texttt{topics/} directory groups the family roots
-(\texttt{allocator}, \texttt{prefetch}, \texttt{memory\_layout}, \texttt{nodes},
-\texttt{traversal}, \texttt{telemetry}, \texttt{serialization}, \texttt{concurrency},
-\texttt{value\_handle}, \texttt{hardware}, \texttt{io}, \texttt{filter}, \texttt{queuing},
-\texttt{migration}, \texttt{sequence}, \texttt{view}, \texttt{search\_engine}), each with a
-\texttt{topics::AxisBase} CRTP base guarded by concepts.
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Component} & \textbf{Path} & \textbf{Purpose} \\
+\midrule
+PrtArtSearchEngine &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}identity/\allowbreak{}prt\_art\_search\_engine.hpp} &
+hybrid engine of the probe (vector/map/tuple API) \\
+ExecutionEngine adapter &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}identity/\allowbreak{}prt\_\allowbreak{}art\_\allowbreak{}execution\_\allowbreak{}engine\_\allowbreak{}adapter.hpp} &
+ABI coupling to the measurement infrastructure \\
+Pool allocator &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}allocator/} &
+descriptors of the 4+1+2 pools \\
+OLC &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}concurrency/} &
+OLC with reserved blocks \\
+Prefetch &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}prefetch/} &
+path-oriented prefetch, redirect prefetch \\
+Multi-level layout &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}memory\_layout/} &
+\texttt{multi\_\allowbreak{}level\_\allowbreak{}layout.hpp} et al. \\
+Density tracker, H1--H3 &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}measurement/} &
+\texttt{density\_\allowbreak{}tracker.hpp}, \texttt{hypothesis\_\allowbreak{}metrics.hpp} \\
+legacy\_reimpl &
+\texttt{prt\_art/\allowbreak{}legacy\_reimpl/} &
+14 comparison re-implementations (P11--P27) \\
+Probe profile &
+\texttt{prt\_art/\allowbreak{}algorithm\_profiles/} &
+profile and axis-extension XML \\
+\bottomrule
+\end{tabular}
+\end{center}
 
-The concrete strategies live under \texttt{axes/}, grouped into family directories:
-\texttt{index\_organization}, \texttt{path\_compression}, \texttt{lookup},
-\texttt{cache\_traversal}, \texttt{mapping}, \texttt{node}, \texttt{layout}, \texttt{alloc},
-\texttt{prefetch\_axis}, \texttt{concurrency\_axis}, \texttt{serialization\_axis},
-\texttt{telemetry\_axis}, \texttt{value\_handle\_axis}, \texttt{simd}, \texttt{io\_dispatch},
-\texttt{migration\_policy}, \texttt{filter\_axis} and \texttt{cacheline}. Each family provides a
-strategy base, a concept, an observable wrapper, a registry and several concrete strategies (for
-example the search-algorithm family alone reconstructs ART, SuRF, Wormhole, HOT, B-tree,
-Eytzinger, $k$-ary, interpolation, hash and linear variants).
+\section*{probst-Diplomarbeit-cache-engine --- super-repository}
 
-A composed \emph{living being} is identified by a \texttt{binary\_id} that permutes nineteen
-organ-axis slots. Their canonical order is fixed by \texttt{kCompositionAxisNames} in
-\texttt{builder/experiment\_tree/axis\_path\_serialization.hpp} and reproduced in
-Table~\ref{tab:code:axes}.
+The super-repository bundles the measurement driver, the experiment configurations, the
+evaluation pipeline, and the manuscript; the two code repositories are embedded as submodules
+under \texttt{Code/\allowbreak{}external/}.
 
-\begin{table}[htbp]
-  \centering
-  \caption{The nineteen organ-axis slots (T0--T18, \texttt{kCompositionAxisNames})}\label{tab:code:axes}
-  \small
-  \begin{tabular}{@{}ll@{\hspace{1.5em}}ll@{\hspace{1.5em}}ll@{}}
-    \toprule
-    \textbf{Slot} & \textbf{Axis} & \textbf{Slot} & \textbf{Axis} & \textbf{Slot} & \textbf{Axis} \\
-    \midrule
-    T0 & \texttt{search\_algo}      & T7  & \texttt{prefetch}      & T14 & \texttt{io\_dispatch} \\
-    T1 & \texttt{cache\_traversal}  & T8  & \texttt{concurrency}   & T15 & \texttt{migration\_policy} \\
-    T2 & \texttt{mapping}           & T9  & \texttt{serialization} & T16 & \texttt{filter} \\
-    T3 & \texttt{path\_compression} & T10 & \texttt{telemetry}     & T17 & \texttt{queuing\_q1} \\
-    T4 & \texttt{node\_type}        & T11 & \texttt{value\_handle} & T18 & \texttt{queuing\_q2} \\
-    T5 & \texttt{memory\_layout}    & T12 & \texttt{isa}           &     & \\
-    T6 & \texttt{allocator}         & T13 & \texttt{index\_organization} & & \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+{\footnotesize
+\begin{verbatim}
+probst-Diplomarbeit-cache-engine/           state: commit ba3a9ae
+|-- Code/
+|   |-- 01_sample_data_generator/   generation of sample data
+|   |-- 02_messung_driver/   measurement driver (main.cpp, v32_orchestrator.hpp,
+|   |                            plugin_loader.hpp, measurement_writer.hpp, ...)
+|   |-- 03_binary_to_csv/     evaluation stage 1: binary measurement data -> CSV
+|   |-- 04_csv_to_latex/            evaluation stage 2: CSV -> LaTeX tables
+|   |-- 05_diagram_generator/       evaluation stage 3: diagram generation
+|   |-- 06_latex_to_pdf/            manuscript build (build_thesis.sh/.bat)
+|   |-- 07_tier_binary_report/      report on the tier measurement binaries
+|   |-- experiment_config/          config_a_prt_art_vs_sota.xml,
+|   |                               config_b_cache_engine_perms.xml,
+|   |                               config_c_merge_alt_neu.xml, messreihen.xml,
+|   |                               sample_data/
+|   |-- external/              submodules: comdare-cache-engine, comdare-prt-art
+|   `-- tests/, cmake/, tools/      repo-wide tests, build and helper scripts
+|-- thesis/diplomarbeit/            manuscript: diplomarbeit.tex, Makefile,
+|                                   kapitel/{de,en}/, anhang/{de,en}/,
+|                                   tabellen/, tikz/
+|-- docs/                        ledger, architecture, and session documentation
+|-- Forschungsarbeiten/        literature collection per axis (collective entry)
+`-- Messdaten-Backup/               additive backup of the raw measurement data
+\end{verbatim}
+}
 
-The allocator axis (T6, \texttt{axes/alloc}) illustrates the design: every allocator wrapper is
-the algorithm choice itself, realised as a compile-time CRTP strategy with a concept guard rather
-than a vtable. A single central \texttt{Boost.MP11} type list \texttt{AllVendors} (around two dozen
-vendor wrappers, from \texttt{std\_malloc} and the polymorphic-resource variants to mimalloc,
-jemalloc, tcmalloc, snmalloc, rpmalloc and further research allocators) is filtered at compile time
-to \texttt{EnabledVendors}; each generated per-permutation translation unit bakes in exactly one choice.
-
-\subsection{The system-axis layer}\label{asec:code-sysaxes}
-Above the organ axes sits a layer of \emph{system axes} under
-\texttt{include/cache\_engine/measurement}. They share the axis roof through two sibling roots:
-\texttt{SystemAxis} (measurement sources, always present, golden-neutral) and
-\texttt{CebSystemAxis} (configuration axes that steer how the subordinate tier binaries are built
-and measured). The configuration system axes never permute the \texttt{binary\_id} and never appear
-in \texttt{kCompositionAxisNames}. The layer is materialised in
-\texttt{scheduling\_system\_axis.hpp}, \texttt{hardware\_isa\_system\_axis.hpp},
-\texttt{load\_framework\_system\_axis.hpp}, \texttt{extension\_hardware\_system\_axis.hpp} and
-their common roots \texttt{system\_axis.hpp} / \texttt{ceb\_system\_axis.hpp}.
-
-\subsection{Anatomy: genus, living being, organs}\label{asec:code-anatomy}
-The anatomy model under \texttt{anatomy/} is the counterpart to the search-API layers. A
-\emph{genus} (\texttt{AnatomyGattung}) fixes the outer hull of a family (search algorithm,
-sequential container, set, graph, view); a \emph{living being} is one composed configuration; the
-\emph{organs} are its axis strategies. The directory carries a permutation engine and an anatomy
-per genus (\texttt{search\_algorithm\_anatomy.hpp}, \texttt{sequence\_anatomy.hpp},
-\texttt{set\_anatomy.hpp}, \texttt{view\_anatomy.hpp}), the check dock (\texttt{pruef\_dock.hpp})
-and the ABI-stable tier interfaces: the consolidated observer snapshot
-(\texttt{observable\_tier.hpp}), the flat resource-control POD
-(\texttt{resource\_controllable\_tier.hpp}) and the drive/rollback/scan sub-interfaces. Each genus
-provides its own ABI adapter (\texttt{*\_abi\_adapter.hpp}).
-
-\subsection{Builder and code generation}\label{asec:code-builder}
-The \texttt{builder/} subtree turns a registry description into concrete, statically compiled
-per-permutation binaries. Its central pieces are \texttt{experiment\_tree/} (the axis-level
-reflection \texttt{registry\_to\_axis\_levels.hpp}, path serialisation, and the lazy composition
-iterator), \texttt{build\_orchestrator/} (the compile-function factory that emits the response
-files for the shared objects), \texttt{codegen/} and \texttt{permutation\_codegen\_tool/} (the
-per-permutation translation-unit generation), \texttt{pruef\_dock/} (the check-dock driver),
-\texttt{anatomy\_module\_loader/} (the \texttt{dlopen}-based module loader), and the measurement
-machinery (\texttt{measurement/}, \texttt{measurement\_matrix/},
-\texttt{in\_memory\_measurement\_buffer/}, the PMC sources and the provenance manifest).
-
-\subsection{Profile facade}\label{asec:code-facade}
-The \texttt{profile\_facade/} directory is the entry point that a caller uses to run an
-experiment profile. It holds the run facade (\texttt{profile\_run\_facade.\{hpp,cpp\}}), the
-experiment-run and profile-run entries, the profile validator and the two catalogues
-(\texttt{source\_catalog.hpp}, \texttt{sota\_catalog.hpp}) that define the golden pilot set and
-the reconstructed state-of-the-art points.
-
-\subsection{Concepts, ABI and public API}\label{asec:code-concepts}
-The public headers live under \texttt{include/cache\_engine}. The \texttt{concepts/} directory
-holds the interface concepts (observer, sub-engine, telemetry strategy, concurrency manager,
-scheduling strategy and the deprecated runtime-vtable siblings), the \texttt{abi/} directory holds
-the module ABI (\texttt{anatomy\_module\_abi\_v1\_decl.hpp} with the ABI major, the module loader
-declaration and the configuration-permutation record), \texttt{measurement/} holds the system
-axes and the measurement record, and \texttt{api/} holds the public \texttt{i\_cache\_engine.hpp}.
-
-\subsection{Applications and tools}\label{asec:code-apps}
-The \texttt{apps/} directory contains the executables: the cache-engine builder, the permutation
-and catalog code-generation tools, the anatomy code-generation tool, the permutation runner, the
-\texttt{f15\_compare} comparison front-end and the \texttt{is\_original\_validator} (which produces
-the reproducibility locks). The \texttt{tools/} directory contains the supporting toolchain: the
-axis-registry generator, the ABI-stability test, the LaTeX toolchain, the best-binary selector,
-compiler provisioning and the YCSB workload command-line interface.
-
-\section{PRT-ART (the probe)}\label{asec:code-prtart}
-PRT-ART lives under \texttt{Code/external/comdare-prt-art}; its source root is \texttt{prt\_art/}.
-It is the thesis' own probe algorithm, a Probst-Redirect-Tree/ART hybrid with its own
-building-block layers, and it is consumed by the engine as one module rather than being wired in
-hard. The source root groups \texttt{algorithm\_profiles/} (its building-block profiles),
-\texttt{codegen/}, \texttt{permutations\_codegen/} and \texttt{registry\_gen/} (its own
-generation path), \texttt{legacy\_reimpl/} (faithful re-implementations), \texttt{src/},
-\texttt{include/} and \texttt{tests/}.
-
-\section{Application layer (\texttt{Diplomarbeit/Code})}\label{asec:code-super}
-The super-repository drives the measurements and turns the binary measurement records into the
-LaTeX artefacts of this thesis. Its result pipeline is realised as nine numbered stages
-(Table~\ref{tab:code:pipeline}); stage~02 is the measurement driver that calls the engine and the
-probe. Alongside the stages sit \texttt{experiment\_config/} (the three mandatory experiment
-configurations \texttt{config\_a\_prt\_art\_vs\_sota.xml}, \texttt{config\_b\_cache\_engine\_perms.xml},
-\texttt{config\_c\_merge\_alt\_neu.xml} plus \texttt{messreihen.xml}), \texttt{tests/},
-\texttt{cmake/} and \texttt{tools/}. The complete measurement series produced by this pipeline is
-reproduced in Appendix~\ref{app:measurements}.
-
-\begin{table}[htbp]
-  \centering
-  \caption{The nine pipeline stages under \texttt{Diplomarbeit/Code}}\label{tab:code:pipeline}
-  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}p{7.8cm}@{}}
-    \toprule
-    \textbf{Stage} & \textbf{Role} \\
-    \midrule
-    \texttt{01\_sample\_data\_generator} & Generates the input data sets. \\
-    \texttt{02\_messung\_driver} & The driver: runs the three measurement series (A/B/C) by calling the probe and the engine, and emits binary measurement records. \\
-    \texttt{03\_binary\_to\_csv} & Deserialises the binary measurement records into CSV\@. \\
-    \texttt{04\_csv\_to\_latex} & Turns CSV plus the building-block profiles into LaTeX tables. \\
-    \texttt{05\_diagram\_generator} & Emits A4-aware TikZ plot code. \\
-    \texttt{06\_latex\_to\_pdf} & Wraps the LaTeX toolchain to build the PDF\@. \\
-    \texttt{07\_tier\_binary\_report} & Reports on the built tier binaries. \\
-    \texttt{08\_appendix\_generator} & Regenerates the measurement-appendix tables and diagrams (the C++23 successor of the earlier PowerShell orchestrators). \\
-    \texttt{09\_tex\_formatter} & Formats the generated \texttt{.tex} fragments. \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Component} & \textbf{Path} & \textbf{Purpose} \\
+\midrule
+messung\_driver &
+\texttt{Code/\allowbreak{}02\_messung\_driver/} &
+measurement driver: loads permutation modules, orchestrates the measurement series \\
+Experiment configurations &
+\texttt{Code/\allowbreak{}experiment\_config/} &
+XML configurations A/B/C and \texttt{messreihen.xml} \\
+binary\_to\_csv &
+\texttt{Code/\allowbreak{}03\_binary\_to\_csv/} &
+evaluation pipeline, stage~1 \\
+csv\_to\_latex &
+\texttt{Code/\allowbreak{}04\_csv\_to\_latex/} &
+evaluation pipeline, stage~2 \\
+diagram\_generator &
+\texttt{Code/\allowbreak{}05\_diagram\_generator/} &
+diagram generation from CSV data \\
+latex\_to\_pdf &
+\texttt{Code/\allowbreak{}06\_latex\_to\_pdf/} &
+manuscript build scripts \\
+Submodules &
+\texttt{Code/\allowbreak{}external/} &
+embedding of the two code repositories \\
+Manuscript &
+\texttt{thesis/\allowbreak{}diplomarbeit/} &
+LaTeX sources of the thesis (DE/EN) \\
+Messdaten-Backup &
+\texttt{Messdaten-Backup/} &
+additive backup of the raw measurement data \\
+\bottomrule
+\end{tabular}
+\end{center}

@@ -17,10 +17,9 @@ question of this thesis.
   \node[lvl, minimum width=6.0cm, fill=blue!5]  at (0,-0.4) {main memory --- $\sim$100\,ns};
   \draw[->,thick] (6.4,2.2) -- (6.4,-0.6) node[midway,right,align=left]{latency\\grows};
 \end{tikzpicture}
-\caption{The ``cache wall'': access latency grows across the memory hierarchy by about two orders of magnitude --- not the number of operations but the cache behaviour determines run time.}\label{fig:cache-wall}
+\caption{The ``cache wall'': access latency grows across the memory hierarchy by about two orders of magnitude.}\label{fig:cache-wall}
 \end{figure}
-Concretely, search algorithms and index structures are the backbone of modern in-memory databases;
-trie-based indexes and cache-line-optimized processing are at the centre of this thesis. Since the
+At the centre of this thesis are trie-based indexes and cache-line-optimized processing. Since the
 Adaptive Radix Tree (ART)~\cite{leis2013art} of 2013, research has diversified: trie-height
 optimization (HOT~\cite{binna2018hot}), hybrid B\textsuperscript{+} structures
 (Masstree~\cite{mao2012masstree}, B\textsuperscript{2}-tree~\cite{schmeisser2022b2tree}), succinct
@@ -35,10 +34,11 @@ cache-line-optimized behaviour, segmenting the search-algorithm constituents int
 itself --- a backward abstraction of known building blocks into reusable modules across the most
 important works of the state of the art.
 
-These building blocks can be treated as interchangeable design dimensions of a large design space
+This thesis carries out this segmentation with a framework whose building blocks can be treated as interchangeable
+design dimensions of a large design space
 (\emph{design space})~\cite{idreos2018periodic, idreos2018datacalculator}. Structurally different
 search methods --- from tree-like indexes to non-tree-like hash tables, including special properties
-such as cache lines --- thereby become comparable as points of the same design space; non-tree-like
+such as cache-line awareness --- thereby become comparable as points of the same design space; non-tree-like
 methods occupy a restricted subset of the dimensions over the same search-algorithm interface, as if
 they were the sole fan of a tree root. As a probe for state-of-the-art membership, PRT-ART, a Probst
 Redirect Tree / ART hybrid and an abstract, incomplete assembly of novel search-algorithm components,
@@ -63,7 +63,7 @@ problem}, the central thread of this thesis.
 Existing cache-aware index designs optimize one or a few aspects in isolation and report results that
 are hard to compare across publications, because each work uses its own data structures, workloads, and
 measurement methodology. The weights of improvements from individual components remain inseparable: a
-reported performance gain cannot be unambiguously attributed to a single component (node type, layout,
+reported performance gain cannot be unambiguously attributed to a single component (page type, layout,
 value placement, prefetching), because the components stay intertwined in the original designs. There
 is no common framework that (i)~decomposes such designs into interchangeable axes, (ii)~reconstructs
 published algorithms as explicit configurations, and (iii)~measures both individual axes and whole
@@ -72,7 +72,7 @@ algorithms on a single, fair basis.
 \section{Research Questions}\label{sec:rqs}
 From the task description and the goal of cache-line optimization, and given the ubiquity of the
 influence of cache-line settings, the following research questions arise: one main question (RQ0) and
-four measurable sub-questions (RQ1--RQ4); complementary aspects are attached as \emph{sub-questions}.
+four measurable research questions (RQ1--RQ4); complementary aspects are attached to them as deepening \emph{sub-questions}.
 \begin{description}
   \item[RQ0 (Main question)] By how much do \emph{active, measurement-driven} cache-aware decisions
   --- page type, memory layout, value placement, and prefetching --- improve the performance of
@@ -119,10 +119,15 @@ The objective follows the task description in four steps: decompose cache-aware 
 interchangeable design constituents, reconstruct state-of-the-art designs as explicit configurations,
 measure and evaluate cache-line-aware behaviour both per constituent and for the whole algorithm on a
 common CPU basis, and deliver the best overall algorithm --- following an autonomous heuristic-profile
-evaluation and heuristic-function modelling --- as a standalone binary. The underlying architecture model --- the three layers (genus
+evaluation and heuristic-function modelling --- as a standalone binary.
+The code of the diploma thesis is here the \emph{formal operator} of the cache engine: it loads the
+probe PRT-ART, compiles it via metaprogramming against the core constituents of the cache engine,
+delivers ABI-stable \emph{living beings} (search-algorithm instances), and drives them to measurement
+via the probe dock --- the measurement interface of the genus (Chapter~\ref{ch:measurement}).
+The underlying architecture model --- the three layers (genus
 interface, genus subclass, axis-organs), the four subsystems, and the ABI-stable delivery of the
-search-algorithm \emph{living beings} --- is developed in Chapter~\ref{ch:foundations}; the axis-architecture concept itself is adopted from
-prior work by the author (on its origin see Section~\ref{sec:software-means}), and the contribution of
+search-algorithm \emph{living beings} --- is developed in Chapter~\ref{ch:measurement} and Chapter~\ref{ch:impl}; the axis-architecture concept itself is adopted from
+prior work by the author (on its origin see Section~\ref{sec:anatomy-model}), and the contribution of
 this thesis is its transfer to cache-aware search structures and its measurement-oriented realization.
 The central contributions
 are:
@@ -139,13 +144,13 @@ are:
   state-of-the-art stack.
   \item Thirty SOTA algorithm profiles as persisted XML configurations (8~standalone Rank-1 +
   22~Rank-2/3) that the \texttt{ExperimentDriver} automatically transforms into pre-compiled C++23
-  modules; prospectively, the profile set is to cover every analysed publication with at least one
-  algorithm profile.
+  modules; prospectively, the profile set is to cover every analysed publication that contributes a
+  standalone search design.
   \item PRT-ART as a probe with eight building-block layers of its own (4+1+2 pool allocator,
   optimistic lock coupling with reserved blocks, multi-level layout, path-oriented prefetch, density
   tracker, hypothesis metrics H1/H2/H3, inline/external/chain-ref value handles, signaling-bit
-  serialization); in the measurement apparatus the probe carries six of these key points as its own
-  organs --- the build axis page type plus path compression (redirect), path-oriented prefetch, OLC
+  serialization); in the measurement apparatus the probe overrides six
+  slots --- the build axis page type plus path compression (redirect), path-oriented prefetch, OLC
   concurrency, telemetry, and the chain-ref value-handle slot ---, while the multi-level layout, the
   pool allocator, and serialization currently run via the cache-engine default in the measurement
   path (Section~\ref{sec:prtart-demo}).
@@ -170,10 +175,17 @@ are:
 
 \section{Structure of the Thesis}\label{sec:structure}
 The structure follows the path from the general to the specific: Chapter~\ref{ch:foundations} lays --- conceptually
-and visually --- the foundations (search trees, hardware, the software means of abstraction); Chapter~\ref{ch:measurement}
-derives from them the measurement system as the solution and demonstrates it on PRT-ART\@; Chapter~\ref{ch:impl} deepens
-the implementation in detail; Chapter~\ref{ch:eval} evaluates; Chapter~\ref{ch:conclusion} closes with conclusion and
-outlook. The appendices deepen alongside: the measurement-series documentation
+and visually --- the foundations from established knowledge: the landscape of search structures, the
+hardware properties of the memory hierarchy, the workload conventions of the comparison literature, the
+software means of abstraction, and the notion of a heuristic. Chapter~\ref{ch:measurement} develops
+from them the concepts of a cache-aware measurement system: the problem statement and its
+requirements, the state of the art as axis instances, the anatomy model with its layers, the
+measurement system itself, the test candidate PRT-ART as demonstrator, and the heuristic evaluation
+with its operating modes. Chapter~\ref{ch:impl} realizes this concept as a software architecture ---
+repositories, the test candidate in code, the axis architecture and compilation pipeline, layer
+contracts with contract tests, and the system axes in code. Chapter~\ref{ch:eval} evaluates along the
+research questions, including the heuristic counter-evidence; Chapter~\ref{ch:conclusion} closes with
+conclusion and outlook. The appendices deepen alongside: the measurement-series documentation
 (Appendix~\ref{app:measurements}), the code structure (Appendix~\ref{app:code}), the glossary
 (Appendix~\ref{app:glossary}), the complete building-block matrix (Appendix~\ref{app:blocks}), the
 architecture decisions (Appendix~\ref{app:adr}), and the comparison interfaces

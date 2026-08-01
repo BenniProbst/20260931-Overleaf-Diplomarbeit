@@ -11,7 +11,11 @@ Three \emph{hypotheses} guide the analysis:
   dense page types win, as expected, under Zipf distribution (YCSB-A), range-optimized pages under range
   scans (YCSB-E).
   \item[H2 (code quality per source)] The code-quality score inherited from the original source repository
-  correlates measurably with the achieved throughput.
+  --- recorded per source repository as a documented quality audit over seven assessment axes (style,
+  tests, documentation, maintainability, maintenance status, license, build system; scale 1--5,
+  \texttt{docs/quality\_audit}) and complemented by the documented per-function
+  \texttt{is\_original} marking (Appendix~\ref{app:blocks}) --- correlates measurably with the achieved
+  throughput.
   \item[H3 (inline vs.\ external vs.\ chain distribution)] The observed distribution of the three
   ValueHandle variants correlates with page density: dense pages prefer inline, sparse pages external, and
   PRT-ART heuristics ChainRef.
@@ -22,15 +26,17 @@ metrics H1--H3 (Section~\ref{sec:prtart-demo}): the former are testable statemen
 space, the latter measurement organs of the probe that, among other things, supply the data for this
 test.
 
-Phase~5 derives the YCSB workload per permutation from the profile's traversal tag
-(Table~\ref{tab:workload-routing}); modules without a profile use the global default workload. The data
+Phase~5 derives the YCSB workload per permutation as a fallback heuristic from the profile's traversal
+tag (Table~\ref{tab:workload-routing}), unless an \texttt{<expected\_workload>} tag of the profile
+overrides the heuristic (Section~\ref{sec:sota-instances}); modules without a profile use the global
+default workload. The data
 basis is real string datasets of differing characteristics (Table~\ref{tab:datasets}), each with a
 reproducibility record of source, checksum, line count, preprocessing, and seed rule for the synthetic
 miss, update, and delete keys.
 
-\begin{table}[h]
+\begin{table}[!htbp]
   \centering
-  \caption{Profile-aware workload routing}\label{tab:workload-routing}
+  \caption{Profile-aware workload routing (fallback heuristic)}\label{tab:workload-routing}
   \begin{tabular}{lll}
     \toprule
     \textbf{Traversal tag} & \textbf{YCSB workload} & \textbf{Characteristic} \\
@@ -42,7 +48,7 @@ miss, update, and delete keys.
   \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[!htbp]
   \centering
   \caption{Real datasets and their characteristics}\label{tab:datasets}
   \begin{tabular}{ll}
@@ -60,26 +66,75 @@ miss, update, and delete keys.
 \end{table}
 
 The measurements target a local workstation for development verification and the TU-Dresden ZIH cluster
-(Barnard CPU nodes with Intel Sapphire Rapids, Capella GPU) for the full sweeps, plus the Rank-3 platforms (Ryzen~9~9950X3D, % chktex 29
+(Barnard CPU nodes with Intel Sapphire Rapids, Capella GPU) for the full sweeps, plus the platforms of the Rank-3 hardware works (Ryzen~9~9950X3D, % chktex 29
 Intel~i9~14900KS, and an HBM platform). An \texttt{IPlatformProbe} (Phase~1) reports per platform the
 runnable subset of axes (e.g.\ AVX-512 only where available, HBM-aware only on HBM hardware); per platform
 a scalar, an AVX2, and --- on Barnard --- an AVX-512 build are
-prepared, and on hybrid CPUs P and E cores are measured separately. On the production target machines,
+prepared, and on hybrid CPUs P and E cores are measured separately (via the dedicated counter domains
+\texttt{cpu\_core} and \texttt{cpu\_atom}) rather than aggregated together. On the production target machines,
 moreover, each measurement is collected under \emph{two operating-system regimes} to separate production
 fidelity from measurement depth: an \emph{immutable} operating system (Talos) mirrors production use and
 enforces boot/compile-static cache settings (Section~\ref{sec:hardware-history}); a \emph{root Linux with
 full hardware-counter access} (\texttt{perf}/MSR), by contrast, makes the counter-based measurement
 categories (cache, dTLB, and branch misses, IPC/CPI, Section~\ref{sec:sota-instances}) and the
 runtime-configurable cache-near axis parameters (prefetch distance, hardware prefetcher) accessible at all. The time- and observer-based categories
-run identically under both regimes and secure comparability.
+run identically under both regimes and secure comparability; the PMC categories are collected only under
+the privileged regime and logged per platform with operating system, kernel, and counter domain.
 
 Fair comparability is secured by fixed rules: each comparison separates a common minimal mode (common
-denominator: external value handles, no PRT-ART special paths) from the PRT-ART native mode; all methods
-receive identical, normalized byte keys as well as identical miss, update, and delete sets, with warm-up,
-randomization, and thread pinning logged per platform and workload. Missing capabilities of a baseline ---
+denominator: external value handles, no PRT-ART special paths) from the PRT-ART native mode (inline
+switching and adaptive page-type selection per branch point); all methods
+receive identical, normalized byte keys as well as identical miss, update, and delete sets; warm-up,
+randomization, and thread pinning are logged per platform and workload. Missing capabilities of a baseline ---
 e.g.\ range scans of a hash table --- are reported as N/A rather than covertly emulated; for every foreign
 library the compiler, flags, ISA path, allocator, and commit hash are logged, and each configuration is
 measured in several separate runs with percentiles determined over HDR histograms.
+
+Beyond the three hypotheses, the analysis receives a fourth, self-contained \emph{evaluation
+dimension}: the heuristic counter-proof. Its concept is developed in Chapter~\ref{ch:measurement}
+--- the hybrid mode compiles the heuristically estimated recombination of the tier binaries itself
+into a tier binary and docks it at the probe dock (Section~\ref{sec:heuristics-modes}); the
+measurement-curve type system supplies the estimation basis, and its measurement-error detection is
+formulated by Section~\ref{sec:heuristics-curves}. The assessment question of this dimension reads:
+\enquote{Is the heuristically estimated recombination of the tier binaries faster than the existing
+paper algorithms?} Unlike H1--H3, which test statements about the design space, the counter-proof
+tests the thesis's apparatus itself: whether the recombination estimated from the measurement curves
+delivers, in real wall-clock behaviour, what the curves promise.
+
+The test plan for this is fixed in two stages; since the corresponding measurement runs are still
+pending, it is --- like the target picture in Section~\ref{sec:heuristics-curves} --- formulated in
+the future tense. The first stage will quantify the measurement error that the measurement instances
+themselves introduce, for the heuristic's estimation basis is \emph{observed} curves, while its
+claim concerns unobserved production behaviour. To this end, the same experiment is set up in three
+build variants:
+\begin{enumerate}
+  \item observers in \emph{all} tier binaries \emph{and} in the heuristic hybrid tier,
+  \item observers \emph{only} in the heuristic tier binary,
+  \item observers in \emph{none} of the compiled binaries --- only the wall clock is measured.
+\end{enumerate}
+The differences between the three variants quantify the observer overhead separated by its origin
+--- measurement organs of the subordinate tiers (difference between variants~1 and~2) versus
+measurement commands of the hybrid tier (difference between variants~2 and~3) --- and yield, per
+workload and platform, an \emph{uncertainty band} below which two configurations count as
+indistinguishable.
+
+The second stage will be the complementary \emph{fourth step} of the final heuristic assembly: the
+tier binaries subordinate to the heuristic tier --- not the finally optimized main binary --- are
+rebuilt without micro- and macro-benchmarks and without observers, so that no measurement artefact
+remains in the compiled binary. The comparison is then made purely on the wall clock, in two
+comparison sets with a fixed precedence: primarily against the reconstructed paper algorithms ---
+the paper comparison takes precedence, for it answers the assessment question literally ---,
+secondarily against all known tier-binary permutations, in particular the best single binary; this
+second comparison classifies whether a potential lead is attributable to the heuristic as a whole or
+merely to a single superior permutation.
+
+From this follows the decision rule: the counter-proof counts as \emph{delivered} per workload class
+if the observer-free rebuilt recombination beats the fastest paper reconstruction on the wall clock
+and the margin exceeds the uncertainty band of the build variants; it counts as \emph{missed} if a
+paper algorithm or the best single binary comes out ahead --- this outcome, too, would be a result,
+for it would quantify for the first time how much estimation error lies between curve prognosis and
+real behaviour. The measurement data of this dimension are pending; they will be fed in after the
+first complete measurement runs together with series A--C in Section~\ref{sec:eval-results}.
 
 \section{Results and Analysis}\label{sec:eval-results}
 At the time of writing, methodology and evaluation pipeline are in place and verified on sample data; a
@@ -88,13 +143,15 @@ documented in Appendix~\ref{app:measurements} together with its limitations
 (Section~\ref{sec:measurements:limitations}), the complete runs of the mandatory measurement series on
 the target platforms are pending (Section~\ref{sec:limitations}). Per series run, the
 \texttt{messung\_driver} writes under \texttt{Code/\_runs/<date>/<spec\_id>/} the files
-\texttt{measurements.csv} --- one row per permutation with the columns of the canonical measurement
+\texttt{measurements.csv}, \texttt{measurements.json}, and optional binary records.
+\texttt{measurements.csv} carries one row per permutation with the columns of the canonical measurement
 record: \texttt{op\_count}, \texttt{total\_cycles}, L1/L2/L3 cache misses, dTLB misses, coherence
 invalidations, energy, plus the memory fields (\texttt{bytes\_allocated},
 \texttt{bytes\_in\_use\_peak}, fragmentation); branch misses and throughput are added as a schema
-extension of the record (throughput so far exists in the command path) ---,
-\texttt{measurements.json}, and optional binary records; the evaluation enriches them via
-\texttt{binary\_to\_csv}, renders \texttt{csv\_to\_latex} fact sheets per permutation ID (in series
+extension of the record (throughput so far exists in the command path).
+The evaluation enriches these files via
+\texttt{binary\_to\_csv} with profile ID, paper reference, and axis assignment, renders
+\texttt{csv\_to\_latex} fact sheets per permutation ID (in series
 \texttt{A\_defined} this corresponds to one per SOTA profile) and
 \texttt{diagram\_generator} diagrams (A4-aware TikZ bar charts, scatter plots, heatmaps), which the
 manuscript includes via \texttt{\textbackslash{}input\{tikz/<spec\_id>/\ldots\}} and
@@ -119,8 +176,7 @@ otherwise constant structure, the axis framework makes the contribution of each 
 per permutation, the analysis quantifies at the micro granularity which axis contributes most to the
 performance variance; macro and whole-system benchmarking add the operation and the YCSB load-profile
 level, and from the ranking across the three granularities follows the recommendation of standard
-configurations per workload class. Thus the arc closes back to the task: the sensitivity analysis delivers
-exactly the separated weighting of the individual constituents whose absence was the original problem. The
+configurations per workload class. The
 results are finally discussed against the thesis's leitmotif --- the transition from heuristic to informed
 cache management, i.e.\ the question whether telemetry-driven, automatically adapted configurations
 outperform statically chosen ones. Chapter~\ref{ch:conclusion} draws the conclusion from this.
