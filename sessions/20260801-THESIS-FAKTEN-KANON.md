@@ -372,3 +372,41 @@ Quelle: Owner-Antworten, übermittelt via Synthese-Auftrag 01.08.2026. Diese Dir
 MERKPOSTEN an K3-Agent: Bestands-tikz-Fehler kapitel/en/03_messsystem_prtart.tex:833
 ("E3 --- permutation B+-tree"-Node: 'Giving up on this path' + 'Extra }') — VORBESTAND,
 im K3-Paket fixen.
+
+---
+## NACHTRAG 2 (Owner-Antworten F1/F2, 01.08. ~21:2xZ) — BINDEND fuer alle Folge-Kapitel
+
+### F2 — DAS KORREKTE BENCHMARKING-MODELL (Owner-verbatim-nah; ersetzt jede aeltere Lesart)
+- Jede Achse hat ein ACHSEN-INTERFACE: Funktionen, die ALLE Algorithmen dieser Achse
+  liefern muessen (Bsp.: Allokatoren stellen Speicher bereit — das tun ALLE Algorithmen
+  der Allokator-Achse). MICRO-BENCHMARK = die ACHSE ueber ihr Achsen-Interface durchmessen
+  (achsen-spezifische Haupteigenschaften intern).
+- Die Achse ist NICHT eine Interface-Funktion des Suchalgorithmus. Dessen Interface-
+  Funktionen VERWENDEN die Achsen-Interfaces; auch Achsen-Algorithmen duerfen andere
+  Achsen-Interfaces verwenden (Container werden ueberall gebraucht).
+- SCHNITT-REGEL (Architektur-Auflage): Alle Achsen-Interfaces sind in alle bekannten
+  Achsen-Algorithmen so zu schneiden, dass NUR NOCH Achsen-Interfaces statt generischer
+  OS-Calls verwendet werden — inline einkompiliert per Metaprogrammierung; std::variant
+  ist verboten.
+- Die CEB misst ZUSAETZLICH drei Wallclock-Ebenen: (1) Wallclock der ACHSEN-Interfaces
+  unter jedem Algorithmus (Gegenmessung zur internen Micro-Benchmark), (2) Wallclock der
+  GATTUNGS-Interfaces (z.B. Suchalgorithmus-Interface-Funktionen), (3) Wallclock einer
+  Test-Last aus den Last-Frameworks (Benutzungs-Konfiguration).
+- Owner: "die Diplomarbeit beschreibt es in der Einleitung jetzt korrekt" — die
+  bestehende Einleitungs-/Aufgabenstellungs-Formulierung gilt als korrekt; "Kategorie"
+  ist die ACHSEN-Kategorie. Der Impl-Nachzug (Benchmarking-Schnitt-Fix) folgt DIESEM Modell.
+
+### F1 — Abgabe-Rahmen (Richtung geliefert, Ausformulierung beauftragt)
+- DANKSAGUNG (auszuformulieren, Entwurf dem Owner zeigen): Dank an Prof. Habich
+  (hingebungsvolle Betreuung; trotz stets knapper Zeit immer Zeit genommen); Dank an
+  UltiHash (ehemaliges Startup; lehrreiche Jahre, viele Eindruecke, die nun technisch
+  realisiert werden). Dr. Krause: allenfalls formal-knapp (Zweitgutachten), keine
+  Hervorhebung. KEINE KI-Nennung (Owner-Entscheid; Idee/Anregungen/Referenzen stammen
+  vom Autor). Grundton: das meiste allein geschafft, mit punktueller Unterstuetzung.
+- LIZENZEN/COPYRIGHT (Rahmen-Paket): Diplomarbeit-Code (super) + PRT-ART = Apache-2.0;
+  cache-engine = GPL + klares Copyright BEP Venture UG / Marke Comdare (NUR ce);
+  Thesis-Overleaf-TEXT = privates Copyright Benjamin-Elias Probst.
+- SPERRVERMERK: JA, aber eingeschraenkt — er betrifft den SOFTWARE-KERN der cache-engine;
+  einsehbar und testbar, FREI FUER DIE FORSCHUNG an Universitaeten als Ausnahme; die
+  Diplomarbeits-Experimente sind freie Testparameter als Anwender. Exakten Wortlaut nach
+  TU-Formalia ausformulieren (Rahmen-Paket, Entwurf dem Owner zeigen).
