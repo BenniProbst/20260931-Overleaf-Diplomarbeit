@@ -8,6 +8,13 @@ Suchbäume und Indexstrukturen tragen moderne datenintensive Systeme --- von In-
 Dateisysteme bis zur Sprachverarbeitung. Zugleich werden heutige Prozessoren von der Speicher-Hierarchie
 dominiert: nicht die Zahl der Operationen, sondern ihr Cache-Verhalten bestimmt die Laufzeit. Aus diesem
 Spannungsfeld erwächst die Leitfrage der Arbeit.
+Im Zentrum dieser Arbeit stehen trie-basierte Indizes und cache-line-optimierte Verarbeitung. Seit dem
+Adaptive Radix Tree (ART)~\cite{leis2013art} von 2013 hat sich die Forschung ausdifferenziert:
+Trie-Höhen-Optimierung (HOT~\cite{binna2018hot}), hybride B\textsuperscript{+}-Strukturen
+(Masstree~\cite{mao2012masstree}, B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}),
+succinct-Repräsentationen (CoCo-Trie~\cite{boffa2024coco}, SuRF~\cite{zhang2018surf}) und
+selbstoptimierende Ansätze (START~\cite{fent2020start}).
+
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, lvl/.style={draw, minimum height=0.55cm, anchor=west, align=left}]
   \node[lvl, minimum width=1.6cm, fill=blue!22] at (0,2.0)  {Register};
@@ -19,12 +26,6 @@ Spannungsfeld erwächst die Leitfrage der Arbeit.
 \end{tikzpicture}
 \caption{Die \enquote{Cache-Wand}: die Zugriffslatenz wächst über die Speicher-Hierarchie um rund zwei Größenordnungen.}\label{fig:cache-wall}
 \end{figure}
-Im Zentrum dieser Arbeit stehen trie-basierte Indizes und cache-line-optimierte Verarbeitung. Seit dem
-Adaptive Radix Tree (ART)~\cite{leis2013art} von 2013 hat sich die Forschung ausdifferenziert:
-Trie-Höhen-Optimierung (HOT~\cite{binna2018hot}), hybride B\textsuperscript{+}-Strukturen
-(Masstree~\cite{mao2012masstree}, B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}),
-succinct-Repräsentationen (CoCo-Trie~\cite{boffa2024coco}, SuRF~\cite{zhang2018surf}) und
-selbstoptimierende Ansätze (START~\cite{fent2020start}).
 
 Parallel dazu ist ein eigener Forschungskorpus zu Cache-Bewusstheit, Prefetching und
 Allokationsstrategien entstanden. Heuristiken wie Cache-Sensitive Search Trees, cache-oblivious Layouts
@@ -48,7 +49,16 @@ unvollständige Ansammlung neuartiger Suchalgorithmus-Bestandteile.
 Cache-Bewusstheit ist in heutigen Suchstrukturen entweder fest verdrahtet oder ganz ignoriert; vor allem
 aber lässt sich nicht \emph{trennen}, welche einzelne Entwurfsentscheidung welchem Lastmuster nützt --- das
 \emph{Trennbarkeits-Problem}, der rote Faden dieser Arbeit.
-% Beim Gegenlesen trennt diese Figur einen Satz ungünstig in der Mitte. Die Figur sollte nach einem ganzen Satz eingeblendet werden.
+Bestehende cache-bewusste Index-Entwürfe optimieren ein oder wenige Aspekte isoliert und berichten
+Ergebnisse, die sich über Veröffentlichungen hinweg schwer vergleichen lassen, da jede Arbeit eigene
+Datenstrukturen, Workloads und Mess-Methodiken verwendet. Die Gewichtungen der Verbesserungen einzelner
+Algorithmus-Bestandteile bleiben dabei untrennbar: Ein gemeldeter Leistungsgewinn lässt sich nicht
+eindeutig auf einen einzelnen Bestandteil (Seitentyp, Layout, Value-Ablage, Prefetching) zurückführen,
+weil die Bestandteile in den Original-Entwürfen verflochten bleiben. Es fehlt ein gemeinsamer Rahmen,
+der (i)~solche Entwürfe in austauschbare Achsen zerlegt, (ii)~publizierte Algorithmen als explizite
+Konfigurationen rekonstruiert und (iii)~sowohl einzelne Achsen als auch ganze Algorithmen auf einer
+einheitlichen, fairen Basis vermessen kann.
+
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth]
   \node[draw, fill=black!75, text=white, minimum width=2.4cm, minimum height=2.2cm] (mono) at (0,0){Algorithmus\\(Monolith)\\[1mm]{\Large ?}};
@@ -61,43 +71,64 @@ aber lässt sich nicht \emph{trennen}, welche einzelne Entwurfsentscheidung welc
 \end{tikzpicture}
 \caption{Das Trennbarkeits-Problem: als Monolith bleibt unklar, welche Entwurfsentscheidung wirkt; erst die Zerlegung in orthogonale Achsen macht jeden Beitrag isoliert messbar.}\label{fig:separability}
 \end{figure}
-Bestehende cache-bewusste Index-Entwürfe optimieren ein oder wenige Aspekte isoliert und berichten
-Ergebnisse, die sich über Veröffentlichungen hinweg schwer vergleichen lassen, da jede Arbeit eigene
-Datenstrukturen, Workloads und Mess-Methodiken verwendet. Die Gewichtungen der Verbesserungen einzelner
-Algorithmus-Bestandteile bleiben dabei untrennbar: Ein gemeldeter Leistungsgewinn lässt sich nicht
-eindeutig auf einen einzelnen Bestandteil (Seitentyp, Layout, Value-Ablage, Prefetching) zurückführen,
-weil die Bestandteile in den Original-Entwürfen verflochten bleiben. Es fehlt ein gemeinsamer Rahmen,
-der (i)~solche Entwürfe in austauschbare Achsen zerlegt, (ii)~publizierte Algorithmen als explizite
-Konfigurationen rekonstruiert und (iii)~sowohl einzelne Achsen als auch ganze Algorithmen auf einer
-einheitlichen, fairen Basis vermessen kann.
 
-% Die Forschungsfragen müssen in Richtung der Trennung ser Mess-, System- und Organ-Achsen erweitert überarbeitet und aufgetrennt werden. Die Belange jeder Achsen-Kategorie müssen einzeln nach dem neuen Kenntnisstand des Codes berücksichtigt werden.
 \section{Forschungsfragen}\label{sec:rqs}
 Aus der Aufgabenstellung und dem Ziel der Cache-Line-Optimierung ergeben sich --- aufgrund der
 Allgegenwärtigkeit des Einflusses der Cache-Line-Einstellungen --- eine Hauptfrage (FF0) und vier
 messbare Forschungsfragen (FF1--FF4); ergänzende Aspekte sind ihnen als vertiefende \emph{Teilfragen} zugeordnet.
+Quer zu allen fünf Fragen liegt eine Kategorisierungs-Frage, die diese Arbeit als Begriffsprägung
+mitführt: Schon die Aufgabenstellung unterscheidet das Gemessene (die Entwurfsbestandteile des
+Algorithmus), die Plattform, auf der gebaut und gemessen wird, und das Messen selbst. Ob sich die
+Achsen des Entwurfsraums entlang dieser drei Belange sauber in \emph{Organ-Achsen} (die
+austauschbaren Entwurfsbestandteile des Algorithmus), \emph{System-Achsen} (die Belange der Bau-
+und Ziel-Plattform) und \emph{Mess-Achsen} (die Belange des Messens selbst) trennen lassen --- und
+wie eine solche Trennung zu bewerkstelligen ist, falls sie in einem Entwurf noch nicht vorhanden
+ist --- bleibt an dieser Stelle bewusst offen; die Teilfragen sind darum entlang dieser drei
+\emph{Achsen-Kategorien} benannt, die Antworten entwickeln die Kapitel~\ref{ch:measurement}
+und~\ref{ch:impl}.
 \begin{description}
   \item[FF0 (Hauptfrage)] Wie stark verbessern \emph{aktive, messgetriebene} cache-bewusste
   Entscheidungen --- Seitentyp, Speicher-Layout, Value-Ablage und Prefetching --- die Leistung
   trie-basierter Suchstrukturen gegenüber \emph{passiven, statisch ausgelegten} Varianten auf
   unterschiedlichen CPU-Plattformen (Hybrid-CPUs, Sapphire Rapids)?
+  \emph{Erweiterung (Achsen-Kategorien):} Lässt sich ein gemessener Gewinn überhaupt eindeutig
+  zuordnen --- der Entwurfsentscheidung selbst (Organ), der Bau- und Ziel-Plattform (System) oder
+  dem Mess-Aufbau (Mess) ---, und welche Trennung der Achsen-Kategorien ist dafür nötig?
   \item[FF1 (Komposition)] Wie lässt sich ein Suchalgorithmus-Entwurf kanonisch in orthogonale
   Achsen zerlegen und in einer Permutationsmatrix systematisieren, sodass die
   Stand-der-Technik-Verfahren möglichst aus ihrem Originalcode bias-frei als Profil-Konfigurationen
-  rekonstruierbar und beliebig permutierbar werden? \emph{Teilfrage:} Welche Achsen-Kopplungen
-  (Knotentyp $\times$ SIMD $\times$ Pfadkompression) begrenzen die Isolation einzelner Achsen, und
-  wie verhält sich dieselbe achsen-konstante Struktur im Cache-Update- und Cache-Line-Füllverhalten,
-  wenn allein die ISA-/SIMD-Achse (SSE2/AVX2/AVX-512, NEON/SVE2, RVV) variiert wird?
+  rekonstruierbar und beliebig permutierbar werden? \emph{Teilfrage (Kategorien-Schnitt):} Zerfällt
+  die kanonische Zerlegung selbst entlang der drei Achsen-Kategorien --- müssen Plattform- und
+  Mess-Belange aus der Permutationsmatrix herausgehalten werden, damit die Zerlegung der
+  Entwurfsbestandteile orthogonal bleibt ---, und wie ist ein solcher Schnitt zu bewerkstelligen,
+  falls er im Entwurf noch nicht angelegt ist? \emph{Teilfrage (Organ-Kopplungen und
+  System-Variation):} Welche Achsen-Kopplungen (Knotentyp $\times$ SIMD $\times$ Pfadkompression)
+  begrenzen die Isolation einzelner Achsen, und wie verhält sich dieselbe achsen-konstante Struktur
+  im Cache-Update- und Cache-Line-Füllverhalten, wenn allein die ISA-/SIMD-Achse (SSE2/AVX2/AVX-512,
+  NEON/SVE2, RVV) variiert wird?
   \item[FF2 (Mess-Methodik)] Wie muss eine reproduzierbare Mess-Pipeline mit
   Hardware-Zähler-Erhebung gestaltet sein, damit jede Achsen-Permutation fair (unter sonst gleichen
   Bedingungen, also gleicher Compiler- und Flag-Basis) in drei Messreihen (A--C) über drei
   Granularitäten (Micro-, Makro- und Gesamt-Benchmarking) gemessen wird, und unter welchen
   plattform-kalibrierten Kriterien gilt eine Plattform als erfolgreich verifiziert?
-  \emph{Teilfrage:} Wie lassen sich widersprüchliche Literaturbefunde zur optimalen
+  \emph{Teilfrage (Mess-Achsen):} Müssen die Mess-Instrumente selbst --- Zeitnahme,
+  Zähler-Erhebung, Last-Erzeugung --- als eigene Achsen geführt werden, die stets präsent sind,
+  ohne je zu verändern, was gebaut und gemessen wird, und wie ist diese Trennung zu
+  bewerkstelligen, falls sie noch nicht vorhanden ist?
+  \emph{Teilfrage (Organ-Achsen):} Wie lassen sich widersprüchliche Literaturbefunde zur optimalen
   Knoten-/Cache-Line-Größe (eine Cache-Line bei CSS/CSB\textsuperscript{+} gegenüber bis zu sechzehn
   bei Hankins/Patel) durch achsen-isolierte, unter sonst gleichen Bedingungen permutierte Messung
   bias-frei nachmessen, statt sie aus inkompatiblen Original-Setups zu übernehmen?
-  % Wie sieht es unter diesem Punkt mit der Erweiterbarkeit aus, wie gliedern sich jetzt Prüflinge und deren Achsen ein, wie werden sie abstrahiert und sind es bestehende oder neue Gattungen oder ein Mix? Wie sollten sie geschnitten sein und was ist hier auf welcher konzeptionellen Ebene denkbar? Gleichzeitig ist in den sessions dokumentiert, dass manche begriffe hier noch nicht chronologisch vorweg genommen werden dürfen, wir müssen also verallgemeinern. Die Frage ist hier zentral: Was ist eine Erweiterung des Systems und wie wirken sich einzelne Paper-Organ-Achsen-Schnitte jetzt beim Hinzufügen oder wegschneiden auf das Potential der Cacheline awareness aus. Es muss einen Modus, der die Achsen eines wählbaren Beispiel-Papers per Definition nur in der Cache-Engine isoliert als ein Set an Achsen-Algorithmen über alle Achsen anbietet, um exakt ein existierendes Paper originalgetreu (über weiterhin freistehende Mess-Achsen und System-Achsen) gegen seine Organ-Achsen durchzumessen.
+  \emph{Teilfrage (Erweiterbarkeit):} Wie erweiterbar ist eine solche Mess-Pipeline --- wie
+  gliedern sich neue Prüflinge und ihre Entwurfsbestandteile ein, wie werden sie abstrahiert, und
+  ordnen sie sich bestehenden Algorithmus-Kategorien zu, begründen sie neue oder einen Mix; auf
+  welcher konzeptionellen Ebene sollte dieser Schnitt verlaufen? Zentral ist dabei: Was ist
+  überhaupt eine Erweiterung des Systems, und wie wirkt sich das Hinzufügen oder Wegschneiden
+  einzelner Erweiterungs-Bausteine --- etwa der aus einer einzelnen Veröffentlichung stammenden
+  Entwurfsbestandteile --- auf das Cache-Line-Awareness-Potential des Gesamtsystems aus? Braucht es
+  dafür einen Betriebsmodus, der die Entwurfsbestandteile eines wählbaren Referenz-Entwurfs aus der
+  Literatur als geschlossenes Achsen-Set isoliert anbietet, um genau diese eine Veröffentlichung
+  --- bei weiterhin freistehenden Mess- und System-Achsen --- originalgetreu durchzumessen?
   \item[FF3 (Prüfling-Vergleich)] Gewinnt der Prüfling PRT-ART gegenüber den acht Rang-1-Entwürfen
   im Stand der Technik (\emph{State of the Art}, kurz SOTA\@; ART, HOT, Masstree, CoCo-Trie, START,
   B\textsuperscript{2}-Baum, Wormhole,
@@ -107,12 +138,16 @@ messbare Forschungsfragen (FF1--FF4); ergänzende Aspekte sind ihnen als vertief
   geringere Branch-Kosten, kleinere heiße Suchpfade) bei Exact-Lookup, Prefix-Lookup und
   Prefix-Enumeration --- gemessen unter den drei Pflicht-Messreihen A (Prüfling vs.\ Stand der
   Technik), B (systematische Variation der Entwurfsentscheidungen) und C (Merge/Regression alt gegen
-  neu)? \emph{Teilfrage:} Welche lokale Seitendarstellung (8-/16-Bit-Punktseite gegenüber
+  neu)? \emph{Teilfrage (Organ-Achsen):} Welche lokale Seitendarstellung (8-/16-Bit-Punktseite gegenüber
   -Kompaktseite) ist je Verzweigungspunkt am günstigsten, und nach welchen plattform-kalibrierten
   Umschaltregeln --- einschließlich der Reihenfolge
   Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
   je Füllstand und Suchtyp --- soll adaptiv gewechselt werden?
-  % Die Hauptachsen und Unterachsen müssen hier in der Frage schon indirekt angedeutet werden, dass für Latenz-kritische Messungen Laufzeitmessungen durch Compile-time Anforderungen gelöst werden müssen.
+  \emph{Teilfrage (Compile-Time-Zwang):} Erzwingen latenz-kritische Messungen, dass an sich zur
+  Laufzeit wählbare Entscheidungen --- etwa solche adaptiven Umschaltregeln --- bereits zur
+  Übersetzungszeit als Anforderungen fixiert werden, sodass sich jede Achse in eine
+  übersetzungszeit-fixierte Haupt-Entscheidung und laufzeit-variable Unter-Entscheidungen
+  gliedert --- eine Zuspitzung, die FF4 aufnimmt?
   \item[FF4 (Compile-Time vs.\ Laufzeit)] Welche Achsen-Eigenschaften müssen zur Übersetzungszeit
   fixiert werden, um plattform-optimierte, provenienz-nachweisbare Binaries je Permutation zu
   erzeugen, und welche können bzw.\ müssen zur Laufzeit gewählt werden (bit-codierter
@@ -120,6 +155,10 @@ messbare Forschungsfragen (FF1--FF4); ergänzende Aspekte sind ihnen als vertief
   (gleiche Compiler- und Flag-Basis) zu verletzen? Wird es durch die Messung möglich,
   ISA+OS-optimierte Binaries für eine Suchalgorithmus-Rekombination zu erzeugen, deren heuristische
   Optimierung perfekt auf ihre Laufzeitumgebung zugeschnitten ist?
+  \emph{Erweiterung (System-Achsen):} Verläuft die Grenze zwischen Übersetzungszeit und Laufzeit
+  entlang der Achsen-Kategorien --- gehören insbesondere die Plattform-Eigenschaften (ISA,
+  Betriebssystem, Hardware-Erweiterungen) als System-Belange in die Übersetzungszeit-Identität der
+  Binary, während Mess-Wahlen laufzeit-variabel bleiben dürfen?
 \end{description}
 
 \section{Zielsetzung und Beiträge}\label{sec:contributions}
@@ -147,7 +186,12 @@ zentralen Beiträge sind:
   templatierten Hybrid-API-Spezialisierungen (1~Parameter $\Rightarrow$ \texttt{std::vector}-API\@;
   2~Parameter $\Rightarrow$ \texttt{std::map}-API\@; $N>2 \Rightarrow$
   \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}).
-  \item Eine neunzehn-Achsen-Permutationsmatrix mit Boost.MP11-Compile-Time-Typlisten-Bausteinen
+  \item Eine Achsen-Permutationsmatrix in dreigeteilter Ordnung: achtzehn Organ-Achsen
+  (Kompositions-Slots T0--T17) tragen die Binary-Permutation, drei System-Haupt-Achsen ---
+  Ziel-ISA, Betriebssystem und Erweiterungs-Hardware --- beschreiben die Bau- und Ziel-Plattform,
+  und ein eigenständiger Mess-Achsen-Realm hält die Mess-Belange von beidem getrennt (die frühere
+  Neunzehn-Achsen-Zählung, Zwischenstand Juli 2026, ist eine historische Vorstufe dieser Ordnung);
+  umgesetzt mit Boost.MP11-Compile-Time-Typlisten-Bausteinen
   (kein Runtime-Tag, kein \texttt{std::variant}; der \texttt{std::variant}-Katalog besteht nur als
   historische Elf-Achsen-Vorstufe) und Compile-Time-Fallback zwischen Prüfling-Stack und
   Stand-der-Technik-Stack.
@@ -166,6 +210,11 @@ zentralen Beiträge sind:
   \item Ein Mess-Treiber mit Defined-/Full-Modus-Unterscheidung, profilbewusstem Workload-Routing
   und drei Granularitäten --- Micro-, Makro- und Gesamt-Benchmarking (einzelne Bestandteile,
   Interface-Operationen, ganze Algorithmen).
+  \item Eine durchgehend deklarativ gesteuerte Bau- und Mess-Kette hinter diesem Treiber: ein
+  Experiment-\emph{Planer} löst die XML-Beschreibung des Experiments gegen die registrierten
+  Achsen-Angebote auf, und der \texttt{CacheEngineBuilder} baut und vermisst daraus
+  plattformbezogen die Binary-Permutationen --- bis zur Auswertung über CSV-Tabellen und
+  LaTeX-Diagramme.
   \item Eine bias-freie Vergleichs-Matrix, die \emph{alle} Lastprofile gegen \emph{alle}
   rekonstruierten Lebewesen fährt und so dem methodischen Heimspiel-Bias der
   Einzelveröffentlichungen begegnet.
