@@ -103,6 +103,32 @@ bekannten Ansätze, denn sie belegen, dass die Entwurfsentscheidungen einer Such
 gehalten werden können; wie sich solche Entscheidungen systematisch zerlegen und einzeln vermessen
 lassen, entwickelt Kapitel~\ref{ch:measurement}.
 
+Für die cache-bezogenen Eigenschaften dieser Entwürfe hat die Literatur eine gestufte
+Begriffs-Taxonomie ausgeprägt, die diese Arbeit durchgängig verwendet. Ihr Ausgangspunkt ist das
+\emph{I/O-Modell} (External-Memory-Modell) von Aggarwal und Vitter: ein zweistufiger Speicher, dessen
+Ebenen Daten nur in Blöcken fester Größe austauschen; Kostenmaß eines Algorithmus ist allein die Zahl
+der Blocktransfers~\cite{aggarwal1988io}. Auf die Cache-Hierarchie übertragen heißt ein Entwurf
+\emph{cache-aware}, wenn er die konkreten Parameter der Zielplattform --- Blockgröße, Kapazität ---
+kennt und explizit nutzt; \emph{cache-conscious} bezeichnet seit Chilimbi, Hill und Larus dieselbe
+Haltung aus Sicht der Datenstruktur: ihr Layout wird durch Clustering, Färbung und Kompression gezielt
+an Cache-Blöcke angepasst~\cite{chilimbi1999layout}. \emph{Cache-oblivious} ist die Gegenposition von
+Frigo, Leiserson, Prokop und Ramachandran: Der Algorithmus kennt keinerlei Parameter; analysiert wird
+im \emph{Ideal-Cache-Modell} --- zwei Ebenen, Kapazität~$Z$, Line-Länge~$L$, volle Assoziativität,
+optimale Ersetzung ---, und ein optimaler cache-oblivious Entwurf ist dann auf \emph{jeder} Ebene
+einer mehrstufigen Hierarchie zugleich nahezu optimal~\cite{frigo1999cache}. \emph{Cache-sensitive}
+schließlich ist die Wortwahl von Rao und Ross für ihre auf die Cache-Line zugeschnittenen Suchbäume
+(Abschnitt~\ref{sec:hardware-history}) und wird weitgehend synonym zu cache-aware
+geführt~\cite{rao1999css,rao2000csb}; als deutschen Oberbegriff für die parameter-kennenden Spielarten
+verwendet diese Arbeit \emph{cache-bewusst}.
+
+Quer zu dieser Parameter-Frage liegt die Zeitpunkt-Frage: \emph{Wann} fällt die cache-bezogene
+Entwurfsentscheidung? Ein \emph{statischer} Entwurf fixiert sie, bevor die erste Anfrage eintrifft ---
+sei es cache-bewusst auf ermittelte Parameter oder cache-oblivious parameterfrei ---, während die
+\emph{aktiven beziehungsweise adaptiven} Ansätze des vorigen Absatzes die Entscheidung in die Laufzeit
+verlagern und aus beobachtetem Verhalten nachführen. Beide Unterscheidungen --- Parameter-Kenntnis und
+Entscheidungs-Zeitpunkt --- sind voneinander unabhängig; der Heuristik-Begriff, der sie später
+verbindet, folgt in Abschnitt~\ref{sec:heuristics-basics}.
+
 \section{Hardware: historische Anpassung an die Suchleistung}\label{sec:hardware-history}
 Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Wir zeichnen die historische
 Einführung cache-naher Hardware nach --- Cache-Hierarchie, Cache-Line, Adressübersetzung, Kohärenz --- mit Fokus
@@ -138,6 +164,43 @@ angefragte Wort, und DDR5 unterteilt den Speicherkanal in zwei unabhängige
 überdies den normalen Write-Allocate-Pfad, statt die betroffene Cache-Line in die Cache-Hierarchie zu
 holen~\cite{intel_sdm}.
 
+\subsection{Cache-Organisation: Assoziativität, Fehlzugriffs-Klassen und Parallelität}\label{subsec:cache-organisation}
+Wo eine Line im Cache liegen darf, bestimmt die \emph{Assoziativität}: Der Cache ist in \emph{Sets}
+gegliedert, von denen jedes $n$ \emph{Ways} (Line-Plätze) hält; die Speicheradresse zerfällt in Tag,
+Set-Index und Line-Offset, und jede Adresse kann nur in den $n$ Plätzen \emph{ihres} Sets liegen ---
+direkt abgebildet ($n=1$) und vollassoziativ (ein einziges Set) sind die Grenzfälle, gängige
+Daten-Caches liegen mit 4- bis 16-fach
+dazwischen~\cite{hennessy2019architecture,intel_optimization,amd_sog}. Nach ihrer Ursache
+klassifizieren Hill und Smith Fehlzugriffe in drei Klassen (\emph{3-C-Modell}): \emph{compulsory}
+(Erstzugriff --- die Line war nie im Cache), \emph{capacity} (die Arbeitsmenge übersteigt die
+Kapazität) und \emph{conflict} (mehr heiße Lines fallen auf ein Set, als es Ways
+hat)~\cite{hill1989associativity}; die Lehrbuch-Darstellung ergänzt in Mehrkern-Systemen
+\emph{coherence}-Fehlzugriffe als vierte Klasse~\cite{hennessy2019architecture}. Die Klassifikation
+ist mehr als Buchhaltung, denn sie trennt die Gegenmittel: Compulsory-Misses adressiert Prefetching
+(Abschnitt~\ref{subsec:prefetching}), Capacity-Misses adressieren kompaktere Layouts, und
+Conflict-Misses entstehen gerade bei den regelmäßigen Adressmustern großer Knoten-Arrays --- liegen
+heiße Elemente um Zweierpotenz-Abstände auseinander, konkurrieren sie um dieselben
+Sets~\cite{hennessy2019architecture,drepper2007memory}.
+
+Ein Fehlzugriff blockiert einen modernen Cache zudem nicht: Seit Krofts
+\emph{lockup-free}-Organisation führt der Cache je ausstehendem Miss ein Statusregister
+(\emph{Miss-Status-Holding-Register}, MSHR) und bedient währenddessen weitere
+Zugriffe~\cite{kroft1981lockupfree}. Die kleine, feste Zahl dieser Register --- bei Intel als
+\emph{Line-Fill-Buffer} zwischen L1 und L2 realisiert --- begrenzt, wie viele Speicherzugriffe
+gleichzeitig unterwegs sein können: die \emph{Memory-Level-Parallelität}
+(MLP)~\cite{hennessy2019architecture,intel_optimization}. Ob eine Suchstruktur diese Parallelität
+überhaupt anbieten kann, ist eine Entwurfsfrage --- der Suchpfad eines Baumes ist eine Kette
+voneinander abhängiger Zugriffe und nutzt sie ohne Weiteres nicht
+(Abschnitt~\ref{subsec:prefetching}).
+
+Zwei weitere Eigenschaften wirken an den Line-Grenzen: \emph{Ausrichtung} (Alignment) --- ein Objekt,
+das eine Line-Grenze überspannt, kostet zwei Transfers statt einem, weshalb cache-bewusste Layouts
+Knoten an Line-Grenzen ausrichten --- und \emph{False Sharing}: Schreiben zwei Kerne auf
+\emph{disjunkte} Felder derselben Line, wandert die Line trotz logischer Unabhängigkeit zwischen den
+Kernen hin und her, weil die Kohärenz (Abschnitt~\ref{subsec:write-coherence}) stets ganze Lines
+verwaltet~\cite{drepper2007memory,intel_optimization}.
+
+\subsection{Cache-line-orientierte Layout-Forschung}\label{subsec:layout-research}
 Eben dieses cache-line-orientierte Layout ist der historische Leitgedanke der einschlägigen Forschung:
 Der CSS-Baum~\cite{rao1999css} führt den Cache-Line-Knoten ein, der
 CSB\textsuperscript{+}-Baum~\cite{rao2000csb} das zusammenhängende Geschwister-Cluster, Hankins und
@@ -153,9 +216,70 @@ Server-Anwendungen von
 Zhang et al.~\cite{zhang2025hierarchical}, der in diese Arbeit als Prefetching-Instanz und nicht als
 datenstruktur-spezifischer Baum-Datenprefetch eingeht.
 
+\subsection{Prefetching}\label{subsec:prefetching}
+Prefetching holt Daten \emph{vor} ihrer Verwendung in den Cache und ist das wichtigste Gegenmittel
+gegen Compulsory-Misses und unverdeckte Speicherlatenz
+(Abschnitt~\ref{subsec:cache-organisation}). Die Hardware-Prefetcher moderner Kerne bilden wenige,
+dokumentierte Klassen: Next-/Adjacent-Line-Prefetcher holen die Nachbar-Line jeder verfehlten Line,
+Stream-Prefetcher erkennen auf- oder absteigende Zugriffsfolgen und laufen ihnen voraus,
+Stride-Prefetcher lernen je Lade-Instruktion (am Instruction-Pointer erkannt) konstante Abstände, und
+komplexere raum- oder zeitkorrelierende Verfahren sind Gegenstand der Forschung; die Übersicht gibt
+Mittal~\cite{mittal2016prefetching}, die konkreten Prefetcher der L1-/L2-Stufen dokumentieren die
+Hersteller-Handbücher~\cite{intel_optimization,amd_sog}. Bewertet wird ein Prefetcher an drei Größen:
+\emph{Genauigkeit} (wie viele geholte Lines wurden genutzt), \emph{Abdeckung} (wie viele Misses
+wurden vermieden) und \emph{Rechtzeitigkeit} --- zu späte Prefetches verdecken die Latenz nur
+teilweise, zu frühe verdrängen noch benötigte Lines~\cite{mittal2016prefetching}.
+
+Ergänzend stellen die Architekturen \emph{Software}-Prefetch-Instruktionen bereit (x86:
+\texttt{PREFETCHh}-Familie samt nicht-temporaler Variante; ARM\@: \texttt{PRFM}), mit denen das
+Programm eine Adresse samt Ziel-Ebene selbst ankündigt~\cite{intel_sdm,arm_arm}. Ihre zentrale
+Stellgröße ist die \emph{Prefetch-Distanz} --- wie weit voraus angekündigt wird: groß genug, um die
+Speicherlatenz zu verdecken, klein genug, um die geholte Line nicht vor Gebrauch wieder zu verlieren;
+sie hängt von Latenz und Verarbeitungstempo ab und ist damit eine je Plattform zu kalibrierende
+Größe~\cite{mittal2016prefetching}. In der Index-Forschung begründen Chen et al.\ genau darüber
+breitere B\textsuperscript{+}-Knoten: Werden alle Lines eines mehrzeiligen Knotens parallel
+vorangekündigt, sinkt die effektive Knoten-Ladezeit, und die optimale Knotenbreite wächst über die
+eine Cache-Line hinaus~\cite{chen2001prefetch}; Fractal Prefetching überträgt dasselbe Prinzip
+ebenen-übergreifend auf Platten-Seiten~\cite{chen2002fractal}.
+
+Seine Grenze findet Prefetching am \emph{Pointer-Chasing}, dem Kern jeder Baumsuche: Die Adresse des
+nächsten Knotens steht erst fest, wenn die Line des aktuellen Knotens eingetroffen ist. Eine solche
+abhängige Ladekette bietet weder einem Stride- noch einem Stream-Prefetcher ein Muster, und sie
+serialisiert die Speicherzugriffe --- die vorhandene Memory-Level-Parallelität
+(Abschnitt~\ref{subsec:cache-organisation}) bleibt ungenutzt~\cite{mittal2016prefetching}. Die
+bekannten Gegenmittel setzen deshalb nicht am Vorhersagen, sondern am Entwurf an: mehr Nutzbytes je
+abhängigem Schritt (breitere, line-ausgerichtete Knoten~\cite{chen2001prefetch}) oder mehrere
+\emph{unabhängige} Suchen, deren Zugriffe so verschränkt werden, dass die Ladekette der einen die
+Wartezeit der anderen füllt --- Entwurfsantworten, die in
+Abschnitt~\ref{subsec:cc-structures} als Parameter wiederkehren.
+
+\subsection{Hauptspeicher und Adressübersetzung: DRAM, NUMA und TLB}\label{subsec:memory-numa-tlb}
+Hinter dem letzten Cache liegt der DRAM-Hauptspeicher, dessen Kenngrößen die JEDEC-Norm für die
+aktuelle Generation DDR5 festlegt (JESD79-5)~\cite{jedec_jesd79_5}. Zwei Größen werden dabei häufig
+vermengt: Die \emph{Datenrate} in Megatransfers je Sekunde (MT/s\@; zwei Transfers je Takt) misst die
+Bandbreite des Interfaces, die \emph{CAS-Latenz} (CL) zählt Taktzyklen bis zur ersten Antwort einer
+geöffneten Zeile --- da die CL-Zyklenzahl mit der Nennrate mitwächst, senken steigende Datenraten die
+absolute Zugriffslatenz kaum~\cite{hennessy2019architecture,micron_ddr5}. Parallelität liefert der
+Aufbau: mehrere Speicherkanäle je System, die bereits erwähnte DDR5-Zweiteilung jedes Kanals in
+unabhängige 32-Bit-Sub-Kanäle sowie Bank-Groups innerhalb jedes Chips, deren verschränkte
+Ansteuerung Zeilen-Aktivierungszeiten überdeckt~\cite{jedec_jesd79_5,micron_ddr5}. Auf dem Modul
+hinterlegt sind die \emph{JEDEC-Nennprofile} der Norm; daneben existieren herstellerspezifische
+Übertaktungsprofile (Intel XMP, AMD EXPO) jenseits der Norm-Raten --- welche Rate eine Maschine
+tatsächlich fährt, ist darum eine dokumentationspflichtige Eigenschaft der Zielplattform, keine aus
+dem Modul ablesbare Konstante.
+
+In Mehr-Sockel- und Chiplet-Systemen kommt die Topologie hinzu: Bei \emph{NUMA} (Non-Uniform Memory
+Access) besitzt jeder Knoten eigenen lokalen Speicher, und Zugriffe auf entfernte Knoten kosten
+spürbar mehr als lokale. Das Betriebssystem platziert Seiten standardmäßig nach der
+\emph{First-Touch}-Politik --- eine Seite landet auf dem Knoten desjenigen Threads, der sie zuerst
+beschreibt~\cite{lameter2013numa}. Für Messungen an Suchstrukturen ist das eine stille Vorbedingung:
+Wer die Struktur auf einem anderen Knoten aufbaut, als er sie vermisst, misst die
+Interconnect-Latenz mit.
+
 Neben der Daten-Cache-Hierarchie existiert eine zweite Lokalitätsgrenze: der \emph{Translation Lookaside
 Buffer} (TLB) cacht Virtuell-zu-Physisch-Abbildungen, und ein TLB-Miss löst einen teuren Page-Walk
-aus~\cite{hennessy2019architecture}. Prozessoren trennen aus Lokalitätsgründen den Instruktions- vom
+aus~\cite{hennessy2019architecture}. Sein \emph{Reach} --- Eintragszahl mal Seitengröße --- begrenzt
+den ohne Page-Walk adressierbaren Speicherbereich. Prozessoren trennen aus Lokalitätsgründen den Instruktions- vom
 Daten-TLB (dTLB) --- da Instruktionszugriffe deutlich lokaler sind als Datenzugriffe --- und legen ihn
 mehrstufig aus (L1-dTLB plus gemeinsamer L2-STLB)~\cite{intel_sdm,drepper2007memory}; für Suchstrukturen ist
 der dTLB die zweite, eigenständige Grenze neben der Cache-Line, denn große oder weit gestreute Knoten
@@ -167,6 +291,7 @@ eine eigenständige dTLB-Optimierung bleibt in den Suchalgorithmus-Papern jedoch
 Beobachtung, auf die die Forschungslücke in Kapitel~\ref{ch:measurement}
 (Abschnitt~\ref{sec:task-concerns}) zurückkommt.
 
+\subsection{Schreibpfad, Ersetzung und Kohärenz}\label{subsec:write-coherence}
 Auch das Schreib- und Update-Verhalten der Caches ist überwiegend mikroarchitektonisch fixiert.
 Schreibzugriffe folgen \emph{Write-Through}, das unmittelbar bis in die nächste Ebene durchschreibt,
 oder \emph{Write-Back}, das die Änderung zunächst nur in der Cache-Line vermerkt (\emph{dirty}) und erst
@@ -195,25 +320,68 @@ frei wählbar ist, sind diese Eigenschaften je Zielplattform gegeben und nur dur
 Wirkung --- insbesondere das \emph{Cache-Line-Ping-Pong} bei konkurrierenden Schreibzugriffen auf dieselbe
 Line --- muss ein faires Messverfahren eigens sichtbar machen (Kapitel~\ref{ch:measurement}).
 
-Diese Eigenschaften spannen das Spektrum auf, in dem sich eine Datenstruktur verorten lässt:
-\emph{cache-bewusst} (cache-aware), wenn ihr Layout auf konkrete Cache-Parameter abgestimmt ist, und
-\emph{cache-oblivious}, wenn sie über alle Ebenen hinweg gute Lokalität erreicht, ohne sie zu
-kennen~\cite{frigo1999cache}. Beide Philosophien sind im Stand der Technik instanziiert: Bender et
-al.\ begründen den cache-oblivious B-Baum über das van-Emde-Boas-Layout~\cite{bender2005coboblivious},
-aufbauend auf dem Order-Maintenance-/Packed-Memory-Primitiv~\cite{bender2002orderlist}, der
-cache-oblivious Traversierung geordneter Mengen mit lokalitätserhaltender
-$O(k/B)$-Schranke~\cite{bender2002scanning} und dem
-Baum-Layout fester Topologie, das die erwartete Zahl der Blocktransfers in einem mehrstufigen
-Speicher-Modell auch bei unbekannter Block-Größe nahezu optimal
-minimiert~\cite{bender2002treelayout,bender2000cobtree}; Saikkonen und
+\subsection{Cache-bewusste und cache-oblivious Datenstrukturen}\label{subsec:cc-structures}
+Mit der Begriffs-Taxonomie aus Abschnitt~\ref{sec:overview} und den nun eingeführten Parametern
+lässt sich der Stand der Technik der cache-nahen Datenstrukturen ordnen. Den empirischen Anstoß der
+cache-bewussten Linie gaben Ailamaki et al., deren Zeit-Zerlegung kommerzieller Datenbanksysteme
+zeigte, dass rund die Hälfte der Ausführungszeit in Speicher-Wartezyklen liegt --- vor allem in
+L2-Daten- und L1-Instruktions-Fehlzugriffen~\cite{ailamaki1999dbms}. Die Antworten der Folgejahre
+binden je einen Teil der Parameter aus den vorigen Abschnitten explizit in den Entwurf ein: die
+Cache-Line-Größe (CSS-/CSB\textsuperscript{+}-Baum~\cite{rao1999css,rao2000csb}), die
+Prefetch-Distanz samt mehrzeiliger Knoten (pB\textsuperscript{+}-Baum~\cite{chen2001prefetch},
+ebenen-übergreifend Fractal Prefetching~\cite{chen2002fractal}), Seitengröße und SIMD-Breite
+zugleich (FAST, ein architektur-sensitives Baum-Layout mit verzahnter Seiten-, Line- und
+SIMD-Blockung~\cite{kim2010fast}) oder den Verzweigungsgrad je Cache-Line (ART~\cite{leis2013art});
+die Layout-Techniken des Clustering und der Kompression gehen auf Chilimbi et al.\
+zurück~\cite{chilimbi1999layout}. Die cache-oblivious Gegenposition ist ebenso instanziiert: Bender
+et al.\ begründen den cache-oblivious B-Baum über das
+van-Emde-Boas-Layout~\cite{bender2005coboblivious}, aufbauend auf dem
+Order-Maintenance-/Packed-Memory-Primitiv~\cite{bender2002orderlist}, der cache-oblivious
+Traversierung geordneter Mengen mit lokalitätserhaltender
+$O(k/B)$-Schranke~\cite{bender2002scanning} und dem Baum-Layout fester Topologie, das die erwartete
+Zahl der Blocktransfers in einem mehrstufigen Speicher-Modell auch bei unbekannter Block-Größe
+nahezu optimal minimiert~\cite{bender2002treelayout,bender2000cobtree}; Saikkonen und
 Soisalon-Soininen halten eine cache-sensitive Layout-Invariante auch unter
 Updates~\cite{saikkonen2008multilevel,saikkonen2016layout}, und
 Graefe/Larson~\cite{graefe2001btree} vergleichen beide Ansätze über die CPU-Cache-Ebenen, während
-sämtliche praktischen Trie- und B\textsuperscript{+}-Indizes cache-bewusst ausgelegt sind. Beide
-Philosophien lassen dabei eine Frage offen: Wie lässt sich \emph{gemessenes} Lokalitätswissen der konkreten
-Zielplattform --- deren Cache-Eigenschaften überwiegend fest verdrahtet und nur zum kleineren Teil
-konfigurierbar sind --- systematisch mit den tatsächlich wählbaren cache-nahen Einstellungen verbinden?
-Diese Frage nimmt Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:task-concerns}) wieder auf.
+sämtliche praktischen Trie- und B\textsuperscript{+}-Indizes cache-bewusst ausgelegt sind.
+Tabelle~\ref{tab:structure-parameters} ordnet die genannten Entwürfe danach, welche
+Hardware-Parameter sie explizit in den Entwurf binden.
+
+\begin{table}[!htbp]
+  \caption{Cache-nahe Struktur-Entwürfe und die Hardware-Parameter, die sie explizit in den Entwurf
+  binden.}\label{tab:structure-parameters}
+  \centering\footnotesize
+  \begin{tabular}{@{}l c c c c c@{}}
+    \toprule
+    \textbf{Entwurf} & \textbf{Cache-Line} & \textbf{Seite/TLB} & \textbf{SIMD-Breite} &
+    \textbf{Prefetch-Distanz} & \textbf{parameterfrei} \\
+    \midrule
+    CSS-Baum~\cite{rao1999css}                         & $\bullet$ & ---       & ---       & ---       & --- \\
+    CSB\textsuperscript{+}-Baum~\cite{rao2000csb}      & $\bullet$ & ---       & ---       & ---       & --- \\
+    pB\textsuperscript{+}-Baum~\cite{chen2001prefetch} & $\bullet$ & ---       & ---       & $\bullet$ & --- \\
+    Fractal Prefetching~\cite{chen2002fractal}         & $\bullet$ & $\bullet$ & ---       & $\bullet$ & --- \\
+    FAST~\cite{kim2010fast}                            & $\bullet$ & $\bullet$ & $\bullet$ & ---       & --- \\
+    ART~\cite{leis2013art}                             & $\circ$   & ---       & $\bullet$ & ---       & --- \\
+    Cache-oblivious B-Baum~\cite{bender2005coboblivious} & ---     & ---       & ---       & ---       & $\bullet$ \\
+    Knotengrößen-Studie Hankins/Patel~\cite{hankins2003nodesize} & $\bullet$ & --- & ---   & ---       & --- \\
+    \bottomrule
+  \end{tabular}
+  \par\medskip\footnotesize
+  Legende: $\bullet$ = expliziter Entwurfsparameter der Originalarbeit; $\circ$ = indirekt
+  berücksichtigt (ART staffelt die Knotengrößen cache-line-orientiert, ohne die Line-Größe zu
+  parametrisieren); --- = nicht adressiert. Einordnung dieser Arbeit auf Basis der zitierten
+  Originalarbeiten.
+\end{table}
+
+Zwei Beobachtungen an der Tabelle tragen weiter. Erstens bindet jeder Entwurf eine \emph{Handvoll}
+Parameter fest ein --- kein bekannter Entwurf behandelt die Parameter-Menge der vorigen Abschnitte
+als offenen Eingaberaum. Zweitens lassen beide Philosophien dieselbe Frage offen: Wie lässt sich
+\emph{gemessenes} Lokalitätswissen der konkreten Zielplattform --- deren Cache-Eigenschaften
+überwiegend fest verdrahtet und nur zum kleineren Teil konfigurierbar sind
+(Abschnitt~\ref{subsec:write-coherence}) --- systematisch mit den tatsächlich wählbaren cache-nahen
+Einstellungen verbinden? Diese Frage nimmt Kapitel~\ref{ch:measurement}
+(Abschnitt~\ref{sec:task-concerns}) wieder auf.
 
 \section{Workloads und Benchmark-Konventionen}\label{sec:workload-basics-known}
 Ob eine Suchstruktur die Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} gut nutzt,
@@ -245,6 +413,31 @@ Lastprofil-Satzes; wie dieser Satz aufgebaut ist und über alle Kandidaten gefah
 Kapitel~\ref{ch:measurement}, die zugehörige Mess-Matrix gehört zur Evaluationsmethodik
 (Kapitel~\ref{ch:eval}).
 
+Beobachtet wird unter Last mit einem etablierten Satz von Kenngrößen. Auf Cache-Ebene zählen die
+Fehlzugriffe je Ebene, ausgedrückt als \emph{Miss-Rate} (Fehlzugriffe je Zugriff) oder --- robuster
+beim Vergleich verschieden zugriffsintensiver Programme --- als \emph{MPKI} (Misses je tausend
+Instruktionen); auf Kern-Ebene messen \emph{IPC} beziehungsweise \emph{CPI} (Instruktionen je Takt
+und dessen Kehrwert) die erreichte Ausführungsdichte, und Stall-Zyklen-Zerlegungen weisen aus,
+welcher Anteil der Taktzyklen auf wartende Speicherzugriffe
+entfällt~\cite{hennessy2019architecture}; dass dieser Anteil bei Datenbank-Lasten dominieren kann,
+war gerade der Befund von Ailamaki et al.~\cite{ailamaki1999dbms}
+(Abschnitt~\ref{subsec:cc-structures}). Für cache-bewusste Layouts kommt die
+\emph{Cache-Line-Auslastung} hinzu --- der Anteil tatsächlich genutzter Bytes je geladener Line
+(Abbildung~\ref{fig:cache-line}) ---, die unmittelbar misst, was ein Layout an der
+Übertragungseinheit gewinnt.
+
+Erhoben werden diese Größen über die \emph{Performance-Monitoring-Counter} (PMC) der Prozessoren:
+wenige programmierbare Zählregister je Kern, denen per Event-Auswahl ein Hardware-Ereignis (etwa
+L2-Miss oder dTLB-Miss) zugewiesen wird; zugänglich machen sie Werkzeuge wie
+\texttt{perf}~\cite{demelo2010perf} oder VTune~\cite{reinders2005vtune}. Ihre Grenzen sind ebenso
+dokumentiert: Zählerstände sind über Wiederholungen nicht streng deterministisch und zählen je nach
+Ereignis systematisch über~\cite{weaver2008counters}, und sollen mehr Ereignisse beobachtet werden,
+als Register existieren, multiplext das Werkzeug die Zähler --- das Ergebnis ist dann eine
+Hochrechnung, keine Zählung. Ein belastbarer Vergleich braucht darum Wiederholungen und eine ehrliche
+Streuungs-Angabe~\cite{hoefler2015benchmarking,weaver2008counters}. Welche dieser Kenngrößen diese
+Arbeit erhebt und wie sie zu Mess-Kategorien geordnet werden, entwickelt
+Kapitel~\ref{ch:measurement}.
+
 \section{Software-Mittel und Zusammenführung zur Abstraktion}\label{sec:software-means}
 Mit welchen Software-System-Mitteln --- Übersetzungszeit-Metaprogrammierung, statische Nutzung der
 Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} --- lässt sich die dort offen gebliebene
@@ -258,10 +451,34 @@ und die feature-orientierten Software-Produktlinien~\cite{apel2013feature,batory
 beschreiben; C++23-Module strukturieren die Übersetzungseinheiten solcher Baustein-Kompositionen,
 garantieren für sich genommen aber noch
 keine portable ABI-Stabilität~\cite{wg21_modules_abi} --- relevant, sobald vorübersetzte Bausteine
-ausgetauscht werden sollen. Für diese Arbeit bilden die genannten Mittel den
-Werkzeugkasten, mit dem sich die je Zielplattform gemessenen Hardware-Eigenschaften zur Übersetzungszeit
-in ein konkretes Layout umsetzen lassen; wie sie dafür kombiniert werden, entwickelt
-Kapitel~\ref{ch:measurement}.
+ausgetauscht werden sollen.
+
+Damit aus austauschbaren Bausteinen ein konkretes System wird, braucht es neben den
+Kompositions-Techniken eine \emph{Beschreibungsform} für die jeweils gewählte Konfiguration. Die
+etablierte Antwort sind \emph{deklarative Konfigurationsmodelle}: Feature-Modelle beschreiben seit
+der FODA-Studie konfigurierbare Variantenräume als Merkmal-Hierarchien mit
+Auswahl-Constraints~\cite{kang1990foda}, die generative Programmierung erzeugt aus solchem
+Konfigurationswissen im Problemraum die Systemvariante im
+Lösungsraum~\cite{czarnecki2000generative}, und die Produktlinien-Literatur systematisiert die
+zugehörigen Bindungszeitpunkte von der Übersetzungszeit bis zur Laufzeit~\cite{apel2013feature}. Der
+industrielle Werkzeugbau folgt demselben Prinzip: Mavens \emph{Project Object Model} ist die
+deklarative --- als XML-Datei gehaltene --- Manifestation dessen, \emph{was} ein modulares
+Java-System ausmacht, während der Build-Lebenszyklus das \emph{Wann} und \emph{Wie}
+übernimmt~\cite{maven_pom}; CMake erzeugt aus einer deklarativen Beschreibung über austauschbare
+\emph{Generatoren} je Plattform ein natives Buildsystem~\cite{cmake_manual}; und Mokhov, Mitchell
+und Peyton Jones zeigen, dass sich Build-Systeme insgesamt als Kombination weniger Scheduler- und
+Rebuilder-Bausteine über deklarativen Abhängigkeitsbeschreibungen wissenschaftlich fassen und neu
+zusammensetzen lassen~\cite{mokhov2018build}. Dass deklarative Modelle ein System über die Bauzeit
+hinaus auch im Betrieb begleiten können, entwickelt die
+models@run.time-Linie~\cite{blair2009modelsruntime}; Götz zeigt in der TU-Dresdner
+MQuAT-Dissertation, wie deklarative (Konfigurations-)Modelle die Selbstoptimierung
+komponentenbasierter Systeme durch Kontrakt-Verhandlung steuern~\cite{goetz2013mqat}.
+
+Für diese Arbeit bilden beide Stränge zusammen den Werkzeugkasten: die Kompositions-Techniken, mit
+denen sich die je Zielplattform gemessenen Hardware-Eigenschaften zur Übersetzungszeit in ein
+konkretes Layout umsetzen lassen, und die deklarativen Konfigurationsmodelle, mit denen sich die
+gewählte Konfiguration beschreiben und reproduzieren lässt; wie beide dafür kombiniert werden,
+entwickelt Kapitel~\ref{ch:measurement}.
 
 \section{Heuristiken als Entscheidungsregeln}\label{sec:heuristics-basics}
 Sowohl die adaptiven und gelernten Indizes (Abschnitt~\ref{sec:overview}) als auch die
