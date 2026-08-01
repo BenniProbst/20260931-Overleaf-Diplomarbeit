@@ -61,10 +61,10 @@ algorithm is a point in the Cartesian product of these axes (Figure~\ref{fig:des
   \foreach \x in {1,2,3}\foreach \y in {1,2,3}{\fill[black!35] (\x,\y) circle (1.6pt);}
   \fill[red] (2,2) circle (3.2pt);
   \node[red,right] at (2.15,2.25){ART $=$ one point};
-  \node[draw,rounded corners,fill=blue!5,align=left,font=\scriptsize] at (3.5,2.95){\textbf{Legend:} 3 of\\19 axes (T0--T18)};
+  \node[draw,rounded corners,fill=blue!5,align=left,font=\scriptsize] at (3.5,2.95){\textbf{Legend:} 3 of\\18 organ axes (T0--T17)};
   \node[align=center,font=\scriptsize] at (1.6,-2.2){Every state-of-the-art algorithm\\$=$ one point in the Cartesian product of the axes};
 \end{tikzpicture}
-\caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it. For illustration, three of the nineteen axes are chosen --- the real storage organ of node type~(T4), memory layout~(T5) and allocator~(T6); the full design space has nineteen dimensions.}\label{fig:design-space}
+\caption{The design space: the axes span a Cartesian product; a concrete algorithm is a point within it. For illustration, three of the eighteen organ axes are chosen --- the real storage organ of node type~(T4), memory layout~(T5) and allocator~(T6); the full design space has eighteen organ dimensions.}\label{fig:design-space}
 \end{figure}
 
 Once the design space is spanned this way, the separability problem becomes solvable: varying a design
@@ -101,7 +101,7 @@ adoption per composition axis.
 
 {\footnotesize
 \begin{longtable}{@{}p{2.3cm}p{3.7cm}p{2.7cm}p{3.6cm}@{}}
-\caption{Dialectical adoption of the state-of-the-art instances per composition axis (in axis order T0--T18; cluster codes: A~trie/node, B~hybrid/layout, C~allocation, D~prefetching, E~synchronization, F~hardware/measurement/engineering)}\label{tab:dialectic}\\
+\caption{Dialectical adoption of the state-of-the-art instances per composition axis (in canonical slot order T0--T17; the earlier numbering T0--T18 still counted telemetry and ISA as composition axes --- both have moved into the system sphere, Section~\ref{sec:axis-triad}. Cluster codes: A~trie/node, B~hybrid/layout, C~allocation, D~prefetching, E~synchronization, F~hardware/measurement/engineering)}\label{tab:dialectic}\\
 \toprule
 \textbf{Axis} & \textbf{adopted (thesis)} & \textbf{replaced (antithesis)} & \textbf{synthesis core} \\
 \midrule
@@ -122,30 +122,40 @@ T6 Allocator (C) & A01--A23 (Hoard, mimalloc, jemalloc, TCMalloc, \ldots) + RCU/
 T7 Prefetch (D) & distance estimator (ART), hardware (Wormhole), stride (Chen), adaptive & prefetch not isolated as an axis & path-oriented bundle prefetch (own) \\
 T8 Concurrency (E) & OLC (ART), RCU, hazard pointers; lock-/wait-free & coarse locking as the only assumption & pattern $\perp$ reclamation as two sub-axes \\
 T9 Serialization (F) & raw binary, varint (ART), succinct (LOUDS/FST), LZ77 & --- & encoding/compression selectable \\
-T10 Telemetry (F) & density tracker, insert counter, HdrHistogram, path counter & all-node counter (cache-line ping-pong) & coherence-friendly leaf-only telemetry \\
-T11 Value-Handle (F) & inline, external pool, immutable shared (RCU), versioned & implicitly fixed embedded value & placement, ownership and versioning (+ chain ref) \\
-T12 ISA (F) & vendor-spec x86-64/AArch64/Power/RISC-V (+ SIMD) & --- & target ISA as a compile-time axis \\
-T13 Index-Organization (B) & clustered, IOT, non-clustered, heap & --- & storage order as its own axis \\
-T14 I/O-Dispatch (F) & buffered, mmap, direct I/O & mmap as anti-pattern & persistence decoupled from the search structure \\
-T15 Migration (F) & hot/cold, multi-tier NVM, LeCaR-ML & tiering never combined with search axes & migration logic as a measurable axis \\
-T16 Filter (F) & Bloom, Cuckoo, SuRF-range, Xor & filter never integrated with search axes & filter as an orthogonal organ \\
-T17 Queuing-q1 (F) & Disruptor ring, delta chain, CoW, epoch-RCU, SPSC/MPMC & operations buffer never an axis & buffer with access-pattern classes \\
-T18 Queuing-q2 (F) & eager/lazy, watermark (LSM), timed & flush policy implicit & adaptive EWMA flush policy (own) \\
+T10 Value-Handle (F) & inline, external pool, immutable shared (RCU), versioned & implicitly fixed embedded value & placement, ownership and versioning (+ chain ref) \\
+T11 Index-Organization (B) & clustered, IOT, non-clustered, heap & --- & storage order as its own axis \\
+T12 I/O-Dispatch (F) & buffered, mmap, direct I/O & mmap as anti-pattern & persistence decoupled from the search structure \\
+T13 Migration (F) & hot/cold, multi-tier NVM, LeCaR-ML & tiering never combined with search axes & migration logic as a measurable axis \\
+T14 Filter (F) & Bloom, Cuckoo, SuRF-range, Xor & filter never integrated with search axes & filter as an orthogonal organ \\
+T15 Queuing-q1 (F) & Disruptor ring, delta chain, CoW, epoch-RCU, SPSC/MPMC & operations buffer never an axis & buffer with access-pattern classes \\
+T16 Queuing-q2 (F) & eager/lazy, watermark (LSM), timed & flush policy implicit & adaptive EWMA flush policy (own) \\
+T17 Persistence-Target (F) & in-memory storage as the standard target & implicit in-memory assumption & persistence target as its own axis (pinned to in-memory in the measurement catalog) \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Moved into the system sphere (Section~\ref{sec:axis-triad}):}} \\
+target\_isa (system) & vendor-spec x86-64/AArch64/Power/RISC-V (+ SIMD) & --- & target ISA as a system complex axis \\
+Telemetry (system/meas.) & density tracker, insert counter, HdrHistogram, path counter & all-node counter (cache-line ping-pong) & coherence-friendly leaf-only; split in two: measurement sub-axis $+$ build quantity \\
 \end{longtable}
 }
 
 The systematic core is the axis-wise \emph{dissection}: every overall algorithm is decomposed into its
 organs, and per axis the contributing organ algorithms are listed, with a brief reference to the
-originating living being. The framework carries \emph{nineteen composition axes} (T0--T18) as well as
-three \emph{build axes} (page type, SIMD extension, hardware profile); many axes are refined into
+originating living being. The framework carries \emph{eighteen organ composition axes} in fixed
+slot order (T0--T17); alongside them stand the quantities of the system sphere --- target ISA,
+SIMD and extension hardware as well as the two-way-split telemetry (the triad of axis categories
+is ordered by Section~\ref{sec:axis-triad}) --- and the probe build axis page type. The earlier
+nineteen-axis numbering (T0--T18, interim state of July 2026) still counted telemetry and ISA as
+composition axes; both have moved into the system sphere, and the persistence target has been
+added as the eighteenth organ axis. Many axes are refined into
 sub-axes (e.g.\ SA1--SA4 or AA1--AA7) and provide other axes with distributed interfaces for their detail
-operations. Table~\ref{tab:axes-overview} gives the overview of which publications contribute an organ per
+operations --- exactly these \emph{axis interfaces} later carry the micro benchmarking
+(Section~\ref{sec:mess-chain}). Table~\ref{tab:axes-overview} gives the overview of which publications contribute an organ per
 axis; the thematic origin clusters of the prior works thereby appear \emph{dissolved} into their organ
 contributions.
 
 \begin{table}[!htbp]
-  \caption{Axis dissection of the search methods: nineteen composition axes (T0--T18) and three build
-  axes; per axis the sources contributing an organ.}\label{tab:axes-overview}
+  \caption{Axis dissection of the search methods: eighteen organ axes in canonical slot order
+  (T0--T17), the quantities moved into the system sphere, and the probe build axis; per axis the
+  sources contributing an organ.}\label{tab:axes-overview}
   \centering\footnotesize
   \begin{tabular}{@{}l l p{6.8cm}@{}}
     \toprule
@@ -162,19 +172,20 @@ contributions.
     T8 concurrency & CC1--CC2 & P08,P29,P30; Dijkstra,Courtois,Herlihy,Michael/Scott \\
     T9 serialization & SR1--SR3 & P01,P09,P10; LZ77 \\
     \midrule
-    T10 telemetry & TM1--TM3 & P01,P02,P16,P17,P26,P28; HdrHistogram (Gil Tene) \\
-    T11 value\_handle & VH1--VH3 & P01,P03,P07,P29 \\
-    T12 isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (vendor-spec) \\
-    T13 index\_organization & io1--io3 & Bayer/McCreight,Comer,Oracle \\
-    T14 io\_dispatch & IO1--IO3 & Stonebraker,Crotty; baselines \\
-    T15 migration\_policy & MG1--MG3 & anti-caching,NVM-tiering,LeCaR\@; none \\
-    T16 filter & FT1--FT3 & Bloom,Cuckoo,P10,Xor \\
-    T17 queuing\_q1 & QS1--QS6 & Disruptor, Bw-tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
-    T18 queuing\_q2 & FS1--FS4 & eager/lazy/watermark/Kafka/RocksDB \\
+    T10 value\_handle & VH1--VH3 & P01,P03,P07,P29 \\
+    T11 index\_organization & io1--io3 & Bayer/McCreight,Comer,Oracle \\
+    T12 io\_dispatch & IO1--IO3 & Stonebraker,Crotty; baselines \\
+    T13 migration\_policy & MG1--MG3 & anti-caching,NVM-tiering,LeCaR\@; none \\
+    T14 filter & FT1--FT3 & Bloom,Cuckoo,P10,Xor \\
+    T15 queuing\_q1 & QS1--QS6 & Disruptor, Bw-tree, Driscoll, P29, Pugh, LSM, Lamport, Michael/Scott \\
+    T16 queuing\_q2 & FS1--FS4 & eager/lazy/watermark/Kafka/RocksDB \\
+    T17 persistence\_target & --- & CE baseline (in-memory); disk writeback as a disabled option \\
     \midrule
-    Build page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (2026) \\
-    Build simd\_extension & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV\@; GPU\@: CUDA \\
-    Build general\_hardware & HW1--HW4 & HW strategy per paper (Tab.~\ref{tab:hw-sched}) \\
+    Sys.\ target\_isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (vendor-spec) \\
+    Sys.\ external\_utils: SIMD & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV\@; GPU\@: CUDA \\
+    Sys.\ external\_utils: ext.\ HW & HW1--HW4 & HW strategy per paper (Tab.~\ref{tab:hw-sched}) \\
+    Sys./meas.\ telemetry & TM1--TM3 & P01,P02,P16,P17,P26,P28; HdrHistogram (Gil Tene) \\
+    Build (probe) page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (2026) \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -204,7 +215,7 @@ from free-list topology through thread locality/NUMA affinity~\cite{ungethuem201
 strategy to reclamation (epoch, RCU~\cite{mckenney2001rcu}, hazard pointers~\cite{michael2004hazard},
 QSBR); the code provides 25 allocator implementations for the 23-work corpus (individual works contribute
 several variants), of which Table~\ref{tab:allocator-profiles} lists
-the ten runnable profiles with license and workload affinity. The \emph{value axis} (T11) distinguishes
+the ten runnable profiles with license and workload affinity. The \emph{value axis} (T10) distinguishes
 inline value~\cite{leis2013art}, external pool~\cite{wu2019wormhole}, versioned pointer~\cite{mao2012masstree},
 and immutable shared ref~\cite{mckenney2001rcu}, the \emph{serialization axis} (T9) raw binary, succinct
 LOUDS/FST, and varint~\cite{leis2013art}.
@@ -237,14 +248,17 @@ On the hardware-near side, the \emph{prefetch axis} (T7) ranges from no prefetch
 software-fixed~\cite{chen2001prefetch}, adaptively distanced~\cite{khan2010adaptive}, and
 fill-buffer-aware~\cite{mahling2025hotpath} to path-oriented~\cite{zhang2024pathprefix} and hierarchical
 bundle prefetch~\cite{zhang2025hierarchical}; the explicit hardware prefetch instruction stems from
-Wormhole~\cite{wu2019wormhole}. The \emph{ISA axis} (T12) and the build SIMD extension carry the vendor
+Wormhole~\cite{wu2019wormhole}. The system axis \emph{target ISA} and the SIMD extension of the
+extension-hardware hub (both system sphere, Section~\ref{sec:axis-triad}) carry the vendor
 specifications (x86-64, AArch64, Power, RISC-V with SSE2/AVX2/AVX-512, NEON/SVE2, RVV). Two cross-cutting
 strategy axes record what an algorithm actively \emph{uses} and how it \emph{distributes} work --- the
 \emph{hardware strategy} (SIMD family, cache-level targeting, NUMA, prefetch hardware, atomic family)
 and the \emph{scheduling strategy} (worker-pool layout, SIMD worker limit --- hardware-bound typically
 two of $N$ cores ---, heterogeneous P-/E-core dispatch, co-routines, and batch granularity) ---, which
 Table~\ref{tab:hw-sched} assigns per paper. The
-\emph{telemetry axis} (T10) instantiates density tracker~\cite{leis2013art}, insert
+\emph{telemetry} --- in this thesis's triad no longer an organ axis but split in two, into a
+measurement-tooling sub-axis and a build quantity of the system sphere
+(Section~\ref{sec:axis-triad}) --- instantiates density tracker~\cite{leis2013art}, insert
 counter~\cite{binna2018hot}, HdrHistogram, path-read counter~\cite{zhang2024pathprefix}, and the
 probability hints (P16/P17 Bender~\cite{bender2000cobtree,bender2005coboblivious}); the
 coherence-friendly leaf-only variants go back to Kuehn (P28~\cite{kuehn2023bplustree}; personal
@@ -280,20 +294,23 @@ coarse locking~\cite{dijkstra1965concurrent}, reader/writer locks~\cite{courtois
 optimistic lock coupling~\cite{leis2016olc} to lock-free~\cite{michael1996queue},
 wait-free~\cite{herlihy1991waitfree}, as well as RCU~\cite{mckenney2001rcu} and
 hazard-pointer~\cite{michael2004hazard} methods; the locking mode within a pattern
-distinguishes read-only, read-write, upgradeable, and optimistic validation. The \emph{I/O axis} (T14) instantiates
+distinguishes read-only, read-write, upgradeable, and optimistic validation. The \emph{I/O axis} (T12) instantiates
 buffered~\cite{stonebraker1981os}, direct, and memory-mapped I/O~\cite{crotty2022mmap}. The axis
 thereby builds on the block-transfer thinking of the external-memory tradition
 (Section~\ref{sec:hardware-history}): for I/O-efficient data-structure engineering, TPIE provides a
 reference library of the external-memory line (ESA 2002)~\cite{arge2002tpie}; the textbook foundation is supplied by
 Mehlhorn and Sanders~\cite{mehlhorn2008toolbox}. The
-\emph{migration axis} (T15) instantiates hot/cold separation and multi-tier RAM$\to$NVM$\to$SSD migration, and the
-\emph{buffering axes} (T17/T18) range from the Disruptor ring buffer~\cite{thompson2011disruptor} through
+\emph{migration axis} (T13) instantiates hot/cold separation and multi-tier RAM$\to$NVM$\to$SSD migration, and the
+\emph{buffering axes} (T15/T16) range from the Disruptor ring buffer~\cite{thompson2011disruptor} through
 the Bw-tree delta chain~\cite{levandoski2013bwtree}, the copy-on-write buffer~\cite{driscoll1989persistent},
 and the tombstone buffer~\cite{oneil1996lsm} to lock-free SPSC~\cite{lamport_spsc} and MPMC
-queues~\cite{michael1996queue}. The \emph{index-organization axis} (T13) distinguishes clustered
+queues~\cite{michael1996queue}. The \emph{index-organization axis} (T11) distinguishes clustered
 arrangement~\cite{bayer1972btree}, heap storage, and non-clustered secondary index~\cite{comer1979btree},
-the \emph{filter axis} (T16) the Bloom~\cite{bloom1970}, Cuckoo~\cite{fan2014cuckoo}, SuRF~\cite{zhang2018surf},
-and Xor filter~\cite{graf2020xor}.
+the \emph{filter axis} (T14) the Bloom~\cite{bloom1970}, Cuckoo~\cite{fan2014cuckoo}, SuRF~\cite{zhang2018surf},
+and Xor filter~\cite{graf2020xor}. The \emph{persistence-target axis} (T17), finally, makes the
+storage target explicit --- in-memory as the standard, a disk-writeback target as a disabled
+option ---; in the canonical measurement catalog it is pinned to its in-memory representative so
+that the permutation space stays at $2^{17}$ identities (Section~\ref{sec:mess-chain}).
 
 The \emph{loads}, too, appear as instances. The workloads used in the literature stem from \emph{several},
 mutually incomparable benchmark frameworks; Table~\ref{tab:wl-frameworks} maps them to the using
@@ -376,8 +393,9 @@ SwissTable~\cite{abseil_swisstable} (envisioned as a building block of its own).
 satisfies the point-query subset of the
 \texttt{std::map} interface (\texttt{find}/\texttt{insert}/\texttt{erase}); the order-based operations
 drop out by principle, since a hash table is unordered. Across this subset it occupies a limited axis
-subset: allocation, prefetch, concurrency, memory layout, and ISA-SIMD remain shared --- the latter axis
-concretely carries the SwissTable group lookup~\cite{abseil_swisstable} ---, while the tree- and
+subset: allocation, prefetch, concurrency, and memory layout remain shared --- and on the system
+side the SIMD extension concretely carries the SwissTable group
+lookup~\cite{abseil_swisstable} ---, while the tree- and
 trie-specific axes (path compression, node type, range index) do not drop out but are assigned
 pass-through variants (\texttt{None}); the counter-check thus requires no genus of its own.
 
@@ -421,16 +439,16 @@ contribution; all thus appear as points in the common design space.
   so/.style={draw,rounded corners,fill=orange!8,minimum width=3.8cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt}]
   \node[so] (a1) at (0,0){\textbf{ART} {\scriptsize(P01)}\\{\tiny Trie}\\[1pt]{\tiny adaptive nodes 4/16/48/256, byte-wise branching, path compression}\\{\tiny\itshape axes T4, T3}};
   \node[so] (a2) at (4.05,0){\textbf{HOT} {\scriptsize(P02)}\\{\tiny Trie}\\[1pt]{\tiny height-optimized dynamic span, compact SIMD nodes}\\{\tiny\itshape axes T4, T0}};
-  \node[so] (a3) at (8.1,0){\textbf{Masstree} {\scriptsize(P03)}\\{\tiny Trie $+$ B\textsuperscript{+}}\\[1pt]{\tiny trie of B\textsuperscript{+}-trees, 8-byte slices, B\textsuperscript{+}-leaf nodes}\\{\tiny\itshape axes T4, T11}};
+  \node[so] (a3) at (8.1,0){\textbf{Masstree} {\scriptsize(P03)}\\{\tiny Trie $+$ B\textsuperscript{+}}\\[1pt]{\tiny trie of B\textsuperscript{+}-trees, 8-byte slices, B\textsuperscript{+}-leaf nodes}\\{\tiny\itshape axes T4, T10}};
   \node[so] (a4) at (12.15,0){\textbf{CoCo-Trie} {\scriptsize(P04)}\\{\tiny Succinct}\\[1pt]{\tiny compact-collapsed trie, succinct-encoded paths}\\{\tiny\itshape axes T3, T4}};
   \node[so] (b1) at (0,-2.4){\textbf{START} {\scriptsize(P05)}\\{\tiny Trie}\\[1pt]{\tiny self-tuning adaptive radix span}\\{\tiny\itshape axes T0, T4}};
   \node[so] (b2) at (4.05,-2.4){\textbf{B\textsuperscript{2}-Tree} {\scriptsize(P06)}\\{\tiny Hybrid}\\[1pt]{\tiny B\textsuperscript{+} with binary inner nodes, cache-aware}\\{\tiny\itshape axes T4, T5}};
   \node[so] (b3) at (8.1,-2.4){\textbf{Wormhole} {\scriptsize(P07)}\\{\tiny Hybrid}\\[1pt]{\tiny trie $+$ hash $+$ B\textsuperscript{+}-leaf, $O(\log L)$ point query}\\{\tiny\itshape axes T0, T2}};
   \node[so] (b4) at (12.15,-2.4){\textbf{LOUDS} {\scriptsize(P09)}\\{\tiny Succinct}\\[1pt]{\tiny unary degree sequence, bitmap-encoded trie}\\{\tiny\itshape axes T9, T5}};
-  \node[so] (c1) at (0,-4.8){\textbf{SuRF} {\scriptsize(P10)}\\{\tiny Succinct}\\[1pt]{\tiny succinct range filter over LOUDS}\\{\tiny\itshape axes T16, T9}};
+  \node[so] (c1) at (0,-4.8){\textbf{SuRF} {\scriptsize(P10)}\\{\tiny Succinct}\\[1pt]{\tiny succinct range filter over LOUDS}\\{\tiny\itshape axes T14, T9}};
   \node[so] (c2) at (4.05,-4.8){\textbf{CSS-Tree} {\scriptsize(P11)}\\{\tiny cache-sensitive}\\[1pt]{\tiny pointerless implicit tree, arithmetic navigation}\\{\tiny\itshape axes T4, T5}};
   \node[so] (c3) at (8.1,-4.8){\textbf{CSB\textsuperscript{+}-Tree} {\scriptsize(P12)}\\{\tiny cache-sensitive}\\[1pt]{\tiny B\textsuperscript{+} with \emph{one} child-group pointer}\\{\tiny\itshape axes T4, T5}};
-  \node[draw,rounded corners,fill=blue!8,minimum width=3.8cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt] (c4) at (12.15,-4.8){\textbf{SwissTable}\\{\tiny Hash (control)}\\[1pt]{\tiny SIMD control bytes; non-tree, in the same axis system}\\{\tiny\itshape axes T0, T12}};
+  \node[draw,rounded corners,fill=blue!8,minimum width=3.8cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt] (c4) at (12.15,-4.8){\textbf{SwissTable}\\{\tiny Hash (control)}\\[1pt]{\tiny SIMD control bytes; non-tree, in the same axis system}\\{\tiny\itshape axis T0 $+$ SIMD (system)}};
 \end{tikzpicture}
 \caption{Gallery of the most important reconstructed search structures: per method (with paper ID) its origin class, the characteristic structural idea and the axes at which it makes its main contribution. Trie, hybrid, succinct and cache-sensitive methods stand next to a non-tree hash control (SwissTable) --- all as points in the same axis design space. The complete axis dissection is given in Table~\ref{tab:axes-overview}.}\label{fig:sota-gallery}
 \end{figure}
@@ -665,7 +683,7 @@ Composing these pairwise couplings across all organs yields a directed inter-org
   \node[org] (layout) at (-4.1,-1.4){layout (T5)};
   \node[org] (search) at (4.1,0){search (T0)};
   \node[org] (prefetch) at (4.1,1.4){prefetch (T7)};
-  \node[org,fill=gray!8] (obs) at (4.1,-1.4){telemetry (T10)};
+  \node[org,fill=gray!8] (obs) at (4.1,-1.4){telemetry (meas.)};
   \node[org,fill=gray!6] (conc) at (0,-2.6){concurrency (T8)};
   \draw[->,very thick,blue] (alloc)--(store);
   \draw[->,very thick,blue] (node)--(store);
@@ -678,7 +696,7 @@ Composing these pairwise couplings across all organs yields a directed inter-org
 \caption{Inter-organ usage graph (\enquote{which axis uses which}): there is exactly \emph{one} canonical
 hub --- the storage organ \texttt{LayoutAwareChunkedStore}, which composes node type~(T4), layout~(T5) and
 allocator~(T6)\@. \emph{Mandatorily} (solid) the store consumes these three axes, and the search~(T0) runs
-over it. All remaining couplings are \emph{optional} (dashed): prefetch~(T7) and telemetry~(T10) read the
+over it. All remaining couplings are \emph{optional} (dashed): prefetch~(T7) and the telemetry (measurement instrumentation, Section~\ref{sec:axis-triad}) read the
 store only via \texttt{requires}-gated observer hooks --- an axis \emph{can} use foreign interfaces, but
 \emph{need} not. The coupling of concurrency~(T8) to the store is not (yet) wired in the code
 (dotted).}\label{fig:usage}
@@ -693,7 +711,7 @@ outward-visible algorithm interface (the \emph{probe dock}), beneath it the \emp
 (Figure~\ref{fig:three-levels}).
 \enquote{Living being} and \texttt{SearchAlgorithm} denote the same entity --- metaphor and technical term
 ---; the anatomy is not a second model but the \emph{body} of this living being: the fixed composition of
-its nineteen axis-organs.
+its eighteen axis-organs.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
   box/.style={draw,rounded corners,inner sep=3pt,minimum height=0.7cm}]
@@ -701,17 +719,17 @@ its nineteen axis-organs.
   \node[box] (sa) at (-3.5,-1.6){SearchAlgorithm};
   \node[box] (co) at (0,-1.6){Container};
   \node[box] (gr) at (3.5,-1.6){Graph};
-  \node[box] (tier) at (-3.5,-3.2){mammal\\{\scriptsize 19 axes}};
+  \node[box] (tier) at (-3.5,-3.2){mammal\\{\scriptsize 18 organ axes}};
   \node[box] (cont2) at (0,-3.2){Set, Sequence,\\Adapter, View};
   \draw[->] (root)--(sa);\draw[->] (root)--(co);\draw[->] (root)--(gr);
   \draw[->] (sa)--(tier);\draw[->] (co)--(cont2);
 \end{tikzpicture}
-\caption{The three-level model: genus (level 1, outer interface) $\to$ tier subclass (level 2, fixed axis set) $\to$ organs/axes (level 3). The SearchAlgorithm genus carries the ``mammal'' with the nineteen axes; the Container genus the subclasses Set/Sequence/Adapter/View.}\label{fig:three-levels}
+\caption{The three-level model: genus (level 1, outer interface) $\to$ tier subclass (level 2, fixed axis set) $\to$ organs/axes (level 3). The SearchAlgorithm genus carries the ``mammal'' with the eighteen organ axes; the Container genus the subclasses Set/Sequence/Adapter/View.}\label{fig:three-levels}
 \end{figure}
 
 At the topmost level there stand exactly three genera. The \texttt{SearchAlgorithm} genus --- the
 key-value-oriented probe dock and the focus of this thesis --- carries as its sole subclass the full
-nineteen-axis \enquote{mammal}; the \texttt{Container} genus (keyless storage) fans out into the
+eighteen-axis \enquote{mammal}; the \texttt{Container} genus (keyless storage) fans out into the
 subclasses Set, Sequence, Adapter, and View; the \texttt{Graph} genus carries its own, different organ set
 (Figure~\ref{fig:genera}). The kingdom \enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}) shown there as
 the root is the anatomy-bearing view immediately beneath the measurable root \texttt{IExecutionEngine} of
@@ -733,7 +751,7 @@ restricted axis subset of the same genus.
   \node[gen] (g3) at (7.6,0){Graph};
   \draw[->] (root)--(g1); \draw[->] (root)--(g2); \draw[->] (root)--(g3);
   % Level 2 --- tier subclasses
-  \node[sub,fill=green!18] (s1) at (-1.7,-1.3){\textbf{mammal}\\{\scriptsize \texttt{map} hull $\cdot$ 19 axes}};
+  \node[sub,fill=green!18] (s1) at (-1.7,-1.3){\textbf{mammal}\\{\scriptsize \texttt{map} hull $\cdot$ 18 organ axes}};
   \node[sub] (c1) at (4.0,-1.05){bird $=$ Set {\scriptsize(\texttt{set})}};
   \node[sub] (c2) at (4.0,-1.85){reptile $=$ Sequence {\scriptsize(\texttt{vector})}};
   \node[sub] (c3) at (4.0,-2.65){invertebrate $=$ Adapter {\scriptsize(\texttt{stack})}};
@@ -741,12 +759,12 @@ restricted axis subset of the same genus.
   \node[tbd] (gr1) at (7.6,-1.3){own organ set\\{\scriptsize subclasses open}};
   \draw[->] (g1)--(s1); \draw[->] (g2)--(c1); \draw[->] (g2)--(c2); \draw[->] (g2)--(c3); \draw[->] (g2)--(c4); \draw[->] (g3)--(gr1);
   % Levels 3--5 --- mammal branch down to the compiled individual
-  \node[drill] (l3) at (-1.6,-2.95){\textbf{Level 3 --- organs:} the 19 axes (node type, layout, allocator, prefetch, \dots) \emph{permute}};
+  \node[drill] (l3) at (-1.6,-2.95){\textbf{Level 3 --- organs:} the 18 organ axes (node type, layout, allocator, prefetch, \dots) \emph{permute}};
   \node[drill] (l4) at (-1.6,-4.25){\textbf{Level 4 --- concrete animal:} one assignment of \emph{all} axes $=$ one individual (ART, HOT, Masstree, SuRF, START, Wormhole; $+$5 paper bindings)};
-  \node[drill,fill=orange!20,very thick] (l5) at (-1.6,-5.65){\textbf{Level 5 --- animal binary:} compiled per permutation to \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, refined by 3 build axes (page type, SIMD, hardware)};
+  \node[drill,fill=orange!20,very thick] (l5) at (-1.6,-5.65){\textbf{Level 5 --- animal binary:} compiled per permutation to \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, refined by the probe build axis page type; the platform is stamped by the three system axes};
   \draw[->,thick] (s1)--(l3); \draw[->,thick] (l3)--(l4); \draw[->,thick] (l4)--(l5);
 \end{tikzpicture}
-\caption[The three genera and the tier hierarchy down to the compiled binary]{The genus/tier hierarchy across five levels. \texttt{SearchAlgorithm}, \texttt{Container} and \texttt{Graph} are the three \emph{genera} (level~1, outer interface). Each genus hosts its \emph{own} tier subclasses (level~2): \texttt{SearchAlgorithm} exclusively the \enquote{mammal} (\texttt{map} hull, full nineteen-axis anatomy), \texttt{Container} every \emph{non}-mammal subclass (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} still-open ones. The mammal branch is drawn out here down to the individual: the nineteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone animal binary (level~5, additionally identity-refined by three build axes)\@. \emph{Every animal binary is thus an animal of its own}; the hierarchy reaches from the genus down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
+\caption[The three genera and the tier hierarchy down to the compiled binary]{The genus/tier hierarchy across five levels. \texttt{SearchAlgorithm}, \texttt{Container} and \texttt{Graph} are the three \emph{genera} (level~1, outer interface). Each genus hosts its \emph{own} tier subclasses (level~2): \texttt{SearchAlgorithm} exclusively the \enquote{mammal} (\texttt{map} hull, full eighteen-axis anatomy), \texttt{Container} every \emph{non}-mammal subclass (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} still-open ones. The mammal branch is drawn out here down to the individual: the eighteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone animal binary (level~5, additionally refined by the probe build axis page type and platform-stamped by the three system axes, Section~\ref{sec:axis-triad})\@. \emph{Every animal binary is thus an animal of its own}; the hierarchy reaches from the genus down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
 \end{figure}
 
 \subsection{Design Patterns and Compile-Time Patterns}\label{sec:anatomy-patterns}
@@ -765,11 +783,11 @@ is a composition of named design patterns and two new compile-time patterns (Fig
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
   \node[draw,rounded corners,fill=green!5,minimum width=12.8cm,minimum height=1.7cm] (classic) at (0,0){};
   \node[font=\bfseries\footnotesize] at (0,0.55){Classical design patterns (GoF) --- used throughout the code};
-  \node[font=\scriptsize] at (0,0.08){\emph{Strategy} (19 axes) $\cdot$ \emph{Abstract Factory}\,/\,\emph{Composite}\,/\,\emph{Iterator} (permutation tree)};
+  \node[font=\scriptsize] at (0,0.08){\emph{Strategy} (18 organ axes) $\cdot$ \emph{Abstract Factory}\,/\,\emph{Composite}\,/\,\emph{Iterator} (permutation tree)};
   \node[font=\scriptsize] at (0,-0.42){\emph{Adapter} (foreign code) $\cdot$ \emph{Observer}\,/\,\emph{Decorator} (measurement hulls) $\cdot$ \emph{Memento} (CoW) $\cdot$ \emph{CRTP}\,/\,\emph{Template Method}};
   \node[draw,rounded corners,fill=orange!8,minimum width=12.8cm,minimum height=2.0cm] (new) at (0,-2.75){};
   \node[font=\bfseries\footnotesize] at (0,-1.95){New compile-time patterns (contribution of this thesis)};
-  \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-2.55){\textbf{1.}~\emph{lazy-sparse cartesian materialization} --- over $10^{14}$ axis combinations are only counted and each path materialized individually on demand in mixed radix};
+  \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-2.55){\textbf{1.}~\emph{lazy-sparse cartesian materialization} --- the full variant product space is only counted and each path materialized individually on demand in mixed radix};
   \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-3.32){\textbf{2.}~\emph{type-driven source emission} --- from an axis composition type names are extracted, rendered to C++ source and loaded per permutation as a module across the ABI boundary};
   \draw[->,thick] (classic)--(new) node[midway,right,font=\scriptsize]{composition};
   \node[draw,rounded corners,fill=blue!6,minimum width=12.8cm,minimum height=1.6cm] (chain) at (0,-5.55){};
@@ -782,7 +800,7 @@ is a composition of named design patterns and two new compile-time patterns (Fig
 \end{figure}
 
 The classical patterns are not ornament but the wiring of the apparatus: \emph{Strategy} encapsulates each
-of the nineteen axes as an interchangeable algorithm, \emph{Abstract Factory}, \emph{Composite}, and
+of the eighteen organ axes as an interchangeable algorithm, \emph{Abstract Factory}, \emph{Composite}, and
 \emph{Iterator} build and traverse the permutation tree, \emph{Adapter} binds foreign code behind the
 stable engine interface, and \emph{Observer} as well as \emph{Decorator} (non-intrusive measurement hulls)
 collect the measurements, while a \emph{Memento} (copy-on-write) secures the state between warm-up and
@@ -795,8 +813,8 @@ Template Pattern} (CRTP) together with \emph{Template-Method} concept checks; co
 themselves do not yet guarantee portable ABI stability~\cite{wg21_modules_abi} --- only the C-stable
 module boundary establishes that.
 Beyond the established patterns, the thesis names two constructions for which a web search found no
-established term: the \emph{lazy-sparse cartesian materialization}, which counts the product space of over
-$10^{14}$ axis combinations only arithmetically and materializes each path individually on demand in mixed
+established term: the \emph{lazy-sparse cartesian materialization}, which counts the combinatorially
+exploding variant product space of all axis catalogs only arithmetically and materializes each path individually on demand in mixed
 radix, rather than blowing up the compiler with the full type tree; and the \emph{type-driven source
 emission}, which extracts fully qualified type names from a compile-time axis composition, renders them to
 C++ source, and loads each permutation as a standalone module across the ABI boundary --- thus the probe
@@ -830,7 +848,9 @@ itself --- this special role is deepened in Section~\ref{sec:measurement-system}
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,
   layer/.style={draw,rounded corners,minimum width=7.4cm,minimum height=0.86cm,align=center,font=\scriptsize}]
   \node[layer,fill=orange!16] (e4) at (0,0)    {\textbf{E4} --- definition $+$ evaluation\\{\tiny XML profiles, result return channel --- the user view of the framework}};
-  \node[layer,fill=orange!12] (e3) at (0,-1.05){\textbf{E3} --- permutation B\textsuperscript{+}-tree\\{\tiny static axes $=$ binary identity, dynamic $=$ runtime dimension}};
+  % {\textsuperscript{+}} grouped: bare BEFORE the first \\ of an align node, \textsuperscript breaks
+  % pgf's line splitting (tikz "Giving up on this path" + "Extra }"); grouped it is stable.
+  \node[layer,fill=orange!12] (e3) at (0,-1.05){\textbf{E3} --- permutation B{\textsuperscript{+}}-tree\\{\tiny static axes $=$ binary identity, dynamic $=$ runtime dimension}};
   \node[layer,fill=orange!8]  (e2) at (0,-2.1) {\textbf{E2} --- tier binaries\\{\tiny one standalone binary per permutation, ABI-stable interface}};
   \node[layer,fill=orange!4]  (e1) at (0,-3.15){\textbf{E1} --- runtime configuration\\{\tiny dynamic sub-axis parameters on the loaded binary}};
   \node[layer,fill=gray!10]   (e0) at (0,-4.2) {\textbf{E0} --- infrastructure\\{\tiny build and platform substrate; completed last}};
@@ -854,7 +874,8 @@ explicitly \emph{frozen interface contract} to its respective neighbouring level
 boundary, say, freezes how an XML definition is translated into axis levels, the E3$\to$E2 boundary how a
 tree path becomes a build order, and the E2$\to$E1 boundary which runtime knobs a binary accepts across
 the ABI\@. The test question per boundary is always: does the layer pass its definition on to the next
-\emph{losslessly}? A system with a product space of over $10^{14}$ combinations is too large for
+\emph{losslessly}? A system whose product space rules out any complete materialization
+(Section~\ref{sec:mess-chain}) is too large for
 simultaneous changes across several levels; only the frozen contracts make each level individually
 acceptable before the next one begins. This principle corresponds to the matrix programming style of the
 apparatus (Section~\ref{sec:anatomy-patterns}): just as the probe is compiled in matrix layers against
@@ -916,29 +937,89 @@ measurement; their technical \emph{instances} --- hardware performance counters,
 TU-Dresden hardware measurement methodology --- have already been introduced as concrete technologies in
 Section~\ref{sec:sota-instances}.
 
-Within these definitional classes the measurement system separates two fundamentally different axis
-systems that must not be mixed. The \emph{organ axes} (T0--T18) are the \emph{measured}: organs of the
-living being, part of the genera, permutable --- every assignment changes the identity of the tier
-binary. The \emph{system axes}, by contrast, are the \emph{measurement instruments} themselves. In the
-anatomy metaphor they are not another organ but the \emph{blood}: they permeate the whole body, are
-always present as soon as measurement is on, and belong to no genus. From this follow three invariants:
+\subsection{The Triad: Organ, System, and Measurement Axes}\label{sec:axis-triad}
+Within these definitional classes the measurement system answers the category question deliberately
+left open in the introduction (Section~\ref{sec:rqs}): the axes of the design space separate along
+the three concerns named there --- the measured, the build and target platform, the measuring itself
+--- into \emph{three} axis categories, developed in the following as standalone \emph{realms} with
+one class root each, one offer catalog each, and one stamp line each
+(Section~\ref{sec:stamp-model}). This triad is the second shape of the separability problem: not
+only the design decisions among one another, but also the measured, the platform, and the
+measurement instrument must stay separated so that a measured effect can be attributed
+unambiguously.
+
+The \emph{organ axes} are the \emph{measured}: organs of the living being, part of the genera,
+permutable --- every assignment changes the identity of the tier binary. Canonically there are
+\emph{eighteen} organ main axes in fixed slot order T0--T17 (Table~\ref{tab:axes-overview}); the
+T~numbers denote the slots of the composition, not an implementation numbering. The earlier
+nineteen-axis numbering (interim state of July 2026) is a historical precursor of this order: from
+it, telemetry and the ISA have moved into the system sphere, and the persistence target has been
+added as the eighteenth organ axis.
+
+The \emph{system axes} are the concerns of the build and target platform. Canonically there are
+\emph{exactly three} main axes in fixed order: the target ISA (\texttt{target\_isa}), the operating
+system (\texttt{operating\_system}), and the extension hardware (\texttt{external\_utils}); the
+latter is exclusively the collecting hub of the hardware meta axes (SIMD/vector extensions,
+GPU/FPGA/NPU, external accelerators). In the anatomy metaphor the system axes are not another organ
+but the \emph{blood}: they permeate the whole body, are always present as soon as measurement is
+on, and belong to no genus. From this follow three invariants:
 system axes are not permutable (they are non-interchangeable, central system constituents); they do not
 stand in the permutation tree; and they never touch the binary identity --- no measurement instrument may
 change \emph{what} is built. Conversely, the effects of the organ axes must never be blended with the
-effects of the measurement instruments. Conceptually the system axes therefore demand an own, common root
-separate from the anatomy hierarchy; consolidating the measurement constituents, today still scattered,
-under this root is part of the implementation (Section~\ref{sec:impl-system-axes}).
+effects of the platform and the measurement instruments. Build control quantities such as
+optimization level and SIMD extension therefore multiply only the \emph{build} matrix --- they
+appear in the build version tag of the binary (Section~\ref{sec:stamp-model}) ---, never the organ
+permutation space.
 
-Under this root the measurement categories (Section~\ref{sec:sota-instances}) --- differentiated in the
-apparatus into sixteen categories --- order themselves into a \emph{regime bipartition}: the time- and
+The \emph{measurement axes}, finally, are the concerns of measuring itself --- the measurement
+instruments. They form the third realm, separate from both others: the load framework
+(\texttt{load\_framework}), which carries the workload conventions of
+Section~\ref{sec:workload-basics-known} into the apparatus, is its first main axis; the
+\emph{measurement tooling} spans the three granularities of benchmarking
+(Section~\ref{sec:mess-chain}); and the measurement categories
+(Section~\ref{sec:sota-instances}) --- differentiated in the apparatus into sixteen categories ---
+are a \emph{sub}-axis of this tooling: they manifest as columns of the result tables, not as main
+axes of their own. The run methodology of a run (debug, measurement, or release execution) likewise
+remains a sub-axis and never becomes part of a binary identity; like the system axes, the
+measurement axes are strictly binary-id-neutral. Within the sixteen categories there is a
+\emph{regime bipartition}: the time- and
 observer-based regime (runtime clocks and observer hulls; nine categories, among them latency, throughput
 and memory footprint) and the counter-based PMC regime (hardware performance counters; seven categories,
-among them cache, dTLB and branch misses as well as IPC/CPI). The regime is a property of the system
-axis, not of the measured organ: the same organ axis can be illuminated by both regimes. The
+among them cache, dTLB and branch misses as well as IPC/CPI). The regime is a property of the
+measurement axis, not of the measured organ: the same organ axis can be illuminated by both regimes. The
 observer-based subset is already resolved by the apparatus, the PMC subset remains bound to hardware
 counter access (Section~\ref{sec:sota-instances}).
 
-Both axis systems are bound by a methodological principle, the \emph{honest-0 doctrine} (honest zero or
+Conceptually, a double root cut with \emph{two} realm roots follows --- instead of the \emph{one}
+common root of all non-organ axes that earlier versions of this thesis still envisioned: the system
+realm is rooted at the \texttt{CacheEngineBuilder}, which knows the platform and builds the tier
+binaries; the measurement realm is rooted at the experiment \emph{planner}, which resolves the
+experiments from the XML description (Section~\ref{sec:mess-chain}). Each of the three categories
+thus carries its own abstract class root and its own offer catalog; the code shape of these roots
+is developed in Section~\ref{sec:impl-system-axes}. Also binding is the canonical overall order of
+all main axes: first the measurement tooling, then the three system axes in their fixed order, then
+the organ slots T0--T17.
+
+This order is the result of datable \emph{relocations}, not a mere renaming. An earlier five-item
+list of the system axes carried, besides the three main axes of today, also the compiler, the
+scheduling, and the load framework: the compiler has moved as the sub-axis group of the build
+toolchain into the outer complex bracket (Section~\ref{sec:complex-axis}), the scheduling as a
+sub-axis onto the wrapper of the target ISA, and the load framework has left the system world
+\emph{without replacement} towards the measurement realm --- the system axes are thereby slimmed
+down to their thematically fitting functions. From the organ numbering, conversely, the ISA ---
+today the complex axis \texttt{target\_isa} (Section~\ref{sec:complex-axis}) --- and telemetry have
+moved into the system sphere; telemetry \emph{split in two}, since counter instrumentation must be
+built in for measuring: as a genuine sweep sub-axis of the measurement tooling in the planner it
+generates a genuine compile-time main quantity in the builder.
+
+This last pattern is generic and carries a name of its own: the \emph{two-way-split main axis} ---
+an axis that runs across the runtime of the preceding stage \emph{and} the compile time of the
+following stage, along the chain planner $\to$ builder $\to$ tier binary; the sub-axis release of
+the preceding stage becomes the main-axis assumption of the following stage. The load framework is
+the first instance (the planner chooses it at runtime, the builder carries it compiled in),
+telemetry the second, and the hardware detection (Section~\ref{sec:hw-probe}) the third.
+
+All three axis realms are bound by a methodological principle, the \emph{honest-0 doctrine} (honest zero or
 honest emptiness): where a value cannot truly be collected --- an organ axis without a real runtime
 parameter, a counter without hardware access, a measurement source that does not exist on the platform
 ---, the system reports \emph{honestly invalid or empty} instead of a plausible phantom value. Better a
@@ -977,13 +1058,107 @@ central for cache-aware search structures --- the behaviour at the node, data an
 performance counters --- is not yet collected in the current implementation state (dashed).}\label{fig:measurement-triangle}
 \end{figure}
 
-Building on these measurement patterns, the measurement system separates four subsystems and tests in
+\subsection{Complex Axes: the Target ISA as a Fixed Recombination}\label{sec:complex-axis}
+To the outside, the three system main axes behave like \emph{one}: a \emph{complex axis} is a
+bracket over a fixed recombination of several main axes --- all members remain main axes but appear
+together as one (bundled as a command bracket in the sense of the \emph{Command} pattern). The
+\emph{outer} complex bracket spans
+$\texttt{target\_isa} \times \texttt{operating\_system} \times \texttt{external\_utils}$ and
+carries as its sub-axis group the build toolchain (compiler, optimization level, atomics
+capability) --- the relocation target of the former compiler system axis; as a bracket it is itself
+\emph{no} member of the canonical order. The target ISA is \emph{in itself} a second, inner complex
+axis: a fixed recombination of the identity members RAM frequency, CAS latency, and CPU
+fabrication, recursively wrapped by the outer bracket; on its wrapper hang the agreed sub-system
+axes (scheduling, NUMA node, memory page size). The members are \emph{declared} per machine --- in
+the same user XML that also displays the experiment (Section~\ref{sec:mess-chain}) --- and
+determined per operating system and ISA; on an exact property match the same axis is reusable
+across formally different machine types, because the host name serves only the instance lookup ---
+the class identity is the property tuple. In the identity stamp (Section~\ref{sec:stamp-model}) a
+complex axis occupies exactly \emph{one} field of its type line, no bracket per member; the
+operating-system distribution is a stamp variable there, not a fourth expression. The CAS latency
+is, in the current state, a purely \emph{declared} member (provenance level \enquote{declared, not
+measured}, Section~\ref{sec:hw-probe}); the thesis reports this instead of feigning a measured
+value.
+
+\subsection{Hardware Detection as a Two-Way-Split Measurement Axis}\label{sec:hw-probe}
+So that the declared platform members do not become silently aging constants, the concept
+introduces hardware detection as a further two-way-split main axis --- and specifically as a
+\emph{measurement} axis: it measures properties of the hardware but changes neither system nor
+organ axes. \emph{Level~1} lies with the planner: at \emph{its} runtime it coarsely detects the
+cell of ISA vendor family and operating system and selects by metaprogramming which fine-grained
+detection software, including operating-system accesses, is compiled into the
+\texttt{CacheEngineBuilder} --- a compile-time cell selection, not a runtime switch across
+operating systems. The selection matrix is \emph{total} over all declared ISA complexes and all
+documented operating systems: unimplemented cells exist as an honest declaration-only
+specialization, and a new catalog entry without a cell breaks the compilation instead of leaving a
+silent gap. \emph{Level~2} lies with the builder: with the compiled-in detection it collects, at
+its runtime, the actual properties of the machine and thereby sets the compile-time stamps of the
+tier binaries correctly. The stamp of this measurement axis itself carries the vendor detection
+family and the operating system --- as the device segment of the measurement stamp line
+(Section~\ref{sec:stamp-model}) ---, never a measured value.
+
+Every collection result carries a \emph{provenance} level together with its collection time, in
+descending order of trust: \emph{configured-measured} (privileged system query),
+\emph{SPD JEDEC base value} (read unprivileged from the module memory, deliberately only the JEDEC
+nominal rate; overclocking profiles appear as a separate offer field, never as the actual value),
+and \emph{declared-not-measured} (user XML). A lower level may displace a higher one only with a
+marker that travels along --- otherwise a declared nominal rate would stand in the result table
+while the machine possibly runs faster: worse than honestly declared. What is not collected
+receives an explicit n/a token, never a zero in the value column (honest-0 doctrine,
+Section~\ref{sec:axis-triad}); four error classes separate missing, unreadable, corrupt, and
+unknown-format sources, and a corrupt source never degrades silently to the next level. The gain of
+this axis is therefore not a better single value but the \emph{automated resubmission}: a tool
+result collected once and then frozen --- this is how the previously recorded RAM nominal rate of
+4800\,MT/s arose from a manual \texttt{dmidecode} query --- is replaced by a collection that takes
+place anew on every run and carries its trust level along. In the implementation state of this
+thesis, the provenance vocabulary including the SPD parser and the error domain exists for this
+axis; the collection chain and the platform selection matrix are design (Chapter~\ref{ch:impl}).
+
+\subsection{Identity Stamps: One Line per Realm}\label{sec:stamp-model}
+The triad becomes readable on the tier binary itself. Its \emph{permutation} identity is the
+\texttt{binary\_id}: the path of eighteen \texttt{axis=value} segments in canonical slot order ---
+one segment per organ axis, and \emph{only} organ axes. In addition, every tier binary carries
+compiled-in \emph{stamp lines}, exactly one per axis type. The \emph{organ line} records, for each
+of the eighteen main axes, the chosen algorithm together with its algorithm version. The
+\emph{system line} holds the three system main axes; as their version they carry their
+\emph{build} version --- the ordered suffix tag of toolchain, optimization level, extension, and
+further build control quantities, in which an empty member simply produces no segment ---, because
+a platform axis has no algorithm version. The \emph{measurement line} leads with the load framework
+as its first segment and then the set of compiled-in measurement toolings; an \emph{empty}
+measurement line is thereby an honest statement --- no measurement tooling compiled in. A complex
+axis occupies exactly one field in its line (Section~\ref{sec:complex-axis}). A fourth line,
+finally, records for probe mixed builds the merge strategy together with the probe, so that the
+hybrid and full-join states of the three-stage test (Section~\ref{sec:mess-chain}) remain
+distinguishable at the stamp; for pure cache-engine builds it stays empty. Measured \emph{values}
+--- say, a collected RAM rate --- never appear in stamp or \texttt{binary\_id}: what is stamped is
+the compile-time platform \emph{class}, never a measured value (Section~\ref{sec:hw-probe}).
+
+\subsection{Subsystems and the Chain from the XML to the Tier Binary}\label{sec:mess-chain}
+The apparatus is organized as \emph{one} main channel: \emph{one} user XML is the only source of
+the entire process. It \emph{displays} which experiments, axes, settings, and procedures are to be
+carried out, while per realm a \emph{registry} catalog holds the \emph{offer} of what exists ---
+the declarative configuration model of Section~\ref{sec:software-means}, modeled on the Java POM: a
+declarative manifest resolved against a repository; an unregistered reference is a hard validation
+error, not a silent omission. The experiment \emph{planner} resolves the XML against the three
+offer catalogs and builds, per target platform and measurement task, \emph{one}
+\texttt{CacheEngineBuilder} into which the chosen measurement axes are compiled; this builder
+orchestrates with them the build of the tier binaries and stamps them with its platform
+(Section~\ref{sec:stamp-model}); the tier binary, finally, carries the organ permutation. Each
+stage of the chain thus feeds from its kind-specific offer --- measurement catalog $\to$ planner,
+system catalog $\to$ builder, organ catalog $\to$ tier binary ---, and the tier binary stays
+readable in two strictly separated layers: the hardware and environment layer of the system axes
+and the application logic layer of the organ axes; as little as one equates an operating system
+with the application front end, as little do these two layers merge in the binary.
+
+Building on these measurement patterns and this chain, the measurement system separates four subsystems and tests in
 three stages that feed the three mandatory measurement series; it reduces the permutation space
 deliberately.
 Four formally separated subsystems with distinct responsibilities form the model: the
 \texttt{messung\_driver} (the evaluation orchestrator that runs the pipeline per mandatory measurement
 series A/B/C), the \texttt{CacheEngineBuilder} (an autonomous platform-measurement system that executes the
-seven-phase pipeline (Section~\ref{sec:impl-pipeline}) via its \texttt{ExperimentDriver}), the \texttt{CacheEngine} (the axis building-block library with the default
+seven-phase pipeline (Section~\ref{sec:impl-pipeline}) via its \texttt{ExperimentDriver}; the
+planner role of the chain and the builder role today share one binary in two roles,
+Chapter~\ref{ch:impl}), the \texttt{CacheEngine} (the axis building-block library with the default
 implementations per axis), and the \texttt{probe} PRT-ART (which supplies some axis-organs itself and
 consumes cache-engine services for the rest). The \texttt{ExecutionEngine} is not a fifth subsystem but the
 shared measurable root (the \texttt{IExecutionEngine} interface) through which these four are connected:
@@ -1092,18 +1267,33 @@ variation of the axis decisions all else held equal, to isolate the contribution
 \emph{series~C} (merge/regression old vs.\ new: concrete merge points between PRT-ART building blocks and
 cache-engine permutations --- e.g.\ the PRT-ART OLC with tcmalloc and the ART page, the 4+1+2 pool with
 the HOT page, the path prefetch with the B\textsuperscript{2}-tree page, or the multi-level layout with
-the Wormhole page ---, run build-spanning as an old-versus-new comparison). Each series is collected in three granularities:
-\emph{micro-benchmarking} compares each design constituent in isolation over the shared category interface,
-\emph{macro-benchmarking} measures the individual \texttt{std::map} interface operations (insertion,
-point and range lookup, update, deletion) against example loads, and \emph{overall
-benchmarking} runs the YCSB load profiles over every recombination. Precisely this three-granularity
-methodology is the answer to the separability problem: by measuring each constituent first in isolation
-(micro) before it appears in the operation and overall context, the contributions are separated and become
-measurable in isolation instead of remaining blended in the overall throughput.
+the Wormhole page ---, run build-spanning as an old-versus-new comparison). Each series is
+collected in three granularities. \emph{Micro-benchmarking} measures each axis over its \emph{axis
+interface} --- the set of functions that \emph{all} algorithms of this axis must supply (every
+allocator provides memory, whichever one it is): the axis-specific main properties, measured
+internally. The axis is thereby \emph{not} an interface function of the search algorithm; its genus
+interface functions \emph{use} the axis interfaces --- just as axis algorithms may use foreign axis
+interfaces, since containers, say, are needed everywhere. \emph{Macro-benchmarking} measures the
+individual \texttt{std::map} interface operations (insertion, point and range lookup, update,
+deletion) against example loads, and \emph{overall benchmarking} runs the YCSB load profiles over
+every recombination. As a counter-check to the internal micro measurement, the apparatus
+additionally measures three \emph{wallclock levels}: the wallclock of the axis interfaces under
+each algorithm, the wallclock of the genus interface functions, and the wallclock of a test load
+from the load frameworks. The architectural obligation of this cut is that all axis algorithms use
+exclusively axis interfaces instead of generic operating-system calls --- compiled in inline by
+metaprogramming, without \texttt{std::variant} ---, so that the micro measurement of an axis
+actually measures the axis. Precisely this methodology is the answer to the separability problem:
+by measuring each constituent first in isolation over its axis interface before it appears in the
+operation and overall context, the contributions become separately measurable instead of remaining
+blended in the overall throughput.
 
-The system reduces the space thus spanned deliberately. With the N-phase extension from eleven to
-nineteen axes plus around
-sixty-four sub-axes it grows from around 5.5~billion to over $10^{14}$ permutations; three mechanisms dampen the explosion: the
+The system reduces the space thus spanned deliberately. Already the canonical measurement catalog
+--- two enabled representatives per organ axis, the persistence axis pinned to its in-memory
+representative --- counts $2^{17} = 131072$ binary identities per system permutation (per
+combination of the build control quantities, Section~\ref{sec:axis-triad}), each with its full
+eighteen-segment path (Section~\ref{sec:stamp-model}); the raw variant product space over all axis
+catalogs including their sub-axes lies orders of magnitude above that (already the historical
+eleven-axis precursor counted billions of combinations). Three mechanisms dampen the explosion: the
 \texttt{<expected\_workload>} profile filter routes only compatible workloads, the \texttt{Defined} mode
 (\texttt{MessreihenMode::Defined}) runs only the declared tuples (around 100--1000 per series, which enter the manuscript), and the
 \texttt{Full} or \texttt{Full-Sampled} mode (e.g.\ every thousandth permutation) runs only on the ZIH
@@ -1115,9 +1305,10 @@ axis-organs itself and falls back
 via a compile-time fallback (\texttt{resolve\_baustein.hpp}) on the cache-engine default building blocks
 where it does not override an axis; the hybrid \texttt{PrtArtSearchEngine<Ts\ldots>} API remains
 unaffected, and the runtime binding occurs via the execution-engine adapter, not via a separate
-search-engine layer. Concretely, PRT-ART overrides in the measurement apparatus the build axis page type
-as well as the organs path compression (redirect), value handle (ChainRef slot), prefetch, concurrency
-pattern, and telemetry --- path-oriented (bundle) prefetch, optimistic lock coupling with reserved value
+search-engine layer. Concretely, PRT-ART overrides in the measurement apparatus the build axis page type,
+the four organ axes path compression (redirect), value handle (ChainRef slot), prefetch, and concurrency
+pattern, as well as the runtime telemetry (in the triad a measurement-tooling sub-axis,
+Section~\ref{sec:axis-triad}) --- path-oriented (bundle) prefetch, optimistic lock coupling with reserved value
 blocks, and the hypothesis metrics H1/H2/H3 ---; its further own building blocks, the 4+1+2 pool allocator
 (free-list sub-axis) and the multi-level layout, live in the probe repo and currently run via the
 cache-engine default in the measurement path (binding as follow-up step~E6 of the internal
@@ -1135,13 +1326,13 @@ probe dock as every reconstructed SOTA method.
 \begin{tikzpicture}[font=\footnotesize,align=center,
   prt/.style={draw,rounded corners,fill=orange!15,very thick,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize},
   ce/.style={draw,rounded corners,fill=green!8,minimum width=2.35cm,minimum height=0.6cm,font=\scriptsize}]
-  \node[font=\bfseries\footnotesize] at (0,2.35){PRT-ART (probe): a living being of 19 axis-organs $+$ build axis page type};
+  \node[font=\bfseries\footnotesize] at (0,2.35){PRT-ART (probe): a living being of 18 axis-organs $+$ build axis page type};
   \node[prt] at (-3.7,1.55){Page-Type};
   \node[prt] at (-1.23,1.55){Path-Compr.\ (Redirect)};
   \node[prt] at (1.23,1.55){Value-Handle (ChainRef)};
   \node[prt] at (3.7,1.55){Prefetch};
   \node[prt] at (-2.46,0.85){Concurrency (OLC)};
-  \node[prt] at (2.46,0.85){Telemetry};
+  \node[prt] at (2.46,0.85){Telemetry (meas.)};
   \node[ce] at (-3.7,-0.15){Search-Algo};
   \node[ce] at (-1.23,-0.15){Node-Type};
   \node[ce] at (1.23,-0.15){Layout};
@@ -1150,9 +1341,8 @@ probe dock as every reconstructed SOTA method.
   \node[ce] at (2.46,-0.85){$\ldots$ others};
   \node[font=\scriptsize,align=center] at (0,-1.65){\textcolor{orange}{\textbf{orange}} $=$ PRT-ART slot overridden in the apparatus (incl.\ build axis page type) \quad \textcolor{green!50!black}{\textbf{green}} $=$ cache-engine default (compile-time fallback)};
 \end{tikzpicture}} % chktex 31
-\caption{PRT-ART as a demonstrator in the M-model: the probe overrides six slots in the measurement apparatus --- the build axis page type plus the five axis-organs path compression (redirect), value handle (ChainRef), prefetch, OLC concurrency and telemetry --- and obtains the remaining fourteen composition axes via the compile-time fallback from the cache engine; its further own building blocks (4+1+2 pool allocator, multi-level layout) currently run via the cache-engine default in the measurement path (binding: follow-up step~E6). Thus a complete, measurable living being arises from a few own plus many default organs.}\label{fig:prtart-demo}
+\caption{PRT-ART as a demonstrator in the M-model: the probe overrides six slots in the measurement apparatus --- the build axis page type, the four organ axes path compression (redirect), value handle (ChainRef), prefetch, and OLC concurrency, as well as the runtime telemetry (measurement-tooling sub-axis, Section~\ref{sec:axis-triad}) --- and obtains the remaining fourteen organ axes via the compile-time fallback from the cache engine; its further own building blocks (4+1+2 pool allocator, multi-level layout) currently run via the cache-engine default in the measurement path (binding: follow-up step~E6). Thus a complete, measurable living being arises from a few own plus many default organs.}\label{fig:prtart-demo}
 \end{figure}
-% B9 PRT-ART demonstrator: fig:prtart-demo (3.4) DONE; PRTART gallery: fig:prtart-gallery (4.2) DONE
 
 \section{Sharpening through Heuristics}\label{sec:heuristics}
 The measurement series deliver more than rankings: from them heuristics can be won that sharpen the
@@ -1266,7 +1456,7 @@ so that each axis receives a complete overview of its properties and individual 
 together over all permutations, a multidimensional measurement database arises per tier binary, from
 which the heuristic curves of the loop (Section~\ref{sec:heuristics-loop}) are read. The cardinality of
 each dimension of this type system is to be strategically organized into classes and hierarchies:
-design-fixed constants (say, the nineteen organ axes and the sixteen measurement categories),
+design-fixed constants (say, the eighteen organ axes and the sixteen measurement categories),
 profile-bound products (what an experiment profile admits as assignments), and runtime-free iteration
 spaces (the dynamic sampling points per static binary) --- so the system axes remain able to carry the
 evaluation across all levels.
