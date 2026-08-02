@@ -1,7 +1,7 @@
 \chapter{Building-Block Matrix}\label{app:blocks}
 
 This appendix contains the complete building-block matrix referenced by the state of the art
-(Section~\ref{sec:sota-instances}). Each axis is an \emph{organ} of the living being: a concrete search algorithm (technically \texttt{SearchAlgorithm}, metaphorically a living being) is the fixed composition of its nineteen axes, each of which is an organ; the building-block variants listed per axis are the interchangeable forms of that organ, and their permutation amounts to a genetic experiment on the living being. The \emph{anatomy} of this living being is the wiring \emph{between} the organs: axis algorithms use the interfaces of other axes (the allocation axis, for instance, provides a shared allocation interface for the remaining organs). For each axis it lists the purpose, the \emph{static} sub-axes
+(Section~\ref{sec:sota-instances}). Each axis is an \emph{organ} of the living being: a concrete search algorithm (technically \texttt{SearchAlgorithm}, metaphorically a living being) is the fixed composition of its eighteen organ axes (T0--T17), each of which is an organ; the building-block variants listed per axis are the interchangeable forms of that organ, and their permutation amounts to a genetic experiment on the living being. The \emph{anatomy} of this living being is the wiring \emph{between} the organs: axis algorithms use the interfaces of other axes (the allocation axis, for instance, provides a shared allocation interface for the remaining organs). For each axis it lists the purpose, the \emph{static} sub-axes
 (compile-time-selectable variant families) and the \emph{dynamic} sub-axes (run-time parameters), as
 well as the concrete building-block variants with their source (paper identifier or code/baseline).
 The entries are verified against the \texttt{comdare-cache-engine} code and the paper-provenance map
@@ -462,51 +462,9 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} P01, P09, P10, Ziv/\allowbreak{}Lempel 1977~\cite{leis2013art,jacobson1989louds,zhang2018surf,ziv1977lz77}.
 
-\section{T10 Telemetry and Measurement Instrumentation (axis\_\allowbreak{}11)}
+\section{T10 Value Handle Storage Strategy}
 
-This axis is the \emph{telemetry organ} (T10) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
-
-Defines strategies for measuring index operations (insert, lookup, erase) with different overhead profiles. Supports density tracking for adaptive node-type selection, global insert counters for throughput measurements, HDR histograms for latency quantiles, and leaf-only counters to avoid cache-line false sharing in measurement cycles.
-
-\subsection*{Static sub-axes}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Description \\
-\midrule
-\endhead%
-TM1 & Scope & Validity scope of counter management: leaf-only (leaf nodes only), per-node (all nodes), or global (single accumulator for entire structure). Compile-time choice, impacts overhead through contention on shared cache lines. \\
-TM2 & Metric Type & Type of measured metric: counter (event counter), histogram (distribution with quantiles), or density (per-node slot occupancy). Impacts memory footprint and measurement granularity. \\
-TM3 & Overhead Level & Measurement overhead magnitude: low (atomic operations), medium (per-node data structures), high (histogram logging). Determines suitability for different workload scenarios (benchmarking vs.\ production). \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Building blocks}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
-\toprule
-Variant & Description & Source \\
-\midrule
-\endhead%
-\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Counter in leaf nodes only (avoids cache-line ping-pong by skipping inner-node updates). Low overhead with leaf-only scope. Implements coherence-friendly counter concept from Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023 motivation, although original paper describes cache-friendly B+-layout, not leaf-counter algorithm --- CE baseline for false-sharing avoidance. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, context; Code/\allowbreak{}Baseline) \\
-\texttt{Density\allowbreak{}Tracker} & Per-node density/\allowbreak{}slot-occupancy tracking for adaptive node-type selection (4→16→48→256). Contextual telemetry tied to ART structure (Leis ICDE 2013), measures slot occupancy across all nodes. Higher overhead than Leaf\allowbreak{}Only, but provides adaptation signal for dynamic rebalancing decisions. & P01 (ART/\allowbreak{}Leis ICDE 2013, context; Code/\allowbreak{}Baseline) \\
-\texttt{Insert\allowbreak{}Counter} & Global atomic insert counter with minimal overhead (1 atomic increment per insert). Contextual telemetry tied to HOT structure (Binna SIGMOD 2018), global scope. Sufficient for throughput measurement series, no latency granularity. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, context; Code/\allowbreak{}Baseline) \\
-\texttt{Latency\allowbreak{}Histogram} & HDR histogram for lookup latency distribution (p50/\allowbreak{}p95/\allowbreak{}p99 quantiles). Based on Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 license. Highest overhead (per lookup), but provides complete latency statistics for SLA-oriented and research-grade measurement series. Only is\_\allowbreak{}original candidate of the axis. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
-Probability-Hints & Probability hints of the cache-oblivious Bender line (P16/\allowbreak{}P17): distribution- and probability-related occupancy hints that serve as input to the layout decisions. Paper building block of the axis dissection (reconstruction target of this thesis, no CE baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Contributing sources:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
-
-\emph{Related literature:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
-
-\section{T11 Value Handle Storage Strategy}
-
-This axis is the \emph{value-handle organ} (T11) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
+This axis is the \emph{value-handle organ} (T10) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
 
 The Value-Handle axis defines how data values (Values) are stored and accessed in the cache index: inline within node slots, externally in a pool, via immutable-shared references (RCU-style), versioned pointers (MVCC), or chained external references (multi-value). This axis characterizes the storage-layout strategy for values and determines access latency (direct vs.\ indirect) and concurrency semantics (snapshot vs.\ versioning).
 
@@ -542,48 +500,9 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} P01, P03, P07, P29, SMART (OSDI 2023)~\cite{leis2013art,mao2012masstree,wu2019wormhole,mckenney2001rcu,luo2023smart}.
 
-\section{T12 Instruction Set Architecture (ISA)}
+\section{T11 Index Organization}
 
-This axis is the \emph{ISA organ} (T12) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
-
-Axis T12 specifies the target CPU instruction set architecture (ISA) as a compile-time constant, enabling cross-platform optimizations across four dominant server architectures: x86-64 (Intel/\allowbreak{}AMD), AArch64 (ARM), Power-ISA (IBM), and RISC-V (open-source). Each variant defines a hardware-specific SIMD baseline (SSE2, NEON, VSX, scalar) and thus characterizes the vector acceleration potential for cache-engine operations such as \texttt{simd\_\allowbreak{}field\_\allowbreak{}sum} (accumulation of 32-bit word fields).
-
-\subsection*{Static sub-axes}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Description \\
-\midrule
-\endhead%
-IS1 & Word Size & CPU data-path width: 32-bit, 64-bit, or 128-bit. In the cache engine standardized to 64-bit for all four ISA profiles. \\
-IS2 & CPU Vendor/\allowbreak{}Family & Instruction set family: \texttt{intel\_\allowbreak{}amd} (x86-64), \texttt{arm} (AArch64), \texttt{ibm} (Power-ISA), \texttt{open} (RISC-V). Determines SIMD extension compatibility: SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 (x86-64), NEON/\allowbreak{}SVE/\allowbreak{}SVE2 (AArch64), VSX (Power), RVV (RISC-V). \\
-IS3 & ZIH Cluster Affinity & Production machines at TU Dresden: Barnard (Intel Xeon Platinum 8470, Sapphire Rapids, x86-64), Capella (AMD EPYC 9334, x86-64), Grace\allowbreak{}Hopper (NVIDIA Grace Hopper ARMv9 Neoverse V2, AArch64), N/\allowbreak{}A (research boards, RISC-V/\allowbreak{}Power). Enables hardware-specific experiments with real production cluster profiles. \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Building blocks}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
-\toprule
-Variant & Description & Source \\
-\midrule
-\endhead%
-\texttt{Amd64\allowbreak{}Isa} & x86-64 /\allowbreak{} Intel 64 ISA (AMD/\allowbreak{}Intel Server+Desktop). Dominant server platform with SSE2 SIMD baseline (4 uint32 lanes per 128-bit register). Implements genuine SSE2 vectorization via \texttt{\_\allowbreak{}mm\_\allowbreak{}loadu\_\allowbreak{}si128} + \texttt{\_\allowbreak{}mm\_\allowbreak{}add\_\allowbreak{}epi32} on native x86-64 hosts; scalar fallback on non-x86 build hosts. ZIH presence: Barnard (Intel Xeon Platinum 8470, Sapphire Rapids), Capella (AMD EPYC 9334). & Vendor spec (AMD 2000 /\allowbreak{} Intel ongoing) \\
-\texttt{Aarch64\allowbreak{}Isa} & ARMv8-A 64-bit ISA (ARM Holdings). Growing server relevance (Apple M-Series, AWS Graviton, Ampere Altra). SIMD baseline: NEON (128-bit, 4 uint32 lanes). Cache engine implementation: 4-way unrolled scalar fallback (models NEON width without ARM intrinsics on x86 build hosts); genuine NEON vectorization on native ARMv8 hosts. ZIH presence: Grace\allowbreak{}Hopper (NVIDIA Grace Hopper, Neoverse V2 + Hopper GPU). & Vendor spec (ARM Ltd., since 2011/\allowbreak{}2013) \\
-\texttt{Power\allowbreak{}Pc\allowbreak{}Isa} & Power ISA (POWER9/\allowbreak{}10, ppc64le little-endian). IBM Power Systems (AC922, IC922, S1022). SIMD baseline: VSX (Vector-Scalar Extension, 128-bit, 4 uint32 lanes). Cache engine implementation: 4-way unrolled scalar fallback (models VSX width without Power intrinsics on x86 build hosts). Relevant for HPC workloads with NVLink GPU connectivity (AC922). ZIH presence: not primary, but available for research comparisons. & Vendor/\allowbreak{}standards spec (IBM/\allowbreak{}Open\allowbreak{}POWER, v3.0 2017, v3.1 2020) \\
-\texttt{Risc\allowbreak{}VIsa} & RISC-V RV64\allowbreak{}GC open-source ISA (RV64 General + Compressed). Growing relevance (Si\allowbreak{}Five, Alibaba Xuantie, Andes, ETH Zurich cores). SIMD baseline: NONE (RVV is optional, not part of RV64\allowbreak{}GC baseline). Cache engine implementation: deliberately plain scalar path (unrolled) -- models lack of vector unit in base ISA and thus creates real, slower runtime versus x86-64 and ARM\@. ZIH presence: embedded + research boards. & Standards spec (RISC-V Intl.; UCB TR since 2011) \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Contributing sources:} ---
-
-\section{T13 Index Organization}
-
-This axis is the \emph{index-organization organ} (T13) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
+This axis is the \emph{index-organization organ} (T11) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
 
 Classification of data storage organization and index structuring across three orthogonal dimensions: storage-order (heap/\allowbreak{}clustered/\allowbreak{}unordered), index-count (none/\allowbreak{}single/\allowbreak{}multiple), and data-embedding (separate vs.\ leaf-embedded). This axis models fundamental DBMS architectural decisions that decisively influence cache behavior, access patterns, and I/\allowbreak{}O characteristics based on alignment of index-order with storage-order.
 
@@ -621,9 +540,9 @@ Variant & Description & Source \\
 \emph{Contributing sources:} Bayer \& Mc\allowbreak{}Creight 1972, Comer 1979, Srinivasan et al.\ 2000, Garcia-Molina, Ullman \& Widom (Textbook)~\cite{bayer1972btree,comer1979btree,srinivasan2000oracle8iiot,garciamolina2009dbsystems}.
 
 
-\section{T14 I/\allowbreak{}O Dispatch Axis}
+\section{T12 I/\allowbreak{}O Dispatch Axis}
 
-This axis is the \emph{I/O-dispatch organ} (T14) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
+This axis is the \emph{I/O-dispatch organ} (T12) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
 
 Modeling and selection of I/\allowbreak{}O strategies for persistence and memory access in index operations: in-memory storage only (baseline), buffered via OS page cache (standard), direct I/\allowbreak{}O with \texttt{O\_\allowbreak{}DIRECT} flag (NVMe-optimized), or memory-mapped file I/\allowbreak{}O (persistent memory). This axis decouples search and tree structures from persistence implementation and enables A/\allowbreak{}B measurements of dispatch overhead profiles under identical workloads.
 
@@ -660,9 +579,9 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} Stonebraker-1981, Crotty-2022~\cite{stonebraker1981os,crotty2022mmap}
 
-\section{T15 Migration Strategy Axis}
+\section{T13 Migration Strategy Axis}
 
-This axis is the \emph{migration organ} (T15) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
+This axis is the \emph{migration organ} (T13) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
 
 The Migration Strategy axis (T15, \texttt{axis\_\allowbreak{}migration}) encapsulates decision logic for data placement across multi-tier storage hierarchies (RAM/\allowbreak{}SSD/\allowbreak{}HDD, Hot/\allowbreak{}Cold tiers). It models when and how frequently accessed data should be promoted to faster storage or demoted when cold, measuring decision logic only without actual tier migration. Supports four concrete strategies: static (baseline), Hot/\allowbreak{}Cold separation, multi-tier hierarchy, ML-driven adaptive.
 
@@ -714,9 +633,9 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} Anti-Caching (PVLDB 2013), LeCaR (Hot\allowbreak{}Storage 2018), Managing NVM (SIGMOD 2018)~\cite{debrabant2013anticaching,vietri2018lecar,vanrenen2018nvm}.
 
-\section{T16 Filter Axis}
+\section{T14 Filter Axis}
 
-This axis is the \emph{filter organ} (T16) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
+This axis is the \emph{filter organ} (T14) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
 
 The Filter Axis T16 provides selectable probabilistic and deterministic membership-query filters for point and range queries. It covers classic Bloom filters with k hash functions, the deletable Cuckoo Filter with bucket hashing and fingerprints, the succinct Range Filter Su\allowbreak{}RF using LOUDS-Trie navigation, and the space-efficient Xor Filter with constant 3-way-XOR latency. Purpose: Make space, query latency, mutability, and false-positive-rate trade-offs directly measurable in cache-engine experiments.
 
@@ -753,9 +672,9 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} Bloom 1970, Fan et al. Co\allowbreak{}NEXT 2014, Zhang et al. SIGMOD 2018, Graf+Lemire JEA 2020~\cite{bloom1970,fan2014cuckoo,zhang2018surf,graf2020xor}.
 
-\section{T17 Buffering Q1 (Operations Buffer)}
+\section{T15 Buffering Q1 (Operations Buffer)}
 
-This axis is the \emph{buffering organ (Q1)} (T17) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
+This axis is the \emph{buffering organ (Q1)} (T15) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
 
 The \texttt{axis\_\allowbreak{}q1\_\allowbreak{}queuing} realizes various buffering strategies for operations in the cache-engine context. It encompasses textbook ADTs (FIFO, LIFO, Append-Only, Priority-Heap), specialized versioning techniques (Delta-Chain, Copy-on-Write, Epoch, Tombstone), and modern lock-free queues (SPSC/\allowbreak{}MPMC following Lamport and Vyukov). Strategies are selected at compile time via the axis registry (the \texttt{mp\_list} of research wave 2, filtered by enable flags) per permutation binary (no runtime switch) and are classifiable by access pattern (sequential, ordered, cyclic, versioned, batched, lock-free).
 
@@ -806,9 +725,9 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} LMAX 2011, P01 (Leis ART ICDE 2013), Bw-Tree (Levandoski et al.\ ICDE 2013), P29 (RCU OLS 2001), Lamport 1977, Vyukov 1024cores 2010--11, Michael/\allowbreak{}Scott PODC 1996, Pugh CACM 1990, O'Neil LSM-tree 1996, Driscoll et al.\ 1989, Masstree Euro\allowbreak{}Sys 2012, SMART OSDI 2023, Williams 1964, moodycamel 2014~\cite{thompson2011disruptor,leis2013art,levandoski2013bwtree,mckenney2001rcu,lamport_spsc,vyukov_mpmc,michael1996queue,pugh1990skiplist,oneil1996lsm,driscoll1989persistent,mao2012masstree,luo2023smart,williams1964heapsort,desrochers_concurrentqueue}.
 
-\section{T18 Buffering Q2 (Flush Policy)}
+\section{T16 Buffering Q2 (Flush Policy)}
 
-This axis is the \emph{buffering organ (Q2)} (T18) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
+This axis is the \emph{buffering organ (Q2)} (T16) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}).
 
 Axis Q2 defines automatic flush strategies for write buffers. It determines WHEN a filled buffer propagates its output to the next stage --- after every operation (Eager), never automatically (Lazy), when threshold is exceeded (Watermark), after time window (Timed), or adaptively by workload frequency via EWMA-controlled LSM-style logic. This is central to memory/\allowbreak{}throughput tradeoff and batching efficiency in cache engines.
 
@@ -844,6 +763,108 @@ Variant & Description & Source \\
 \end{scriptsize}
 
 \emph{Contributing sources:} O'Neil et al.\ 1996 (LSM-Tree), Kafka (Net\allowbreak{}DB 2011), Spark D-Streams (SOSP 2013)~\cite{oneil1996lsm,kreps2011kafka,zaharia2013dstreams}.
+
+\section{T17 Persistence Target}
+
+This axis is the \emph{persistence-target organ} (T17) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}); it joined as the eighteenth organ slot with the axis reordering.
+
+The axis makes the storage target of the structure explicit as an organ slot of its own instead of carrying an implicit in-memory assumption. In the canonical measurement catalogue it is pinned to its in-memory representative so that the permutation space stays at $2^{17}$ binary identities per system permutation (Section~\ref{sec:mess-chain}); every \texttt{binary\_id} nevertheless carries the eighteenth segment \texttt{persistence\_target=persistence\_memory\_only}.
+
+\subsection*{Building blocks}
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{8.5cm} >{\raggedright\arraybackslash}p{2.0cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{Memory\allowbreak{}Only\allowbreak{}Target} & In-memory storage as the default target; the only enabled representative of the canonical measurement catalogue. No device write-back path (\texttt{has\_\allowbreak{}device\_\allowbreak{}writeback\_\allowbreak{}path()=false}). & code/\allowbreak{}baseline \\
+\texttt{Disk\allowbreak{}Writeback\allowbreak{}Target} & Disk write-back target; fully present as a building block (type, registry, sub-axes PT1--PT2) but switched off per option in the canonical catalogue, so the axis remains single-element there. & code/\allowbreak{}baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
+
+\section{System sphere: telemetry and measurement instrumentation}
+
+In the nineteen-axis numbering this quantity was the \emph{telemetry organ} (then T10); since the axis reordering it has moved, two-way split, into the system sphere --- measurement-tooling sub-axis \emph{and} build quantity (cf.\ Section~\ref{sec:axis-triad}). Its building-block catalogue is retained here.
+
+Defines strategies for measuring index operations (insert, lookup, erase) with different overhead profiles. Supports density tracking for adaptive node-type selection, global insert counters for throughput measurements, HDR histograms for latency quantiles, and leaf-only counters to avoid cache-line false sharing in measurement cycles.
+
+\subsection*{Static sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+TM1 & Scope & Validity scope of counter management: leaf-only (leaf nodes only), per-node (all nodes), or global (single accumulator for entire structure). Compile-time choice, impacts overhead through contention on shared cache lines. \\
+TM2 & Metric Type & Type of measured metric: counter (event counter), histogram (distribution with quantiles), or density (per-node slot occupancy). Impacts memory footprint and measurement granularity. \\
+TM3 & Overhead Level & Measurement overhead magnitude: low (atomic operations), medium (per-node data structures), high (histogram logging). Determines suitability for different workload scenarios (benchmarking vs.\ production). \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Counter in leaf nodes only (avoids cache-line ping-pong by skipping inner-node updates). Low overhead with leaf-only scope. Implements coherence-friendly counter concept from Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023 motivation, although original paper describes cache-friendly B+-layout, not leaf-counter algorithm --- CE baseline for false-sharing avoidance. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, context; Code/\allowbreak{}Baseline) \\
+\texttt{Density\allowbreak{}Tracker} & Per-node density/\allowbreak{}slot-occupancy tracking for adaptive node-type selection (4→16→48→256). Contextual telemetry tied to ART structure (Leis ICDE 2013), measures slot occupancy across all nodes. Higher overhead than Leaf\allowbreak{}Only, but provides adaptation signal for dynamic rebalancing decisions. & P01 (ART/\allowbreak{}Leis ICDE 2013, context; Code/\allowbreak{}Baseline) \\
+\texttt{Insert\allowbreak{}Counter} & Global atomic insert counter with minimal overhead (1 atomic increment per insert). Contextual telemetry tied to HOT structure (Binna SIGMOD 2018), global scope. Sufficient for throughput measurement series, no latency granularity. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, context; Code/\allowbreak{}Baseline) \\
+\texttt{Latency\allowbreak{}Histogram} & HDR histogram for lookup latency distribution (p50/\allowbreak{}p95/\allowbreak{}p99 quantiles). Based on Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 license. Highest overhead (per lookup), but provides complete latency statistics for SLA-oriented and research-grade measurement series. Only is\_\allowbreak{}original candidate of the axis. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
+Probability-Hints & Probability hints of the cache-oblivious Bender line (P16/\allowbreak{}P17): distribution- and probability-related occupancy hints that serve as input to the layout decisions. Paper building block of the axis dissection (reconstruction target of this thesis, no CE baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
+
+\emph{Related literature:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
+
+\section{System sphere: target ISA (\texttt{target\_isa})}
+
+In the nineteen-axis numbering this quantity was the \emph{ISA organ} (then T12); since the axis reordering it is the system main axis \texttt{target\_isa} --- itself a complex axis (cf.\ Sections~\ref{sec:axis-triad} and~\ref{sec:complex-axis}).
+
+The axis specifies the target CPU instruction set architecture (ISA) as a compile-time constant, enabling cross-platform optimizations across four dominant server architectures: x86-64 (Intel/\allowbreak{}AMD), AArch64 (ARM), Power-ISA (IBM), and RISC-V (open-source). Each variant defines a hardware-specific SIMD baseline (SSE2, NEON, VSX, scalar) and thus characterizes the vector acceleration potential for cache-engine operations such as \texttt{simd\_\allowbreak{}field\_\allowbreak{}sum} (accumulation of 32-bit word fields).
+
+\subsection*{Static sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+IS1 & Word Size & CPU data-path width: 32-bit, 64-bit, or 128-bit. In the cache engine standardized to 64-bit for all four ISA profiles. \\
+IS2 & CPU Vendor/\allowbreak{}Family & Instruction set family: \texttt{intel\_\allowbreak{}amd} (x86-64), \texttt{arm} (AArch64), \texttt{ibm} (Power-ISA), \texttt{open} (RISC-V). Determines SIMD extension compatibility: SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 (x86-64), NEON/\allowbreak{}SVE/\allowbreak{}SVE2 (AArch64), VSX (Power), RVV (RISC-V). \\
+IS3 & ZIH Cluster Affinity & Production machines at TU Dresden: Barnard (Intel Xeon Platinum 8470, Sapphire Rapids, x86-64), Capella (AMD EPYC 9334, x86-64), Grace\allowbreak{}Hopper (NVIDIA Grace Hopper ARMv9 Neoverse V2, AArch64), N/\allowbreak{}A (research boards, RISC-V/\allowbreak{}Power). Enables hardware-specific experiments with real production cluster profiles. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{Amd64\allowbreak{}Isa} & x86-64 /\allowbreak{} Intel 64 ISA (AMD/\allowbreak{}Intel Server+Desktop). Dominant server platform with SSE2 SIMD baseline (4 uint32 lanes per 128-bit register). Implements genuine SSE2 vectorization via \texttt{\_\allowbreak{}mm\_\allowbreak{}loadu\_\allowbreak{}si128} + \texttt{\_\allowbreak{}mm\_\allowbreak{}add\_\allowbreak{}epi32} on native x86-64 hosts; scalar fallback on non-x86 build hosts. ZIH presence: Barnard (Intel Xeon Platinum 8470, Sapphire Rapids), Capella (AMD EPYC 9334). & Vendor spec (AMD 2000 /\allowbreak{} Intel ongoing) \\
+\texttt{Aarch64\allowbreak{}Isa} & ARMv8-A 64-bit ISA (ARM Holdings). Growing server relevance (Apple M-Series, AWS Graviton, Ampere Altra). SIMD baseline: NEON (128-bit, 4 uint32 lanes). Cache engine implementation: 4-way unrolled scalar fallback (models NEON width without ARM intrinsics on x86 build hosts); genuine NEON vectorization on native ARMv8 hosts. ZIH presence: Grace\allowbreak{}Hopper (NVIDIA Grace Hopper, Neoverse V2 + Hopper GPU). & Vendor spec (ARM Ltd., since 2011/\allowbreak{}2013) \\
+\texttt{Power\allowbreak{}Pc\allowbreak{}Isa} & Power ISA (POWER9/\allowbreak{}10, ppc64le little-endian). IBM Power Systems (AC922, IC922, S1022). SIMD baseline: VSX (Vector-Scalar Extension, 128-bit, 4 uint32 lanes). Cache engine implementation: 4-way unrolled scalar fallback (models VSX width without Power intrinsics on x86 build hosts). Relevant for HPC workloads with NVLink GPU connectivity (AC922). ZIH presence: not primary, but available for research comparisons. & Vendor/\allowbreak{}standards spec (IBM/\allowbreak{}Open\allowbreak{}POWER, v3.0 2017, v3.1 2020) \\
+\texttt{Risc\allowbreak{}VIsa} & RISC-V RV64\allowbreak{}GC open-source ISA (RV64 General + Compressed). Growing relevance (Si\allowbreak{}Five, Alibaba Xuantie, Andes, ETH Zurich cores). SIMD baseline: NONE (RVV is optional, not part of RV64\allowbreak{}GC baseline). Cache engine implementation: deliberately plain scalar path (unrolled) -- models lack of vector unit in base ISA and thus creates real, slower runtime versus x86-64 and ARM\@. ZIH presence: embedded + research boards. & Standards spec (RISC-V Intl.; UCB TR since 2011) \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} ---
 
 \section{Build-PG Page Type Axis (PAGE-TYPE)}
 
