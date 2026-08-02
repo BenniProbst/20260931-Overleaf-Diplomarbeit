@@ -5,6 +5,7 @@
 
 **Angelegt:** 2026-08-02 | **Basis-Commit:** `2139047` | **Zweck:** repo-lokale Buchfuehrung der
 Thesis-Ziele und offenen Punkte (Text, Sprachfassungen, CI-Gates, Abgabe-Artefakte).
+**AUDIT-PFLICHT:** Jeder Audit-/Inventur-/Goal-Lauf liest ALLE VIER Ledger (super docs/DIPLOMARBEIT-ZIELE-OFFENE-PUNKTE-LEDGER.md + ce docs/ledger-sections/*.md inkl. goal-v6-luecken-ledger.md + prt-art docs/ledger-sections/*.md + thesis docs/ledger-sections/*.md).
 **Vier-Ledger-Doktrin:** super | comdare-cache-engine | comdare-prt-art | thesis/diplomarbeit (diese Datei).
 Das Cluster-Ledger liegt in Infra-Hoheit und ist das **5.** Ledger ausserhalb dieser Doktrin.
 
