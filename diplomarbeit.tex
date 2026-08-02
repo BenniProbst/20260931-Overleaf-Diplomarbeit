@@ -121,12 +121,12 @@ prefetching, succinct representations, and allocation---have been proposed, yet 
 have never been combined and compared within a single, fair measurement framework:
 each publication uses its own data structures, workloads, and methodology, which makes
 results hard to compare across publications. This thesis presents a cache-engine framework whose
-modules are separated at the binary level by a single, ABI-stable C interface (one living being
+modules are separated at the binary level by a single, ABI-stable C interface (exactly one living being
 exported per module); behind it, a three-layer abstraction within the generated tier binary
 (CacheEngine~$\to$~ExecutionEngine~$\to$~SearchEngine) provides the search API and is kept distinct
 from the anatomy model (genus, living being, organs). The framework decomposes cache-aware search
 algorithms, by means of a planner and a CacheEngineBuilder, into interchangeable, distributed
-(scattered) design decisions of a
+(scattered across the code) design decisions of a
 large design space~\cite{idreos2018periodic, idreos2018datacalculator}, and reassembles
 them through dynamic composition by compile-time permutation (not runtime adaptation). Structurally
 different methods---from tree-like indexes (tries, B\textsuperscript{+}-trees) to
@@ -156,7 +156,7 @@ Anatomie-Modell (Gattung, Lebewesen, Organe) abgegrenzt bleibt. Das
 Framework zerlegt cache-bewusste
 Suchalgorithmen mithilfe eines Planers und eines CacheEngineBuilder in austauschbare, verteilte (über den Code gestreute) Entwurfsentscheidungen eines großen Entwurfsraums
 (\emph{design space})~\cite{idreos2018periodic, idreos2018datacalculator} und setzt sie durch
-dynamische Zusammensetzung mittels compile-Permutation (keine Laufzeit-Adaption) wieder zusammen.
+dynamische Zusammensetzung mittels Compile-Zeit-Permutation (keine Laufzeit-Adaption) wieder zusammen.
 Strukturell verschiedene Verfahren---von baumartigen Indizes (Tries,
 B\textsuperscript{+}-Bäume) bis zu nicht-baumartigen Hash-Tabellen---werden als Punkte
 desselben Entwurfsraums hinter einem einheitlichen Interface ausgedrückt; nicht-baumartige
@@ -174,22 +174,23 @@ und weitere); Fernziel ist die Auslieferung der besten Rekombination als eigenst
 % ENTWURF Danksagung (Rahmen-Pass 02.08.2026, F1-Richtung) -- finale Owner-Freigabe vor Abgabe.
 \ifthesisDE%
   \acknowledgments{%
-  Mein Dank gilt zuerst apl.\ Prof.\ Dr.-Ing.\ Dirk Habich für die engagierte Betreuung dieser
-  Arbeit: einem bescheidenen, disziplinierten Menschen, der sich trotz stets knapper Zeit immer
-  Zeit genommen hat --- für präzise Rückfragen, klare Prioritäten und den Freiraum, diese Arbeit
-  weitgehend eigenständig zu entwickeln, mit punktueller Unterstützung dort, wo sie gebraucht
-  wurde. Dr.-Ing.\ Alexander Krause danke ich für die Übernahme des Zweitgutachtens. Schließlich
-  danke ich dem Team von UltiHash: Die lehrreichen Jahre in diesem Startup haben viele der
-  Eindrücke geprägt, die in dieser Arbeit nun technisch realisiert sind.}
+  Mein Dank gilt zuerst apl.\ Prof.\ Dr.-Ing.\ Dirk Habich --- einem bescheidenen,
+  disziplinierten Menschen --- für die engagierte Betreuung dieser Arbeit: Trotz stets knapper
+  Zeit hat er sich immer Zeit genommen für präzise Rückfragen, klare Prioritäten und den
+  Freiraum, diese Arbeit weitgehend eigenständig zu entwickeln, mit punktueller Unterstützung
+  dort, wo sie gebraucht wurde. Dr.-Ing.\ Alexander Krause danke ich für die Übernahme des
+  Zweitgutachtens. Schließlich danke ich dem Team von UltiHash: Die lehrreichen Jahre in diesem
+  Startup haben viele der Erfahrungen und Fragestellungen geprägt, die diese Arbeit nun
+  technisch umsetzt.}
 \else
   \acknowledgments{%
-  My thanks go first to apl.\ Prof.\ Dr.-Ing.\ Dirk Habich for the dedicated supervision of this
-  thesis: a modest, disciplined man who, despite persistently scarce time, always made time ---
-  for precise questions, clear priorities, and the freedom to develop this work largely
-  independently, with targeted support where it was needed. I thank Dr.-Ing.\ Alexander Krause
-  for taking on the second assessment. Finally, I thank the team at UltiHash: the instructive
-  years at this startup shaped many of the impressions that are now technically realised in this
-  work.}
+  My thanks go first to apl.\ Prof.\ Dr.-Ing.\ Dirk Habich --- a modest, disciplined
+  person --- for the dedicated supervision of this thesis: despite persistently scarce time, he
+  always made time for precise questions, clear priorities, and the freedom to develop this work
+  largely independently, with targeted support where it was needed. I thank Dr.-Ing.\ Alexander
+  Krause for taking on the second assessment. Finally, I thank the team at UltiHash: the
+  instructive years at this startup shaped many of the experiences and questions that this work
+  now implements technically.}
 \fi
 
 % --- Sperrvermerk (eingeschraenkt) + Lizenz-/Copyright-Matrix -----------------
@@ -199,9 +200,14 @@ und weitere); Fernziel ist die Auslieferung der besten Rekombination als eigenst
 % GPL-Version des ce-Kerns bei Freigabe fixieren (LICENSE im ce-Repo traegt derzeit
 % noch Apache-2.0; die GPL-Umstellung ist beschlossen, aber dort nicht vollzogen);
 % prt-art traegt noch keine LICENSE-Datei.
+% ZWEI BLOCKIERENDE KONFLIKTE (Truth-Check 02.08., Owner-Entscheidung angefragt):
+% (a) Sperrvermerk-Zustimmungsvorbehalt vs. GPL-Weitergabefreiheit unvereinbar --
+%     sobald der Kern unter GPL ausgehaendigt wird, ist der Vorbehalt nicht durchsetzbar;
+% (b) Apache-2.0 fuer DA-Repo/PRT-ART faellt bei GPL-Linking gegen den Kern (Copyleft);
+%     GPLv2 waere zudem inkompatibel mit vendored Apache-Fremdcode (hoard, SuRF, unodb).
 \ifthesisDE%
   \copyrighterklaerung{%
-  \subsection*{Sperrvermerk (eingeschränkt)}
+  \section*{Sperrvermerk (eingeschränkt)}
   Diese Arbeit selbst unterliegt keinem Sperrvermerk. Ein eingeschränkter Sperrvermerk betrifft
   allein den Software-Kern der \texttt{comdare-cache-engine}: Er ist zur Begutachtung einsehbar
   und testbar; eine Nutzung oder Weitergabe über die Begutachtung hinaus bedarf der Zustimmung
@@ -210,15 +216,15 @@ und weitere); Fernziel ist die Auslieferung der besten Rekombination als eigenst
   dieser Arbeit beschriebenen Experimente verwenden die Cache-Engine als Anwender über frei
   wählbare Testparameter und sind von der Einschränkung nicht berührt.
 
-  \subsection*{Lizenzen und Copyright}
+  \section*{Lizenzen und Copyright}
   Der Code des Diplomarbeits-Repositories (Mess-Treiber und Auswertungs-Pipeline) sowie der
-  Prüfling \mbox{PRT-ART} stehen unter der Apache-Lizenz~2.0. Der Software-Kern der
+  Prüfling \mbox{PRT-ART} stehen unter Apache-2.0. Der Software-Kern der
   \texttt{comdare-cache-engine} steht unter der GNU General Public License (GPL); sein Copyright
   liegt bei der BEP~Venture~UG (Marke Comdare). Der Text dieser Arbeit unterliegt dem privaten
   Copyright von Benjamin-Elias Probst.}
 \else
   \copyrighterklaerung{%
-  \subsection*{Confidentiality notice (restricted)}
+  \section*{Confidentiality notice (restricted)}
   This thesis itself is not subject to a confidentiality notice. A restricted notice concerns
   solely the software core of the \texttt{comdare-cache-engine}: it may be inspected and tested
   for assessment; any use or distribution beyond the assessment requires the consent of the
@@ -227,9 +233,9 @@ und weitere); Fernziel ist die Auslieferung der besten Rekombination als eigenst
   in this thesis use the cache engine as a client via freely selectable test parameters and are
   not affected by the restriction.
 
-  \subsection*{Licences and copyright}
+  \section*{Licences and copyright}
   The code of the diploma-thesis repository (measurement driver and evaluation pipeline) and the
-  probe \mbox{PRT-ART} are licensed under the Apache License~2.0. The software core of the
+  probe \mbox{PRT-ART} are licensed under Apache-2.0. The software core of the
   \texttt{comdare-cache-engine} is licensed under the GNU General Public License (GPL); its
   copyright rests with BEP~Venture~UG (Comdare brand). The text of this thesis is subject to the
   private copyright of Benjamin-Elias Probst.}
