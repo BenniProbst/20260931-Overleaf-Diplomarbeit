@@ -24,8 +24,10 @@ justification resides in the section referenced under \emph{Evidence} and is not
   and~\ref{sec:impl-architecture}.
 
   \item[ADR-2 --- Compile-time permutation via type lists instead of runtime adaptation]\hfill\\
-  \textbf{Context:} Nineteen composition axes span a product space of more than $10^{14}$
-  combinations; the hot path must carry neither \texttt{virtual} calls nor runtime switches.
+  \textbf{Context:} Eighteen organ composition axes already count $2^{17} = 131072$ binary
+  identities per system permutation in the canonical measurement catalogue, and the raw variant
+  product space over all axis catalogues including their sub-axes lies orders of magnitude above
+  that; the hot path must carry neither \texttt{virtual} calls nor runtime switches.
   \textbf{Decision:} Permutation happens at compile time via Boost.MP11 type lists
   (\texttt{mp\_list}) and concept-checked \texttt{if constexpr} (\texttt{resolve\_baustein}) ---
   no runtime tag, no \texttt{std::variant}; the literal \texttt{std::variant} catalogue exists
@@ -51,7 +53,7 @@ justification resides in the section referenced under \emph{Evidence} and is not
   carry tree- and trie-specific axes like path compression or node type.
   \textbf{Decision:} Such axes are not dropped but assigned as pass-through variants
   (\texttt{None}); the \texttt{IsComposition} concept enforces, at compile time, the assignment
-  of all nineteen organs, so no composition with an open axis compiles.
+  of all eighteen organs, so no composition with an open axis compiles.
   \textbf{Consequence:} Non-tree-shaped methods require no genus of their own but a restricted
   axis subset of the same genus.
   \textbf{Evidence:} Sections~\ref{sec:sota-instances},~\ref{sec:anatomy-levels},
@@ -59,8 +61,8 @@ justification resides in the section referenced under \emph{Evidence} and is not
 
   \item[ADR-5 --- Layer model E4--E0 with frozen contracts and contract tests]\hfill\\
   \textbf{Context:} Two implementation increments spanning several layers at once had to be
-  rolled back entirely; with more than $10^{14}$ combinations, multi-layer changes are
-  practically impossible to accept.
+  rolled back entirely; with a product space that rules out any complete materialisation,
+  multi-layer changes are practically impossible to accept.
   \textbf{Decision:} The experiment pipeline is organised into layers E4--E0 (plus the
   cross-cutting concern~M); each layer is completed individually, with an explicitly frozen
   interface contract towards its neighbouring layer, and contract-tested against a compile-time
