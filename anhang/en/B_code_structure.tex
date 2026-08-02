@@ -2,9 +2,9 @@
 
 This appendix documents the real source-code structure of the three repositories from
 Section~\ref{sec:repos} in a verifiable way at directory level. The code state was surveyed on
-11~July~2026 via directory listings (two to three levels deep); the authoritative commits are
-\texttt{c022ce05} (\texttt{comdare-cache-engine}), \texttt{faa4e76} (\texttt{comdare-prt-art}),
-and \texttt{ba3a9ae} (\texttt{probst-\allowbreak{}Diplomarbeit-\allowbreak{}cache-\allowbreak{}engine},
+2~August~2026 via directory listings (two to three levels deep); the authoritative commits are
+\texttt{2b0a9bd8} (\texttt{comdare-cache-engine}), \texttt{32e8ffa} (\texttt{comdare-prt-art}),
+and \texttt{daee6c85} (\texttt{probst-\allowbreak{}Diplomarbeit-\allowbreak{}cache-\allowbreak{}engine},
 super-repository). Build
 artefacts (\texttt{build*/}), IDE directories, and the vendored third-party code under
 \texttt{ext/} are hidden or collapsed into a single collective entry; all other paths listed
@@ -18,24 +18,38 @@ third-party code of the A/P series is collected under \texttt{ext/} and is not e
 
 {\footnotesize
 \begin{verbatim}
-comdare-cache-engine/                       state: commit c022ce05
+comdare-cache-engine/                       state: commit 2b0a9bd8
 |-- adapters/               ABI adapters of the A/P series
 |                   (A01-hoard ... A20-dlmalloc, P01-ART ... P30-HazardPointers)
 |-- apps/                   executables (Pitchfork)
 |   |-- cache_engine_builder/   builder main program (main.cpp)
 |   |-- perm_runner/            runner for generated permutation modules
 |   `-- anatomy_codegen_tool/, catalog_codegen_tool/, adhoc_emitter/,
-|       f15_compare/, is_original_validator/   codegen and checking tools
+|       f15_compare/, h2_score_akte_tool/, is_original_validator/
+|                               codegen and checking tools
 |-- libs/                   libraries (Pitchfork)
 |   |-- cache_engine/       CacheEngine: axis building blocks + builder library
 |   |   |-- axes/               one subdirectory per axis (alloc, layout,
-|   |   |                  prefetch_axis, telemetry_axis, concurrency_axis, ...)
+|   |   |                       prefetch_axis, telemetry_axis, concurrency_axis,
+|   |   |                       persistence_target, ...)
+|   |   |-- topics/, anatomy/, compositions/, profile_facade/
+|   |   |                       axis family roof (AxisKind), anatomy core,
+|   |   |                       composition and catalogue layer
 |   |   |-- builder/            codegen/, permutation_loop/, module_loader/,
-|   |   |                       experiment_driver/ (ExperimentDriver)
+|   |   |                       experiment_driver/ (ExperimentDriver),
+|   |   |                       experiment_tree/ (ExperimentPlanDirector),
+|   |   |                       build_orchestrator/, pruef_dock/, bestandslog/,
+|   |   |                       curve_fit/, ...
 |   |   |-- include/cache_engine/abi/   ABI headers (baustein_variants.hpp,
-|   |   |                       resolve_baustein.hpp, module_abi_v1.hpp, ...)
-|   |   `-- algorithm_profiles/ sota/ (33 profile files *.profile.xml),
-|   |                        allocators/, thesis_profiles/, permutation_axes.xml
+|   |   |                       resolve_baustein.hpp, module_abi_v1.hpp,
+|   |   |                       anatomy_version_stamp.hpp, ...)
+|   |   |-- include/cache_engine/measurement/   realm roots + registries
+|   |   |                       (system_axis.hpp, measurement_*_registry.hpp,
+|   |   |                       ram_frequency_reading.hpp, spd_ddr5_parser.hpp,
+|   |   |                       ram_probe_chain.hpp, hardware_probe_factory.hpp)
+|   |   `-- algorithm_profiles/ sota/ (33 profile files *.profile.xml +
+|   |                        sota_h2_scores.xml), allocators/, load_profiles/,
+|   |                        thesis_profiles/, permutation_axes.xml
 |   |-- common/             cross-cutting code: config/, measurement/, platform/,
 |   |                       serialization/ (xml_config_parser/), succinct/
 |   |-- execution_engine/   ExecutionEngine library (result_aggregator)
@@ -45,7 +59,10 @@ comdare-cache-engine/                       state: commit c022ce05
 |-- ext/                    vendored third-party repositories of the A/P series
 |-- tests/                  unit/, integration/, generic_module_tests/,
 |                           module_specific_tests/, fixtures/
-|-- tools/      auxiliary tools (abi_stability_test/, permutation_codegen/, ...)
+|-- tools/      auxiliary tools (abi_stability_test/, gen_golden_fullpilot/,
+|               best_binary_selector/, p27_bundle_finder/, ycsb_cli/,
+|               axis_registry_gen/ et al.; the former permutation_codegen
+|               second channel has been removed, cf. Chapter 4)
 `-- docs/                   architecture, status, and session documentation
 \end{verbatim}
 }
@@ -99,7 +116,7 @@ its own thematic subdirectory.
 
 {\footnotesize
 \begin{verbatim}
-comdare-prt-art/                            state: commit faa4e76
+comdare-prt-art/                            state: commit 32e8ffa
 |-- CMakeLists.txt, comdare_pruefling.cmake   build entry point (CMake)
 |-- prt_art/
 |   |-- include/prt_art/    building blocks of the probe (headers)
@@ -113,13 +130,15 @@ comdare-prt-art/                            state: commit faa4e76
 |   |   |-- memory_layout/      multi_level_layout.hpp et al.
 |   |   |-- measurement/        density_tracker.hpp, hypothesis_metrics.hpp
 |   |   |-- telemetry/          leaf_only_counter.hpp
-|   |   `-- ...                 nodes/, slots/, traversal/, value_handle/,
-|   |                           internal_search/, serialization/, ...
+|   |   `-- ...                 nodes/, slots/, default_lookup/, value_handle/,
+|   |                           value_buffer/, internal_search/,
+|   |                           serialization/, ...
 |   |-- legacy_reimpl/      14 re-implementations in the number band P11-P27
 |   |                       (P11-CSS-tree ... P27-Zhang-ASPLOS-Hierarchical)
 |   |-- algorithm_profiles/ prtart_pruefling.profile.xml,
 |   |                       permutation_axes_extension.xml
 |   |-- codegen/ + permutations_codegen/   codegen templates of the probe
+|   |-- registry_gen/, src/ registry generator and translation units
 |   `-- tests/unit/         module-level tests
 |-- tests/unit/             repository-wide unit tests
 |-- cmake/                  build helper files
@@ -171,7 +190,7 @@ under \texttt{Code/\allowbreak{}external/}.
 
 {\footnotesize
 \begin{verbatim}
-probst-Diplomarbeit-cache-engine/           state: commit ba3a9ae
+probst-Diplomarbeit-cache-engine/           state: commit daee6c85
 |-- Code/
 |   |-- 01_sample_data_generator/   generation of sample data
 |   |-- 02_messung_driver/   measurement driver (main.cpp, v32_orchestrator.hpp,
@@ -181,6 +200,9 @@ probst-Diplomarbeit-cache-engine/           state: commit ba3a9ae
 |   |-- 05_diagram_generator/       evaluation stage 3: diagram generation
 |   |-- 06_latex_to_pdf/            manuscript build (build_thesis.sh/.bat)
 |   |-- 07_tier_binary_report/      report on the tier measurement binaries
+|   |-- 08_appendix_generator/      in-process generator of the measurement
+|   |                               appendix (replaces the .ps1 helper)
+|   |-- 09_tex_formatter/           typesetting-neutral LaTeX source formatter
 |   |-- experiment_config/          config_a_prt_art_vs_sota.xml,
 |   |                               config_b_cache_engine_perms.xml,
 |   |                               config_c_merge_alt_neu.xml, messreihen.xml,
@@ -192,6 +214,7 @@ probst-Diplomarbeit-cache-engine/           state: commit ba3a9ae
 |                                   tabellen/, tikz/
 |-- docs/                        ledger, architecture, and session documentation
 |-- Forschungsarbeiten/        literature collection per axis (collective entry)
+|-- measurement/                    measurement write-back (persisted CI runs)
 `-- Messdaten-Backup/               additive backup of the raw measurement data
 \end{verbatim}
 }
