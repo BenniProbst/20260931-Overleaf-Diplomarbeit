@@ -1,4 +1,8 @@
-# 20260931-overleaf-diplomarbeit (thesis, Projekt 289) — GitLab CI/CD (REV 2, 2026-06-27): §7 Hard-Gate (0 Fehler / <=1 bekannte Warning / .blg ohne Repeated-entry)
+# 20260931-overleaf-diplomarbeit (thesis, Projekt 289) — GitLab CI/CD (REV 3, 2026-08-02): §7 Hard-Gate (0 Fehler / <=1 bekannte Warning / .blg ohne Repeated-entry)
+# REV 3 (CI-Wachen-Befund 02.08.): thesis:pdf baut BEIDE Sprachfassungen (parallel:matrix de+en).
+#   Vorher wurde nur der \thesislang-Default (de) kompiliert; die EN-Fassung war nur chktex-gelintet
+#   und damit CI-seitig unbelegt (chktex ist Linter, kein Compiler). Muster = build.ps1:
+#   \def\thesislang{<lang>} vor \input, jobname diplomarbeit-<lang>. Lokal verifiziert (EN 182 S., 0 W, blg 0).
 # ─────────────────────────────────────────────────────────────────────────────
 # P1c (User-Wahl 2026-06-25): „Voll inkl. PDF, latexmk via Infra" — TeXLive ist Runner-Voraussetzung
 # (Infra installiert texlive vor). Bis dahin sind chktex + thesis:pdf per COMDARE_TEXLIVE_AVAILABLE
@@ -65,16 +69,20 @@ thesis:pdf:
   needs: []
   rules:
     - if: '$COMDARE_TEXLIVE_AVAILABLE == "true"'
+  parallel:
+    matrix:
+      - THESIS_LANG: [de, en]   # REV 3: beide Sprachfassungen sind Abgabe-Artefakte -> beide werden kompiliert und gegatet
   variables:
     COMDARE_THESIS_KNOWN_WARNINGS: "1"   # §7: genau EINE bekannte (User-akzeptierte) Warning erlaubt; sonst gilt das Dokument als kaputt
   script:
     - 'command -v latexmk >/dev/null 2>&1 || { echo "latexmk (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
-    - latexmk -pdf -interaction=nonstopmode -halt-on-error diplomarbeit.tex
+    # Sprachwahl exakt wie build.ps1: \def\thesislang{<lang>} VOR \input gewinnt gegen \providecommand (config/language.tex).
+    - 'latexmk -pdf -interaction=nonstopmode -halt-on-error -jobname=diplomarbeit-${THESIS_LANG} -usepretex="\def\thesislang{${THESIS_LANG}}" diplomarbeit.tex'
     # ── §7 Hard-Gate: 0 Fehler (latexmk -halt-on-error oben) + <= bekannte Warnings + .blg ohne Repeated-entry/Warning ──
-    - 'test -s diplomarbeit.log || { echo "GATE-FAIL: diplomarbeit.log fehlt (Build unvollstaendig)"; exit 1; }; W=$(grep -c "LaTeX Warning" diplomarbeit.log 2>/dev/null || true); W=${W:-0}; echo "LaTeX-Warnings=$W (erlaubt <=${COMDARE_THESIS_KNOWN_WARNINGS})"; test "$W" -le "${COMDARE_THESIS_KNOWN_WARNINGS}" || { echo "GATE-FAIL: $W LaTeX-Warnings > ${COMDARE_THESIS_KNOWN_WARNINGS} bekannte -> Dokument unordentlich"; exit 1; }'
-    - 'if [ -f diplomarbeit.blg ]; then R=$(grep -ciE "Repeated entry|Warning--" diplomarbeit.blg 2>/dev/null || true); R=${R:-0}; echo "BibTeX .blg Warnings/Repeated=$R"; test "$R" -eq 0 || { echo "GATE-FAIL: .blg unsauber ($R Repeated/Warning) -> Literatur pruefen"; exit 1; }; else echo ".blg nicht vorhanden (keine BibTeX-Stufe in diesem Lauf)"; fi'
+    - 'test -s diplomarbeit-${THESIS_LANG}.log || { echo "GATE-FAIL [${THESIS_LANG}]: diplomarbeit-${THESIS_LANG}.log fehlt (Build unvollstaendig)"; exit 1; }; W=$(grep -c "LaTeX Warning" diplomarbeit-${THESIS_LANG}.log 2>/dev/null || true); W=${W:-0}; echo "LaTeX-Warnings=$W (erlaubt <=${COMDARE_THESIS_KNOWN_WARNINGS})"; test "$W" -le "${COMDARE_THESIS_KNOWN_WARNINGS}" || { echo "GATE-FAIL [${THESIS_LANG}]: $W LaTeX-Warnings > ${COMDARE_THESIS_KNOWN_WARNINGS} bekannte -> Dokument unordentlich"; exit 1; }'
+    - 'if [ -f diplomarbeit-${THESIS_LANG}.blg ]; then R=$(grep -ciE "Repeated entry|Warning--" diplomarbeit-${THESIS_LANG}.blg 2>/dev/null || true); R=${R:-0}; echo "BibTeX .blg Warnings/Repeated=$R"; test "$R" -eq 0 || { echo "GATE-FAIL [${THESIS_LANG}]: .blg unsauber ($R Repeated/Warning) -> Literatur pruefen"; exit 1; }; else echo ".blg nicht vorhanden (keine BibTeX-Stufe in diesem Lauf)"; fi'
   artifacts:
     paths:
-      - diplomarbeit.pdf
+      - diplomarbeit-${THESIS_LANG}.pdf
     when: always
     expire_in: 4 weeks
