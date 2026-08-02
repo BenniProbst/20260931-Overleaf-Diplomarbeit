@@ -1,7 +1,7 @@
 \chapter{Bausteine-Matrix}\label{app:blocks}
 
 Dieser Anhang enthält die vollständige Bausteine-Matrix, auf die der Stand der Technik
-(Abschnitt~\ref{sec:sota-instances}) verweist. Jede Achse ist dabei ein \emph{Organ} des Lebewesens: Ein konkreter Suchalgorithmus (technisch \texttt{SearchAlgorithm}, metaphorisch ein Lebewesen) ist die feste Komposition seiner neunzehn Achsen, von denen jede einem Organ entspricht; die je Achse aufgeführten Baustein-Varianten sind die austauschbaren Ausprägungen dieses Organs, und ihre Permutation gleicht einem genetischen Experiment am Lebewesen. Die \emph{Anatomie} dieses Lebewesens ist dabei die Verdrahtung \emph{zwischen} den Organen: Achsen-Algorithmen nutzen die Interfaces anderer Achsen (so stellt die Allokations-Achse ein gemeinsames Allokations-Interface für die übrigen Organe bereit). Je Achse sind der Zweck, die \emph{statischen} Sub-Achsen
+(Abschnitt~\ref{sec:sota-instances}) verweist. Jede Achse ist dabei ein \emph{Organ} des Lebewesens: Ein konkreter Suchalgorithmus (technisch \texttt{SearchAlgorithm}, metaphorisch ein Lebewesen) ist die feste Komposition seiner achtzehn Organ-Achsen (T0--T17), von denen jede einem Organ entspricht; die je Achse aufgeführten Baustein-Varianten sind die austauschbaren Ausprägungen dieses Organs, und ihre Permutation gleicht einem genetischen Experiment am Lebewesen. Die \emph{Anatomie} dieses Lebewesens ist dabei die Verdrahtung \emph{zwischen} den Organen: Achsen-Algorithmen nutzen die Interfaces anderer Achsen (so stellt die Allokations-Achse ein gemeinsames Allokations-Interface für die übrigen Organe bereit). Je Achse sind der Zweck, die \emph{statischen} Sub-Achsen
 (übersetzungszeitlich wählbare Varianten-Familien) und die \emph{dynamischen} Sub-Achsen
 (Laufzeit-Parameter) sowie die konkreten Baustein-Varianten mit ihrer Quelle (Paper-Kennung oder
 Code/Baseline) aufgeführt. Die Angaben sind aus dem Code der \texttt{comdare-cache-engine} und gegen
@@ -462,51 +462,9 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} P01, P09, P10, Ziv/\allowbreak{}Lempel 1977~\cite{leis2013art,jacobson1989louds,zhang2018surf,ziv1977lz77}.
 
-\section{T10 Telemetrie und Messinstrumentierung (axis\_\allowbreak{}11)}
+\section{T10 Wert-Handle (Value-Handle)}
 
-Diese Achse ist das \emph{Telemetrie-Organ} (T10) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
-
-Definiert Strategien zur Messung von Index-Operationen (Insert, Lookup, Erase) mit verschiedenen Overhead-Profilen. Unterstützt Density-Tracking für adaptive Node-Typ-Wahl, globale Insert-Counter für Durchsatz-Messungen, HDR-Histogramme für Latenz-Quantile und leaf-only-Counter zur Vermeidung von Cache-Line-False-Sharing in den Messzyklen.
-
-\subsection*{Statische Sub-Achsen}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Beschreibung \\
-\midrule
-\endhead%
-TM1 & Scope (Geltungsbereich) & Gültigkeitsbereich der Zählerverwaltung: leaf-only (nur Blatt-Knoten), per-node (alle Knoten), oder global (einzelner Akkumulator für die ganze Struktur). Compile-Time-Wahl, beeinflusst Overhead durch Konkurrenz-Druck auf gemeinsame Cache-Linien. \\
-TM2 & Metrik-Typ (Messgröße) & Art der gemessenen Metrik: counter (Zähler für Ereignisse), histogram (Verteilung mit Quantilen), oder density (Slot-Belegung pro Knoten). Beeinflusst den Speicher-Footprint und die Mess-Granularität. \\
-TM3 & Overhead-Level (Messlast) & Größenordnung des Mess-Overheads: low (atomare Operationen), medium (per-node-Datenstrukturen), high (Histogramm-Logging). Bestimmt die Eignung für verschiedene Workload-Szenarien (Benchmarking vs. Produktion). \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Bausteine}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
-\toprule
-Variante & Beschreibung & Quelle \\
-\midrule
-\endhead%
-\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Zähler NUR in Blatt-Knoten (vermeidet Cache-Line-Ping-Pong durch Verzicht auf Inner-Node-Updates). Niedriger Overhead bei leaf-only Scope. Entspricht dem kohärenz-schonenden Zähler-Konzept aus Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, obwohl das Original-Paper kein Leaf-Counter-Algorithmus ist --- CE-Baseline für False-Sharing-Vermeidung. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Density\allowbreak{}Tracker} & Per-Node Density/\allowbreak{}Slot-Occupancy-Tracking für adaptive Node-Type-Wahl (4→16→48→256). Kontextuelle Telemetrie zur ART-Struktur (Leis ICDE 2013), misst Slot-Belegung aller Knoten. Höherer Overhead als Leaf\allowbreak{}Only, liefert aber Adaption-Signal für dynamische Rebalancing-Entscheidungen. & P01 (ART/\allowbreak{}Leis ICDE 2013, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Insert\allowbreak{}Counter} & Globaler atomarer Insert-Zähler mit minimalem Overhead (1 atomic increment pro Insert). Kontextuelle Telemetrie zur HOT-Struktur (Binna SIGMOD 2018), global Scope. Ausreichend für Durchsatz-Mess-Reihen, keine Laten-Granularität. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Latency\allowbreak{}Histogram} & HDR-Histogramm zur Lookup-Latenz-Verteilung (p50/\allowbreak{}p95/\allowbreak{}p99 Quantile). Basiert auf Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 Lizenz. Höchster Overhead (pro Lookup), liefert aber vollständige Latenz-Statistik für SLA-orientierte und research-grade Messreihen. Einziger is\_\allowbreak{}original-Kandidat der Achse. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
-Probability-Hints & Wahrscheinlichkeits-Hinweise der cache-oblivious Bender-Linie (P16/\allowbreak{}P17): verteilungs- bzw.\ wahrscheinlichkeitsbezogene Belegungs-Hinweise, die als Eingabe der Layout-Entscheidungen dienen. Paper-Baustein der Achsen-Sezierung (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Beitragende Quellen:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
-
-\emph{Verwandte Literatur:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
-
-\section{T11 Wert-Handle (Value-Handle)}
-
-Diese Achse ist das \emph{Wert-Handle-Organ} (T11) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
+Diese Achse ist das \emph{Wert-Handle-Organ} (T10) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
 Die Wert-Handle-Achse definiert, wie Datenwerte (Values) im Cache-Index gespeichert und zugegriffen werden: inline im Node-Slot, extern in einem Pool, mittels immutable-shared References (RCU-Style), versioned Pointer (MVCC), oder verkettete externe Referenzen (Multi-Value). Diese Achse charakterisiert die Speicherlayout-Strategie für Values und bestimmt damit die Zugriffslatenz (direkt vs.\ indirekt) und Concurrency-Semantik (Snapshot vs. Versioning).
 
@@ -542,48 +500,9 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} P01, P03, P07, P29, SMART (OSDI 2023)~\cite{leis2013art,mao2012masstree,wu2019wormhole,mckenney2001rcu,luo2023smart}.
 
-\section{T12 Instruktionssatz-Architektur (ISA)}
+\section{T11 Index-Organisation}
 
-Diese Achse ist das \emph{ISA-Organ} (T12) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
-
-Achse T12 spezifiziert die Ziel-CPU-Instruktionssatz-Architektur als Compile-Time-Konstante und ermöglicht damit Cross-Platform-Optimierungen für vier dominante Serverarchitekturen: x86-64 (Intel/\allowbreak{}AMD), AArch64 (ARM), Power-ISA (IBM) und RISC-V (Open-Source). Jede Variante definiert eine hardware-spezifische SIMD-Baseline (SSE2, NEON, VSX, skalar) und charakterisiert damit die Vektorbeschleunigungspotenziale für Cache-Engine-Operationen wie \texttt{simd\_\allowbreak{}field\_\allowbreak{}sum} (Akkumulation von 32-bit-Wort-Feldern).
-
-\subsection*{Statische Sub-Achsen}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Beschreibung \\
-\midrule
-\endhead%
-IS1 & Wortbreite (Word-Size) & CPU-Datenpfadbreite: 32-bit, 64-bit oder 128-bit. In der Cache-Engine auf 64-bit standardisiert für alle vier ISA-Profile. \\
-IS2 & CPU-Hersteller/\allowbreak{}Familie (Vendor) & Instruktionssatz-Familie: \texttt{intel\_\allowbreak{}amd} (x86-64), \texttt{arm} (AArch64), \texttt{ibm} (Power-ISA), \texttt{open} (RISC-V). Bestimmt SIMD-Extension-Kompatibilität: SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 (x86-64), NEON/\allowbreak{}SVE/\allowbreak{}SVE2 (AArch64), VSX (Power), RVV (RISC-V). \\
-IS3 & ZIH-Cluster-Zugehörigkeit & Produktionsmaschinen an TU Dresden: Barnard (Intel Xeon Platinum 8470, Sapphire Rapids, x86-64), Capella (AMD EPYC 9334, x86-64), Grace\allowbreak{}Hopper (NVIDIA Grace Hopper ARMv9 Neoverse V2, AArch64), N/\allowbreak{}A (Forschungsboards, RISC-V/\allowbreak{}Power). Ermöglicht Hardware-spezifische Experimente mit echten Produktionscluster-Profilen. \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Bausteine}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
-\toprule
-Variante & Beschreibung & Quelle \\
-\midrule
-\endhead%
-\texttt{Amd64\allowbreak{}Isa} & x86-64 /\allowbreak{} Intel 64 ISA (AMD/\allowbreak{}Intel Server+Desktop). Dominante Serverplattform mit SSE2-SIMD-Baseline (4 uint32-Lanes pro 128-bit-Register). Implementiert echte SSE2-Vektorisierung via \texttt{\_\allowbreak{}mm\_\allowbreak{}loadu\_\allowbreak{}si128} + \texttt{\_\allowbreak{}mm\_\allowbreak{}add\_\allowbreak{}epi32} auf nativen x86-64-Hosts; skalarer Fallback auf Nicht-x86-Build-Hosts. ZIH-Präsenz: Barnard (Intel Xeon Platinum 8470, Sapphire Rapids), Capella (AMD EPYC 9334). & Vendor-Spec (AMD 2000 /\allowbreak{} Intel fortlaufend) \\
-\texttt{Aarch64\allowbreak{}Isa} & ARMv8-A 64-bit ISA (ARM Holdings). Wachsende Serverrelevanz (Apple M-Series, AWS Graviton, Ampere Altra). SIMD-Baseline: NEON (128-bit, 4 uint32-Lanes). Cache-Engine-Implementierung: 4-fach entrollter Skalar-Fallback (modelliert NEON-Breite ohne ARM-Intrinsics auf x86-Build-Hosts); echte NEON-Vektorisierung auf nativen ARMv8-Hosts. ZIH-Präsenz: Grace\allowbreak{}Hopper (NVIDIA Grace Hopper, Neoverse V2 + Hopper GPU). & Vendor-Spec (ARM Ltd., ab 2011/\allowbreak{}2013) \\
-\texttt{Power\allowbreak{}Pc\allowbreak{}Isa} & Power ISA (POWER9/\allowbreak{}10, ppc64le Little-Endian). IBM Power Systems (AC922, IC922, S1022). SIMD-Baseline: VSX (Vector-Scalar Extension, 128-bit, 4 uint32-Lanes). Cache-Engine-Implementierung: 4-fach entrollter Skalar-Fallback (modelliert VSX-Breite ohne Power-Intrinsics auf x86-Build-Hosts). Relevant für HPC-Workloads mit NVLink-GPU-Anbindung (AC922). ZIH-Präsenz: nicht primär, aber für Forschungs-Vergleiche verfügbar. & Vendor/\allowbreak{}Standards-Spec (IBM/\allowbreak{}Open\allowbreak{}POWER, v3.0 2017, v3.1 2020) \\
-\texttt{Risc\allowbreak{}VIsa} & RISC-V RV64\allowbreak{}GC Open-Source ISA (RV64 General + Compressed). Wachsende Bedeutung (Si\allowbreak{}Five, Alibaba Xuantie, Andes, ETH Zürich Cores). SIMD-Baseline: KEINE (RVV ist optional, nicht Teil von RV64\allowbreak{}GC baseline). Cache-Engine-Implementierung: bewusst plain skalarer Pfad (nicht entrollt) -- modelliert fehlende Vektoreinheit der Basis-ISA und erzeugt damit reale, langsamere Laufzeit gegenüber x86-64 und ARM\@. ZIH-Präsenz: embedded + Forschungs-Boards. & Standards-Spec (RISC-V Intl.; UCB TR ab 2011) \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Beitragende Quellen:} ---
-
-\section{T13 Index-Organisation}
-
-Diese Achse ist das \emph{Index-Organisations-Organ} (T13) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
+Diese Achse ist das \emph{Index-Organisations-Organ} (T11) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
 Klassifizierung der Datenspeicherung und Indexstrukturierung nach drei orthogonalen Dimensionen: Storage-Order (Heap/\allowbreak{}Clustered/\allowbreak{}Ungeordnet), Index-Count (keine/\allowbreak{}einzeln/\allowbreak{}mehrfach) und Data-Embedding (separate Speicherung vs.\ in Leaf-Pages eingebettet). Diese Achse modelliert fundamentale DBMS-Entwurfsentscheidungen, die Cache-Verhalten, Zugriffsmuster und I/\allowbreak{}O-Charakteristiken auf Basis von Index-Order vs. Storage-Order-Alignment entscheidend beeinflussen.
 
@@ -621,9 +540,9 @@ Variante & Beschreibung & Quelle \\
 \emph{Beitragende Quellen:} Bayer \& Mc\allowbreak{}Creight 1972, Comer 1979, Srinivasan et al.\ 2000, Garcia-Molina, Ullman \& Widom (Textbook)~\cite{bayer1972btree,comer1979btree,srinivasan2000oracle8iiot,garciamolina2009dbsystems}.
 
 
-\section{T14 I/\allowbreak{}O-Dispatch-Achse}
+\section{T12 I/\allowbreak{}O-Dispatch-Achse}
 
-Diese Achse ist das \emph{I/O-Dispatch-Organ} (T14) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
+Diese Achse ist das \emph{I/O-Dispatch-Organ} (T12) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
 Modellierung und Auswahl von I/\allowbreak{}O-Strategien für die Persistierung und den Speicherzugriff im Index: Speicherung im RAM-only (Baseline), gepuffert via OS-Page-Cache (Standard), direkter I/\allowbreak{}O mit \texttt{O\_\allowbreak{}DIRECT}-Flag (NVMe-Optimierung), oder Memory-Mapped File I/\allowbreak{}O (Persistent Memory). Diese Achse ermöglicht die Entkopplung der Such- und Baum-Strukturen von der Persistierungs-Implementierung und gestattet A/\allowbreak{}B-Messungen der Dispatch-Overhead-Profile unter identischen Workloads.
 
@@ -660,11 +579,11 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} Stonebraker-1981, Crotty-2022~\cite{stonebraker1981os,crotty2022mmap}
 
-\section{T15 Migrations-Strategie-Achse}
+\section{T13 Migrations-Strategie-Achse}
 
-Diese Achse ist das \emph{Migrations-Organ} (T15) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
+Diese Achse ist das \emph{Migrations-Organ} (T13) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
-Die Migrations-Strategie-Achse (T15, \texttt{axis\_\allowbreak{}migration}) kapselt Entscheidungslogiken zur Daten-Platzierung across mehrschichtige Speicher-Hierarchien (RAM/\allowbreak{}SSD/\allowbreak{}HDD, Hot/\allowbreak{}Cold-Tiers). Sie modelliert, wann und wie häufig zugegriffene Daten zu schnellerem Storage promoviert bzw.\ selten zugegriffene demoviert werden, ohne echte Tier-Migration durchzuführen (Entscheidungslogik-Messung nur). Unterstützt vier konkrete Strategien: static (Baseline), Heat/\allowbreak{}Cold-Separation, Multi-Tier-Hierarchie, ML-driven Adaptive.
+Die Migrations-Strategie-Achse (T13, \texttt{axis\_\allowbreak{}migration}) kapselt Entscheidungslogiken zur Daten-Platzierung across mehrschichtige Speicher-Hierarchien (RAM/\allowbreak{}SSD/\allowbreak{}HDD, Hot/\allowbreak{}Cold-Tiers). Sie modelliert, wann und wie häufig zugegriffene Daten zu schnellerem Storage promoviert bzw.\ selten zugegriffene demoviert werden, ohne echte Tier-Migration durchzuführen (Entscheidungslogik-Messung nur). Unterstützt vier konkrete Strategien: static (Baseline), Heat/\allowbreak{}Cold-Separation, Multi-Tier-Hierarchie, ML-driven Adaptive.
 
 \subsection*{Statische Sub-Achsen}
 
@@ -714,11 +633,11 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} Anti-Caching (PVLDB 2013), LeCaR (Hot\allowbreak{}Storage 2018), Managing NVM (SIGMOD 2018)~\cite{debrabant2013anticaching,vietri2018lecar,vanrenen2018nvm}.
 
-\section{T16 Filter-Achse}
+\section{T14 Filter-Achse}
 
-Diese Achse ist das \emph{Filter-Organ} (T16) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
+Diese Achse ist das \emph{Filter-Organ} (T14) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
-Die Filter-Achse T16 bietet wählbare probabilistische und deterministische Membership-Query-Filter (Punkt- und Bereichsabfragen). Sie deckt klassische Bloom-Filter mit k Hash-Funktionen, den deletable-Cuckoo-Filter mit Bucket-Hashing und Fingerprints, den succinct Range-Filter Su\allowbreak{}RF mit LOUDS-Trie-Navigaion sowie den platzsparenden Xor-Filter mit konstanter 3er-XOR-Latenz ab. Zweck: Trade-offs zwischen Raum, Abfragelatenz, Mutability und Falsch-Positiv-Rate direkt im Cache-Engine-Experiment messbar machen.
+Die Filter-Achse T14 bietet wählbare probabilistische und deterministische Membership-Query-Filter (Punkt- und Bereichsabfragen). Sie deckt klassische Bloom-Filter mit k Hash-Funktionen, den deletable-Cuckoo-Filter mit Bucket-Hashing und Fingerprints, den succinct Range-Filter Su\allowbreak{}RF mit LOUDS-Trie-Navigaion sowie den platzsparenden Xor-Filter mit konstanter 3er-XOR-Latenz ab. Zweck: Trade-offs zwischen Raum, Abfragelatenz, Mutability und Falsch-Positiv-Rate direkt im Cache-Engine-Experiment messbar machen.
 
 \subsection*{Statische Sub-Achsen}
 
@@ -753,9 +672,9 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} Bloom 1970, Fan et al. Co\allowbreak{}NEXT 2014, Zhang et al. SIGMOD 2018, Graf+Lemire JEA 2020~\cite{bloom1970,fan2014cuckoo,zhang2018surf,graf2020xor}.
 
-\section{T17 Pufferung Q1 (Operations-Puffer)}
+\section{T15 Pufferung Q1 (Operations-Puffer)}
 
-Diese Achse ist das \emph{Pufferungs-Organ (Q1)} (T17) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
+Diese Achse ist das \emph{Pufferungs-Organ (Q1)} (T15) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
 Die Achse \texttt{axis\_\allowbreak{}q1\_\allowbreak{}queuing} realisiert verschiedene Pufferungsstrategien für Operationen im Cache-Engine-Kontext. Sie umfasst Lehrbuch-ADTs (FIFO, LIFO, Append-Only, Priority-Heap), spezialisierte Versioning-Techniken (Delta-Chain, Copy-on-Write, Epoch, Tombstone) sowie moderne Lock-Free-Queues (SPSC/\allowbreak{}MPMC nach Lamport und Vyukov). Die Strategien werden übersetzungszeitlich über die Achsen-Registry (\texttt{mp\_list} der W2-Recherche, Enable-Flag-gefiltert) pro Permutations-Binary selektiert (kein Runtime-Switch) und sind klassifizierbar nach Zugriffsmuster (sequenziell, sortiert, zyklisch, versioniert, batched, lock-free).
 
@@ -806,9 +725,9 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} LMAX 2011, P01 (Leis ART ICDE 2013), Bw-Tree (Levandoski et al.\ ICDE 2013), P29 (RCU OLS 2001), Lamport 1977, Vyukov 1024cores 2010--11, Michael/\allowbreak{}Scott PODC 1996, Pugh CACM 1990, O'Neil LSM-tree 1996, Driscoll et al.\ 1989, Masstree Euro\allowbreak{}Sys 2012, SMART OSDI 2023, Williams 1964, moodycamel 2014~\cite{thompson2011disruptor,leis2013art,levandoski2013bwtree,mckenney2001rcu,lamport_spsc,vyukov_mpmc,michael1996queue,pugh1990skiplist,oneil1996lsm,driscoll1989persistent,mao2012masstree,luo2023smart,williams1964heapsort,desrochers_concurrentqueue}.
 
-\section{T18 Pufferung Q2 (Flush-Policy)}
+\section{T16 Pufferung Q2 (Flush-Policy)}
 
-Diese Achse ist das \emph{Pufferungs-Organ (Q2)} (T18) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
+Diese Achse ist das \emph{Pufferungs-Organ (Q2)} (T16) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
 Die Achse Q2 definiert automatische Spülstrategien für Schreibpuffer. Sie entscheidet, WANN ein gefüllter Buffer sein Ausgabeergebnis an die nächste Stufe propagiert --- nach je einer Operation (Eager), gar nicht (Lazy), bei Schwellwertüberschuss (Watermark), nach Zeitfenster (Timed) oder adaptiv nach Workload-Häufigkeit (EWMA-gesteuert LSM-Stil). Dies ist zentral für den Speicher-/\allowbreak{}Durchsatz-Tradeoff und die Batching-Effizienz in Cache-Engines.
 
@@ -844,6 +763,108 @@ Variante & Beschreibung & Quelle \\
 \end{scriptsize}
 
 \emph{Beitragende Quellen:} O'Neil et al.\ 1996 (LSM-Tree), Kafka (Net\allowbreak{}DB 2011), Spark D-Streams (SOSP 2013)~\cite{oneil1996lsm,kreps2011kafka,zaharia2013dstreams}.
+
+\section{T17 Persistenz-Ziel (Persistence-Target)}
+
+Diese Achse ist das \emph{Persistenz-Ziel-Organ} (T17) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}); sie ist mit der Achsen-Neuordnung als achtzehnter Organ-Slot hinzugekommen.
+
+Die Achse macht das Ablage-Ziel der Struktur als eigenen Organ-Slot explizit, statt eine In-Memory-Annahme implizit mitzuführen. Im kanonischen Vermessungs-Katalog ist sie auf ihren In-Memory-Vertreter gepinnt, damit der Permutationsraum bei $2^{17}$ Binary-Identitäten je System-Permutation bleibt (Abschnitt~\ref{sec:mess-chain}); jede \texttt{binary\_id} trägt gleichwohl das achtzehnte Segment \texttt{persistence\_target=persistence\_memory\_only}.
+
+\subsection*{Bausteine}
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{8.5cm} >{\raggedright\arraybackslash}p{2.0cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{Memory\allowbreak{}Only\allowbreak{}Target} & In-Memory-Ablage als Standard-Ziel; einziger freigeschalteter Vertreter des kanonischen Vermessungs-Katalogs. Kein Geräte-Schreibpfad (\texttt{has\_\allowbreak{}device\_\allowbreak{}writeback\_\allowbreak{}path()=false}). & Code/\allowbreak{}Baseline \\
+\texttt{Disk\allowbreak{}Writeback\allowbreak{}Target} & Platten-Rückschreibe-Ziel; als Baustein vollständig vorhanden (Typ, Registry, Sub-Achsen PT1--PT2), im kanonischen Katalog jedoch per Option abgeschaltet, sodass die Achse dort einelementig bleibt. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
+
+\section{System-Sphäre: Telemetrie und Messinstrumentierung}
+
+Diese Größe war in der Neunzehner-Zählung das \emph{Telemetrie-Organ} (damals T10); seit der Achsen-Neuordnung ist sie zweigeteilt in die System-Sphäre umgezogen --- Mess-Tooling-Unter-Achse \emph{und} Bau-Größe (vgl.\ Abschnitt~\ref{sec:axis-triad}). Ihre Baustein-Katalogisierung bleibt hier erhalten.
+
+Definiert Strategien zur Messung von Index-Operationen (Insert, Lookup, Erase) mit verschiedenen Overhead-Profilen. Unterstützt Density-Tracking für adaptive Node-Typ-Wahl, globale Insert-Counter für Durchsatz-Messungen, HDR-Histogramme für Latenz-Quantile und leaf-only-Counter zur Vermeidung von Cache-Line-False-Sharing in den Messzyklen.
+
+\subsection*{Statische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Beschreibung \\
+\midrule
+\endhead%
+TM1 & Scope (Geltungsbereich) & Gültigkeitsbereich der Zählerverwaltung: leaf-only (nur Blatt-Knoten), per-node (alle Knoten), oder global (einzelner Akkumulator für die ganze Struktur). Compile-Time-Wahl, beeinflusst Overhead durch Konkurrenz-Druck auf gemeinsame Cache-Linien. \\
+TM2 & Metrik-Typ (Messgröße) & Art der gemessenen Metrik: counter (Zähler für Ereignisse), histogram (Verteilung mit Quantilen), oder density (Slot-Belegung pro Knoten). Beeinflusst den Speicher-Footprint und die Mess-Granularität. \\
+TM3 & Overhead-Level (Messlast) & Größenordnung des Mess-Overheads: low (atomare Operationen), medium (per-node-Datenstrukturen), high (Histogramm-Logging). Bestimmt die Eignung für verschiedene Workload-Szenarien (Benchmarking vs. Produktion). \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Zähler NUR in Blatt-Knoten (vermeidet Cache-Line-Ping-Pong durch Verzicht auf Inner-Node-Updates). Niedriger Overhead bei leaf-only Scope. Entspricht dem kohärenz-schonenden Zähler-Konzept aus Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, obwohl das Original-Paper kein Leaf-Counter-Algorithmus ist --- CE-Baseline für False-Sharing-Vermeidung. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Density\allowbreak{}Tracker} & Per-Node Density/\allowbreak{}Slot-Occupancy-Tracking für adaptive Node-Type-Wahl (4→16→48→256). Kontextuelle Telemetrie zur ART-Struktur (Leis ICDE 2013), misst Slot-Belegung aller Knoten. Höherer Overhead als Leaf\allowbreak{}Only, liefert aber Adaption-Signal für dynamische Rebalancing-Entscheidungen. & P01 (ART/\allowbreak{}Leis ICDE 2013, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Insert\allowbreak{}Counter} & Globaler atomarer Insert-Zähler mit minimalem Overhead (1 atomic increment pro Insert). Kontextuelle Telemetrie zur HOT-Struktur (Binna SIGMOD 2018), global Scope. Ausreichend für Durchsatz-Mess-Reihen, keine Laten-Granularität. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Latency\allowbreak{}Histogram} & HDR-Histogramm zur Lookup-Latenz-Verteilung (p50/\allowbreak{}p95/\allowbreak{}p99 Quantile). Basiert auf Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 Lizenz. Höchster Overhead (pro Lookup), liefert aber vollständige Latenz-Statistik für SLA-orientierte und research-grade Messreihen. Einziger is\_\allowbreak{}original-Kandidat der Achse. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
+Probability-Hints & Wahrscheinlichkeits-Hinweise der cache-oblivious Bender-Linie (P16/\allowbreak{}P17): verteilungs- bzw.\ wahrscheinlichkeitsbezogene Belegungs-Hinweise, die als Eingabe der Layout-Entscheidungen dienen. Paper-Baustein der Achsen-Sezierung (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
+
+\emph{Verwandte Literatur:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
+
+\section{System-Sphäre: Ziel-ISA (\texttt{target\_isa})}
+
+Diese Größe war in der Neunzehner-Zählung das \emph{ISA-Organ} (damals T12); seit der Achsen-Neuordnung ist sie die System-Haupt-Achse \texttt{target\_isa} --- selbst eine Komplex-Achse (vgl.\ Abschnitte~\ref{sec:axis-triad} und~\ref{sec:complex-axis}).
+
+Die Achse spezifiziert die Ziel-CPU-Instruktionssatz-Architektur als Compile-Time-Konstante und ermöglicht damit Cross-Platform-Optimierungen für vier dominante Serverarchitekturen: x86-64 (Intel/\allowbreak{}AMD), AArch64 (ARM), Power-ISA (IBM) und RISC-V (Open-Source). Jede Variante definiert eine hardware-spezifische SIMD-Baseline (SSE2, NEON, VSX, skalar) und charakterisiert damit die Vektorbeschleunigungspotenziale für Cache-Engine-Operationen wie \texttt{simd\_\allowbreak{}field\_\allowbreak{}sum} (Akkumulation von 32-bit-Wort-Feldern).
+
+\subsection*{Statische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Beschreibung \\
+\midrule
+\endhead%
+IS1 & Wortbreite (Word-Size) & CPU-Datenpfadbreite: 32-bit, 64-bit oder 128-bit. In der Cache-Engine auf 64-bit standardisiert für alle vier ISA-Profile. \\
+IS2 & CPU-Hersteller/\allowbreak{}Familie (Vendor) & Instruktionssatz-Familie: \texttt{intel\_\allowbreak{}amd} (x86-64), \texttt{arm} (AArch64), \texttt{ibm} (Power-ISA), \texttt{open} (RISC-V). Bestimmt SIMD-Extension-Kompatibilität: SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 (x86-64), NEON/\allowbreak{}SVE/\allowbreak{}SVE2 (AArch64), VSX (Power), RVV (RISC-V). \\
+IS3 & ZIH-Cluster-Zugehörigkeit & Produktionsmaschinen an TU Dresden: Barnard (Intel Xeon Platinum 8470, Sapphire Rapids, x86-64), Capella (AMD EPYC 9334, x86-64), Grace\allowbreak{}Hopper (NVIDIA Grace Hopper ARMv9 Neoverse V2, AArch64), N/\allowbreak{}A (Forschungsboards, RISC-V/\allowbreak{}Power). Ermöglicht Hardware-spezifische Experimente mit echten Produktionscluster-Profilen. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{Amd64\allowbreak{}Isa} & x86-64 /\allowbreak{} Intel 64 ISA (AMD/\allowbreak{}Intel Server+Desktop). Dominante Serverplattform mit SSE2-SIMD-Baseline (4 uint32-Lanes pro 128-bit-Register). Implementiert echte SSE2-Vektorisierung via \texttt{\_\allowbreak{}mm\_\allowbreak{}loadu\_\allowbreak{}si128} + \texttt{\_\allowbreak{}mm\_\allowbreak{}add\_\allowbreak{}epi32} auf nativen x86-64-Hosts; skalarer Fallback auf Nicht-x86-Build-Hosts. ZIH-Präsenz: Barnard (Intel Xeon Platinum 8470, Sapphire Rapids), Capella (AMD EPYC 9334). & Vendor-Spec (AMD 2000 /\allowbreak{} Intel fortlaufend) \\
+\texttt{Aarch64\allowbreak{}Isa} & ARMv8-A 64-bit ISA (ARM Holdings). Wachsende Serverrelevanz (Apple M-Series, AWS Graviton, Ampere Altra). SIMD-Baseline: NEON (128-bit, 4 uint32-Lanes). Cache-Engine-Implementierung: 4-fach entrollter Skalar-Fallback (modelliert NEON-Breite ohne ARM-Intrinsics auf x86-Build-Hosts); echte NEON-Vektorisierung auf nativen ARMv8-Hosts. ZIH-Präsenz: Grace\allowbreak{}Hopper (NVIDIA Grace Hopper, Neoverse V2 + Hopper GPU). & Vendor-Spec (ARM Ltd., ab 2011/\allowbreak{}2013) \\
+\texttt{Power\allowbreak{}Pc\allowbreak{}Isa} & Power ISA (POWER9/\allowbreak{}10, ppc64le Little-Endian). IBM Power Systems (AC922, IC922, S1022). SIMD-Baseline: VSX (Vector-Scalar Extension, 128-bit, 4 uint32-Lanes). Cache-Engine-Implementierung: 4-fach entrollter Skalar-Fallback (modelliert VSX-Breite ohne Power-Intrinsics auf x86-Build-Hosts). Relevant für HPC-Workloads mit NVLink-GPU-Anbindung (AC922). ZIH-Präsenz: nicht primär, aber für Forschungs-Vergleiche verfügbar. & Vendor/\allowbreak{}Standards-Spec (IBM/\allowbreak{}Open\allowbreak{}POWER, v3.0 2017, v3.1 2020) \\
+\texttt{Risc\allowbreak{}VIsa} & RISC-V RV64\allowbreak{}GC Open-Source ISA (RV64 General + Compressed). Wachsende Bedeutung (Si\allowbreak{}Five, Alibaba Xuantie, Andes, ETH Zürich Cores). SIMD-Baseline: KEINE (RVV ist optional, nicht Teil von RV64\allowbreak{}GC baseline). Cache-Engine-Implementierung: bewusst plain skalarer Pfad (nicht entrollt) -- modelliert fehlende Vektoreinheit der Basis-ISA und erzeugt damit reale, langsamere Laufzeit gegenüber x86-64 und ARM\@. ZIH-Präsenz: embedded + Forschungs-Boards. & Standards-Spec (RISC-V Intl.; UCB TR ab 2011) \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} ---
 
 \section{Build-PG Seitentyp-Achse (PAGE-TYPE)}
 
