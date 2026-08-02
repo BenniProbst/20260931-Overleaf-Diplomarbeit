@@ -7,12 +7,13 @@ Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Be
   \item[ABI] Application Binary Interface --- die binär-stabile Schnittstelle, über die der Builder
   die Permutations-Module (Lebewesen) lädt.
   \item[Achse] Eine orthogonale Teilentscheidung (\enquote{Organ}) eines Suchalgorithmus; das Framework
-  führt neunzehn Kompositions-Achsen.
+  führt achtzehn Organ-Kompositions-Achsen (T0--T17) neben den drei System-Haupt-Achsen und dem
+  Mess-Realm (vgl.\ Abschnitt~\ref{sec:axis-triad}).
   \item[Adaptiv vs.\ dynamisch vs.\ messgetrieben] Begriffsabgrenzung für die Anpassung des
   Algorithmus-Verhaltens.\ \emph{Adaptiv}: Anpassung anhand laufzeit-beobachteter Datenmerkmale
   (z.\,B.\ adaptive Knotengrößen in ART)\@. \emph{Dynamisch}: die Laufzeit-Auswahl des fertig
   kompilierten Permutations-\emph{Moduls} über den Permutations-Identifier (Modul-Ladung) --- alle
-  neunzehn Achsen sind je Binary compile-time-gebacken; hinzu kommen laufzeit-\emph{variierbare}
+  achtzehn Organ-Achsen sind je Binary compile-time-gebacken; hinzu kommen laufzeit-\emph{variierbare}
   Parameter dynamischer Sub-Achsen (Prefetch-Distanz, Stapelgröße, Inline-Schwelle, Pool-Budget;
   vgl.\ Abschnitt~\ref{sec:measurement-system}), keine Laufzeit-Wahl einzelner Achsen-Strategien.
   \emph{Messgetrieben} (\emph{measurement-driven}): Auswahl der Konfiguration auf Basis empirisch
@@ -20,7 +21,7 @@ Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Be
   einem ersten Inkrement implementiert (\texttt{best\_binary\_selector}: Ranking und Auslieferung der
   besten Permutation je Metrik aus den Mess-CSVs), die vollautomatische, lastprofilübergreifende
   Auswahl bleibt Ausblick.
-  \item[Anatomie] Der \emph{Körper} eines Lebewesens: die feste Komposition seiner neunzehn
+  \item[Anatomie] Der \emph{Körper} eines Lebewesens: die feste Komposition seiner achtzehn
   Achsen-Organe und vor allem deren \emph{Verdrahtung} --- die generalisierten Interfaces, über die
   ein Organ die Dienste der übrigen nutzt (etwa das gemeinsame Allokations-Interface). Kein zweites
   Modell neben dem Suchalgorithmus, sondern dessen Innenstruktur
@@ -36,6 +37,13 @@ Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Be
   Extraktion/Ablage als XML-Lastprofil-Ergebnis ---; die ML-Klassifikation selbst ist weiterhin
   Ausblick (vgl.\ Abschnitt~\ref{sec:outlook}).
   \item[AVX, AVX-512] x86-SIMD-Erweiterungen (256- bzw.\ 512-Bit).
+  \item[built\_stem] Feld der Plan-Textform (Fassung v1.1), das je Bau-Schritt den real gebauten
+  Datei-Stamm ausweist --- erzeugt von derselben Funktion, die auch der Bau-Orchestrator beim echten
+  Bau ruft; Beleg des \emph{einen} Hauptkanals (vgl.\ Abschnitt~\ref{sec:impl-pipeline}).
+  \item[CacheEngineBuilder] Das autonome Plattform-Ausmess-System der Kette: Wurzel des
+  System-Realms; baut und stempelt die Tier-Binaries je Plattform und führt die
+  Sieben-Phasen-Pipeline über den \texttt{ExperimentDriver} aus (vgl.\ Abschnitte~\ref{sec:mess-chain}
+  und~\ref{sec:impl-pipeline}).
   \item[CLU] Cache-Line-Utilization --- Anteil genutzter Bytes je geladener Cache-Line.
   \item[CPI, IPC] Cycles per Instruction bzw.\ Instructions per Cycle.
   \item[CRTP] Curiously Recurring Template Pattern --- C++-Idiom für statischen Polymorphismus.
@@ -48,24 +56,42 @@ Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Be
   oberste Ebene (Ebene~1) des Frameworks; siehe \emph{Drei-Ebenen-Modell}.
   \item[Gattungs-Unterklasse] Die zweite Ebene unter einer Gattung mit festem Achsen-Satz
   (Code-Begriff: \emph{Tier-Unterklasse}, \texttt{AnatomyGenus}). In der biologischen Lesart das
-  \enquote{Säugetier} = SearchAlgorithm (volle Neunzehn-Achsen-Anatomie); unter \texttt{Container}
+  \enquote{Säugetier} = SearchAlgorithm (volle Achtzehn-Achsen-Anatomie); unter \texttt{Container}
   die Unterklassen Set, Sequence, Adapter und View (\enquote{Vogel}, \enquote{Reptil},
   \enquote{Wirbelloses}, \enquote{Pflanze}).
   \item[GoF] \enquote{Gang of Four} --- die kanonischen Entwurfsmuster nach Gamma et
   al.~\cite{gamma1994patterns}.
   \item[HBM] High-Bandwidth Memory.
   \item[HOT] Height Optimized Trie~\cite{binna2018hot}.
+  \item[Komplex-Achse] Klammer über einer festen Rekombination mehrerer Haupt-Achsen, die gemeinsam
+  wie \emph{eine} Achse auftreten: die äußere Klammer über Ziel-ISA, Betriebssystem und
+  Erweiterungs-Hardware sowie die innere Komplex-Achse \texttt{target\_isa} (RAM-Frequenz,
+  CAS-Latenz, CPU-Fabrikation); im Identitäts-Stempel belegt eine Komplex-Achse genau ein Feld
+  (vgl.\ Abschnitt~\ref{sec:complex-axis}).
   \item[Lebewesen] Ein vollständiger Such\-algorithmus als Komposition aller Achsen (metaphorischer
   Code-Begriff; technischer Identifier: SearchAlgorithm-Instanz).
   \item[LOUDS] Level-Ordered Unary Degree Sequence --- succinct Baum-Kodierung (Jacobson 1989).
   \item[MESI, MOESI, MESIF] Cache-Kohärenzprotokolle (Grund-Protokoll bzw.\ AMD-/Intel-Varianten).
+  \item[Mess-Realm] Der dritte Achsen-Realm neben Organ- und System-Achsen: die Belange des Messens
+  selbst, verwurzelt am Experiment-\emph{Planer}; erste Haupt-Achse ist das Last-Rahmenwerk, und
+  alle Mess-Realm-Achsen sind strikt binary-id-neutral (vgl.\ Abschnitt~\ref{sec:axis-triad}).
   \item[NINE] Non-Inclusive-Non-Exclusive --- Inklusions-Politik des L3 in Intel-Server-Prozessoren.
   \item[NUMA] Non-Uniform Memory Access.
   \item[OLC] Optimistic Lock Coupling --- optimistische Nebenläufigkeits-Technik (ARTSync,
   P08)~\cite{leis2016olc}.
   \item[Organ] Metaphorischer Begriff für eine \emph{Achse} (Ebene~3 des Drei-Ebenen-Modells); ein
-  Suchalgorithmus besitzt neunzehn Organe.
+  Suchalgorithmus besitzt achtzehn Organ-Achsen.
+  \item[Passungs-Stempel] \emph{Entwurf} eines Abgleichs, der die einkompilierte
+  Plattform-\emph{Klasse} einer Tier-Binary bei jedem Mess-Lauf gegen das Laufzeit-Verdikt der
+  Hardware-Erkennung prüft; im Stand dieser Arbeit nicht gebaut (vgl.\ Abschnitt~\ref{sec:answers}).
+  \item[Planer] Der Experiment-Planer (\texttt{ExperimentPlanDirector}): löst die Anwender-XML gegen
+  die drei Angebots-Kataloge auf, wählt die Mess-Achsen und steuert die Builder-Aufträge der Kette;
+  Wurzel des Mess-Realms (vgl.\ Abschnitt~\ref{sec:mess-chain}).
   \item[PMC] (Hardware) Performance Monitoring Counter.
+  \item[Provenienz-Stufe] Vertrauensstufe eines erhobenen Hardware-Werts --- konfiguriert-gemessen,
+  SPD-JEDEC-Basiswert oder deklariert-nicht-gemessen ---, die jedes Ergebnis samt
+  Erhebungszeitpunkt mitführt; eine niedrigere Stufe verdrängt eine höhere nur mit mitwandernder
+  Kennzeichnung (vgl.\ Abschnitt~\ref{sec:hw-probe}).
   \item[Prüf-Dock] Das nach außen sichtbare Mess-Interface einer Gattung, über das der Builder ein
   Lebewesen lädt, durch die Interface-Operationen treibt, vermisst und persistiert
   (vgl.\ Abschnitt~\ref{sec:anatomy-levels}).
@@ -91,4 +117,8 @@ Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Be
   \texttt{comdare\_load\_profile}); als Ausblick verbleibt die darauf aufsetzende autonome
   Heuristik-Auswertung (ML-Klassifikation).
   \item[YCSB] Yahoo!\ Cloud Serving Benchmark~\cite{cooper2010ycsb}.
+  \item[Zwei-Gate-Protokoll] Das Abnahme-Protokoll je Implementierungs-Paket: Gate~1 ist das
+  scharfe Doppellauf-Gate des Engine-Repositories (ausschließlich \enquote{0~failed}, ohne
+  Ausnahmeliste), Gate~2 das Integrations-Gate des Super-Repositories mit namentlich eingefrorener
+  Ausnahmemenge (vgl.\ Abschnitt~\ref{sec:impl-contracts}).
 \end{description}

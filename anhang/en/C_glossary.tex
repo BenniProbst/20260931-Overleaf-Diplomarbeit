@@ -9,8 +9,8 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   \item[Adaptive vs.\ dynamic vs.\ measurement-driven] Distinction of terms for adapting the
   algorithm behaviour.\ \emph{Adaptive}: adaptation based on run-time-observed data characteristics
   (e.g.\ adaptive node sizes in ART)\@. \emph{Dynamic}: the run-time selection of the fully compiled
-  permutation \emph{module} via the permutation identifier (module loading) --- all nineteen axes are
-  baked in per binary at compile time; in addition there are run-time-\emph{variable} parameters of
+  permutation \emph{module} via the permutation identifier (module loading) --- all eighteen organ
+  axes are baked in per binary at compile time; in addition there are run-time-\emph{variable} parameters of
   dynamic sub-axes (prefetch distance, batch size, inline threshold, pool budget;
   cf.\ Section~\ref{sec:measurement-system}), no run-time
   choice of individual axis strategies.\ \emph{Measurement-driven}: selection of the
@@ -18,7 +18,7 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   the corresponding selection mechanism is implemented in a first increment
   (\texttt{best\_binary\_selector}: ranking and delivery of the best permutation per metric from the
   measurement CSVs), while the fully automatic, load-profile-spanning selection remains outlook.
-  \item[Anatomy] The \emph{body} of a living being: the fixed composition of its nineteen axis
+  \item[Anatomy] The \emph{body} of a living being: the fixed composition of its eighteen axis
   organs and, above all, their \emph{wiring} --- the generalized interfaces through which one organ
   draws on the services of the others (e.g.\ the shared allocation interface). Not a second model
   beside the search algorithm but its internal structure (cf.\ Section~\ref{sec:anatomy-metaphor}).
@@ -33,16 +33,31 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   (cf.\ Section~\ref{sec:outlook}).
   \item[AVX, AVX-512] x86 SIMD extensions (256- and 512-bit, respectively).
   \item[Axis] An orthogonal partial decision (``organ'') of a search algorithm; the framework
-  maintains nineteen composition axes.
+  maintains eighteen organ composition axes (T0--T17) alongside the three system main axes and the
+  measurement realm (cf.\ Section~\ref{sec:axis-triad}).
+  \item[built\_stem] Field of the textual plan (revision v1.1) that states, per build step, the
+  actually built file stem --- produced by the very function the build orchestrator calls during the
+  real build; evidence of the \emph{single} main channel (cf.\ Section~\ref{sec:impl-pipeline}).
+  \item[CacheEngineBuilder] The autonomous platform-measurement system of the chain: root of the
+  system realm; builds and stamps the tier binaries per platform and executes the seven-phase
+  pipeline via the \texttt{ExperimentDriver} (cf.\ Sections~\ref{sec:mess-chain}
+  and~\ref{sec:impl-pipeline}).
   \item[CLU] Cache-line utilization --- the fraction of used bytes per loaded cache line.
+  \item[Complex axis] Bracket over a fixed recombination of several main axes that jointly act as
+  \emph{one} axis: the outer bracket over target ISA, operating system, and extension hardware, and
+  the inner complex axis \texttt{target\_isa} (RAM frequency, CAS latency, CPU fabrication); in the
+  identity stamp a complex axis occupies exactly one field (cf.\ Section~\ref{sec:complex-axis}).
   \item[CPI, IPC] Cycles per instruction and instructions per cycle, respectively.
   \item[CRTP] Curiously Recurring Template Pattern --- C++ idiom for static polymorphism.
   \item[dTLB] Data translation lookaside buffer; caches data address translations.
+  \item[Fit stamp (Passungs-Stempel)] \emph{Design} of a check that validates the compiled-in
+  platform \emph{class} of a tier binary against the run-time verdict of the hardware probing on
+  every measurement run; not built in the state of this thesis (cf.\ Section~\ref{sec:answers}).
   \item[Genus] An externally visible interface (SearchAlgorithm, Container, Graph) --- the topmost
   level (level~1) of the framework; see \emph{Three-level model}.
   \item[Genus subclass] The second level beneath a genus, with a fixed axis set (code term:
   \texttt{AnatomyGenus}, ``animal subclass''). In the biological reading the ``mammal'' = SearchAlgorithm (the full
-  nineteen-axis anatomy); under \texttt{Container} the subclasses Set, Sequence, Adapter, and View
+  eighteen-axis anatomy); under \texttt{Container} the subclasses Set, Sequence, Adapter, and View
   (``bird'', ``reptile'', ``invertebrate'', ``plant'').
   \item[GoF] ``Gang of Four'' --- the canonical design patterns after Gamma et
   al.~\cite{gamma1994patterns}.
@@ -51,6 +66,10 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   \item[Living being] A complete search algorithm as a composition of all axes (metaphorical code
   term; technical identifier: SearchAlgorithm instance).
   \item[LOUDS] Level-Ordered Unary Degree Sequence --- succinct tree encoding (Jacobson 1989).
+  \item[Measurement realm] The third axis realm beside organ and system axes: the concerns of
+  measuring itself, rooted at the experiment \emph{planner}; its first main axis is the load
+  framework, and all measurement-realm axes are strictly binary-id-neutral
+  (cf.\ Section~\ref{sec:axis-triad}).
   \item[MESI, MOESI, MESIF] Cache coherence protocols (base protocol and AMD/Intel variants,
   respectively).
   \item[NINE] Non-Inclusive-Non-Exclusive --- inclusion policy of the L3 in Intel server processors.
@@ -58,13 +77,20 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   \item[OLC] Optimistic Lock Coupling --- optimistic concurrency technique (ARTSync,
   P08)~\cite{leis2016olc}.
   \item[Organ] Metaphorical term for an \emph{axis} (level~3 of the three-level model); a search
-  algorithm has nineteen organs.
+  algorithm has eighteen organ axes.
+  \item[Planner] The experiment planner (\texttt{ExperimentPlanDirector}): resolves the user XML
+  against the three offer catalogues, selects the measurement axes, and steers the builder orders of
+  the chain; root of the measurement realm (cf.\ Section~\ref{sec:mess-chain}).
   \item[PMC] (Hardware) Performance Monitoring Counter.
   \item[Probe] The new search algorithm to be integrated for testing (here PRT-ART); it is compiled
   by the builder against the core constituents of the cache engine.
   \item[Probe dock] The externally visible measurement interface of a genus, through which the
   builder loads a living being, drives it through the interface operations, measures it, and persists
   the results (cf.\ Section~\ref{sec:anatomy-levels}).
+  \item[Provenance level] Trust level of a collected hardware value --- configured-measured,
+  SPD-JEDEC base value, or declared-not-measured --- carried by every result together with its
+  collection timestamp; a lower level may displace a higher one only with the label travelling
+  along (cf.\ Section~\ref{sec:hw-probe}).
   \item[PRT-ART] Probst Redirect Tree / ART hybrid --- the probe of this thesis.
   \item[Rank] Centrality classification of the state-of-the-art publications (Rank-1/2/3); explained
   in Section~\ref{sec:rqs}.
@@ -80,6 +106,10 @@ This glossary summarizes the abbreviations and central terms used in the thesis.
   algorithm interface --- SearchAlgorithm, Container, Graph), \emph{genus subclass} (level~2, fixed
   axis set), and \emph{organs}/\emph{axes} (level~3). See Section~\ref{sec:anatomy-levels}.
   \item[TLB] Translation Lookaside Buffer.
+  \item[Two-gate protocol] The acceptance protocol per implementation package: gate~1 is the strict
+  double-run gate of the engine repository (exclusively ``0~failed'', no exception list), gate~2 the
+  integration gate of the super-repository with a nominally frozen exception set
+  (cf.\ Section~\ref{sec:impl-contracts}).
   \item[XML load-profile result] The persistence format demanded by the thesis assignment
   (sub-task~7) in which the heuristic policy extracted for an overall algorithm --- reusable per
   architecture focus --- is stored under reference to the applied load profiles; it serves as input
