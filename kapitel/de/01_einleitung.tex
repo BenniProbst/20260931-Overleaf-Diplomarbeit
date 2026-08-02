@@ -8,7 +8,7 @@ Suchbäume und Indexstrukturen tragen moderne datenintensive Systeme --- von In-
 Dateisysteme bis zur Sprachverarbeitung. Zugleich werden heutige Prozessoren von der Speicher-Hierarchie
 dominiert: nicht die Zahl der Operationen, sondern ihr Cache-Verhalten bestimmt die Laufzeit. Aus diesem
 Spannungsfeld erwächst die Leitfrage der Arbeit.
-Im Zentrum dieser Arbeit stehen trie-basierte Indizes und cache-line-optimierte Verarbeitung. Seit dem
+Im Zentrum stehen dabei trie-basierte Indizes und cache-line-optimierte Verarbeitung. Seit dem
 Adaptive Radix Tree (ART)~\cite{leis2013art} von 2013 hat sich die Forschung ausdifferenziert:
 Trie-Höhen-Optimierung (HOT~\cite{binna2018hot}), hybride B\textsuperscript{+}-Strukturen
 (Masstree~\cite{mao2012masstree}, B\textsuperscript{2}-Baum~\cite{schmeisser2022b2tree}),
@@ -49,6 +49,7 @@ unvollständige Ansammlung neuartiger Suchalgorithmus-Bestandteile.
 Cache-Bewusstheit ist in heutigen Suchstrukturen entweder fest verdrahtet oder ganz ignoriert; vor allem
 aber lässt sich nicht \emph{trennen}, welche einzelne Entwurfsentscheidung welchem Lastmuster nützt --- das
 \emph{Trennbarkeits-Problem}, der rote Faden dieser Arbeit.
+
 Bestehende cache-bewusste Index-Entwürfe optimieren ein oder wenige Aspekte isoliert und berichten
 Ergebnisse, die sich über Veröffentlichungen hinweg schwer vergleichen lassen, da jede Arbeit eigene
 Datenstrukturen, Workloads und Mess-Methodiken verwendet. Die Gewichtungen der Verbesserungen einzelner
@@ -84,7 +85,7 @@ austauschbaren Entwurfsbestandteile des Algorithmus), \emph{System-Achsen} (die 
 und Ziel-Plattform) und \emph{Mess-Achsen} (die Belange des Messens selbst) trennen lassen --- und
 wie eine solche Trennung zu bewerkstelligen ist, falls sie in einem Entwurf noch nicht vorhanden
 ist --- bleibt an dieser Stelle bewusst offen; die Teilfragen sind darum entlang dieser drei
-\emph{Achsen-Kategorien} benannt, die Antworten entwickeln die Kapitel~\ref{ch:measurement}
+\emph{Achsen-Kategorien} benannt; die Antworten entwickeln die Kapitel~\ref{ch:measurement}
 und~\ref{ch:impl}.
 \begin{description}
   \item[FF0 (Hauptfrage)] Wie stark verbessern \emph{aktive, messgetriebene} cache-bewusste
@@ -121,11 +122,12 @@ und~\ref{ch:impl}.
   bias-frei nachmessen, statt sie aus inkompatiblen Original-Setups zu übernehmen?
   \emph{Teilfrage (Erweiterbarkeit):} Wie erweiterbar ist eine solche Mess-Pipeline --- wie
   gliedern sich neue Prüflinge und ihre Entwurfsbestandteile ein, wie werden sie abstrahiert, und
-  ordnen sie sich bestehenden Algorithmus-Kategorien zu, begründen sie neue oder einen Mix; auf
-  welcher konzeptionellen Ebene sollte dieser Schnitt verlaufen? Zentral ist dabei: Was ist
-  überhaupt eine Erweiterung des Systems, und wie wirkt sich das Hinzufügen oder Wegschneiden
-  einzelner Erweiterungs-Bausteine --- etwa der aus einer einzelnen Veröffentlichung stammenden
-  Entwurfsbestandteile --- auf das Cache-Line-Awareness-Potential des Gesamtsystems aus? Braucht es
+  ordnen sie sich bestehenden Algorithmus-Kategorien zu, begründen sie neue Kategorien oder eine
+  Mischform; auf welcher konzeptionellen Ebene sollte dieser Schnitt verlaufen? Zentral ist dabei:
+  Was ist überhaupt eine Erweiterung des Systems, und wie wirkt sich das Hinzufügen oder
+  Wegschneiden einzelner Erweiterungs-Bausteine --- etwa der aus einer einzelnen Veröffentlichung
+  stammenden Entwurfsbestandteile --- auf das erreichbare Maß an Cache-Line-Bewusstheit des
+  Gesamtsystems aus? Braucht es
   dafür einen Betriebsmodus, der die Entwurfsbestandteile eines wählbaren Referenz-Entwurfs aus der
   Literatur als geschlossenes Achsen-Set isoliert anbietet, um genau diese eine Veröffentlichung
   --- bei weiterhin freistehenden Mess- und System-Achsen --- originalgetreu durchzumessen?
@@ -189,9 +191,9 @@ zentralen Beiträge sind:
   \item Eine Achsen-Permutationsmatrix in dreigeteilter Ordnung: achtzehn Organ-Achsen
   (Kompositions-Slots T0--T17) tragen die Binary-Permutation, drei System-Haupt-Achsen ---
   Ziel-ISA, Betriebssystem und Erweiterungs-Hardware --- beschreiben die Bau- und Ziel-Plattform,
-  und ein eigenständiger Mess-Achsen-Realm hält die Mess-Belange von beidem getrennt (die frühere
-  Neunzehn-Achsen-Zählung, Zwischenstand Juli 2026, ist eine historische Vorstufe dieser Ordnung);
-  umgesetzt mit Boost.MP11-Compile-Time-Typlisten-Bausteinen
+  und ein eigenständiger Mess-Achsen-Realm hält die Mess-Belange von beidem getrennt; die frühere
+  Neunzehn-Achsen-Zählung (Zwischenstand Juli 2026) ist eine historische Vorstufe dieser Ordnung.
+  Umgesetzt ist die Matrix mit Boost.MP11-Compile-Time-Typlisten-Bausteinen
   (kein Runtime-Tag, kein \texttt{std::variant}; der \texttt{std::variant}-Katalog besteht nur als
   historische Elf-Achsen-Vorstufe) und Compile-Time-Fallback zwischen Prüfling-Stack und
   Stand-der-Technik-Stack.
@@ -236,7 +238,7 @@ Der Aufbau folgt dem Weg vom Allgemeinen zum Speziellen: Kapitel~\ref{ch:foundat
 bildhaft --- die Grundlagen aus bekanntem Wissen: die Landschaft der Suchstrukturen, die
 Hardware-Eigenschaften der Speicherhierarchie, die Workload-Konventionen der Vergleichsliteratur, die
 Software-Mittel der Abstraktion und den Heuristik-Begriff. Kapitel~\ref{ch:measurement} entwickelt
-daraus die Konzepte eines cache-aware Mess-Systems: die Problemstellung und ihre Anforderungen, den
+daraus die Konzepte eines cache-bewussten Mess-Systems: die Problemstellung und ihre Anforderungen, den
 Stand der Technik als Achsen-Instanzen, das Anatomie-Modell mit seinen Schichten, das Mess-System
 selbst, den Prüfling PRT-ART als Demonstrator und die heuristische Auswertung samt ihrer
 Betriebsmodi. Kapitel~\ref{ch:impl} setzt dieses Konzept als Software-Architektur um --- Repositorien,
