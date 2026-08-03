@@ -1,4 +1,20 @@
 # generate_wide_appendix.ps1 — L8 WIDE-Pipeline-Orchestrator (Phase L, 2026-06-20)
+#
+# ============================== DEPRECATED (2026-08-03) ==============================
+# NICHT LAUFFAEHIG IM IST-STAND. Das Skript wird bewusst NICHT geloescht (Doku-Regel:
+# nur deprecaten, nie entfernen), aber es darf nicht mehr aufgerufen werden:
+#   * Windows-Pfade und pwsh-Voraussetzung samt .exe-Subprozess-Spawn (csv-to-latex.exe /
+#     diagram-generator.exe aus einem msvc-Build) -- die Kette laeuft heute unter Linux/CMake.
+#   * Stand cowfix-v1 (18.06.2026): die m3v2-Sektionen sind hier parametrisch uebersprungen,
+#     und die heutige WIDE-Matrix traegt 175 Spalten statt des damaligen Schemas.
+# ABGELOEST DURCH die C++23-Anwendung Code/08_appendix_generator: sie linkt comdare::csv_to_latex
+# und comdare::diagram_generator direkt und ruft DIESELBEN Writer IN-PROCESS (8x|langs| Spawns
+# entfallen, die WIDE-Matrix wird EINMAL geparst).
+# Owner-Wortlaut (10.07.2026): "... was durch eine sinnvolle C++23 Anwendung ersetzt werden
+# kann ... bitte kein python" -- kein Python und kein PowerShell in der Buildchain.
+# Die Provenienz-Nennungen dieses Skripts in anhang/de|en/tabellen/*_diagram.tex bleiben
+# unveraendert stehen (Aufraeum-Kandidatenliste, separat getrackt).
+# ====================================================================================
 # =============================================================================
 # EIN Kommando -> der GANZE cowfix-v1-Mess-Appendix (11 Tabellen) je Sprache
 # {de,en}, BYTE-IDENTISCH reproduzierbar zu den committeten kanonischen .tex.
