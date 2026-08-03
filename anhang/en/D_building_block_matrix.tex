@@ -965,6 +965,137 @@ Variant & Description & Source \\
 
 \emph{Stamp neutrality (A-15):} the three sub-axes are runtime sub-axes and therefore never appear in the binary stamp. Their attachment changes neither the stamp lines nor the build-version suffix, and it must not raise the axis code level of \texttt{operating\_\allowbreak{}system} (bump prohibition guard): such a bump would shift the SHA512 of all new builds against the existing stock and would force exactly the full rebuild of all legacy binaries that the owner decision rules out.
 
+\section{System sphere: extension hardware (\texttt{external\_utils})}
+
+This quantity is the third system main axis; it is exclusively the collecting hub of the hardware meta axes --- SIMD and vector extensions, GPU, FPGA and NPU as well as external accelerators (cf.\ Section~\ref{sec:axis-triad}).
+
+The hub carries \emph{only} system meta-metas; the load framework explicitly does not belong to it. Because meta-meta axes receive no stamp line of their own but appear as a bracketed suffix at the end of the respective realm line, this hub closes the system realm: the suffix is folded type-driven from the hub's member type list (\texttt{External\allowbreak{}Utils\allowbreak{}Hub} $\rightarrow$ \texttt{Simd\allowbreak{}External\allowbreak{}Utils\allowbreak{}Family}), and the level resides in the bracket depth rather than in the name (owner decision E2 and owner answer Q1 of 2 August 2026). In today's build-driving offering the axis carries \texttt{baustein\_\allowbreak{}count=1}, \texttt{stage=ct} and \texttt{binary\_\allowbreak{}id=never}.
+
+\subsection*{Dynamic sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+\texttt{simd} & Vector extension level & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=3}. The family identifier is at the same time the sub-axis label (notation \texttt{external\_\allowbreak{}utils.simd=\dots}); the per-dialect reflected compiler flags come from the option, not from the family. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+The three options of the sub-axis with their flags per compiler dialect:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{5.3cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} and \texttt{clang}) & Flag (\texttt{msvc}) \\
+\midrule
+\endhead%
+\texttt{no\_\allowbreak{}extension} & --- (empty) & --- (empty) \\
+\texttt{avx2} & \texttt{-mavx2} & \texttt{/arch:AVX2} \\
+\texttt{avx512} & \texttt{-mavx512f} & \texttt{/arch:AVX512} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note (Q2/\allowbreak{}K2):} \texttt{simd} materializes as a flag of the compilation seam and therefore appears in the build-version suffix (cf.\ Section~\ref{sec:stamp-model}) --- never as a runtime type switch and never in the \texttt{binary\_\allowbreak{}id}.
+
+The sub-axis is accompanied by a fine-grained feature catalogue \texttt{simd\_\allowbreak{}feature\_\allowbreak{}catalog} with \texttt{count=23} features, tiered by \texttt{tier}: fourteen features of tier \texttt{avx512}, four of tier \texttt{avx256}, three companion features (\texttt{companion}) and two scalar ones (\texttt{scalar}). The flags are identical throughout for \texttt{gpp} and \texttt{clang}.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{5.4cm} >{\raggedright\arraybackslash}p{3.7cm}@{}}
+\toprule
+Feature (\texttt{cpuinfo}) & Flag (\texttt{gpp} and \texttt{clang}) & Tier (\texttt{tier}) \\
+\midrule
+\endhead%
+\texttt{avx512f} & \texttt{-mavx512f} & \texttt{avx512} \\
+\texttt{avx512cd} & \texttt{-mavx512cd} & \texttt{avx512} \\
+\texttt{avx512vl} & \texttt{-mavx512vl} & \texttt{avx512} \\
+\texttt{avx512dq} & \texttt{-mavx512dq} & \texttt{avx512} \\
+\texttt{avx512bw} & \texttt{-mavx512bw} & \texttt{avx512} \\
+\texttt{avx512ifma} & \texttt{-mavx512ifma} & \texttt{avx512} \\
+\texttt{avx512vbmi} & \texttt{-mavx512vbmi} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vbmi2} & \texttt{-mavx512vbmi2} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vnni} & \texttt{-mavx512vnni} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}bitalg} & \texttt{-mavx512bitalg} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vpopcntdq} & \texttt{-mavx512vpopcntdq} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vp2intersect} & \texttt{-mavx512vp2intersect} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}bf16} & \texttt{-mavx512bf16} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}fp16} & \texttt{-mavx512fp16} & \texttt{avx512} \\
+\texttt{avx2} & \texttt{-mavx2} & \texttt{avx256} \\
+\texttt{fma} & \texttt{-mfma} & \texttt{avx256} \\
+\texttt{f16c} & \texttt{-mf16c} & \texttt{avx256} \\
+\texttt{avx\_\allowbreak{}vnni} & \texttt{-mavxvnni} & \texttt{avx256} \\
+\texttt{gfni} & \texttt{-mgfni} & \texttt{companion} \\
+\texttt{vaes} & \texttt{-mvaes} & \texttt{companion} \\
+\texttt{vpclmulqdq} & \texttt{-mvpclmulqdq} & \texttt{companion} \\
+\texttt{bmi2} & \texttt{-mbmi2} & \texttt{scalar} \\
+\texttt{popcnt} & \texttt{-mpopcnt} & \texttt{scalar} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Machine signatures (\texttt{count=3}):} the registry records for each target machine the subset of features actually present --- \texttt{prod1\_\allowbreak{}zen5} (\texttt{host\_\allowbreak{}isa=x86\_\allowbreak{}64}) with 22 features, \texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} with 9 and \texttt{odroid\_\allowbreak{}gracemont} with 9. Only the Zen 5 machine carries the \texttt{avx512} tier; the other two end at \texttt{avx256} together with the companion and scalar features.
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{simd} & Vector extension family (\texttt{Simd\allowbreak{}External\allowbreak{}Utils\allowbreak{}Family}, \texttt{family\_\allowbreak{}id=simd}, enabled). The only member of the hub enabled today; the families for GPU, FPGA and NPU are foreseen in the design but are not part of the build-driving offering. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
+
+\section[Build-SIMD: Vector/Accelerator Extension Axis]{Build-SIMD: Vector/\allowbreak{}Accelerator Extension Axis (Hardware Accelerators)} % chktex 13 (Titel-Doppelpunkt nach Grossbuchstabe, kein Satzende)
+
+\emph{Conserved offering and history catalogue:} the legacy axis identifier \texttt{axis\_\allowbreak{}09b} has been superseded by the main axis \texttt{external\_\allowbreak{}utils} with its sub-axis \texttt{simd}. The eight-building-block catalogue below is retained in full as an offering and history catalogue under that main axis, as is the sub-axis table SE1--SE3 as a historical block.
+
+The \texttt{axis\_\allowbreak{}09b\_\allowbreak{}simd\_\allowbreak{}extension} models available SIMD/\allowbreak{}accelerator extensions of the CPU instruction set architecture as a sub-axis to \texttt{axis\_\allowbreak{}09} (main ISA). It enables compile-time selection among various vector extensions (SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 for x86; NEON/\allowbreak{}SVE2 for ARM\@; RVV for RISC-V) plus baseline (scalar) and GPU acceleration (CUDA), with backward-cumulative layer hierarchy and hardware-specific topology (SIMD units per socket, P/\allowbreak{}E core access).
+
+\subsection*{Static sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+SE1 & Vector Width & Compile-time-known maximum vector width of the SIMD extension in bits: 0 (none), 128, 256, 512, or -1 (scalable). Determines lane width and parallelization degree. \\
+SE2 & Accelerator Type & Categorizes accelerator class: none (baseline), simd (vector SIMD), matrix (matrix engine), gpu (GPU), npu (neural processing unit). Influences composition with hardware topology (\texttt{axis\_\allowbreak{}12}). \\
+SE3 & Compatibility Family & Constraint to main ISA (\texttt{axis\_\allowbreak{}09}): none (universal), x86, arm, riscv, cuda. Ensures compile-time validation: e.g., \texttt{Sse2\allowbreak{}Simd\allowbreak{}Extension} compatible only with \texttt{Amd64\allowbreak{}Isa}. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.0cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{No\allowbreak{}Simd\allowbreak{}Extension} & Baseline variant without SIMD acceleration. Scalar fallback strategy for all permutations without accelerator. Universally compatible with all main ISAs (x86/\allowbreak{}ARM/\allowbreak{}RISC-V/\allowbreak{}Power\allowbreak{}PC). Mandatory comparison baseline. & Code/\allowbreak{}Baseline \\
+\texttt{Sse2\allowbreak{}Simd\allowbreak{}Extension} & Intel SSE2 128-bit vector extension (x86\_\allowbreak{}64 ABI baseline since 2003). Compatible only with \texttt{Amd64\allowbreak{}Isa}. Baseline on x86\_\allowbreak{}64; provides 4× uint32 lanes/\allowbreak{}iteration. Standard on cluster nodes Barnard/\allowbreak{}Capella. & Intel ISA Ext Ref 319433-060 \\
+\texttt{Avx2\allowbreak{}Simd\allowbreak{}Extension} & Intel AVX2 256-bit vector extension (Haswell+ 2013). X86\_\allowbreak{}64 only. Backward-cumulative: includes all SSE+AVX\@. Default optimization level for server DBMS\@. 2 AVX2 units/\allowbreak{}socket. ZIH standard on Barnard (Intel Sapphire Rapids) and Capella (AMD EPYC 9334). & Intel ISA Ext Ref 319433 \\
+\texttt{Avx512\allowbreak{}Simd\allowbreak{}Extension} & Intel AVX-512 512-bit vector extension (Skylake-X+, Ice Lake Server, Zen 4+). Backward-cumulative: all SSE/\allowbreak{}AVX/\allowbreak{}AVX2 + 15 separate flags (VNNI for vector indexes, VPOPCNTDQ for bitmap indexes). Not on all x86\_\allowbreak{}64 CPUs (e.g., Haswell/\allowbreak{}Raptor Lake disabled). 1 AVX-512 unit/\allowbreak{}socket; E-cores no access (Intel Hybrid). & Intel ISA Ext Ref 319433-060 \\
+\texttt{Neon\allowbreak{}Simd\allowbreak{}Extension} & ARM NEON /\allowbreak{} Advanced SIMD 128-bit (AArch64 ABI baseline ARMv8+). Compatible only with \texttt{Aarch64\allowbreak{}Isa}. Baseline on all AArch64 CPUs (Apple M-Series, AWS Graviton 2/\allowbreak{}3/\allowbreak{}4, NVIDIA Grace). 1 NEON unit/\allowbreak{}socket; all cores accessible (big.LITTLE architecture). & ARM ARM DDI 0487 /\allowbreak{} Cortex-A8 TRM \\
+\texttt{Sve2\allowbreak{}Simd\allowbreak{}Extension} & ARM SVE2 (Scalable Vector Extension 2) ARMv9 mandatory (scalable 128--2048 bit). Compatible only with \texttt{Aarch64\allowbreak{}Isa}. ZIH cluster Grace Hopper (NVIDIA Grace = ARM Neoverse V2 with 128-bit SVE2). Scalable lane width; 1 unit/\allowbreak{}socket; all cores. & SVE~\cite{stephens2017sve} (IEEE Micro 2017); SVE2/\allowbreak{}Armv9 per ARM ARM~\cite{arm_arm} \\
+\texttt{Rvv\allowbreak{}Simd\allowbreak{}Extension} & RISC-V Vector Extension (RVV v1.0, scalable VLEN 128--65536 bit). Compatible only with \texttt{Risc\allowbreak{}VIsa}. Optional (not baseline like SSE2/\allowbreak{}NEON). Growing relevance: Si\allowbreak{}Five Performance P870 (128-bit), T-Head Xuantie C908 (128-bit). Research boards at TU Dresden/\allowbreak{}ZIH\@. & RVV-v1.0-Spec~\cite{riscv_vector_spec_1_0}; Vitruvius+ (TACO 2023)~\cite{minervini2023vitruvius} \\
+\texttt{Cuda\allowbreak{}Gh200\allowbreak{}Simd\allowbreak{}Extension} & NVIDIA CUDA on Hopper GH200 (Grace Hopper Superchip GPU accelerator). ZIH cluster Alpha Centauri with NVIDIA HGX\@. Compatible with \texttt{Aarch64\allowbreak{}Isa} (Grace CPU) AND \texttt{Amd64\allowbreak{}Isa} (Hopper host). NVLink-C2\allowbreak{}C 900 GB/\allowbreak{}s between Grace CPU and Hopper GPU\@. Massive parallel (96 GB HBM3 GPU\@; \textasciitilde16,896 CUDA cores). \texttt{units\_\allowbreak{}per\_\allowbreak{}socket()} = -1 (GPU is separate device). & NVIDIA Tesla~\cite{lindholm2008tesla} (IEEE Micro 2008) + NVIDIA GH200 Whitepaper \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Sources:} ISA specifications and whitepapers (Intel, ARM, IEEE Micro, ACM TACO, NVIDIA); see the source column of the building blocks.
+
 \section{Build-PG Page Type Axis (PAGE-TYPE)}
 
 \emph{Delimitation and conservation:} this section describes the \texttt{Page\allowbreak{}Kind} of the organ world (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) and is distinct from the system sub-axis \texttt{page} of the target ISA (page-size release 4k/\allowbreak{}2m/\allowbreak{}1g) --- both quantities carry similar names but share neither building blocks nor semantics. The catalogue is retained in full as a conserved offering and history catalogue.
@@ -1007,47 +1138,6 @@ Variant & Description & Source \\
 \emph{Contributing sources:} P01, P02, P03, P04, Morrison 1968, PRT-ART~\cite{leis2013art,binna2018hot,mao2012masstree,boffa2024coco,morrison1968patricia}.
 
 \emph{Related literature:} P05, P06, P10, P11, P12, P13, P20~\cite{fent2020start,schmeisser2022b2tree,zhang2018surf,rao1999css,rao2000csb,hankins2003nodesize,mueller2025btreesback}.
-
-\section[Build-SIMD: Vector/Accelerator Extension Axis]{Build-SIMD: Vector/\allowbreak{}Accelerator Extension Axis (Hardware Accelerators)} % chktex 13 (Titel-Doppelpunkt nach Grossbuchstabe, kein Satzende)
-
-The \texttt{axis\_\allowbreak{}09b\_\allowbreak{}simd\_\allowbreak{}extension} models available SIMD/\allowbreak{}accelerator extensions of the CPU instruction set architecture as a sub-axis to \texttt{axis\_\allowbreak{}09} (main ISA). It enables compile-time selection among various vector extensions (SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 for x86; NEON/\allowbreak{}SVE2 for ARM\@; RVV for RISC-V) plus baseline (scalar) and GPU acceleration (CUDA), with backward-cumulative layer hierarchy and hardware-specific topology (SIMD units per socket, P/\allowbreak{}E core access).
-
-\subsection*{Static sub-axes}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Description \\
-\midrule
-\endhead%
-SE1 & Vector Width & Compile-time-known maximum vector width of the SIMD extension in bits: 0 (none), 128, 256, 512, or -1 (scalable). Determines lane width and parallelization degree. \\
-SE2 & Accelerator Type & Categorizes accelerator class: none (baseline), simd (vector SIMD), matrix (matrix engine), gpu (GPU), npu (neural processing unit). Influences composition with hardware topology (\texttt{axis\_\allowbreak{}12}). \\
-SE3 & Compatibility Family & Constraint to main ISA (\texttt{axis\_\allowbreak{}09}): none (universal), x86, arm, riscv, cuda. Ensures compile-time validation: e.g., \texttt{Sse2\allowbreak{}Simd\allowbreak{}Extension} compatible only with \texttt{Amd64\allowbreak{}Isa}. \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Building blocks}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.0cm}@{}}
-\toprule
-Variant & Description & Source \\
-\midrule
-\endhead%
-\texttt{No\allowbreak{}Simd\allowbreak{}Extension} & Baseline variant without SIMD acceleration. Scalar fallback strategy for all permutations without accelerator. Universally compatible with all main ISAs (x86/\allowbreak{}ARM/\allowbreak{}RISC-V/\allowbreak{}Power\allowbreak{}PC). Mandatory comparison baseline. & Code/\allowbreak{}Baseline \\
-\texttt{Sse2\allowbreak{}Simd\allowbreak{}Extension} & Intel SSE2 128-bit vector extension (x86\_\allowbreak{}64 ABI baseline since 2003). Compatible only with \texttt{Amd64\allowbreak{}Isa}. Baseline on x86\_\allowbreak{}64; provides 4× uint32 lanes/\allowbreak{}iteration. Standard on cluster nodes Barnard/\allowbreak{}Capella. & Intel ISA Ext Ref 319433-060 \\
-\texttt{Avx2\allowbreak{}Simd\allowbreak{}Extension} & Intel AVX2 256-bit vector extension (Haswell+ 2013). X86\_\allowbreak{}64 only. Backward-cumulative: includes all SSE+AVX\@. Default optimization level for server DBMS\@. 2 AVX2 units/\allowbreak{}socket. ZIH standard on Barnard (Intel Sapphire Rapids) and Capella (AMD EPYC 9334). & Intel ISA Ext Ref 319433 \\
-\texttt{Avx512\allowbreak{}Simd\allowbreak{}Extension} & Intel AVX-512 512-bit vector extension (Skylake-X+, Ice Lake Server, Zen 4+). Backward-cumulative: all SSE/\allowbreak{}AVX/\allowbreak{}AVX2 + 15 separate flags (VNNI for vector indexes, VPOPCNTDQ for bitmap indexes). Not on all x86\_\allowbreak{}64 CPUs (e.g., Haswell/\allowbreak{}Raptor Lake disabled). 1 AVX-512 unit/\allowbreak{}socket; E-cores no access (Intel Hybrid). & Intel ISA Ext Ref 319433-060 \\
-\texttt{Neon\allowbreak{}Simd\allowbreak{}Extension} & ARM NEON /\allowbreak{} Advanced SIMD 128-bit (AArch64 ABI baseline ARMv8+). Compatible only with \texttt{Aarch64\allowbreak{}Isa}. Baseline on all AArch64 CPUs (Apple M-Series, AWS Graviton 2/\allowbreak{}3/\allowbreak{}4, NVIDIA Grace). 1 NEON unit/\allowbreak{}socket; all cores accessible (big.LITTLE architecture). & ARM ARM DDI 0487 /\allowbreak{} Cortex-A8 TRM \\
-\texttt{Sve2\allowbreak{}Simd\allowbreak{}Extension} & ARM SVE2 (Scalable Vector Extension 2) ARMv9 mandatory (scalable 128--2048 bit). Compatible only with \texttt{Aarch64\allowbreak{}Isa}. ZIH cluster Grace Hopper (NVIDIA Grace = ARM Neoverse V2 with 128-bit SVE2). Scalable lane width; 1 unit/\allowbreak{}socket; all cores. & SVE~\cite{stephens2017sve} (IEEE Micro 2017); SVE2/\allowbreak{}Armv9 per ARM ARM~\cite{arm_arm} \\
-\texttt{Rvv\allowbreak{}Simd\allowbreak{}Extension} & RISC-V Vector Extension (RVV v1.0, scalable VLEN 128--65536 bit). Compatible only with \texttt{Risc\allowbreak{}VIsa}. Optional (not baseline like SSE2/\allowbreak{}NEON). Growing relevance: Si\allowbreak{}Five Performance P870 (128-bit), T-Head Xuantie C908 (128-bit). Research boards at TU Dresden/\allowbreak{}ZIH\@. & RVV-v1.0-Spec~\cite{riscv_vector_spec_1_0}; Vitruvius+ (TACO 2023)~\cite{minervini2023vitruvius} \\
-\texttt{Cuda\allowbreak{}Gh200\allowbreak{}Simd\allowbreak{}Extension} & NVIDIA CUDA on Hopper GH200 (Grace Hopper Superchip GPU accelerator). ZIH cluster Alpha Centauri with NVIDIA HGX\@. Compatible with \texttt{Aarch64\allowbreak{}Isa} (Grace CPU) AND \texttt{Amd64\allowbreak{}Isa} (Hopper host). NVLink-C2\allowbreak{}C 900 GB/\allowbreak{}s between Grace CPU and Hopper GPU\@. Massive parallel (96 GB HBM3 GPU\@; \textasciitilde16,896 CUDA cores). \texttt{units\_\allowbreak{}per\_\allowbreak{}socket()} = -1 (GPU is separate device). & NVIDIA Tesla~\cite{lindholm2008tesla} (IEEE Micro 2008) + NVIDIA GH200 Whitepaper \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Sources:} ISA specifications and whitepapers (Intel, ARM, IEEE Micro, ACM TACO, NVIDIA); see the source column of the building blocks.
 
 \section{Build-HW — Platform Hardware Strategy}
 
