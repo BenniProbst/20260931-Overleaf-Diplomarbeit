@@ -923,6 +923,48 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} ---
 
+\section{System sphere: operating system (\texttt{operating\_system})}
+
+This quantity is the second system main axis and thus part of the \emph{blood} and of no organ (cf.\ Section~\ref{sec:axis-triad}); in the canonical, code-guarded order it occupies position two of three.
+
+The main axis carries the \emph{class} identity only: exactly three operating-system families (instance catalogue OP-10, \texttt{baustein\_\allowbreak{}count=3}), together with \texttt{stage=ct} and \texttt{binary\_\allowbreak{}id=never}. The \emph{instance} --- distribution, release, kernel and patch level --- resides entirely in the three sub-axes; entering a distribution as a fourth expression of the main axis would miss that cut. The real fleet (Windows 11 and Windows Server 2022, the Linux Docker matrix, two macOS machines) falls entirely into the three families.
+
+\subsection*{Dynamic sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+\texttt{os\_\allowbreak{}version} & Distribution/\allowbreak{}release identity & The release identity of the operating-system instance within its family: on Linux \texttt{ID} and \texttt{VERSION\_\allowbreak{}ID} from \texttt{/etc/\allowbreak{}os-release}, on Windows the product line, on macOS the product version. \\
+\texttt{kernel} & Kernel release & The kernel release of the instance: on Linux and macOS the \texttt{uname} release, on Windows the NT kernel triple. \\
+\texttt{build} & Build and patch level & The build and patch level of the instance \emph{including} the update state (owner decision E-12, verbatim: \enquote{Wir mergen den Update Zustand in Build}). A separate \texttt{update\_\allowbreak{}zustand} is therefore explicitly \emph{not} a fourth sub-axis but a constituent of this one. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note:} all three are \texttt{stage=runtime} with \texttt{value\_\allowbreak{}type=token} and \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}: they have no compile-time option catalogue because their admissible values depend on the concrete machine and are not knowable at build time. Runtime acquisition is a build step of its own (package OS-U3, \texttt{operating\_\allowbreak{}system\_\allowbreak{}probe\_\allowbreak{}\{linux,\allowbreak{}macos,\allowbreak{}windows\}.hpp}); the attachment itself is only the offering. The names have been fixed since owner decision E3 of 2 August 2026 (package A14/\allowbreak{}OS-U1).
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{linux} & Linux family (\texttt{Linux\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=true}). Covers the entire Docker distribution matrix; the individual distribution is a matter for the sub-axis \texttt{os\_\allowbreak{}version}, not for this expression. & Code/\allowbreak{}Baseline \\
+\texttt{windows} & Windows family (\texttt{Windows\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=false}). Covers desktop and server product lines (Windows 11, Windows Server 2022). & Code/\allowbreak{}Baseline \\
+\texttt{macos} & macOS family (\texttt{Macos\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=true}). Covers the Apple Silicon and Intel machines of the fleet. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
+
+\emph{Stamp neutrality (A-15):} the three sub-axes are runtime sub-axes and therefore never appear in the binary stamp. Their attachment changes neither the stamp lines nor the build-version suffix, and it must not raise the axis code level of \texttt{operating\_\allowbreak{}system} (bump prohibition guard): such a bump would shift the SHA512 of all new builds against the existing stock and would force exactly the full rebuild of all legacy binaries that the owner decision rules out.
+
 \section{Build-PG Page Type Axis (PAGE-TYPE)}
 
 \emph{Delimitation and conservation:} this section describes the \texttt{Page\allowbreak{}Kind} of the organ world (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) and is distinct from the system sub-axis \texttt{page} of the target ISA (page-size release 4k/\allowbreak{}2m/\allowbreak{}1g) --- both quantities carry similar names but share neither building blocks nor semantics. The catalogue is retained in full as a conserved offering and history catalogue.
