@@ -785,48 +785,6 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} --- (CE baseline, own building blocks).
 
-\section{System sphere: telemetry and measurement instrumentation}
-
-In the nineteen-axis numbering this quantity was the \emph{telemetry organ} (then T10); since the axis reordering it has moved, two-way split, into the system sphere --- measurement-tooling sub-axis \emph{and} build quantity (cf.\ Section~\ref{sec:axis-triad}). Its building-block catalogue is retained here.
-
-Defines strategies for measuring index operations (insert, lookup, erase) with different overhead profiles. Supports density tracking for adaptive node-type selection, global insert counters for throughput measurements, HDR histograms for latency quantiles, and leaf-only counters to avoid cache-line false sharing in measurement cycles.
-
-\subsection*{Static sub-axes}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Description \\
-\midrule
-\endhead%
-TM1 & Scope & Validity scope of counter management: leaf-only (leaf nodes only), per-node (all nodes), or global (single accumulator for entire structure). Compile-time choice, impacts overhead through contention on shared cache lines. \\
-TM2 & Metric Type & Type of measured metric: counter (event counter), histogram (distribution with quantiles), or density (per-node slot occupancy). Impacts memory footprint and measurement granularity. \\
-TM3 & Overhead Level & Measurement overhead magnitude: low (atomic operations), medium (per-node data structures), high (histogram logging). Determines suitability for different workload scenarios (benchmarking vs.\ production). \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Building blocks}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
-\toprule
-Variant & Description & Source \\
-\midrule
-\endhead%
-\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Counter in leaf nodes only (avoids cache-line ping-pong by skipping inner-node updates). Low overhead with leaf-only scope. Implements coherence-friendly counter concept from Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023 motivation, although original paper describes cache-friendly B+-layout, not leaf-counter algorithm --- CE baseline for false-sharing avoidance. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, context; Code/\allowbreak{}Baseline) \\
-\texttt{Density\allowbreak{}Tracker} & Per-node density/\allowbreak{}slot-occupancy tracking for adaptive node-type selection (4→16→48→256). Contextual telemetry tied to ART structure (Leis ICDE 2013), measures slot occupancy across all nodes. Higher overhead than Leaf\allowbreak{}Only, but provides adaptation signal for dynamic rebalancing decisions. & P01 (ART/\allowbreak{}Leis ICDE 2013, context; Code/\allowbreak{}Baseline) \\
-\texttt{Insert\allowbreak{}Counter} & Global atomic insert counter with minimal overhead (1 atomic increment per insert). Contextual telemetry tied to HOT structure (Binna SIGMOD 2018), global scope. Sufficient for throughput measurement series, no latency granularity. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, context; Code/\allowbreak{}Baseline) \\
-\texttt{Latency\allowbreak{}Histogram} & HDR histogram for lookup latency distribution (p50/\allowbreak{}p95/\allowbreak{}p99 quantiles). Based on Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 license. Highest overhead (per lookup), but provides complete latency statistics for SLA-oriented and research-grade measurement series. Only is\_\allowbreak{}original candidate of the axis. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
-Probability-Hints & Probability hints of the cache-oblivious Bender line (P16/\allowbreak{}P17): distribution- and probability-related occupancy hints that serve as input to the layout decisions. Paper building block of the axis dissection (reconstruction target of this thesis, no CE baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Contributing sources:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
-
-\emph{Related literature:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
-
 \section{System sphere: target ISA (\texttt{target\_isa})}
 
 In the nineteen-axis numbering this quantity was the \emph{ISA organ} (then T12); since the axis reordering it is the system main axis \texttt{target\_isa} --- itself a complex axis (cf.\ Sections~\ref{sec:axis-triad} and~\ref{sec:complex-axis}).
@@ -1176,6 +1134,152 @@ Option & Flag (\texttt{gpp} and \texttt{clang}) & Flag (\texttt{msvc}) \\
 \end{quote}
 
 The hardware flag is exactly \emph{one} lowercase letter appended directly to the numeric triple; the order is fixed: first the hardware flag, then optionally the \texttt{e} for an experimental specimen algorithm. An \texttt{e} without a hardware flag is invalid. Because this work produces CPU code exclusively, in the target state all versions end in \texttt{c} or \texttt{ce}.
+
+\section{Measurement sphere: measurement categories (\texttt{measurement\_category})}
+
+This quantity belongs to the third realm --- the measurement axes, the \emph{blood of measuring} (cf.\ Section~\ref{sec:axis-triad}).
+
+It carries \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} and \texttt{baustein\_\allowbreak{}count=16}. Its values manifest as columns of the result tables and as the setting label of a run, never in the binary identity. In the chapter model the sixteen categories are the \emph{sub}-axis of the measurement tooling; the measurement registry additionally carries them as an offering block of their own, because the tooling does not invent its categories but selects them from this catalogue. The column \texttt{regime\_\allowbreak{}ordinal} separates the time- and observer-based regime (0) from the counter-based PMC regime (1).
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.9cm}@{}}
+\toprule
+Category & \texttt{category\_\allowbreak{}ordinal} & Regime (\texttt{regime\_\allowbreak{}ordinal}) \\
+\midrule
+\endhead%
+\texttt{CLU} & 0 & 0 --- time/\allowbreak{}observer \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L1} & 1 & 1 --- PMC \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L2} & 2 & 1 --- PMC \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L3} & 3 & 1 --- PMC \\
+\texttt{DTLB\_\allowbreak{}MISS} & 4 & 1 --- PMC \\
+\texttt{MEMORY\_\allowbreak{}FOOTPRINT} & 5 & 0 --- time/\allowbreak{}observer \\
+\texttt{BRANCH\_\allowbreak{}MISS} & 6 & 1 --- PMC \\
+\texttt{IPC\_\allowbreak{}CPI} & 7 & 1 --- PMC \\
+\texttt{LATENCY\_\allowbreak{}MEAN} & 8 & 0 --- time/\allowbreak{}observer \\
+\texttt{LATENCY\_\allowbreak{}P50} & 9 & 0 --- time/\allowbreak{}observer \\
+\texttt{LATENCY\_\allowbreak{}P95} & 10 & 0 --- time/\allowbreak{}observer \\
+\texttt{LATENCY\_\allowbreak{}P99} & 11 & 0 --- time/\allowbreak{}observer \\
+\texttt{LATENCY\_\allowbreak{}P999} & 12 & 0 --- time/\allowbreak{}observer \\
+\texttt{THROUGHPUT} & 13 & 0 --- time/\allowbreak{}observer \\
+\texttt{ENERGY\_\allowbreak{}J} & 14 & 1 --- PMC \\
+\texttt{FILL\_\allowbreak{}BUFFER\_\allowbreak{}OCCUPANCY} & 15 & 0 --- time/\allowbreak{}observer \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Regime split:} nine categories lie in the time and observer regime (\texttt{CLU}, \texttt{MEMORY\_\allowbreak{}FOOTPRINT}, the five latency categories, \texttt{THROUGHPUT}, \texttt{FILL\_\allowbreak{}BUFFER\_\allowbreak{}OCCUPANCY}), seven in the PMC regime (the three cache-miss levels, \texttt{DTLB\_\allowbreak{}MISS}, \texttt{BRANCH\_\allowbreak{}MISS}, \texttt{IPC\_\allowbreak{}CPI}, \texttt{ENERGY\_\allowbreak{}J}). The split coincides with the \enquote{nine/\allowbreak{}seven} division of Section~\ref{sec:axis-triad}.
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
+
+\section{Measurement sphere: measurement tooling/\allowbreak{}collector (\texttt{collector})}
+
+This quantity is the instrument axis of the measurement realm: it records with which tool a category is acquired (cf.\ Section~\ref{sec:axis-triad}).
+
+It carries \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} and \texttt{baustein\_\allowbreak{}count=3}. Every building block carries its regime and the set of categories it serves; the union of the three sets covers ten of the sixteen categories, the remainder being described in the offering catalogue but not yet assigned to a tool.
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}p{8.3cm}@{}}
+\toprule
+Variant & Regime & Categories served \\
+\midrule
+\endhead%
+\texttt{Wall\allowbreak{}Clock\allowbreak{}System\allowbreak{}Axis} & 0 & \texttt{LATENCY\_\allowbreak{}MEAN}, \texttt{THROUGHPUT} \\
+\texttt{Observer\allowbreak{}Snapshot\allowbreak{}System\allowbreak{}Axis} & 0 & \texttt{CLU} \\
+\texttt{Pmc\allowbreak{}System\allowbreak{}Axis} & 1 & \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L1}, \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L2}, \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L3}, \texttt{DTLB\_\allowbreak{}MISS}, \texttt{BRANCH\_\allowbreak{}MISS}, \texttt{IPC\_\allowbreak{}CPI}, \texttt{ENERGY\_\allowbreak{}J} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
+
+\section{Measurement sphere: telemetry building blocks (conserved catalogue)}
+
+In the nineteen-axis numbering this quantity was the \emph{telemetry organ} (then T10); since the axis reordering it is a \emph{two-way split} main quantity --- sweep sub-axis of the measurement tooling in the planner \emph{and} compile-time main quantity in the builder (cf.\ Section~\ref{sec:axis-triad}). Its building-block catalogue is retained here as a conserved catalogue.
+
+Defines strategies for measuring index operations (insert, lookup, erase) with different overhead profiles. Supports density tracking for adaptive node-type selection, global insert counters for throughput measurements, HDR histograms for latency quantiles, and leaf-only counters to avoid cache-line false sharing in measurement cycles.
+
+\subsection*{Static sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+TM1 & Scope & Validity scope of counter management: leaf-only (leaf nodes only), per-node (all nodes), or global (single accumulator for entire structure). Compile-time choice, impacts overhead through contention on shared cache lines. \\
+TM2 & Metric Type & Type of measured metric: counter (event counter), histogram (distribution with quantiles), or density (per-node slot occupancy). Impacts memory footprint and measurement granularity. \\
+TM3 & Overhead Level & Measurement overhead magnitude: low (atomic operations), medium (per-node data structures), high (histogram logging). Determines suitability for different workload scenarios (benchmarking vs.\ production). \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Counter in leaf nodes only (avoids cache-line ping-pong by skipping inner-node updates). Low overhead with leaf-only scope. Implements coherence-friendly counter concept from Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023 motivation, although original paper describes cache-friendly B+-layout, not leaf-counter algorithm --- CE baseline for false-sharing avoidance. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, context; Code/\allowbreak{}Baseline) \\
+\texttt{Density\allowbreak{}Tracker} & Per-node density/\allowbreak{}slot-occupancy tracking for adaptive node-type selection (4→16→48→256). Contextual telemetry tied to ART structure (Leis ICDE 2013), measures slot occupancy across all nodes. Higher overhead than Leaf\allowbreak{}Only, but provides adaptation signal for dynamic rebalancing decisions. & P01 (ART/\allowbreak{}Leis ICDE 2013, context; Code/\allowbreak{}Baseline) \\
+\texttt{Insert\allowbreak{}Counter} & Global atomic insert counter with minimal overhead (1 atomic increment per insert). Contextual telemetry tied to HOT structure (Binna SIGMOD 2018), global scope. Sufficient for throughput measurement series, no latency granularity. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, context; Code/\allowbreak{}Baseline) \\
+\texttt{Latency\allowbreak{}Histogram} & HDR histogram for lookup latency distribution (p50/\allowbreak{}p95/\allowbreak{}p99 quantiles). Based on Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 license. Highest overhead (per lookup), but provides complete latency statistics for SLA-oriented and research-grade measurement series. Only is\_\allowbreak{}original candidate of the axis. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
+Probability-Hints & Probability hints of the cache-oblivious Bender line (P16/\allowbreak{}P17): distribution- and probability-related occupancy hints that serve as input to the layout decisions. Paper building block of the axis dissection (reconstruction target of this thesis, no CE baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
+
+\emph{Related literature:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
+
+\section{Measurement sphere: load framework (\texttt{load\_framework}) --- meta-meta axis}
+
+This quantity is the meta-meta main axis of the measurement realm and therefore stands at its end (cf.\ Section~\ref{sec:axis-triad}).
+
+It carries \texttt{category=measurement\_\allowbreak{}meta\_\allowbreak{}meta}, \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} and \texttt{baustein\_\allowbreak{}count=1}. Its relocation history is part of its identity: with package A3 it left the system world \emph{without replacement} towards the measurement realm, where it is the planner's meta-meta main axis; it explicitly does not belong under the hub of the system meta-metas. In the stamp it receives \emph{no} meta-meta line of its own: its identifier appears as a dynamic bracketed suffix at the \emph{end} of the existing measurement realm line (owner decision E2 and owner answer Q1 of 2 August 2026). The feeding path here is entry-driven --- the chosen identifier together with its version comes from the framework registry of the measurement realm and therefore does not reside in the type, unlike the type-driven system hub.
+
+\subsection*{Dynamic sub-axes}
+
+The registry carries six sweep dimensions (\texttt{resource\_\allowbreak{}control\_\allowbreak{}version=1}); all are \texttt{stage=runtime}.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+Dimension & Origin (\texttt{source}) & Value type and meaning \\
+\midrule
+\endhead%
+\texttt{workload} & \texttt{measurement:\allowbreak{}load\_\allowbreak{}framework} & \texttt{token} --- the load profile; the single source is the sub-axis label of the load framework itself. \\
+\texttt{thread\_\allowbreak{}count} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- number of worker threads. \\
+\texttt{prefetch\_\allowbreak{}distance} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- prefetch distance. \\
+\texttt{pool\_\allowbreak{}budget\_\allowbreak{}bytes} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- memory budget of the pool. \\
+\texttt{batch\_\allowbreak{}size} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- batch size per operation. \\
+\texttt{inline\_\allowbreak{}threshold\_\allowbreak{}bytes} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- threshold of inline storage. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Honesty note:} the repetition count of a run and the three measurement modes (debug, measurement and release execution) are deliberately \emph{not} in this list. The repetition count is currently a pure label dimension without a compile-time anchor, and the three modes do not yet exist as types; both become reflectable only once they are typed. A hand-written entry would be a phantom --- the honest-0 doctrine forbids it (open item W2-B).
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{ycsb} & The YCSB load-profile framework; enabled, with the sub-axis label \texttt{workload}. The only building block of the axis enabled today. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
 
 \section{Build-PG Page Type Axis (PAGE-TYPE)}
 
