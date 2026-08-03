@@ -1096,6 +1096,87 @@ Variant & Description & Source \\
 
 \emph{Sources:} ISA specifications and whitepapers (Intel, ARM, IEEE Micro, ACM TACO, NVIDIA); see the source column of the building blocks.
 
+\section{System sphere: outer complex bracket (\texttt{build\_target\_complex}) and build toolchain (\texttt{build\_toolchain})}
+
+This quantity is the command-pattern bracket wrapper over the fixed recombination of the three system main axes (\texttt{member\_\allowbreak{}count=3}: \texttt{target\_\allowbreak{}isa}, \texttt{operating\_\allowbreak{}system}, \texttt{external\_\allowbreak{}utils}) and thus closes the system realm block (cf.\ Section~\ref{sec:complex-axis}).
+
+As a bracket it is explicitly \emph{not} a fourth main axis: the canonical system axis order stays at three. Three compile-time departure guards (\texttt{static\_\allowbreak{}assert}) record this --- \texttt{compiler}, \texttt{scheduling} and \texttt{load\_\allowbreak{}framework} must not return as main axes; their departures were relocations, not deletions. The load framework is not a \emph{member} of this bracket either: since package A3 it lives in the measurement realm, whereas the system meta-metas travel under the hub \texttt{external\_\allowbreak{}utils}. The axis carries \texttt{stage=ct} and \texttt{binary\_\allowbreak{}id=never}.
+
+\subsection*{Static sub-axes}
+
+The sub-axis group \texttt{build\_\allowbreak{}toolchain} (\texttt{sub\_\allowbreak{}axis\_\allowbreak{}count=3}) hangs on the bracket. The registry names the three members flat; the nesting underneath shows the actual parent chain.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{7.9cm}@{}}
+\toprule
+Member & Parent reference & Description \\
+\midrule
+\endhead%
+\texttt{compiler} & \texttt{build\_\allowbreak{}target\_\allowbreak{}complex} & \texttt{stage=ct}, \texttt{baustein\_\allowbreak{}count=2}. The compiler choice itself; it used to be a system main axis and became the sub-axis group of the outer bracket with package A3. \\
+\texttt{opt\_\allowbreak{}level} & \texttt{compiler} & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=5}. Optimization level per compiler dialect. \\
+\texttt{atomic128} & \texttt{compiler} & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=2}. Release of the 128-bit compare-and-swap instruction. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note:} the group hangs on \texttt{build\_\allowbreak{}target\_\allowbreak{}complex} and not on \texttt{target\_\allowbreak{}isa} because it describes the \emph{build} arising from the recombination of all three main axes and not a property of the target ISA alone (O-1r).
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{gcc} & GNU compiler (\texttt{Gcc\allowbreak{}Compiler\allowbreak{}Axis}, driver \texttt{g++-16}, \texttt{supports\_\allowbreak{}fno\_\allowbreak{}gnu\_\allowbreak{}unique=true}). & Code/\allowbreak{}Baseline \\
+\texttt{clang} & LLVM compiler (\texttt{Clang\allowbreak{}Compiler\allowbreak{}Axis}, driver \texttt{clang++-22}, \texttt{supports\_\allowbreak{}fno\_\allowbreak{}gnu\_\allowbreak{}unique=false}). & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+The five options of the sub-axis \texttt{opt\_\allowbreak{}level} with their flags per dialect; the column \texttt{ieee754\_\allowbreak{}deterministic} states whether the level leaves floating-point semantics untouched:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} and \texttt{clang}) & Flag (\texttt{msvc}) & \texttt{ieee754\_\allowbreak{}deterministic} \\
+\midrule
+\endhead%
+\texttt{O0} & \texttt{-O0} & \texttt{/Od} & \texttt{true} \\
+\texttt{O1} & \texttt{-O1} & \texttt{/O1} & \texttt{true} \\
+\texttt{O2} & \texttt{-O2} & \texttt{/O2} & \texttt{true} \\
+\texttt{O3} & \texttt{-O3} & \texttt{/O2} & \texttt{true} \\
+\texttt{Ofast} & \texttt{-Ofast} & \texttt{/O2} & \texttt{false} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+The two options of the sub-axis \texttt{atomic128}:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{5.3cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} and \texttt{clang}) & Flag (\texttt{msvc}) \\
+\midrule
+\endhead%
+\texttt{no\_\allowbreak{}cx16} & --- (empty) & --- (empty) \\
+\texttt{cx16} & \texttt{-mcx16} & --- (empty) \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Build version identifier:} \texttt{opt\_\allowbreak{}level}, \texttt{simd} and \texttt{atomic128} materialize as flags of the compilation seam and therefore appear in the build-version suffix of the binary --- an ordered eight-segment sequence in which an empty member simply produces no segment (cf.\ Section~\ref{sec:stamp-model}). They never appear in the \texttt{binary\_\allowbreak{}id}.
+
+\emph{Version flag grammar (A13, owner decision E2 and owner answer Q3 of 2 August 2026):} the version of every axis algorithm is uniformly three-part and begins with \texttt{v}; short forms are forbidden. Compile-time guards enforce the form:
+
+\begin{quote}
+\verb+version := 'v' UINT '.' UINT '.' UINT [ HWFLAG [ 'e' ] ]+\\
+\verb+HWFLAG  := 'c' (CPU) | 'g' (GPU) | 'f' (FPGA) | 'n' (NPU)+
+\end{quote}
+
+The hardware flag is exactly \emph{one} lowercase letter appended directly to the numeric triple; the order is fixed: first the hardware flag, then optionally the \texttt{e} for an experimental specimen algorithm. An \texttt{e} without a hardware flag is invalid. Because this work produces CPU code exclusively, in the target state all versions end in \texttt{c} or \texttt{ce}.
+
 \section{Build-PG Page Type Axis (PAGE-TYPE)}
 
 \emph{Delimitation and conservation:} this section describes the \texttt{Page\allowbreak{}Kind} of the organ world (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) and is distinct from the system sub-axis \texttt{page} of the target ISA (page-size release 4k/\allowbreak{}2m/\allowbreak{}1g) --- both quantities carry similar names but share neither building blocks nor semantics. The catalogue is retained in full as a conserved offering and history catalogue.
