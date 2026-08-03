@@ -848,6 +848,61 @@ IS3 & ZIH-Cluster-Zugehörigkeit & Produktionsmaschinen an TU Dresden: Barnard (
 \end{longtable}
 \end{scriptsize}
 
+Über diese drei Entwurfs-Dimensionen hinaus führt die bau-treibende System-Registry vier Unter-System-Achsen am Komplex-Wrapper: zwei übersetzungszeitliche (\texttt{target\_\allowbreak{}isa\_\allowbreak{}complex} und \texttt{scheduling}, je \texttt{stage=ct} mit \texttt{kind=fixed\_\allowbreak{}enum\_\allowbreak{}tuple}) sowie zwei dynamische (\texttt{numa\_\allowbreak{}node} und \texttt{page}). Die erste bündelt die benannten Rekombinationen der Zielmaschinen (\texttt{complex\_\allowbreak{}count=2}) mit je drei festen Gliedern (Owner OD-2).
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{6.9cm}@{}}
+\toprule
+Rekombination & Glied & Deklaration \\
+\midrule
+\endhead%
+\texttt{prod1\_\allowbreak{}zen5} (\texttt{isa=x86\_\allowbreak{}64}) & \texttt{ram\_\allowbreak{}frequency\_\allowbreak{}mhz} & \texttt{declared=false} --- keine deklarierte Zahl. \\
+\texttt{prod1\_\allowbreak{}zen5} & \texttt{cas\_\allowbreak{}latency\_\allowbreak{}cl} & \texttt{declared=false} --- keine deklarierte Zahl. \\
+\texttt{prod1\_\allowbreak{}zen5} & \texttt{cpu\_\allowbreak{}fabrication} & \texttt{declared=true}, \texttt{value=Authentic\allowbreak{}AMD/\allowbreak{}26/\allowbreak{}68/\allowbreak{}0} (Hersteller/\allowbreak{}Familie/\allowbreak{}Modell/\allowbreak{}Stepping). \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} (\texttt{isa=x86\_\allowbreak{}64}) & \texttt{ram\_\allowbreak{}frequency\_\allowbreak{}mhz} & \texttt{declared=true}, \texttt{value=4800}, \texttt{declaration\_\allowbreak{}source=\allowbreak{}dmidecode 2026-07}. \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} & \texttt{cas\_\allowbreak{}latency\_\allowbreak{}cl} & \texttt{declared=false} --- keine deklarierte Zahl. \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} & \texttt{cpu\_\allowbreak{}fabrication} & \texttt{declared=true}, \texttt{value=Genuine\allowbreak{}Intel/\allowbreak{}6/\allowbreak{}151/\allowbreak{}2}. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Notiz:} Die Werte stammen aus \texttt{k\allowbreak{}Declared\allowbreak{}Machines}, das seinerseits den \texttt{<machines>}-Block der Anwender-XML spiegelt (O-4b). \texttt{declaration\_\allowbreak{}source} konserviert den eingefrorenen Ursprung einer deklarierten Zahl (A2-Notiz, keine Provenienz-Stufe); Laufzeit-Stufen stehen niemals in dieser XML (P3).
+
+Die zweite übersetzungszeitliche Unter-Achse \texttt{scheduling} trägt fünf feste Glieder. Sie war früher eine System-Haupt-Achse und ist mit Paket A3 als \texttt{sub\_\allowbreak{}axis} an den \texttt{target\_\allowbreak{}isa}-Komplex-Wrapper umgehängt worden --- ein Umzug, keine Löschung.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.1cm}@{}}
+\toprule
+Glied & Registry-Wert & Beschreibung \\
+\midrule
+\endhead%
+\texttt{worker\_\allowbreak{}pool\_\allowbreak{}layout} & \texttt{value\_\allowbreak{}ordinal=0} & Aufteilung des Arbeiter-Pools über die Kerne. \\
+\texttt{simd\_\allowbreak{}worker\_\allowbreak{}count\_\allowbreak{}limit} & \texttt{value=2} & Obergrenze gleichzeitiger SIMD-Arbeiter. \\
+\texttt{hetero\_\allowbreak{}core\_\allowbreak{}dispatch} & \texttt{value\_\allowbreak{}ordinal=0} & Verteilung auf heterogene Kerne (P-/\allowbreak{}E-Kerne). \\
+\texttt{co\_\allowbreak{}routine\_\allowbreak{}strategy} & \texttt{value\_\allowbreak{}ordinal=0} & Koroutinen-Strategie der Auftrags-Abwicklung. \\
+\texttt{batch\_\allowbreak{}granularity} & \texttt{value\_\allowbreak{}ordinal=0} & Körnung der Stapel-Abarbeitung. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Notiz:} Die Ordinale sind rohe Enum-Werte ohne übersetzungszeitliches Label-Vorbild; die Kennungs-Zeichenketten sind an die Zugriffs-Aufrufe von \texttt{concepts::\allowbreak{}scheduling\_\allowbreak{}strategy.hpp} compile-gekoppelt.
+
+\subsection*{Dynamische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Parameter & Beschreibung \\
+\midrule
+\endhead%
+\texttt{numa\_\allowbreak{}node} & NUMA-Knoten & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}. Spiegel des Organ-Members \texttt{alloc\_\allowbreak{}hw.numa\_\allowbreak{}node}; die zulässigen Werte sind die Knoten-Kennungen der konkreten Maschine und zur Bauzeit nicht erkennbar --- daher eine deklarierte Options-Herkunft statt eines Options-Katalogs. \\
+\texttt{page} & Seitengrößen-Freigabe & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}. Die Freigabe der Seitengrößen (4k/\allowbreak{}2m/\allowbreak{}1g) als System-Capability; die Durchsetzung liegt organ-seitig im \texttt{Alloc\allowbreak{}Page\allowbreak{}Hint}-NTTP, diese Achse ist die System-Seite der Freigabe. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Namensfalle (compile-time gesichert):} Die Unter-Achse heißt \texttt{page} und ist nicht \texttt{page\_\allowbreak{}type}. \texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type} ist der Baum-Knoten-\texttt{Page\allowbreak{}Kind} der Organ-Welt und eine völlig andere Achse (Bauplan D2.6/\allowbreak{}IV-BLOCKER-5); der \texttt{static\_\allowbreak{}assert} in \texttt{target\_\allowbreak{}isa\_\allowbreak{}sub\_\allowbreak{}axes.hpp} hält das fest. Der Baustein-Katalog des Seitentyps steht unverändert in der konservierten Alt-Sektion \enquote{Build-PG}.
+
 \subsection*{Bausteine}
 
 \begin{scriptsize}
@@ -864,9 +919,13 @@ Variante & Beschreibung & Quelle \\
 \end{longtable}
 \end{scriptsize}
 
+\emph{Registry-Ist:} Die bau-treibende System-Registry führt derzeit zwei freigeschaltete Bausteine --- \texttt{x86\_\allowbreak{}64} (nativ, ohne Triple- und March-Flags) und \texttt{aarch64} (Kreuz-Übersetzung mit \texttt{triple=\allowbreak{}-target aarch64-linux-gnu} und \texttt{march=\allowbreak{}-march=armv8-a}). Der oben aufgeführte Vier-ISA-Katalog bleibt als \emph{Angebots}-Katalog erhalten: Power-ISA und RISC-V sind als Bausteine beschrieben, im heutigen Bau-Angebot aber nicht freigeschaltet.
+
 \emph{Beitragende Quellen:} ---
 
 \section{Build-PG Seitentyp-Achse (PAGE-TYPE)}
+
+\emph{Abgrenzung und Konservierung:} Diese Sektion beschreibt den \texttt{Page\allowbreak{}Kind} der Organ-Welt (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) und ist von der System-Unter-Achse \texttt{page} der Ziel-ISA (Seitengrößen-Freigabe 4k/\allowbreak{}2m/\allowbreak{}1g) verschieden --- beide Größen tragen ähnliche Namen, aber weder gemeinsame Bausteine noch gemeinsame Semantik. Der Katalog bleibt als konservierter Angebots- und Historien-Katalog vollständig erhalten.
 
 Die Seitentyp-Achse definiert die Struktur- und Indexierungsstrategien von Branch-Seiten im Trie-Index: von dicht-indiziertem Direktadressierungsindex (Dense\allowbreak{}Byte), über mehrstufige Dichte-Varianten (Extended\allowbreak{}Dense, Sparse\allowbreak{}Patricia) bis zu Pfadkollaps-Optimierungen (Redirect, Custom\allowbreak{}Cache) und B+-artige sortierte Seiten (BPlus). Alle Seitentypen sind Cache-Line-bewusst und implementieren das Concept-Interface \texttt{Page\allowbreak{}Type\allowbreak{}Strategy} mit garantierter Austauschbarkeit (F15-Permutation).
 
