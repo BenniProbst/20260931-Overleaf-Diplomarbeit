@@ -5,6 +5,8 @@
 
 **Angelegt:** 2026-08-02 | **Basis-Commit:** `2139047` | **Zweck:** repo-lokale Buchfuehrung der
 Thesis-Ziele und offenen Punkte (Text, Sprachfassungen, CI-Gates, Abgabe-Artefakte).
+**Fortgeschrieben:** 2026-08-03 (E-02-Nachzug: Ist-Anker, C-Nachzuege, Text-Doktrinen-Kanon, T6 -> Abschnitt 7;
+Einschuebe nur als Nachzug-Noten, Bestandstext unveraendert).
 **AUDIT-PFLICHT:** Jeder Audit-/Inventur-/Goal-Lauf liest ALLE VIER Ledger (super docs/DIPLOMARBEIT-ZIELE-OFFENE-PUNKTE-LEDGER.md + ce docs/ledger-sections/*.md inkl. goal-v6-luecken-ledger.md + prt-art docs/ledger-sections/*.md + thesis docs/ledger-sections/*.md).
 **Vier-Ledger-Doktrin:** super | comdare-cache-engine | comdare-prt-art | thesis/diplomarbeit (diese Datei).
 Das Cluster-Ledger liegt in Infra-Hoheit und ist das **5.** Ledger ausserhalb dieser Doktrin.
@@ -46,6 +48,19 @@ Arbeitsdateien wie diese.
 - **Genus-/Sprachpflege:** Sprachliche Mikro-Fixes sind je Fassung zu pruefen - EN ist teils
   genus-neutral, DE nicht (Beispiel-Praezedenz `20671fe`).
 
+### 1.1 Text-Doktrinen (Kanon, nachgetragen 03.08. - bindend fuer jeden Text-Eingriff)
+
+- **Verweis-Regel sequenziell:** Verweise zeigen nur **RUECKWAERTS** (auf bereits Eingefuehrtes);
+  Vorwaerts-Verweise sind eine Regression. Struktur folgt **allgemein -> speziell** (Habich-Restruktur).
+- **Aufgabenstellung linear, keine Loesung vorweg:** die Einleitung/Aufgabenstellung nimmt keine
+  Loesungsbausteine vorweg; der Kern-Beitrag (Achsen-Library) wird erst an seiner Stelle entwickelt.
+- **Nur Owner-Ideen persistieren:** in den Thesis-Text gehen ausschliesslich Ideen/Formulierungen des
+  Owners ein; Agenten liefern Handwerk, keine eigenen Forschungs-Claims.
+- **Float-Disziplin:** Tabellen-Legenden/Notizen stehen UNTER dem Float (nicht im Fliesstext davor).
+- **Fachvokabular:** Design-Space-Vokabular nach Idreos et al.; Baum-Anatomie-Terminologie einheitlich.
+- **LaTeX = Primaerquelle:** das Thesis-Design ist Quelle der Implementierung - Impl-Abweichungen werden
+  ruckwaerts in den Text NUR ueber den super-gefuehrten Nachzug eingepflegt (kein stiller Text-Drift).
+
 ---
 
 ## 2. C-Katalog (Abschnitt C des super-Katalogs vom 02.08.) als Ledger-Zeilen
@@ -59,6 +74,14 @@ Arbeitsdateien wie diese.
 | **C5** | Ergebnis-/Auswertungs-Einspeisung nach Voll-Messung (E-1 breit nachziehen) | - | **gated auf die Messung** (USER-GO-gated); ohne Messdaten kein Text |
 | **C6** | Identity-Normalisierung thesis-Gitlink (#375/#377) | - | **bei Infra** |
 | **C7** | chktex-Haertung: Lint bleibt gruen, wenn eine `.tex` verschwindet | `.gitlab-ci.yml`: `find . -name "*.tex" ... \| xargs -0 -r chktex ...` - eine geloeschte/nicht auffindbare `.tex` erscheint gar nicht erst in der Liste, der Lint bleibt gruen | **offen (nice-to-have)**; Restrisiko stark reduziert, seit REV 3 **beide** Fassungen kompiliert werden (fehlende `\input`-Datei bricht `latexmk -halt-on-error`) |
+
+Nachzug-Noten 03.08. (Quelle: ce-ABGLEICH `20260803-ABGLEICH-katalog-gesamtplan-ist-stand.md`, Abschnitt B/C):
+- **C1:** Sprachpass C1-Rest zusaetzlich gelandet (`a53c5ec`/`e525a5a`/`b1ec837`); ABGLEICH fuehrt
+  "C1-Rahmen-Pass: GO liegt, Entwurfs-Stand zu verifizieren" - die Verifikation ist der offene Rest.
+- **C2:** Gate-Zahl ist GEWACHSEN - beim Einfrieren jetzt **331** (nicht mehr 321). Konsequenz: die Zahl
+  wird beim Ausloesen LIVE aus der ce-CI erhoben, nie vorab in den Text geschrieben.
+- **C3:** unveraendert gated auf realen Bestand; der Plattform-Querschnitt (target_isa/OS-Achsen, Runner,
+  E-19) laeuft super-seitig.
 
 Erledigt seit 01.08. (super-Katalog, hier nur referenziert): K0-K6-Nachzug, Sprachpass alle Kapitel,
 Anhaenge A-F-Konsolidierung, Verweis-/Formel-Pass (0 undefined, DE==EN 525 cites), F15-12900K-Nachzug
@@ -120,6 +143,10 @@ Voll-Messung (C5) sind Abgabe-Voraussetzungen, aber **nicht** CI-pruefbar.
 - **T5** Konsistenz-Pflicht Lizenz-Matrix: Aenderungen an den Lizenz-Staenden der Code-Repos
   (ce = duales Modell, DA-Repo + PRT-ART = Apache-2.0) muessen in der Thesis-Lizenz-Matrix nachgezogen
   werden; einmalige Schluss-Pruefung vor Abgabe. (offen, mittel)
+- **T6** [NEU 03.08.] Anhaenge-Realm-Einzel-Gliederungs-LUECKE: Befund-Doc 02.08. weist **8 Stuecke,
+  DE+EN** aus (super-Task #6, startfrei). Umsetzung streng nach Sprach-Doktrin Abschnitt 1 (DE fuehrend,
+  EN synchron) und Text-Doktrinen 1.1; laeuft PARALLEL zum ce-Hauptstrang (anderes Repo, disjunkt).
+  (offen, startfrei)
 
 ---
 
@@ -133,3 +160,39 @@ Voll-Messung (C5) sind Abgabe-Voraussetzungen, aber **nicht** CI-pruefbar.
 - Katalog Abschnitt C: `.../docs/sessions/20260802-KATALOG-offene-strecke-gesamtplan.md`
 - Owner-Entscheide 02.08.: `.../docs/sessions/20260802-OWNER-entscheide-hybrid-tier-stempel-regression-os-unterachsen.md`
 - Bauplan 02.08.: `.../docs/sessions/20260802-BAUPLAN-owner-entscheide-synthese-kritischer-pfad.md`
+- ce-ABGLEICH 03.08.: `.../Code/external/comdare-cache-engine/docs/sessions/20260803-ABGLEICH-katalog-gesamtplan-ist-stand.md`
+
+---
+
+## 7. Fortschreibung 2026-08-03 (E-02-Nachzug)
+
+> Quellen: super-KATALOG (Abschnitt C) + ce-ABGLEICH 03.08. (Abschnitt B/C + "Neu seit dem KATALOG").
+> Rein additiv; Bestandstext oben unveraendert (Ausnahme: Kopf-Zeile "Fortgeschrieben", Nachzug-Noten
+> unter der C-Tabelle, Kanon-Abschnitt 1.1, T6, Quellen-Zeile ce-ABGLEICH - alles Zusaetze).
+
+### 7.1 Ist-Anker (verifiziert 03.08., literal per `git rev-parse`)
+
+- Repo-Linie: `main == origin/main == origin/development == b1ec8379` - enthaelt dieses Ledger
+  (`0e39e1d`/`a0ba339` Anlage + `13b1b5a` Audit-Pflicht-Kopfsatz) UND den Sprachpass C1-Rest
+  (`a53c5ec`/`e525a5a`/`b1ec837`). Der LOKALE `development`-Zeiger im Klon steht stale auf `13b1b5ab`
+  (Vorfahr von `b1ec8379`) - reiner Zeiger-Nachzug, kein Inhalts-Delta.
+- super-Einhaengung: der Gitlink `thesis/diplomarbeit` im super-Repo steht auf `b1ec8379` - dieses
+  Ledger ist damit ueber den super-Klon SICHTBAR (anders als das prt-art-Ledger, dessen Gitlink auf
+  dem Vor-E02-Stand `32e8ffa8` steht; Owner-Vorlage V5, gefuehrt im prt-art-Ledger 6.1).
+- Arbeitsfront-Einordnung (ce-ABGLEICH): Task #6 (=T6) ist STARTFREI und laeuft parallel zum
+  ce-Hauptstrang; C1-Rest = Verifikation des Entwurfs-Stands.
+
+### 7.2 Korrektur-Vermerk (Buchfuehrung)
+
+- ce-ABGLEICH 03.08., Zeile A16, fuehrt E-02 als "VERIFIZIERT NICHT hergestellt (kein prtart-/
+  thesis-Ledger)" - fuer DIESES Repo widerlegt: das Ledger existiert committet seit 02.08.
+  (`0e39e1d`/`13b1b5a`) und ist in `b1ec8379` (== super-Gitlink) enthalten. Der offene E-02-Rest
+  betrifft NUR die prt-art-Gitlink-Sichtbarkeit (V5) und die Korrektur der ABGLEICH-Zeile.
+
+### 7.3 Prozess-Erinnerung fuer jeden Ledger-Touch in diesem Repo
+
+- Commit-Identitaet: `Benjamin-Elias Probst <benjamineliasprobst@gmail.com>`, OHNE jeden Trailer
+  (Kopf-Doktrin; pruefungsrechtlich). Commit-Sprache Deutsch, beschreibender Stil, Praefix "Ledger: ..."
+  (Praezedenz `13b1b5a`).
+- Push zu BEIDEN Remotes (origin=gitlab, github=Sicherung), main-Nachzug je Welle, Pipeline hart gruen
+  (die 4 Job-Instanzen aus Abschnitt 3); nie rebase, immer merge.
