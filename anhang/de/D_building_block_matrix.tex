@@ -785,48 +785,6 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
 
-\section{System-Sphäre: Telemetrie und Messinstrumentierung}
-
-Diese Größe war in der Neunzehner-Zählung das \emph{Telemetrie-Organ} (damals T10); seit der Achsen-Neuordnung ist sie zweigeteilt in die System-Sphäre umgezogen --- Mess-Tooling-Unter-Achse \emph{und} Bau-Größe (vgl.\ Abschnitt~\ref{sec:axis-triad}). Ihre Baustein-Katalogisierung bleibt hier erhalten.
-
-Definiert Strategien zur Messung von Index-Operationen (Insert, Lookup, Erase) mit verschiedenen Overhead-Profilen. Unterstützt Density-Tracking für adaptive Node-Typ-Wahl, globale Insert-Counter für Durchsatz-Messungen, HDR-Histogramme für Latenz-Quantile und leaf-only-Counter zur Vermeidung von Cache-Line-False-Sharing in den Messzyklen.
-
-\subsection*{Statische Sub-Achsen}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Beschreibung \\
-\midrule
-\endhead%
-TM1 & Scope (Geltungsbereich) & Gültigkeitsbereich der Zählerverwaltung: leaf-only (nur Blatt-Knoten), per-node (alle Knoten), oder global (einzelner Akkumulator für die ganze Struktur). Compile-Time-Wahl, beeinflusst Overhead durch Konkurrenz-Druck auf gemeinsame Cache-Linien. \\
-TM2 & Metrik-Typ (Messgröße) & Art der gemessenen Metrik: counter (Zähler für Ereignisse), histogram (Verteilung mit Quantilen), oder density (Slot-Belegung pro Knoten). Beeinflusst den Speicher-Footprint und die Mess-Granularität. \\
-TM3 & Overhead-Level (Messlast) & Größenordnung des Mess-Overheads: low (atomare Operationen), medium (per-node-Datenstrukturen), high (Histogramm-Logging). Bestimmt die Eignung für verschiedene Workload-Szenarien (Benchmarking vs. Produktion). \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Bausteine}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
-\toprule
-Variante & Beschreibung & Quelle \\
-\midrule
-\endhead%
-\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Zähler NUR in Blatt-Knoten (vermeidet Cache-Line-Ping-Pong durch Verzicht auf Inner-Node-Updates). Niedriger Overhead bei leaf-only Scope. Entspricht dem kohärenz-schonenden Zähler-Konzept aus Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, obwohl das Original-Paper kein Leaf-Counter-Algorithmus ist --- CE-Baseline für False-Sharing-Vermeidung. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Density\allowbreak{}Tracker} & Per-Node Density/\allowbreak{}Slot-Occupancy-Tracking für adaptive Node-Type-Wahl (4→16→48→256). Kontextuelle Telemetrie zur ART-Struktur (Leis ICDE 2013), misst Slot-Belegung aller Knoten. Höherer Overhead als Leaf\allowbreak{}Only, liefert aber Adaption-Signal für dynamische Rebalancing-Entscheidungen. & P01 (ART/\allowbreak{}Leis ICDE 2013, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Insert\allowbreak{}Counter} & Globaler atomarer Insert-Zähler mit minimalem Overhead (1 atomic increment pro Insert). Kontextuelle Telemetrie zur HOT-Struktur (Binna SIGMOD 2018), global Scope. Ausreichend für Durchsatz-Mess-Reihen, keine Laten-Granularität. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Latency\allowbreak{}Histogram} & HDR-Histogramm zur Lookup-Latenz-Verteilung (p50/\allowbreak{}p95/\allowbreak{}p99 Quantile). Basiert auf Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 Lizenz. Höchster Overhead (pro Lookup), liefert aber vollständige Latenz-Statistik für SLA-orientierte und research-grade Messreihen. Einziger is\_\allowbreak{}original-Kandidat der Achse. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
-Probability-Hints & Wahrscheinlichkeits-Hinweise der cache-oblivious Bender-Linie (P16/\allowbreak{}P17): verteilungs- bzw.\ wahrscheinlichkeitsbezogene Belegungs-Hinweise, die als Eingabe der Layout-Entscheidungen dienen. Paper-Baustein der Achsen-Sezierung (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Beitragende Quellen:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
-
-\emph{Verwandte Literatur:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
-
 \section{System-Sphäre: Ziel-ISA (\texttt{target\_isa})}
 
 Diese Größe war in der Neunzehner-Zählung das \emph{ISA-Organ} (damals T12); seit der Achsen-Neuordnung ist sie die System-Haupt-Achse \texttt{target\_isa} --- selbst eine Komplex-Achse (vgl.\ Abschnitte~\ref{sec:axis-triad} und~\ref{sec:complex-axis}).
@@ -1176,6 +1134,152 @@ Option & Flag (\texttt{gpp} und \texttt{clang}) & Flag (\texttt{msvc}) \\
 \end{quote}
 
 Das Hardware-Flag ist genau \emph{ein} Kleinbuchstabe, direkt an das Zahlen-Tripel angehängt; die Reihenfolge ist fest: erst das Hardware-Flag, dann optional das \texttt{e} für einen experimentellen Prüflings-Algorithmus. Ein \texttt{e} ohne Hardware-Flag ist ungültig. Weil diese Arbeit ausschließlich CPU-Code erzeugt, enden im Zielzustand alle Versionen auf \texttt{c} beziehungsweise \texttt{ce}.
+
+\section{Mess-Sphäre: Mess-Kategorien (\texttt{measurement\_category})}
+
+Diese Größe gehört zum dritten Realm --- den Mess-Achsen, dem \emph{Blut des Messens} (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+
+Sie führt \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} und \texttt{baustein\_\allowbreak{}count=16}. Ihre Werte manifestieren sich als Spalten der Ergebnis-Tabellen und als Einstellungs-Etikett eines Laufs, niemals in der Binary-Identität. Im Kapitel-Modell sind die sechzehn Kategorien die \emph{Unter}-Achse des Mess-Toolings; die Mess-Registry führt sie zusätzlich als eigenen Angebots-Block, weil das Tooling seine Kategorien nicht selbst erfindet, sondern aus diesem Katalog wählt. Die Spalte \texttt{regime\_\allowbreak{}ordinal} trennt das zeit- und observer-basierte Regime (0) vom zählerbasierten PMC-Regime (1).
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.9cm}@{}}
+\toprule
+Kategorie & \texttt{category\_\allowbreak{}ordinal} & Regime (\texttt{regime\_\allowbreak{}ordinal}) \\
+\midrule
+\endhead%
+\texttt{CLU} & 0 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L1} & 1 & 1 --- PMC \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L2} & 2 & 1 --- PMC \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L3} & 3 & 1 --- PMC \\
+\texttt{DTLB\_\allowbreak{}MISS} & 4 & 1 --- PMC \\
+\texttt{MEMORY\_\allowbreak{}FOOTPRINT} & 5 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{BRANCH\_\allowbreak{}MISS} & 6 & 1 --- PMC \\
+\texttt{IPC\_\allowbreak{}CPI} & 7 & 1 --- PMC \\
+\texttt{LATENCY\_\allowbreak{}MEAN} & 8 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{LATENCY\_\allowbreak{}P50} & 9 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{LATENCY\_\allowbreak{}P95} & 10 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{LATENCY\_\allowbreak{}P99} & 11 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{LATENCY\_\allowbreak{}P999} & 12 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{THROUGHPUT} & 13 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{ENERGY\_\allowbreak{}J} & 14 & 1 --- PMC \\
+\texttt{FILL\_\allowbreak{}BUFFER\_\allowbreak{}OCCUPANCY} & 15 & 0 --- Zeit/\allowbreak{}Observer \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Regime-Zweiteilung:} Neun Kategorien liegen im Zeit- und Observer-Regime (\texttt{CLU}, \texttt{MEMORY\_\allowbreak{}FOOTPRINT}, die fünf Latenz-Kategorien, \texttt{THROUGHPUT}, \texttt{FILL\_\allowbreak{}BUFFER\_\allowbreak{}OCCUPANCY}), sieben im PMC-Regime (die drei Cache-Miss-Stufen, \texttt{DTLB\_\allowbreak{}MISS}, \texttt{BRANCH\_\allowbreak{}MISS}, \texttt{IPC\_\allowbreak{}CPI}, \texttt{ENERGY\_\allowbreak{}J}). Die Aufteilung ist deckungsgleich mit der Zweiteilung \enquote{neun/\allowbreak{}sieben} aus Abschnitt~\ref{sec:axis-triad}.
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
+
+\section{Mess-Sphäre: Mess-Tooling/\allowbreak{}Collector (\texttt{collector})}
+
+Diese Größe ist die Instrumenten-Achse des Mess-Realms: Sie hält fest, mit welchem Werkzeug eine Kategorie erhoben wird (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+
+Sie führt \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} und \texttt{baustein\_\allowbreak{}count=3}. Jeder Baustein trägt sein Regime und die Menge der Kategorien, die er bedient; die Vereinigung der drei Mengen deckt zehn der sechzehn Kategorien ab, die übrigen sind im Angebots-Katalog beschrieben, aber noch keinem Werkzeug zugeordnet.
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}p{8.3cm}@{}}
+\toprule
+Variante & Regime & Bediente Kategorien \\
+\midrule
+\endhead%
+\texttt{Wall\allowbreak{}Clock\allowbreak{}System\allowbreak{}Axis} & 0 & \texttt{LATENCY\_\allowbreak{}MEAN}, \texttt{THROUGHPUT} \\
+\texttt{Observer\allowbreak{}Snapshot\allowbreak{}System\allowbreak{}Axis} & 0 & \texttt{CLU} \\
+\texttt{Pmc\allowbreak{}System\allowbreak{}Axis} & 1 & \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L1}, \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L2}, \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L3}, \texttt{DTLB\_\allowbreak{}MISS}, \texttt{BRANCH\_\allowbreak{}MISS}, \texttt{IPC\_\allowbreak{}CPI}, \texttt{ENERGY\_\allowbreak{}J} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
+
+\section{Mess-Sphäre: Telemetrie-Bausteine (konservierter Katalog)}
+
+Diese Größe war in der Neunzehner-Zählung das \emph{Telemetrie-Organ} (damals T10); seit der Achsen-Neuordnung ist sie eine \emph{zweigeteilte} Haupt-Größe --- Sweep-Unter-Achse des Mess-Toolings im Planer \emph{und} Übersetzungszeit-Hauptgröße im Builder (vgl.\ Abschnitt~\ref{sec:axis-triad}). Ihre Baustein-Katalogisierung bleibt hier als konservierter Katalog erhalten.
+
+Definiert Strategien zur Messung von Index-Operationen (Insert, Lookup, Erase) mit verschiedenen Overhead-Profilen. Unterstützt Density-Tracking für adaptive Node-Typ-Wahl, globale Insert-Counter für Durchsatz-Messungen, HDR-Histogramme für Latenz-Quantile und leaf-only-Counter zur Vermeidung von Cache-Line-False-Sharing in den Messzyklen.
+
+\subsection*{Statische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Beschreibung \\
+\midrule
+\endhead%
+TM1 & Scope (Geltungsbereich) & Gültigkeitsbereich der Zählerverwaltung: leaf-only (nur Blatt-Knoten), per-node (alle Knoten), oder global (einzelner Akkumulator für die ganze Struktur). Compile-Time-Wahl, beeinflusst Overhead durch Konkurrenz-Druck auf gemeinsame Cache-Linien. \\
+TM2 & Metrik-Typ (Messgröße) & Art der gemessenen Metrik: counter (Zähler für Ereignisse), histogram (Verteilung mit Quantilen), oder density (Slot-Belegung pro Knoten). Beeinflusst den Speicher-Footprint und die Mess-Granularität. \\
+TM3 & Overhead-Level (Messlast) & Größenordnung des Mess-Overheads: low (atomare Operationen), medium (per-node-Datenstrukturen), high (Histogramm-Logging). Bestimmt die Eignung für verschiedene Workload-Szenarien (Benchmarking vs. Produktion). \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Zähler NUR in Blatt-Knoten (vermeidet Cache-Line-Ping-Pong durch Verzicht auf Inner-Node-Updates). Niedriger Overhead bei leaf-only Scope. Entspricht dem kohärenz-schonenden Zähler-Konzept aus Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, obwohl das Original-Paper kein Leaf-Counter-Algorithmus ist --- CE-Baseline für False-Sharing-Vermeidung. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Density\allowbreak{}Tracker} & Per-Node Density/\allowbreak{}Slot-Occupancy-Tracking für adaptive Node-Type-Wahl (4→16→48→256). Kontextuelle Telemetrie zur ART-Struktur (Leis ICDE 2013), misst Slot-Belegung aller Knoten. Höherer Overhead als Leaf\allowbreak{}Only, liefert aber Adaption-Signal für dynamische Rebalancing-Entscheidungen. & P01 (ART/\allowbreak{}Leis ICDE 2013, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Insert\allowbreak{}Counter} & Globaler atomarer Insert-Zähler mit minimalem Overhead (1 atomic increment pro Insert). Kontextuelle Telemetrie zur HOT-Struktur (Binna SIGMOD 2018), global Scope. Ausreichend für Durchsatz-Mess-Reihen, keine Laten-Granularität. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Latency\allowbreak{}Histogram} & HDR-Histogramm zur Lookup-Latenz-Verteilung (p50/\allowbreak{}p95/\allowbreak{}p99 Quantile). Basiert auf Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 Lizenz. Höchster Overhead (pro Lookup), liefert aber vollständige Latenz-Statistik für SLA-orientierte und research-grade Messreihen. Einziger is\_\allowbreak{}original-Kandidat der Achse. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
+Probability-Hints & Wahrscheinlichkeits-Hinweise der cache-oblivious Bender-Linie (P16/\allowbreak{}P17): verteilungs- bzw.\ wahrscheinlichkeitsbezogene Belegungs-Hinweise, die als Eingabe der Layout-Entscheidungen dienen. Paper-Baustein der Achsen-Sezierung (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
+
+\emph{Verwandte Literatur:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
+
+\section{Mess-Sphäre: Last-Rahmenwerk (\texttt{load\_framework}) --- Meta-Meta-Achse}
+
+Diese Größe ist die Meta-Meta-Haupt-Achse des Mess-Realms und steht deshalb an dessen Ende (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+
+Sie führt \texttt{category=measurement\_\allowbreak{}meta\_\allowbreak{}meta}, \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} und \texttt{baustein\_\allowbreak{}count=1}. Ihre Umzugs-Geschichte ist Teil ihrer Identität: Sie hat die System-Welt mit Paket A3 \emph{ersatzlos} Richtung Mess-Realm verlassen und ist dort die Meta-Meta-Haupt-Achse des Planers; unter den Hub der System-Meta-Metas gehört sie ausdrücklich nicht. Im Stempel erhält sie \emph{keine} eigene Meta-Meta-Zeile: Ihre Kennung tritt als dynamischer Klammer-Anhang an das \emph{Ende} der bestehenden Mess-Realm-Zeile (Owner-Entscheid E2 und Owner-Antwort Q1 vom 02.08.2026). Der Speiseweg ist hier eintragsgetrieben --- die gewählte Kennung samt Version kommt aus der Rahmenwerk-Registry des Mess-Realms und steht deshalb nicht im Typ, anders als beim typgetriebenen System-Hub.
+
+\subsection*{Dynamische Sub-Achsen}
+
+Die Registry führt sechs Sweep-Dimensionen (\texttt{resource\_\allowbreak{}control\_\allowbreak{}version=1}); alle sind \texttt{stage=runtime}.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+Dimension & Herkunft (\texttt{source}) & Wert-Typ und Bedeutung \\
+\midrule
+\endhead%
+\texttt{workload} & \texttt{measurement:\allowbreak{}load\_\allowbreak{}framework} & \texttt{token} --- das Lastprofil; Einzelquelle ist das Unter-Achsen-Etikett des Last-Rahmenwerks selbst. \\
+\texttt{thread\_\allowbreak{}count} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Zahl der Arbeiter-Fäden. \\
+\texttt{prefetch\_\allowbreak{}distance} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Vorhol-Abstand. \\
+\texttt{pool\_\allowbreak{}budget\_\allowbreak{}bytes} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Speicher-Budget des Pools. \\
+\texttt{batch\_\allowbreak{}size} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Stapelgröße je Operation. \\
+\texttt{inline\_\allowbreak{}threshold\_\allowbreak{}bytes} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Schwelle der Inline-Ablage. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Ehrlichkeits-Notiz:} Die Wiederholungszahl eines Laufs und die drei Mess-Modi (Debug-, Mess- und Release-Durchführung) sind bewusst \emph{nicht} in dieser Liste. Die Wiederholungszahl ist heute eine reine Etikett-Dimension ohne übersetzungszeitlichen Anker, die drei Modi existieren noch nicht als Typen; beide werden erst nach ihrer Typisierung reflektierbar. Ein handgeschriebener Eintrag wäre ein Phantom --- die honest-0-Doktrin verbietet ihn (offener Punkt W2-B).
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{ycsb} & Das YCSB-Lastprofil-Rahmenwerk; freigeschaltet, mit dem Unter-Achsen-Etikett \texttt{workload}. Einziger heute freigeschalteter Baustein der Achse. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
 
 \section{Build-PG Seitentyp-Achse (PAGE-TYPE)}
 
