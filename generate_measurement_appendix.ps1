@@ -1,4 +1,21 @@
 # generate_measurement_appendix.ps1 — C1 (2026-06-01)
+#
+# ============================== DEPRECATED (2026-08-03) ==============================
+# NICHT LAUFFAEHIG IM IST-STAND. Das Skript wird bewusst NICHT geloescht (Doku-Regel:
+# nur deprecaten, nie entfernen), aber es darf nicht mehr aufgerufen werden:
+#   * Windows-Pfade und pwsh-Voraussetzung (..\..\Code\build\msvc-g1\...) -- die Kette
+#     laeuft heute unter Linux/CMake, es gibt keinen msvc-g1-Baum mehr.
+#   * 16-Spalten-CSV-Annahme (ComdareMeasurementSnapshotV1) gegen real 175 Spalten der
+#     heutigen WIDE-Matrix -- jede Spalten-Aufloesung liefe ins Leere.
+#   * Stand cowfix-v1 (18.06.2026): kennt keines der WIDE-/Exchange-/Surface-Subkommandos.
+# ABGELOEST DURCH die C++23-Anwendung Code/08_appendix_generator (In-Process-Facade ueber
+# comdare::csv_to_latex + comdare::diagram_generator, cross-platform, ohne .exe-Spawn).
+# Owner-Wortlaut (10.07.2026): "... was durch eine sinnvolle C++23 Anwendung ersetzt werden
+# kann ... bitte kein python" -- kein Python und kein PowerShell in der Buildchain.
+# Die Provenienz-Nennungen dieses Skripts in anhang/de|en/tabellen/*_diagram.tex bleiben
+# unveraendert stehen (Aufraeum-Kandidatenliste, separat getrackt).
+# ====================================================================================
+#
 # Orchestrator: erzeugt aus EINER 16-Spalten-measurements.csv je Sprache (de+en)
 # ein booktabs-Tabellen-Fragment + ein pgfplots-Diagramm-Fragment und legt sie
 # nach anhang/<lang>/tabellen/ ab. Danach genuegt `build.ps1 -Lang de|en`, um den
