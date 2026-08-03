@@ -1096,6 +1096,87 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Quellen:} ISA-Spezifikationen und Whitepaper (Intel, ARM, IEEE Micro, ACM TACO, NVIDIA); Einzelnachweise in der Quellenspalte der Bausteine.
 
+\section{System-Sphäre: Äußere Komplex-Klammer (\texttt{build\_target\_complex}) und Bau-Werkzeugkette (\texttt{build\_toolchain})}
+
+Diese Größe ist der Befehls-Klammer-Wrapper über der festen Rekombination der drei System-Haupt-Achsen (\texttt{member\_\allowbreak{}count=3}: \texttt{target\_\allowbreak{}isa}, \texttt{operating\_\allowbreak{}system}, \texttt{external\_\allowbreak{}utils}) und schließt damit den System-Realm-Block ab (vgl.\ Abschnitt~\ref{sec:complex-axis}).
+
+Als Klammer ist er ausdrücklich \emph{keine} vierte Haupt-Achse: Die kanonische System-Achsen-Ordnung bleibt bei dreien. Drei übersetzungszeitliche Abgangs-Wachen (\texttt{static\_\allowbreak{}assert}) halten das fest --- \texttt{compiler}, \texttt{scheduling} und \texttt{load\_\allowbreak{}framework} dürfen nicht als Haupt-Achse zurückkehren; ihre Abgänge waren Umzüge, keine Löschungen. Das Last-Rahmenwerk ist auch kein \emph{Glied} dieser Klammer: Es lebt seit Paket A3 im Mess-Realm, während die System-Meta-Metas unter dem Hub \texttt{external\_\allowbreak{}utils} fahren. Die Achse führt \texttt{stage=ct} und \texttt{binary\_\allowbreak{}id=never}.
+
+\subsection*{Statische Sub-Achsen}
+
+An der Klammer hängt die Unter-Achsen-Gruppe \texttt{build\_\allowbreak{}toolchain} (\texttt{sub\_\allowbreak{}axis\_\allowbreak{}count=3}). Die Registry nennt die drei Glieder flach; die Verschachtelung darunter zeigt die tatsächliche Eltern-Kette.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{7.9cm}@{}}
+\toprule
+Glied & Eltern-Bezug & Beschreibung \\
+\midrule
+\endhead%
+\texttt{compiler} & \texttt{build\_\allowbreak{}target\_\allowbreak{}complex} & \texttt{stage=ct}, \texttt{baustein\_\allowbreak{}count=2}. Die Übersetzer-Wahl selbst; sie war früher eine System-Haupt-Achse und ist mit Paket A3 zur Unter-Achsen-Gruppe der äußeren Klammer geworden. \\
+\texttt{opt\_\allowbreak{}level} & \texttt{compiler} & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=5}. Optimierungsstufe je Übersetzer-Dialekt. \\
+\texttt{atomic128} & \texttt{compiler} & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=2}. Freigabe der 128-Bit-Vergleichs-Tausch-Instruktion. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Notiz:} Die Gruppe hängt an \texttt{build\_\allowbreak{}target\_\allowbreak{}complex} und nicht an \texttt{target\_\allowbreak{}isa}, weil sie den \emph{Bau} aus der Rekombination aller drei Haupt-Achsen beschreibt und nicht eine Eigenschaft der Ziel-ISA allein (O-1r).
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{gcc} & GNU-Übersetzer (\texttt{Gcc\allowbreak{}Compiler\allowbreak{}Axis}, Treiber \texttt{g++-16}, \texttt{supports\_\allowbreak{}fno\_\allowbreak{}gnu\_\allowbreak{}unique=true}). & Code/\allowbreak{}Baseline \\
+\texttt{clang} & LLVM-Übersetzer (\texttt{Clang\allowbreak{}Compiler\allowbreak{}Axis}, Treiber \texttt{clang++-22}, \texttt{supports\_\allowbreak{}fno\_\allowbreak{}gnu\_\allowbreak{}unique=false}). & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+Die fünf Optionen der Unter-Achse \texttt{opt\_\allowbreak{}level} mit ihren Flags je Dialekt; die Spalte \texttt{ieee754\_\allowbreak{}deterministic} weist aus, ob die Stufe die Gleitkomma-Semantik unangetastet lässt:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} und \texttt{clang}) & Flag (\texttt{msvc}) & \texttt{ieee754\_\allowbreak{}deterministic} \\
+\midrule
+\endhead%
+\texttt{O0} & \texttt{-O0} & \texttt{/Od} & \texttt{true} \\
+\texttt{O1} & \texttt{-O1} & \texttt{/O1} & \texttt{true} \\
+\texttt{O2} & \texttt{-O2} & \texttt{/O2} & \texttt{true} \\
+\texttt{O3} & \texttt{-O3} & \texttt{/O2} & \texttt{true} \\
+\texttt{Ofast} & \texttt{-Ofast} & \texttt{/O2} & \texttt{false} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+Die zwei Optionen der Unter-Achse \texttt{atomic128}:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{5.3cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} und \texttt{clang}) & Flag (\texttt{msvc}) \\
+\midrule
+\endhead%
+\texttt{no\_\allowbreak{}cx16} & --- (leer) & --- (leer) \\
+\texttt{cx16} & \texttt{-mcx16} & --- (leer) \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Bau-Versionskennung:} \texttt{opt\_\allowbreak{}level}, \texttt{simd} und \texttt{atomic128} materialisieren als Flags der Übersetzungs-Naht und erscheinen damit im Bau-Versions-Suffix der Binary --- einer geordneten Acht-Segment-Folge, in der ein leeres Glied schlicht kein Segment erzeugt (vgl.\ Abschnitt~\ref{sec:stamp-model}). In der \texttt{binary\_\allowbreak{}id} stehen sie niemals.
+
+\emph{Versions-Flag-Grammatik (A13, Owner-Entscheid E2 und Owner-Antwort Q3 vom 02.08.2026):} Die Version eines jeden Achsen-Algorithmus ist einheitlich dreistellig und beginnt mit \texttt{v}; Kurzformen sind verboten. Übersetzungszeitliche Wachen setzen die Form durch:
+
+\begin{quote}
+\verb+version := 'v' UINT '.' UINT '.' UINT [ HWFLAG [ 'e' ] ]+\\
+\verb+HWFLAG  := 'c' (CPU) | 'g' (GPU) | 'f' (FPGA) | 'n' (NPU)+
+\end{quote}
+
+Das Hardware-Flag ist genau \emph{ein} Kleinbuchstabe, direkt an das Zahlen-Tripel angehängt; die Reihenfolge ist fest: erst das Hardware-Flag, dann optional das \texttt{e} für einen experimentellen Prüflings-Algorithmus. Ein \texttt{e} ohne Hardware-Flag ist ungültig. Weil diese Arbeit ausschließlich CPU-Code erzeugt, enden im Zielzustand alle Versionen auf \texttt{c} beziehungsweise \texttt{ce}.
+
 \section{Build-PG Seitentyp-Achse (PAGE-TYPE)}
 
 \emph{Abgrenzung und Konservierung:} Diese Sektion beschreibt den \texttt{Page\allowbreak{}Kind} der Organ-Welt (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) und ist von der System-Unter-Achse \texttt{page} der Ziel-ISA (Seitengrößen-Freigabe 4k/\allowbreak{}2m/\allowbreak{}1g) verschieden --- beide Größen tragen ähnliche Namen, aber weder gemeinsame Bausteine noch gemeinsame Semantik. Der Katalog bleibt als konservierter Angebots- und Historien-Katalog vollständig erhalten.
