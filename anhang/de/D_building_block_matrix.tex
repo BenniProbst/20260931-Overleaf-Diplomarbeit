@@ -923,6 +923,48 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} ---
 
+\section{System-Sphäre: Betriebssystem (\texttt{operating\_system})}
+
+Diese Größe ist die zweite System-Haupt-Achse und damit Teil des \emph{Bluts} und keines Organs (vgl.\ Abschnitt~\ref{sec:axis-triad}); in der kanonischen, code-gewachten Ordnung steht sie an Platz zwei von drei.
+
+Die Haupt-Achse trägt ausschließlich die \emph{Klassen}-Identität: genau drei Betriebssystem-Familien (Ausprägungs-Katalog OP-10, \texttt{baustein\_\allowbreak{}count=3}), dazu \texttt{stage=ct} und \texttt{binary\_\allowbreak{}id=never}. Die \emph{Instanz} --- Distribution, Release, Kernel und Patch-Stand --- liegt dagegen vollständig in den drei Unter-Achsen; eine Distribution als vierte Ausprägung der Haupt-Achse einzutragen, verfehlte diesen Schnitt. Die reale Flotte (Windows 11 und Windows Server 2022, die Linux-Docker-Matrix, zwei macOS-Maschinen) fällt vollständig in die drei Familien.
+
+\subsection*{Dynamische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Beschreibung \\
+\midrule
+\endhead%
+\texttt{os\_\allowbreak{}version} & Distributions-/\allowbreak{}Release-Identität & Die Release-Identität der Betriebssystem-Instanz innerhalb ihrer Familie: unter Linux \texttt{ID} und \texttt{VERSION\_\allowbreak{}ID} aus \texttt{/etc/\allowbreak{}os-release}, unter Windows die Produktlinie, unter macOS die Produktversion. \\
+\texttt{kernel} & Kernel-Release & Das Kernel-Release der Instanz: unter Linux und macOS das \texttt{uname}-Release, unter Windows das NT-Kernel-Tripel. \\
+\texttt{build} & Build- und Patch-Stand & Der Build- bzw.\ Patch-Stand der Instanz \emph{einschließlich} des Update-Zustands (Owner-Entscheid E-12, wörtlich: \enquote{Wir mergen den Update Zustand in Build}). Ein separates \texttt{update\_\allowbreak{}zustand} ist damit ausdrücklich \emph{keine} vierte Unter-Achse, sondern Bestandteil dieser. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Notiz:} Alle drei sind \texttt{stage=runtime} mit \texttt{value\_\allowbreak{}type=token} und \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}: Sie haben keinen übersetzungszeitlichen Options-Katalog, weil ihre zulässigen Werte an der konkreten Maschine hängen und zur Bauzeit nicht erkennbar sind. Die Laufzeit-Erhebung ist ein eigener Bau-Schritt (Paket OS-U3, \texttt{operating\_\allowbreak{}system\_\allowbreak{}probe\_\allowbreak{}\{linux,\allowbreak{}macos,\allowbreak{}windows\}.hpp}); die Einhängung selbst ist nur das Angebot. Die Namen stehen seit dem Owner-Entscheid E3 vom 02.08.2026 fest (Paket A14/\allowbreak{}OS-U1).
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{linux} & Linux-Familie (\texttt{Linux\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=true}). Deckt die gesamte Docker-Distributions-Matrix ab; die einzelne Distribution ist Sache der Unter-Achse \texttt{os\_\allowbreak{}version}, nicht dieser Ausprägung. & Code/\allowbreak{}Baseline \\
+\texttt{windows} & Windows-Familie (\texttt{Windows\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=false}). Deckt Desktop- und Server-Produktlinien ab (Windows 11, Windows Server 2022). & Code/\allowbreak{}Baseline \\
+\texttt{macos} & macOS-Familie (\texttt{Macos\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=true}). Deckt die Apple-Silicon- und Intel-Maschinen der Flotte ab. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
+
+\emph{Stempel-Neutralität (A-15):} Die drei Unter-Achsen sind Laufzeit-Unter-Achsen und stehen deshalb niemals im Binary-Stempel. Ihre Einhängung ändert weder die Stempel-Zeilen noch den Bau-Versions-Suffix, und sie darf den Achsen-Code-Stand von \texttt{operating\_\allowbreak{}system} nicht anheben (Bump-Verbots-Wache): Ein solcher Sprung verschöbe den SHA512 aller Neubauten gegen den Bestand und erzwänge genau den Voll-Neubau aller Alt-Binaries, den der Owner-Entscheid ausschließt.
+
 \section{Build-PG Seitentyp-Achse (PAGE-TYPE)}
 
 \emph{Abgrenzung und Konservierung:} Diese Sektion beschreibt den \texttt{Page\allowbreak{}Kind} der Organ-Welt (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) und ist von der System-Unter-Achse \texttt{page} der Ziel-ISA (Seitengrößen-Freigabe 4k/\allowbreak{}2m/\allowbreak{}1g) verschieden --- beide Größen tragen ähnliche Namen, aber weder gemeinsame Bausteine noch gemeinsame Semantik. Der Katalog bleibt als konservierter Angebots- und Historien-Katalog vollständig erhalten.
