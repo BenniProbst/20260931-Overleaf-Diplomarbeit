@@ -7,6 +7,8 @@ well as the concrete building-block variants with their source (paper identifier
 The entries are verified against the \texttt{comdare-cache-engine} code and the paper-provenance map
 (Doc~18).
 
+Beyond the eighteen organ slots this appendix documents the two remaining axis categories of the triad (cf.\ Section~\ref{sec:axis-triad}). The \emph{system realm} comprises exactly three main axes in canonical, code-guarded order --- target ISA (\texttt{target\_\allowbreak{}isa}), operating system (\texttt{operating\_\allowbreak{}system}) and extension hardware (\texttt{external\_\allowbreak{}utils}) --- plus the outer complex bracket \texttt{build\_\allowbreak{}target\_\allowbreak{}complex}, which is explicitly not a fourth main axis; the order is not an editorial decision but follows the single ordering source of the code. The \emph{measurement realm} comprises the measurement categories, the measurement tooling and the load framework as meta-meta axis at the end of the realm. In the anatomy metaphor, system and measurement axes are not a further organ but the \emph{blood}: not permutable, not part of the permutation tree and strictly neutral towards the binary identity. The entries of both spheres are additionally verified against the three axis registries of the code (\texttt{cache\_\allowbreak{}engine\_\allowbreak{}axis\_\allowbreak{}registry.xml} for the organ realm, \texttt{system\_\allowbreak{}axis\_\allowbreak{}registry.xml} and \texttt{measurement\_\allowbreak{}axis\_\allowbreak{}registry.xml}). Historically conserved legacy sections --- the SIMD offering catalogue under the extension hardware as well as the page-type catalogue Build-PG and the platform hardware strategy Build-HW --- are marked as such and stand at the end of the respective block.
+
 \setlength{\tabcolsep}{3pt}
 \section{T0 Search Algorithm Axis T0 (Search Structures and Methods)}
 
@@ -785,48 +787,6 @@ Variant & Description & Source \\
 
 \emph{Contributing sources:} --- (CE baseline, own building blocks).
 
-\section{System sphere: telemetry and measurement instrumentation}
-
-In the nineteen-axis numbering this quantity was the \emph{telemetry organ} (then T10); since the axis reordering it has moved, two-way split, into the system sphere --- measurement-tooling sub-axis \emph{and} build quantity (cf.\ Section~\ref{sec:axis-triad}). Its building-block catalogue is retained here.
-
-Defines strategies for measuring index operations (insert, lookup, erase) with different overhead profiles. Supports density tracking for adaptive node-type selection, global insert counters for throughput measurements, HDR histograms for latency quantiles, and leaf-only counters to avoid cache-line false sharing in measurement cycles.
-
-\subsection*{Static sub-axes}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Description \\
-\midrule
-\endhead%
-TM1 & Scope & Validity scope of counter management: leaf-only (leaf nodes only), per-node (all nodes), or global (single accumulator for entire structure). Compile-time choice, impacts overhead through contention on shared cache lines. \\
-TM2 & Metric Type & Type of measured metric: counter (event counter), histogram (distribution with quantiles), or density (per-node slot occupancy). Impacts memory footprint and measurement granularity. \\
-TM3 & Overhead Level & Measurement overhead magnitude: low (atomic operations), medium (per-node data structures), high (histogram logging). Determines suitability for different workload scenarios (benchmarking vs.\ production). \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Building blocks}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
-\toprule
-Variant & Description & Source \\
-\midrule
-\endhead%
-\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Counter in leaf nodes only (avoids cache-line ping-pong by skipping inner-node updates). Low overhead with leaf-only scope. Implements coherence-friendly counter concept from Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023 motivation, although original paper describes cache-friendly B+-layout, not leaf-counter algorithm --- CE baseline for false-sharing avoidance. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, context; Code/\allowbreak{}Baseline) \\
-\texttt{Density\allowbreak{}Tracker} & Per-node density/\allowbreak{}slot-occupancy tracking for adaptive node-type selection (4→16→48→256). Contextual telemetry tied to ART structure (Leis ICDE 2013), measures slot occupancy across all nodes. Higher overhead than Leaf\allowbreak{}Only, but provides adaptation signal for dynamic rebalancing decisions. & P01 (ART/\allowbreak{}Leis ICDE 2013, context; Code/\allowbreak{}Baseline) \\
-\texttt{Insert\allowbreak{}Counter} & Global atomic insert counter with minimal overhead (1 atomic increment per insert). Contextual telemetry tied to HOT structure (Binna SIGMOD 2018), global scope. Sufficient for throughput measurement series, no latency granularity. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, context; Code/\allowbreak{}Baseline) \\
-\texttt{Latency\allowbreak{}Histogram} & HDR histogram for lookup latency distribution (p50/\allowbreak{}p95/\allowbreak{}p99 quantiles). Based on Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 license. Highest overhead (per lookup), but provides complete latency statistics for SLA-oriented and research-grade measurement series. Only is\_\allowbreak{}original candidate of the axis. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
-Probability-Hints & Probability hints of the cache-oblivious Bender line (P16/\allowbreak{}P17): distribution- and probability-related occupancy hints that serve as input to the layout decisions. Paper building block of the axis dissection (reconstruction target of this thesis, no CE baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Contributing sources:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
-
-\emph{Related literature:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
-
 \section{System sphere: target ISA (\texttt{target\_isa})}
 
 In the nineteen-axis numbering this quantity was the \emph{ISA organ} (then T12); since the axis reordering it is the system main axis \texttt{target\_isa} --- itself a complex axis (cf.\ Sections~\ref{sec:axis-triad} and~\ref{sec:complex-axis}).
@@ -848,6 +808,61 @@ IS3 & ZIH Cluster Affinity & Production machines at TU Dresden: Barnard (Intel X
 \end{longtable}
 \end{scriptsize}
 
+Beyond these three design dimensions, the build-driving system registry carries four system sub-axes on the complex wrapper: two compile-time ones (\texttt{target\_\allowbreak{}isa\_\allowbreak{}complex} and \texttt{scheduling}, each \texttt{stage=ct} with \texttt{kind=fixed\_\allowbreak{}enum\_\allowbreak{}tuple}) and two dynamic ones (\texttt{numa\_\allowbreak{}node} and \texttt{page}). The first bundles the named recombinations of the target machines (\texttt{complex\_\allowbreak{}count=2}) with three fixed members each (owner OD-2).
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{6.9cm}@{}}
+\toprule
+Recombination & Member & Declaration \\
+\midrule
+\endhead%
+\texttt{prod1\_\allowbreak{}zen5} (\texttt{isa=x86\_\allowbreak{}64}) & \texttt{ram\_\allowbreak{}frequency\_\allowbreak{}mhz} & \texttt{declared=false} --- no declared figure. \\
+\texttt{prod1\_\allowbreak{}zen5} & \texttt{cas\_\allowbreak{}latency\_\allowbreak{}cl} & \texttt{declared=false} --- no declared figure. \\
+\texttt{prod1\_\allowbreak{}zen5} & \texttt{cpu\_\allowbreak{}fabrication} & \texttt{declared=true}, \texttt{value=Authentic\allowbreak{}AMD/\allowbreak{}26/\allowbreak{}68/\allowbreak{}0} (vendor/\allowbreak{}family/\allowbreak{}model/\allowbreak{}stepping). \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} (\texttt{isa=x86\_\allowbreak{}64}) & \texttt{ram\_\allowbreak{}frequency\_\allowbreak{}mhz} & \texttt{declared=true}, \texttt{value=4800}, \texttt{declaration\_\allowbreak{}source=\allowbreak{}dmidecode 2026-07}. \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} & \texttt{cas\_\allowbreak{}latency\_\allowbreak{}cl} & \texttt{declared=false} --- no declared figure. \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} & \texttt{cpu\_\allowbreak{}fabrication} & \texttt{declared=true}, \texttt{value=Genuine\allowbreak{}Intel/\allowbreak{}6/\allowbreak{}151/\allowbreak{}2}. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note:} the values originate from \texttt{k\allowbreak{}Declared\allowbreak{}Machines}, which in turn mirrors the \texttt{<machines>} block of the user XML (O-4b). \texttt{declaration\_\allowbreak{}source} preserves the frozen origin of a declared figure (A2 note, not a provenance level); runtime levels never appear in this XML (P3).
+
+The second compile-time sub-axis \texttt{scheduling} carries five fixed members. It used to be a system main axis and was re-attached as a \texttt{sub\_\allowbreak{}axis} of the \texttt{target\_\allowbreak{}isa} complex wrapper with package A3 --- a relocation, not a deletion.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.1cm}@{}}
+\toprule
+Member & Registry value & Description \\
+\midrule
+\endhead%
+\texttt{worker\_\allowbreak{}pool\_\allowbreak{}layout} & \texttt{value\_\allowbreak{}ordinal=0} & Distribution of the worker pool across the cores. \\
+\texttt{simd\_\allowbreak{}worker\_\allowbreak{}count\_\allowbreak{}limit} & \texttt{value=2} & Upper bound of concurrent SIMD workers. \\
+\texttt{hetero\_\allowbreak{}core\_\allowbreak{}dispatch} & \texttt{value\_\allowbreak{}ordinal=0} & Dispatch across heterogeneous cores (P and E cores). \\
+\texttt{co\_\allowbreak{}routine\_\allowbreak{}strategy} & \texttt{value\_\allowbreak{}ordinal=0} & Coroutine strategy of job processing. \\
+\texttt{batch\_\allowbreak{}granularity} & \texttt{value\_\allowbreak{}ordinal=0} & Granularity of batch processing. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note:} the ordinals are raw enum values without a compile-time label template; the identifier strings are compile-coupled to the accessor calls of \texttt{concepts::\allowbreak{}scheduling\_\allowbreak{}strategy.hpp}.
+
+\subsection*{Dynamic sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Parameter & Description \\
+\midrule
+\endhead%
+\texttt{numa\_\allowbreak{}node} & NUMA node & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}. Mirror of the organ member \texttt{alloc\_\allowbreak{}hw.numa\_\allowbreak{}node}; the admissible values are the node identifiers of the concrete machine and are not knowable at build time --- hence a declared option source instead of an option catalogue. \\
+\texttt{page} & Page-size release & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}. The release of page sizes (4k/\allowbreak{}2m/\allowbreak{}1g) as a system capability; enforcement lives on the organ side in the \texttt{Alloc\allowbreak{}Page\allowbreak{}Hint} NTTP, this axis is the system side of the release. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Name trap (guarded at compile time):} the sub-axis is called \texttt{page} and is not \texttt{page\_\allowbreak{}type}. \texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type} is the tree-node \texttt{Page\allowbreak{}Kind} of the organ world and an entirely different axis (blueprint D2.6/\allowbreak{}IV-BLOCKER-5); the \texttt{static\_\allowbreak{}assert} in \texttt{target\_\allowbreak{}isa\_\allowbreak{}sub\_\allowbreak{}axes.hpp} records this. The building-block catalogue of the page type remains unchanged in the conserved legacy section \enquote{Build-PG}.
+
 \subsection*{Building blocks}
 
 \begin{scriptsize}
@@ -864,13 +879,17 @@ Variant & Description & Source \\
 \end{longtable}
 \end{scriptsize}
 
+\emph{Registry state:} the build-driving system registry currently carries two enabled building blocks --- \texttt{x86\_\allowbreak{}64} (native, without triple and march flags) and \texttt{aarch64} (cross compilation with \texttt{triple=\allowbreak{}-target aarch64-linux-gnu} and \texttt{march=\allowbreak{}-march=armv8-a}). The four-ISA catalogue listed above is retained as an \emph{offering} catalogue: Power-ISA and RISC-V are described as building blocks but are not enabled in today's build offering.
+
 \emph{Contributing sources:} ---
 
-\section{Build-PG Page Type Axis (PAGE-TYPE)}
+\section{System sphere: operating system (\texttt{operating\_system})}
 
-The page type axis defines the structural and indexing strategies for branch pages in the trie index: from dense direct-addressed byte indexing (Dense\allowbreak{}Byte), through multi-level density variants (Extended\allowbreak{}Dense, Sparse\allowbreak{}Patricia), to path-collapse optimizations (Redirect, Custom\allowbreak{}Cache) and B+-style sorted pages (BPlus). All page types are cache-line aware and implement the \texttt{Page\allowbreak{}Type\allowbreak{}Strategy} concept interface with guaranteed interchangeability (F15 permutation).
+This quantity is the second system main axis and thus part of the \emph{blood} and of no organ (cf.\ Section~\ref{sec:axis-triad}); in the canonical, code-guarded order it occupies position two of three.
 
-\subsection*{Static sub-axes}
+The main axis carries the \emph{class} identity only: exactly three operating-system families (instance catalogue OP-10, \texttt{baustein\_\allowbreak{}count=3}), together with \texttt{stage=ct} and \texttt{binary\_\allowbreak{}id=never}. The \emph{instance} --- distribution, release, kernel and patch level --- resides entirely in the three sub-axes; entering a distribution as a fourth expression of the main axis would miss that cut. The real fleet (Windows 11 and Windows Server 2022, the Linux Docker matrix, two macOS machines) falls entirely into the three families.
+
+\subsection*{Dynamic sub-axes}
 
 \begin{scriptsize}
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
@@ -878,36 +897,125 @@ The page type axis defines the structural and indexing strategies for branch pag
 ID & Name & Description \\
 \midrule
 \endhead%
-PG1 & Structure Role (Branching) & Classification of branch page architecture: full-branching branch page, collapsed single-path node (Redirect), or specialized cache-optimized variant. \\
-PG2 & Density Class (Density) & Degree of slot utilization and resulting indexing strategy: densely populated (0-256 slots), extended (>256 slots), or sparse with Patricia compression. \\
-PG3 & Path Collapse Strategy & Handling of unique remainder paths: no compression (standard), or collapse via Redirect/\allowbreak{}Co\allowbreak{}Co technique for space minimization. \\
+\texttt{os\_\allowbreak{}version} & Distribution/\allowbreak{}release identity & The release identity of the operating-system instance within its family: on Linux \texttt{ID} and \texttt{VERSION\_\allowbreak{}ID} from \texttt{/etc/\allowbreak{}os-release}, on Windows the product line, on macOS the product version. \\
+\texttt{kernel} & Kernel release & The kernel release of the instance: on Linux and macOS the \texttt{uname} release, on Windows the NT kernel triple. \\
+\texttt{build} & Build and patch level & The build and patch level of the instance \emph{including} the update state (owner decision E-12, verbatim: \enquote{Wir mergen den Update Zustand in Build}). A separate \texttt{update\_\allowbreak{}zustand} is therefore explicitly \emph{not} a fourth sub-axis but a constituent of this one. \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
+
+\emph{Note:} all three are \texttt{stage=runtime} with \texttt{value\_\allowbreak{}type=token} and \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}: they have no compile-time option catalogue because their admissible values depend on the concrete machine and are not knowable at build time. Runtime acquisition is a build step of its own (package OS-U3, \texttt{operating\_\allowbreak{}system\_\allowbreak{}probe\_\allowbreak{}\{linux,\allowbreak{}macos,\allowbreak{}windows\}.hpp}); the attachment itself is only the offering. The names have been fixed since owner decision E3 of 2 August 2026 (package A14/\allowbreak{}OS-U1).
 
 \subsection*{Building blocks}
 
 \begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{8.0cm} >{\raggedright\arraybackslash}p{2.5cm}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
 \toprule
 Variant & Description & Source \\
 \midrule
 \endhead%
-\texttt{Dense\allowbreak{}Byte\allowbreak{}Page\allowbreak{}Type} & Dense byte-indexed branch page with direct 256-slot addressing (direct-addressed). Page type 1: direct mapping from key byte to slot index without indirection. Source: Adaptive Radix Tree (ART), Leis et al. 2013. & P01 \\
-\texttt{Extended\allowbreak{}Dense\allowbreak{}Page\allowbreak{}Type} & Extended dense page for >256 entries with multi-level indexing scheme (e.g., 2-level lookup or variable k-byte span). Page type 2: density class for complex slot arrangements. Source: Adaptive Radix Tree extensions, PRT-ART\@. & P01 (extended) \\
-\texttt{Sparse\allowbreak{}Patricia\allowbreak{}Page\allowbreak{}Type} & Sparsely populated page with Patricia path compression (single-bit split). Page type 3: density class with bit-vector traversal for low branching factor. Source: HOT (Height Optimized Trie, Binna et al. 2018, based on Patricia Trie, Morrison 1968). & P02 \\
-\texttt{Redirect\allowbreak{}Page\allowbreak{}Type} & Collapsed unique remainder path (single-path node). Page type 4: path-collapse strategy for space optimization under monopoly unique successor sequences. Neither classical branch nor leaf, stores only suffix until next real branching or value node. Source: Co\allowbreak{}Co-Trie (Boffa et al. 2024). & P04 \\
-\texttt{Custom\allowbreak{}Cache\allowbreak{}Page\allowbreak{}Type} & Cache-line-oriented custom page with explicit layout design for 64-byte alignment. Page type 5: structure role branch with hardware-aware geometry. Source: PRT-ART proprietary implementation with TLB-offset + cache-line-aligned memory layout (Axis 5). & PRT-ART \\
-\texttt{BPlus\allowbreak{}Page\allowbreak{}Type} & B+-style sorted branch page with range-walk traversal. Page type 6: structure role branch, but with sorted key-array organization instead of byte indexing. Source: Masstree (Mao et al. 2012), B+-tree family. & P03 \\
+\texttt{linux} & Linux family (\texttt{Linux\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=true}). Covers the entire Docker distribution matrix; the individual distribution is a matter for the sub-axis \texttt{os\_\allowbreak{}version}, not for this expression. & Code/\allowbreak{}Baseline \\
+\texttt{windows} & Windows family (\texttt{Windows\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=false}). Covers desktop and server product lines (Windows 11, Windows Server 2022). & Code/\allowbreak{}Baseline \\
+\texttt{macos} & macOS family (\texttt{Macos\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=true}). Covers the Apple Silicon and Intel machines of the fleet. & Code/\allowbreak{}Baseline \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
 
-\emph{Contributing sources:} P01, P02, P03, P04, Morrison 1968, PRT-ART~\cite{leis2013art,binna2018hot,mao2012masstree,boffa2024coco,morrison1968patricia}.
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
 
-\emph{Related literature:} P05, P06, P10, P11, P12, P13, P20~\cite{fent2020start,schmeisser2022b2tree,zhang2018surf,rao1999css,rao2000csb,hankins2003nodesize,mueller2025btreesback}.
+\emph{Stamp neutrality (A-15):} the three sub-axes are runtime sub-axes and therefore never appear in the binary stamp. Their attachment changes neither the stamp lines nor the build-version suffix, and it must not raise the axis code level of \texttt{operating\_\allowbreak{}system} (bump prohibition guard): such a bump would shift the SHA512 of all new builds against the existing stock and would force exactly the full rebuild of all legacy binaries that the owner decision rules out.
+
+\section{System sphere: extension hardware (\texttt{external\_utils})}
+
+This quantity is the third system main axis; it is exclusively the collecting hub of the hardware meta axes --- SIMD and vector extensions, GPU, FPGA and NPU as well as external accelerators (cf.\ Section~\ref{sec:axis-triad}).
+
+The hub carries \emph{only} system meta-metas; the load framework explicitly does not belong to it. Because meta-meta axes receive no stamp line of their own but appear as a bracketed suffix at the end of the respective realm line, this hub closes the system realm: the suffix is folded type-driven from the hub's member type list (\texttt{External\allowbreak{}Utils\allowbreak{}Hub} $\rightarrow$ \texttt{Simd\allowbreak{}External\allowbreak{}Utils\allowbreak{}Family}), and the level resides in the bracket depth rather than in the name (owner decision E2 and owner answer Q1 of 2 August 2026). In today's build-driving offering the axis carries \texttt{baustein\_\allowbreak{}count=1}, \texttt{stage=ct} and \texttt{binary\_\allowbreak{}id=never}.
+
+\subsection*{Dynamic sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+\texttt{simd} & Vector extension level & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=3}. The family identifier is at the same time the sub-axis label (notation \texttt{external\_\allowbreak{}utils.simd=\dots}); the per-dialect reflected compiler flags come from the option, not from the family. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+The three options of the sub-axis with their flags per compiler dialect:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{5.3cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} and \texttt{clang}) & Flag (\texttt{msvc}) \\
+\midrule
+\endhead%
+\texttt{no\_\allowbreak{}extension} & --- (empty) & --- (empty) \\
+\texttt{avx2} & \texttt{-mavx2} & \texttt{/arch:AVX2} \\
+\texttt{avx512} & \texttt{-mavx512f} & \texttt{/arch:AVX512} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note (Q2/\allowbreak{}K2):} \texttt{simd} materializes as a flag of the compilation seam and therefore appears in the build-version suffix (cf.\ Section~\ref{sec:stamp-model}) --- never as a runtime type switch and never in the \texttt{binary\_\allowbreak{}id}.
+
+The sub-axis is accompanied by a fine-grained feature catalogue \texttt{simd\_\allowbreak{}feature\_\allowbreak{}catalog} with \texttt{count=23} features, tiered by \texttt{tier}: fourteen features of tier \texttt{avx512}, four of tier \texttt{avx256}, three companion features (\texttt{companion}) and two scalar ones (\texttt{scalar}). The flags are identical throughout for \texttt{gpp} and \texttt{clang}.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{5.4cm} >{\raggedright\arraybackslash}p{3.7cm}@{}}
+\toprule
+Feature (\texttt{cpuinfo}) & Flag (\texttt{gpp} and \texttt{clang}) & Tier (\texttt{tier}) \\
+\midrule
+\endhead%
+\texttt{avx512f} & \texttt{-mavx512f} & \texttt{avx512} \\
+\texttt{avx512cd} & \texttt{-mavx512cd} & \texttt{avx512} \\
+\texttt{avx512vl} & \texttt{-mavx512vl} & \texttt{avx512} \\
+\texttt{avx512dq} & \texttt{-mavx512dq} & \texttt{avx512} \\
+\texttt{avx512bw} & \texttt{-mavx512bw} & \texttt{avx512} \\
+\texttt{avx512ifma} & \texttt{-mavx512ifma} & \texttt{avx512} \\
+\texttt{avx512vbmi} & \texttt{-mavx512vbmi} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vbmi2} & \texttt{-mavx512vbmi2} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vnni} & \texttt{-mavx512vnni} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}bitalg} & \texttt{-mavx512bitalg} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vpopcntdq} & \texttt{-mavx512vpopcntdq} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vp2intersect} & \texttt{-mavx512vp2intersect} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}bf16} & \texttt{-mavx512bf16} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}fp16} & \texttt{-mavx512fp16} & \texttt{avx512} \\
+\texttt{avx2} & \texttt{-mavx2} & \texttt{avx256} \\
+\texttt{fma} & \texttt{-mfma} & \texttt{avx256} \\
+\texttt{f16c} & \texttt{-mf16c} & \texttt{avx256} \\
+\texttt{avx\_\allowbreak{}vnni} & \texttt{-mavxvnni} & \texttt{avx256} \\
+\texttt{gfni} & \texttt{-mgfni} & \texttt{companion} \\
+\texttt{vaes} & \texttt{-mvaes} & \texttt{companion} \\
+\texttt{vpclmulqdq} & \texttt{-mvpclmulqdq} & \texttt{companion} \\
+\texttt{bmi2} & \texttt{-mbmi2} & \texttt{scalar} \\
+\texttt{popcnt} & \texttt{-mpopcnt} & \texttt{scalar} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Machine signatures (\texttt{count=3}):} the registry records for each target machine the subset of features actually present --- \texttt{prod1\_\allowbreak{}zen5} (\texttt{host\_\allowbreak{}isa=x86\_\allowbreak{}64}) with 22 features, \texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} with 9 and \texttt{odroid\_\allowbreak{}gracemont} with 9. Only the Zen 5 machine carries the \texttt{avx512} tier; the other two end at \texttt{avx256} together with the companion and scalar features.
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{simd} & Vector extension family (\texttt{Simd\allowbreak{}External\allowbreak{}Utils\allowbreak{}Family}, \texttt{family\_\allowbreak{}id=simd}, enabled). The only member of the hub enabled today; the families for GPU, FPGA and NPU are foreseen in the design but are not part of the build-driving offering. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
 
 \section[Build-SIMD: Vector/Accelerator Extension Axis]{Build-SIMD: Vector/\allowbreak{}Accelerator Extension Axis (Hardware Accelerators)} % chktex 13 (Titel-Doppelpunkt nach Grossbuchstabe, kein Satzende)
+
+\emph{Conserved offering and history catalogue:} the legacy axis identifier \texttt{axis\_\allowbreak{}09b} has been superseded by the main axis \texttt{external\_\allowbreak{}utils} with its sub-axis \texttt{simd}. The eight-building-block catalogue below is retained in full as an offering and history catalogue under that main axis, as is the sub-axis table SE1--SE3 as a historical block.
 
 The \texttt{axis\_\allowbreak{}09b\_\allowbreak{}simd\_\allowbreak{}extension} models available SIMD/\allowbreak{}accelerator extensions of the CPU instruction set architecture as a sub-axis to \texttt{axis\_\allowbreak{}09} (main ISA). It enables compile-time selection among various vector extensions (SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 for x86; NEON/\allowbreak{}SVE2 for ARM\@; RVV for RISC-V) plus baseline (scalar) and GPU acceleration (CUDA), with backward-cumulative layer hierarchy and hardware-specific topology (SIMD units per socket, P/\allowbreak{}E core access).
 
@@ -948,7 +1056,279 @@ Variant & Description & Source \\
 
 \emph{Sources:} ISA specifications and whitepapers (Intel, ARM, IEEE Micro, ACM TACO, NVIDIA); see the source column of the building blocks.
 
+\section{System sphere: outer complex bracket (\texttt{build\_target\_complex}) and build toolchain (\texttt{build\_toolchain})}
+
+This quantity is the command-pattern bracket wrapper over the fixed recombination of the three system main axes (\texttt{member\_\allowbreak{}count=3}: \texttt{target\_\allowbreak{}isa}, \texttt{operating\_\allowbreak{}system}, \texttt{external\_\allowbreak{}utils}) and thus closes the system realm block (cf.\ Section~\ref{sec:complex-axis}).
+
+As a bracket it is explicitly \emph{not} a fourth main axis: the canonical system axis order stays at three. Three compile-time departure guards (\texttt{static\_\allowbreak{}assert}) record this --- \texttt{compiler}, \texttt{scheduling} and \texttt{load\_\allowbreak{}framework} must not return as main axes; their departures were relocations, not deletions. The load framework is not a \emph{member} of this bracket either: since package A3 it lives in the measurement realm, whereas the system meta-metas travel under the hub \texttt{external\_\allowbreak{}utils}. The axis carries \texttt{stage=ct} and \texttt{binary\_\allowbreak{}id=never}.
+
+\subsection*{Static sub-axes}
+
+The sub-axis group \texttt{build\_\allowbreak{}toolchain} (\texttt{sub\_\allowbreak{}axis\_\allowbreak{}count=3}) hangs on the bracket. The registry names the three members flat; the nesting underneath shows the actual parent chain.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{7.9cm}@{}}
+\toprule
+Member & Parent reference & Description \\
+\midrule
+\endhead%
+\texttt{compiler} & \texttt{build\_\allowbreak{}target\_\allowbreak{}complex} & \texttt{stage=ct}, \texttt{baustein\_\allowbreak{}count=2}. The compiler choice itself; it used to be a system main axis and became the sub-axis group of the outer bracket with package A3. \\
+\texttt{opt\_\allowbreak{}level} & \texttt{compiler} & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=5}. Optimization level per compiler dialect. \\
+\texttt{atomic128} & \texttt{compiler} & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=2}. Release of the 128-bit compare-and-swap instruction. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note:} the group hangs on \texttt{build\_\allowbreak{}target\_\allowbreak{}complex} and not on \texttt{target\_\allowbreak{}isa} because it describes the \emph{build} arising from the recombination of all three main axes and not a property of the target ISA alone (O-1r).
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{gcc} & GNU compiler (\texttt{Gcc\allowbreak{}Compiler\allowbreak{}Axis}, driver \texttt{g++-16}, \texttt{supports\_\allowbreak{}fno\_\allowbreak{}gnu\_\allowbreak{}unique=true}). & Code/\allowbreak{}Baseline \\
+\texttt{clang} & LLVM compiler (\texttt{Clang\allowbreak{}Compiler\allowbreak{}Axis}, driver \texttt{clang++-22}, \texttt{supports\_\allowbreak{}fno\_\allowbreak{}gnu\_\allowbreak{}unique=false}). & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+The five options of the sub-axis \texttt{opt\_\allowbreak{}level} with their flags per dialect; the column \texttt{ieee754\_\allowbreak{}deterministic} states whether the level leaves floating-point semantics untouched:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} and \texttt{clang}) & Flag (\texttt{msvc}) & \texttt{ieee754\_\allowbreak{}deterministic} \\
+\midrule
+\endhead%
+\texttt{O0} & \texttt{-O0} & \texttt{/Od} & \texttt{true} \\
+\texttt{O1} & \texttt{-O1} & \texttt{/O1} & \texttt{true} \\
+\texttt{O2} & \texttt{-O2} & \texttt{/O2} & \texttt{true} \\
+\texttt{O3} & \texttt{-O3} & \texttt{/O2} & \texttt{true} \\
+\texttt{Ofast} & \texttt{-Ofast} & \texttt{/O2} & \texttt{false} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+The two options of the sub-axis \texttt{atomic128}:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{5.3cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} and \texttt{clang}) & Flag (\texttt{msvc}) \\
+\midrule
+\endhead%
+\texttt{no\_\allowbreak{}cx16} & --- (empty) & --- (empty) \\
+\texttt{cx16} & \texttt{-mcx16} & --- (empty) \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Build version identifier:} \texttt{opt\_\allowbreak{}level}, \texttt{simd} and \texttt{atomic128} materialize as flags of the compilation seam and therefore appear in the build-version suffix of the binary --- an ordered eight-segment sequence in which an empty member simply produces no segment (cf.\ Section~\ref{sec:stamp-model}). They never appear in the \texttt{binary\_\allowbreak{}id}.
+
+\emph{Version flag grammar (A13, owner decision E2 and owner answer Q3 of 2 August 2026):} the version of every axis algorithm is uniformly three-part and begins with \texttt{v}; short forms are forbidden. Compile-time guards enforce the form:
+
+\begin{quote}
+\verb+version := 'v' UINT '.' UINT '.' UINT [ HWFLAG [ 'e' ] ]+\\
+\verb+HWFLAG  := 'c' (CPU) | 'g' (GPU) | 'f' (FPGA) | 'n' (NPU)+
+\end{quote}
+
+The hardware flag is exactly \emph{one} lowercase letter appended directly to the numeric triple; the order is fixed: first the hardware flag, then optionally the \texttt{e} for an experimental specimen algorithm. An \texttt{e} without a hardware flag is invalid. Because this work produces CPU code exclusively, in the target state all versions end in \texttt{c} or \texttt{ce}.
+
+\section{Measurement sphere: measurement categories (\texttt{measurement\_category})}
+
+This quantity belongs to the third realm --- the measurement axes, the \emph{blood of measuring} (cf.\ Section~\ref{sec:axis-triad}).
+
+It carries \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} and \texttt{baustein\_\allowbreak{}count=16}. Its values manifest as columns of the result tables and as the setting label of a run, never in the binary identity. In the chapter model the sixteen categories are the \emph{sub}-axis of the measurement tooling; the measurement registry additionally carries them as an offering block of their own, because the tooling does not invent its categories but selects them from this catalogue. The column \texttt{regime\_\allowbreak{}ordinal} separates the time- and observer-based regime (0) from the counter-based PMC regime (1).
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.9cm}@{}}
+\toprule
+Category & \texttt{category\_\allowbreak{}ordinal} & Regime (\texttt{regime\_\allowbreak{}ordinal}) \\
+\midrule
+\endhead%
+\texttt{CLU} & 0 & 0 --- time/\allowbreak{}observer \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L1} & 1 & 1 --- PMC \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L2} & 2 & 1 --- PMC \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L3} & 3 & 1 --- PMC \\
+\texttt{DTLB\_\allowbreak{}MISS} & 4 & 1 --- PMC \\
+\texttt{MEMORY\_\allowbreak{}FOOTPRINT} & 5 & 0 --- time/\allowbreak{}observer \\
+\texttt{BRANCH\_\allowbreak{}MISS} & 6 & 1 --- PMC \\
+\texttt{IPC\_\allowbreak{}CPI} & 7 & 1 --- PMC \\
+\texttt{LATENCY\_\allowbreak{}MEAN} & 8 & 0 --- time/\allowbreak{}observer \\
+\texttt{LATENCY\_\allowbreak{}P50} & 9 & 0 --- time/\allowbreak{}observer \\
+\texttt{LATENCY\_\allowbreak{}P95} & 10 & 0 --- time/\allowbreak{}observer \\
+\texttt{LATENCY\_\allowbreak{}P99} & 11 & 0 --- time/\allowbreak{}observer \\
+\texttt{LATENCY\_\allowbreak{}P999} & 12 & 0 --- time/\allowbreak{}observer \\
+\texttt{THROUGHPUT} & 13 & 0 --- time/\allowbreak{}observer \\
+\texttt{ENERGY\_\allowbreak{}J} & 14 & 1 --- PMC \\
+\texttt{FILL\_\allowbreak{}BUFFER\_\allowbreak{}OCCUPANCY} & 15 & 0 --- time/\allowbreak{}observer \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Regime split:} nine categories lie in the time and observer regime (\texttt{CLU}, \texttt{MEMORY\_\allowbreak{}FOOTPRINT}, the five latency categories, \texttt{THROUGHPUT}, \texttt{FILL\_\allowbreak{}BUFFER\_\allowbreak{}OCCUPANCY}), seven in the PMC regime (the three cache-miss levels, \texttt{DTLB\_\allowbreak{}MISS}, \texttt{BRANCH\_\allowbreak{}MISS}, \texttt{IPC\_\allowbreak{}CPI}, \texttt{ENERGY\_\allowbreak{}J}). The split coincides with the \enquote{nine/\allowbreak{}seven} division of Section~\ref{sec:axis-triad}.
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
+
+\section{Measurement sphere: measurement tooling/\allowbreak{}collector (\texttt{collector})}
+
+This quantity is the instrument axis of the measurement realm: it records with which tool a category is acquired (cf.\ Section~\ref{sec:axis-triad}).
+
+It carries \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} and \texttt{baustein\_\allowbreak{}count=3}. Every building block carries its regime and the set of categories it serves; the union of the three sets covers ten of the sixteen categories, the remainder being described in the offering catalogue but not yet assigned to a tool.
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}p{8.3cm}@{}}
+\toprule
+Variant & Regime & Categories served \\
+\midrule
+\endhead%
+\texttt{Wall\allowbreak{}Clock\allowbreak{}System\allowbreak{}Axis} & 0 & \texttt{LATENCY\_\allowbreak{}MEAN}, \texttt{THROUGHPUT} \\
+\texttt{Observer\allowbreak{}Snapshot\allowbreak{}System\allowbreak{}Axis} & 0 & \texttt{CLU} \\
+\texttt{Pmc\allowbreak{}System\allowbreak{}Axis} & 1 & \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L1}, \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L2}, \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L3}, \texttt{DTLB\_\allowbreak{}MISS}, \texttt{BRANCH\_\allowbreak{}MISS}, \texttt{IPC\_\allowbreak{}CPI}, \texttt{ENERGY\_\allowbreak{}J} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
+
+\section{Measurement sphere: telemetry building blocks (conserved catalogue)}
+
+In the nineteen-axis numbering this quantity was the \emph{telemetry organ} (then T10); since the axis reordering it is a \emph{two-way split} main quantity --- sweep sub-axis of the measurement tooling in the planner \emph{and} compile-time main quantity in the builder (cf.\ Section~\ref{sec:axis-triad}). Its building-block catalogue is retained here as a conserved catalogue.
+
+Defines strategies for measuring index operations (insert, lookup, erase) with different overhead profiles. Supports density tracking for adaptive node-type selection, global insert counters for throughput measurements, HDR histograms for latency quantiles, and leaf-only counters to avoid cache-line false sharing in measurement cycles.
+
+\subsection*{Static sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+TM1 & Scope & Validity scope of counter management: leaf-only (leaf nodes only), per-node (all nodes), or global (single accumulator for entire structure). Compile-time choice, impacts overhead through contention on shared cache lines. \\
+TM2 & Metric Type & Type of measured metric: counter (event counter), histogram (distribution with quantiles), or density (per-node slot occupancy). Impacts memory footprint and measurement granularity. \\
+TM3 & Overhead Level & Measurement overhead magnitude: low (atomic operations), medium (per-node data structures), high (histogram logging). Determines suitability for different workload scenarios (benchmarking vs.\ production). \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Counter in leaf nodes only (avoids cache-line ping-pong by skipping inner-node updates). Low overhead with leaf-only scope. Implements coherence-friendly counter concept from Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023 motivation, although original paper describes cache-friendly B+-layout, not leaf-counter algorithm --- CE baseline for false-sharing avoidance. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, context; Code/\allowbreak{}Baseline) \\
+\texttt{Density\allowbreak{}Tracker} & Per-node density/\allowbreak{}slot-occupancy tracking for adaptive node-type selection (4→16→48→256). Contextual telemetry tied to ART structure (Leis ICDE 2013), measures slot occupancy across all nodes. Higher overhead than Leaf\allowbreak{}Only, but provides adaptation signal for dynamic rebalancing decisions. & P01 (ART/\allowbreak{}Leis ICDE 2013, context; Code/\allowbreak{}Baseline) \\
+\texttt{Insert\allowbreak{}Counter} & Global atomic insert counter with minimal overhead (1 atomic increment per insert). Contextual telemetry tied to HOT structure (Binna SIGMOD 2018), global scope. Sufficient for throughput measurement series, no latency granularity. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, context; Code/\allowbreak{}Baseline) \\
+\texttt{Latency\allowbreak{}Histogram} & HDR histogram for lookup latency distribution (p50/\allowbreak{}p95/\allowbreak{}p99 quantiles). Based on Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 license. Highest overhead (per lookup), but provides complete latency statistics for SLA-oriented and research-grade measurement series. Only is\_\allowbreak{}original candidate of the axis. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
+Probability-Hints & Probability hints of the cache-oblivious Bender line (P16/\allowbreak{}P17): distribution- and probability-related occupancy hints that serve as input to the layout decisions. Paper building block of the axis dissection (reconstruction target of this thesis, no CE baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
+
+\emph{Related literature:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
+
+\section{Measurement sphere: load framework (\texttt{load\_framework}) --- meta-meta axis}
+
+This quantity is the meta-meta main axis of the measurement realm and therefore stands at its end (cf.\ Section~\ref{sec:axis-triad}).
+
+It carries \texttt{category=measurement\_\allowbreak{}meta\_\allowbreak{}meta}, \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} and \texttt{baustein\_\allowbreak{}count=1}. Its relocation history is part of its identity: with package A3 it left the system world \emph{without replacement} towards the measurement realm, where it is the planner's meta-meta main axis; it explicitly does not belong under the hub of the system meta-metas. In the stamp it receives \emph{no} meta-meta line of its own: its identifier appears as a dynamic bracketed suffix at the \emph{end} of the existing measurement realm line (owner decision E2 and owner answer Q1 of 2 August 2026). The feeding path here is entry-driven --- the chosen identifier together with its version comes from the framework registry of the measurement realm and therefore does not reside in the type, unlike the type-driven system hub.
+
+\subsection*{Dynamic sub-axes}
+
+The registry carries six sweep dimensions (\texttt{resource\_\allowbreak{}control\_\allowbreak{}version=1}); all are \texttt{stage=runtime}.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+Dimension & Origin (\texttt{source}) & Value type and meaning \\
+\midrule
+\endhead%
+\texttt{workload} & \texttt{measurement:\allowbreak{}load\_\allowbreak{}framework} & \texttt{token} --- the load profile; the single source is the sub-axis label of the load framework itself. \\
+\texttt{thread\_\allowbreak{}count} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- number of worker threads. \\
+\texttt{prefetch\_\allowbreak{}distance} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- prefetch distance. \\
+\texttt{pool\_\allowbreak{}budget\_\allowbreak{}bytes} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- memory budget of the pool. \\
+\texttt{batch\_\allowbreak{}size} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- batch size per operation. \\
+\texttt{inline\_\allowbreak{}threshold\_\allowbreak{}bytes} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- threshold of inline storage. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Honesty note:} the repetition count of a run and the three measurement modes (debug, measurement and release execution) are deliberately \emph{not} in this list. The repetition count is currently a pure label dimension without a compile-time anchor, and the three modes do not yet exist as types; both become reflectable only once they are typed. A hand-written entry would be a phantom --- the honest-0 doctrine forbids it (open item W2-B).
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{ycsb} & The YCSB load-profile framework; enabled, with the sub-axis label \texttt{workload}. The only building block of the axis enabled today. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} --- (CE baseline, own building blocks).
+
+\section{Build-PG Page Type Axis (PAGE-TYPE)}
+
+\emph{Delimitation and conservation:} this section describes the \texttt{Page\allowbreak{}Kind} of the organ world (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) and is distinct from the system sub-axis \texttt{page} of the target ISA (page-size release 4k/\allowbreak{}2m/\allowbreak{}1g) --- both quantities carry similar names but share neither building blocks nor semantics. The catalogue is retained in full as a conserved offering and history catalogue.
+
+The page type axis defines the structural and indexing strategies for branch pages in the trie index: from dense direct-addressed byte indexing (Dense\allowbreak{}Byte), through multi-level density variants (Extended\allowbreak{}Dense, Sparse\allowbreak{}Patricia), to path-collapse optimizations (Redirect, Custom\allowbreak{}Cache) and B+-style sorted pages (BPlus). All page types are cache-line aware and implement the \texttt{Page\allowbreak{}Type\allowbreak{}Strategy} concept interface with guaranteed interchangeability (F15 permutation).
+
+\subsection*{Static sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Description \\
+\midrule
+\endhead%
+PG1 & Structure Role (Branching) & Classification of branch page architecture: full-branching branch page, collapsed single-path node (Redirect), or specialized cache-optimized variant. \\
+PG2 & Density Class (Density) & Degree of slot utilization and resulting indexing strategy: densely populated (0-256 slots), extended (>256 slots), or sparse with Patricia compression. \\
+PG3 & Path Collapse Strategy & Handling of unique remainder paths: no compression (standard), or collapse via Redirect/\allowbreak{}Co\allowbreak{}Co technique for space minimization. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Building blocks}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{8.0cm} >{\raggedright\arraybackslash}p{2.5cm}@{}}
+\toprule
+Variant & Description & Source \\
+\midrule
+\endhead%
+\texttt{Dense\allowbreak{}Byte\allowbreak{}Page\allowbreak{}Type} & Dense byte-indexed branch page with direct 256-slot addressing (direct-addressed). Page type 1: direct mapping from key byte to slot index without indirection. Source: Adaptive Radix Tree (ART), Leis et al. 2013. & P01 \\
+\texttt{Extended\allowbreak{}Dense\allowbreak{}Page\allowbreak{}Type} & Extended dense page for >256 entries with multi-level indexing scheme (e.g., 2-level lookup or variable k-byte span). Page type 2: density class for complex slot arrangements. Source: Adaptive Radix Tree extensions, PRT-ART\@. & P01 (extended) \\
+\texttt{Sparse\allowbreak{}Patricia\allowbreak{}Page\allowbreak{}Type} & Sparsely populated page with Patricia path compression (single-bit split). Page type 3: density class with bit-vector traversal for low branching factor. Source: HOT (Height Optimized Trie, Binna et al. 2018, based on Patricia Trie, Morrison 1968). & P02 \\
+\texttt{Redirect\allowbreak{}Page\allowbreak{}Type} & Collapsed unique remainder path (single-path node). Page type 4: path-collapse strategy for space optimization under monopoly unique successor sequences. Neither classical branch nor leaf, stores only suffix until next real branching or value node. Source: Co\allowbreak{}Co-Trie (Boffa et al. 2024). & P04 \\
+\texttt{Custom\allowbreak{}Cache\allowbreak{}Page\allowbreak{}Type} & Cache-line-oriented custom page with explicit layout design for 64-byte alignment. Page type 5: structure role branch with hardware-aware geometry. Source: PRT-ART proprietary implementation with TLB-offset + cache-line-aligned memory layout (Axis 5). & PRT-ART \\
+\texttt{BPlus\allowbreak{}Page\allowbreak{}Type} & B+-style sorted branch page with range-walk traversal. Page type 6: structure role branch, but with sorted key-array organization instead of byte indexing. Source: Masstree (Mao et al. 2012), B+-tree family. & P03 \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Contributing sources:} P01, P02, P03, P04, Morrison 1968, PRT-ART~\cite{leis2013art,binna2018hot,mao2012masstree,boffa2024coco,morrison1968patricia}.
+
+\emph{Related literature:} P05, P06, P10, P11, P12, P13, P20~\cite{fent2020start,schmeisser2022b2tree,zhang2018surf,rao1999css,rao2000csb,hankins2003nodesize,mueller2025btreesback}.
+
 \section{Build-HW — Platform Hardware Strategy}
+
+\emph{Current status (conserved catalogue):} this axis is excluded from the build-driving offering of the system registry. The registry records the exclusion verbatim: \texttt{extension\_\allowbreak{}hardware\_\allowbreak{}system\_\allowbreak{}axis.hpp} is a deprecated island, \texttt{hardware\_\allowbreak{}isa\_\allowbreak{}system\_\allowbreak{}axis.hpp} a pure host descriptor that does not drive the build --- neither belongs to the build-driving offering. The static platform profiles with their fixed constants for cache-line size, page size and SIMD bit width are conceptually superseded by the runtime hardware detection of the \texttt{Cache\allowbreak{}Engine\allowbreak{}Builder} --- a factory over ISA and operating system that acquires hardware values instead of setting them statically (cf.\ Section~\ref{sec:hw-probe}). The five sub-axis entries (\texttt{hw1} to \texttt{hw5}) and the three hardware profiles are retained in full as a historical catalogue.
 
 Defines the platform hardware family (CPU architecture, SIMD capabilities, cache topology, memory paging) as compile-time constants for all cache-engine algorithms. The axis captures which platforms are configurable at build time and provides static properties (cache-line size, page size, SIMD bit-width, NUMA capability, hugepage capability) for algorithm-appropriate data structures.
 

@@ -7,6 +7,8 @@ Dieser Anhang enthält die vollständige Bausteine-Matrix, auf die der Stand der
 Code/Baseline) aufgeführt. Die Angaben sind aus dem Code der \texttt{comdare-cache-engine} und gegen
 die Paper-Provenienz-Map (Doc~18) verifiziert.
 
+Über die achtzehn Organ-Slots hinaus dokumentiert dieser Anhang die beiden übrigen Achsen-Kategorien der Dreiteilung (vgl.\ Abschnitt~\ref{sec:axis-triad}). Der \emph{System-Realm} umfasst genau drei Haupt-Achsen in kanonischer, code-gewachter Ordnung --- Ziel-ISA (\texttt{target\_\allowbreak{}isa}), Betriebssystem (\texttt{operating\_\allowbreak{}system}) und Erweiterungs-Hardware (\texttt{external\_\allowbreak{}utils}) --- zuzüglich der äußeren Komplex-Klammer \texttt{build\_\allowbreak{}target\_\allowbreak{}complex}, die ausdrücklich keine vierte Haupt-Achse ist; die Reihenfolge ist dabei kein redaktioneller Entschluss, sondern folgt der einen Ordnungs-Quelle des Codes. Der \emph{Mess-Realm} umfasst die Mess-Kategorien, das Mess-Tooling und das Last-Rahmenwerk als Meta-Meta-Achse am Realm-Ende. In der Anatomie-Metapher sind System- und Mess-Achsen kein weiteres Organ, sondern das \emph{Blut}: nicht permutierbar, nicht Teil des Permutationsbaums und strikt neutral gegenüber der Binary-Identität. Die Angaben beider Sphären sind zusätzlich gegen die drei Achsen-Registries des Codes verifiziert (\texttt{cache\_\allowbreak{}engine\_\allowbreak{}axis\_\allowbreak{}registry.xml} für den Organ-Realm, \texttt{system\_\allowbreak{}axis\_\allowbreak{}registry.xml} und \texttt{measurement\_\allowbreak{}axis\_\allowbreak{}registry.xml}). Historisch konservierte Alt-Sektionen --- der SIMD-Angebots-Katalog unter der Erweiterungs-Hardware sowie der Seitentyp-Katalog Build-PG und die Plattform-Hardware-Strategie Build-HW --- sind als solche markiert und stehen am Ende des jeweiligen Blocks.
+
 \setlength{\tabcolsep}{3pt}
 \section{T0 Suchalgorithmen-Achse T0 (Such-Strukturen und Such-Methoden)}
 
@@ -785,48 +787,6 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
 
-\section{System-Sphäre: Telemetrie und Messinstrumentierung}
-
-Diese Größe war in der Neunzehner-Zählung das \emph{Telemetrie-Organ} (damals T10); seit der Achsen-Neuordnung ist sie zweigeteilt in die System-Sphäre umgezogen --- Mess-Tooling-Unter-Achse \emph{und} Bau-Größe (vgl.\ Abschnitt~\ref{sec:axis-triad}). Ihre Baustein-Katalogisierung bleibt hier erhalten.
-
-Definiert Strategien zur Messung von Index-Operationen (Insert, Lookup, Erase) mit verschiedenen Overhead-Profilen. Unterstützt Density-Tracking für adaptive Node-Typ-Wahl, globale Insert-Counter für Durchsatz-Messungen, HDR-Histogramme für Latenz-Quantile und leaf-only-Counter zur Vermeidung von Cache-Line-False-Sharing in den Messzyklen.
-
-\subsection*{Statische Sub-Achsen}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
-\toprule
-ID & Name & Beschreibung \\
-\midrule
-\endhead%
-TM1 & Scope (Geltungsbereich) & Gültigkeitsbereich der Zählerverwaltung: leaf-only (nur Blatt-Knoten), per-node (alle Knoten), oder global (einzelner Akkumulator für die ganze Struktur). Compile-Time-Wahl, beeinflusst Overhead durch Konkurrenz-Druck auf gemeinsame Cache-Linien. \\
-TM2 & Metrik-Typ (Messgröße) & Art der gemessenen Metrik: counter (Zähler für Ereignisse), histogram (Verteilung mit Quantilen), oder density (Slot-Belegung pro Knoten). Beeinflusst den Speicher-Footprint und die Mess-Granularität. \\
-TM3 & Overhead-Level (Messlast) & Größenordnung des Mess-Overheads: low (atomare Operationen), medium (per-node-Datenstrukturen), high (Histogramm-Logging). Bestimmt die Eignung für verschiedene Workload-Szenarien (Benchmarking vs. Produktion). \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\subsection*{Bausteine}
-
-\begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
-\toprule
-Variante & Beschreibung & Quelle \\
-\midrule
-\endhead%
-\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Zähler NUR in Blatt-Knoten (vermeidet Cache-Line-Ping-Pong durch Verzicht auf Inner-Node-Updates). Niedriger Overhead bei leaf-only Scope. Entspricht dem kohärenz-schonenden Zähler-Konzept aus Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, obwohl das Original-Paper kein Leaf-Counter-Algorithmus ist --- CE-Baseline für False-Sharing-Vermeidung. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Density\allowbreak{}Tracker} & Per-Node Density/\allowbreak{}Slot-Occupancy-Tracking für adaptive Node-Type-Wahl (4→16→48→256). Kontextuelle Telemetrie zur ART-Struktur (Leis ICDE 2013), misst Slot-Belegung aller Knoten. Höherer Overhead als Leaf\allowbreak{}Only, liefert aber Adaption-Signal für dynamische Rebalancing-Entscheidungen. & P01 (ART/\allowbreak{}Leis ICDE 2013, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Insert\allowbreak{}Counter} & Globaler atomarer Insert-Zähler mit minimalem Overhead (1 atomic increment pro Insert). Kontextuelle Telemetrie zur HOT-Struktur (Binna SIGMOD 2018), global Scope. Ausreichend für Durchsatz-Mess-Reihen, keine Laten-Granularität. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, Kontext; Code/\allowbreak{}Baseline) \\
-\texttt{Latency\allowbreak{}Histogram} & HDR-Histogramm zur Lookup-Latenz-Verteilung (p50/\allowbreak{}p95/\allowbreak{}p99 Quantile). Basiert auf Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 Lizenz. Höchster Overhead (pro Lookup), liefert aber vollständige Latenz-Statistik für SLA-orientierte und research-grade Messreihen. Einziger is\_\allowbreak{}original-Kandidat der Achse. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
-Probability-Hints & Wahrscheinlichkeits-Hinweise der cache-oblivious Bender-Linie (P16/\allowbreak{}P17): verteilungs- bzw.\ wahrscheinlichkeitsbezogene Belegungs-Hinweise, die als Eingabe der Layout-Entscheidungen dienen. Paper-Baustein der Achsen-Sezierung (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
-\bottomrule
-\end{longtable}
-\end{scriptsize}
-
-\emph{Beitragende Quellen:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
-
-\emph{Verwandte Literatur:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
-
 \section{System-Sphäre: Ziel-ISA (\texttt{target\_isa})}
 
 Diese Größe war in der Neunzehner-Zählung das \emph{ISA-Organ} (damals T12); seit der Achsen-Neuordnung ist sie die System-Haupt-Achse \texttt{target\_isa} --- selbst eine Komplex-Achse (vgl.\ Abschnitte~\ref{sec:axis-triad} und~\ref{sec:complex-axis}).
@@ -848,6 +808,61 @@ IS3 & ZIH-Cluster-Zugehörigkeit & Produktionsmaschinen an TU Dresden: Barnard (
 \end{longtable}
 \end{scriptsize}
 
+Über diese drei Entwurfs-Dimensionen hinaus führt die bau-treibende System-Registry vier Unter-System-Achsen am Komplex-Wrapper: zwei übersetzungszeitliche (\texttt{target\_\allowbreak{}isa\_\allowbreak{}complex} und \texttt{scheduling}, je \texttt{stage=ct} mit \texttt{kind=fixed\_\allowbreak{}enum\_\allowbreak{}tuple}) sowie zwei dynamische (\texttt{numa\_\allowbreak{}node} und \texttt{page}). Die erste bündelt die benannten Rekombinationen der Zielmaschinen (\texttt{complex\_\allowbreak{}count=2}) mit je drei festen Gliedern (Owner OD-2).
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{6.9cm}@{}}
+\toprule
+Rekombination & Glied & Deklaration \\
+\midrule
+\endhead%
+\texttt{prod1\_\allowbreak{}zen5} (\texttt{isa=x86\_\allowbreak{}64}) & \texttt{ram\_\allowbreak{}frequency\_\allowbreak{}mhz} & \texttt{declared=false} --- keine deklarierte Zahl. \\
+\texttt{prod1\_\allowbreak{}zen5} & \texttt{cas\_\allowbreak{}latency\_\allowbreak{}cl} & \texttt{declared=false} --- keine deklarierte Zahl. \\
+\texttt{prod1\_\allowbreak{}zen5} & \texttt{cpu\_\allowbreak{}fabrication} & \texttt{declared=true}, \texttt{value=Authentic\allowbreak{}AMD/\allowbreak{}26/\allowbreak{}68/\allowbreak{}0} (Hersteller/\allowbreak{}Familie/\allowbreak{}Modell/\allowbreak{}Stepping). \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} (\texttt{isa=x86\_\allowbreak{}64}) & \texttt{ram\_\allowbreak{}frequency\_\allowbreak{}mhz} & \texttt{declared=true}, \texttt{value=4800}, \texttt{declaration\_\allowbreak{}source=\allowbreak{}dmidecode 2026-07}. \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} & \texttt{cas\_\allowbreak{}latency\_\allowbreak{}cl} & \texttt{declared=false} --- keine deklarierte Zahl. \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} & \texttt{cpu\_\allowbreak{}fabrication} & \texttt{declared=true}, \texttt{value=Genuine\allowbreak{}Intel/\allowbreak{}6/\allowbreak{}151/\allowbreak{}2}. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Notiz:} Die Werte stammen aus \texttt{k\allowbreak{}Declared\allowbreak{}Machines}, das seinerseits den \texttt{<machines>}-Block der Anwender-XML spiegelt (O-4b). \texttt{declaration\_\allowbreak{}source} konserviert den eingefrorenen Ursprung einer deklarierten Zahl (A2-Notiz, keine Provenienz-Stufe); Laufzeit-Stufen stehen niemals in dieser XML (P3).
+
+Die zweite übersetzungszeitliche Unter-Achse \texttt{scheduling} trägt fünf feste Glieder. Sie war früher eine System-Haupt-Achse und ist mit Paket A3 als \texttt{sub\_\allowbreak{}axis} an den \texttt{target\_\allowbreak{}isa}-Komplex-Wrapper umgehängt worden --- ein Umzug, keine Löschung.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.1cm}@{}}
+\toprule
+Glied & Registry-Wert & Beschreibung \\
+\midrule
+\endhead%
+\texttt{worker\_\allowbreak{}pool\_\allowbreak{}layout} & \texttt{value\_\allowbreak{}ordinal=0} & Aufteilung des Arbeiter-Pools über die Kerne. \\
+\texttt{simd\_\allowbreak{}worker\_\allowbreak{}count\_\allowbreak{}limit} & \texttt{value=2} & Obergrenze gleichzeitiger SIMD-Arbeiter. \\
+\texttt{hetero\_\allowbreak{}core\_\allowbreak{}dispatch} & \texttt{value\_\allowbreak{}ordinal=0} & Verteilung auf heterogene Kerne (P-/\allowbreak{}E-Kerne). \\
+\texttt{co\_\allowbreak{}routine\_\allowbreak{}strategy} & \texttt{value\_\allowbreak{}ordinal=0} & Koroutinen-Strategie der Auftrags-Abwicklung. \\
+\texttt{batch\_\allowbreak{}granularity} & \texttt{value\_\allowbreak{}ordinal=0} & Körnung der Stapel-Abarbeitung. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Notiz:} Die Ordinale sind rohe Enum-Werte ohne übersetzungszeitliches Label-Vorbild; die Kennungs-Zeichenketten sind an die Zugriffs-Aufrufe von \texttt{concepts::\allowbreak{}scheduling\_\allowbreak{}strategy.hpp} compile-gekoppelt.
+
+\subsection*{Dynamische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Parameter & Beschreibung \\
+\midrule
+\endhead%
+\texttt{numa\_\allowbreak{}node} & NUMA-Knoten & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}. Spiegel des Organ-Members \texttt{alloc\_\allowbreak{}hw.numa\_\allowbreak{}node}; die zulässigen Werte sind die Knoten-Kennungen der konkreten Maschine und zur Bauzeit nicht erkennbar --- daher eine deklarierte Options-Herkunft statt eines Options-Katalogs. \\
+\texttt{page} & Seitengrößen-Freigabe & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}. Die Freigabe der Seitengrößen (4k/\allowbreak{}2m/\allowbreak{}1g) als System-Capability; die Durchsetzung liegt organ-seitig im \texttt{Alloc\allowbreak{}Page\allowbreak{}Hint}-NTTP, diese Achse ist die System-Seite der Freigabe. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Namensfalle (compile-time gesichert):} Die Unter-Achse heißt \texttt{page} und ist nicht \texttt{page\_\allowbreak{}type}. \texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type} ist der Baum-Knoten-\texttt{Page\allowbreak{}Kind} der Organ-Welt und eine völlig andere Achse (Bauplan D2.6/\allowbreak{}IV-BLOCKER-5); der \texttt{static\_\allowbreak{}assert} in \texttt{target\_\allowbreak{}isa\_\allowbreak{}sub\_\allowbreak{}axes.hpp} hält das fest. Der Baustein-Katalog des Seitentyps steht unverändert in der konservierten Alt-Sektion \enquote{Build-PG}.
+
 \subsection*{Bausteine}
 
 \begin{scriptsize}
@@ -864,13 +879,17 @@ Variante & Beschreibung & Quelle \\
 \end{longtable}
 \end{scriptsize}
 
+\emph{Registry-Ist:} Die bau-treibende System-Registry führt derzeit zwei freigeschaltete Bausteine --- \texttt{x86\_\allowbreak{}64} (nativ, ohne Triple- und March-Flags) und \texttt{aarch64} (Kreuz-Übersetzung mit \texttt{triple=\allowbreak{}-target aarch64-linux-gnu} und \texttt{march=\allowbreak{}-march=armv8-a}). Der oben aufgeführte Vier-ISA-Katalog bleibt als \emph{Angebots}-Katalog erhalten: Power-ISA und RISC-V sind als Bausteine beschrieben, im heutigen Bau-Angebot aber nicht freigeschaltet.
+
 \emph{Beitragende Quellen:} ---
 
-\section{Build-PG Seitentyp-Achse (PAGE-TYPE)}
+\section{System-Sphäre: Betriebssystem (\texttt{operating\_system})}
 
-Die Seitentyp-Achse definiert die Struktur- und Indexierungsstrategien von Branch-Seiten im Trie-Index: von dicht-indiziertem Direktadressierungsindex (Dense\allowbreak{}Byte), über mehrstufige Dichte-Varianten (Extended\allowbreak{}Dense, Sparse\allowbreak{}Patricia) bis zu Pfadkollaps-Optimierungen (Redirect, Custom\allowbreak{}Cache) und B+-artige sortierte Seiten (BPlus). Alle Seitentypen sind Cache-Line-bewusst und implementieren das Concept-Interface \texttt{Page\allowbreak{}Type\allowbreak{}Strategy} mit garantierter Austauschbarkeit (F15-Permutation).
+Diese Größe ist die zweite System-Haupt-Achse und damit Teil des \emph{Bluts} und keines Organs (vgl.\ Abschnitt~\ref{sec:axis-triad}); in der kanonischen, code-gewachten Ordnung steht sie an Platz zwei von drei.
 
-\subsection*{Statische Sub-Achsen}
+Die Haupt-Achse trägt ausschließlich die \emph{Klassen}-Identität: genau drei Betriebssystem-Familien (Ausprägungs-Katalog OP-10, \texttt{baustein\_\allowbreak{}count=3}), dazu \texttt{stage=ct} und \texttt{binary\_\allowbreak{}id=never}. Die \emph{Instanz} --- Distribution, Release, Kernel und Patch-Stand --- liegt dagegen vollständig in den drei Unter-Achsen; eine Distribution als vierte Ausprägung der Haupt-Achse einzutragen, verfehlte diesen Schnitt. Die reale Flotte (Windows 11 und Windows Server 2022, die Linux-Docker-Matrix, zwei macOS-Maschinen) fällt vollständig in die drei Familien.
+
+\subsection*{Dynamische Sub-Achsen}
 
 \begin{scriptsize}
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
@@ -878,36 +897,125 @@ Die Seitentyp-Achse definiert die Struktur- und Indexierungsstrategien von Branc
 ID & Name & Beschreibung \\
 \midrule
 \endhead%
-PG1 & Struktur-Rolle (Branching) & Klassifizierung der Verzweigungsseiten-Architektur: Branch-Seite mit voller Verzweigung, kollabierter Single-Path-Knoten (Redirect) oder spezielle Cache-optimierte Variante. \\
-PG2 & Dichte-Klasse (Density) & Grad der Slot-Auslastung und daraus resultierende Indexierungsstrategie: dicht besiedelt (0-256 Slots), erweitert (>256 Slots) oder sparse mit Patricia-Kompression. \\
-PG3 & Pfad-Kollaps-Strategie & Handhabung eindeutiger eindeutiger Restpfade: keine Kompression (Standard), oder Kollaps durch Redirect/\allowbreak{}Co\allowbreak{}Co-Technik zur Speicherminimierung. \\
+\texttt{os\_\allowbreak{}version} & Distributions-/\allowbreak{}Release-Identität & Die Release-Identität der Betriebssystem-Instanz innerhalb ihrer Familie: unter Linux \texttt{ID} und \texttt{VERSION\_\allowbreak{}ID} aus \texttt{/etc/\allowbreak{}os-release}, unter Windows die Produktlinie, unter macOS die Produktversion. \\
+\texttt{kernel} & Kernel-Release & Das Kernel-Release der Instanz: unter Linux und macOS das \texttt{uname}-Release, unter Windows das NT-Kernel-Tripel. \\
+\texttt{build} & Build- und Patch-Stand & Der Build- bzw.\ Patch-Stand der Instanz \emph{einschließlich} des Update-Zustands (Owner-Entscheid E-12, wörtlich: \enquote{Wir mergen den Update Zustand in Build}). Ein separates \texttt{update\_\allowbreak{}zustand} ist damit ausdrücklich \emph{keine} vierte Unter-Achse, sondern Bestandteil dieser. \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
+
+\emph{Notiz:} Alle drei sind \texttt{stage=runtime} mit \texttt{value\_\allowbreak{}type=token} und \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}: Sie haben keinen übersetzungszeitlichen Options-Katalog, weil ihre zulässigen Werte an der konkreten Maschine hängen und zur Bauzeit nicht erkennbar sind. Die Laufzeit-Erhebung ist ein eigener Bau-Schritt (Paket OS-U3, \texttt{operating\_\allowbreak{}system\_\allowbreak{}probe\_\allowbreak{}\{linux,\allowbreak{}macos,\allowbreak{}windows\}.hpp}); die Einhängung selbst ist nur das Angebot. Die Namen stehen seit dem Owner-Entscheid E3 vom 02.08.2026 fest (Paket A14/\allowbreak{}OS-U1).
 
 \subsection*{Bausteine}
 
 \begin{scriptsize}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{8.0cm} >{\raggedright\arraybackslash}p{2.5cm}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
 \toprule
 Variante & Beschreibung & Quelle \\
 \midrule
 \endhead%
-\texttt{Dense\allowbreak{}Byte\allowbreak{}Page\allowbreak{}Type} & Dichte byte-indizierte Verzweigungsseite mit direkter 256-Slot-Adressierung (direct-addressed). Seitentyp 1: direkte Abbildung von Schlüssel-Byte auf Slot-Index ohne Umleitung. Quelle: Adaptive Radix Tree (ART), Leis et al. 2013. & P01 \\
-\texttt{Extended\allowbreak{}Dense\allowbreak{}Page\allowbreak{}Type} & Erweiterte dichte Seite für >256 Einträge mit mehrstufigem Indexierungsschema (z.B. 2-Level-Lookup oder variable k-Byte-Span). Seitentyp 2: Dichte-Klasse für komplexere Slot-Anordnungen. Quelle: Adaptive Radix Tree Erweiterungen, PRT-ART\@. & P01 (extended) \\
-\texttt{Sparse\allowbreak{}Patricia\allowbreak{}Page\allowbreak{}Type} & Spärlich besetzte Seite mit Patricia-Pfadkompression (Single-Bit-Split). Seitentyp 3: Dichte-Klasse mit Bit-Vektor-Traversal für niedrige Branchingness. Quelle: HOT (Height Optimized Trie, Binna et al. 2018, basierend auf Patricia-Trie, Morrison 1968). & P02 \\
-\texttt{Redirect\allowbreak{}Page\allowbreak{}Type} & Kollabierter eindeutiger Restpfad (Single-Path-Knoten). Seitentyp 4: Pfad-Kollaps-Strategie zur Speicheroptimierung bei monopol eindeutigen Nachfolgersequenzen. Weder klassischer Branch noch Leaf, speichert nur das Suffix bis zum nächsten echten Verzweigungs- oder Wert-Knoten. Quelle: Co\allowbreak{}Co-Trie (Boffa et al. 2024). & P04 \\
-\texttt{Custom\allowbreak{}Cache\allowbreak{}Page\allowbreak{}Type} & Cache-Line-orientierte Custom-Seite mit explizitem Layout-Design für 64-Byte-Alignment. Seitentyp 5: Struktur-Rolle Branch mit Hardware-bewusster Geometrie. Quelle: PRT-ART Eigenentwicklung mit TLB-Offset + Cache-Line-Aligned Memory Layout (Achse 5). & PRT-ART \\
-\texttt{BPlus\allowbreak{}Page\allowbreak{}Type} & B+-artige sortierte Verzweigungsseite mit Range-Walk-Traversal. Seitentyp 6: Struktur-Rolle Branch, aber mit sortierter Key-Array-Organisation statt Byte-Indexierung. Quelle: Masstree (Mao et al. 2012), B+-Tree-Familie. & P03 \\
+\texttt{linux} & Linux-Familie (\texttt{Linux\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=true}). Deckt die gesamte Docker-Distributions-Matrix ab; die einzelne Distribution ist Sache der Unter-Achse \texttt{os\_\allowbreak{}version}, nicht dieser Ausprägung. & Code/\allowbreak{}Baseline \\
+\texttt{windows} & Windows-Familie (\texttt{Windows\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=false}). Deckt Desktop- und Server-Produktlinien ab (Windows 11, Windows Server 2022). & Code/\allowbreak{}Baseline \\
+\texttt{macos} & macOS-Familie (\texttt{Macos\allowbreak{}Operating\allowbreak{}System}, \texttt{posix=true}). Deckt die Apple-Silicon- und Intel-Maschinen der Flotte ab. & Code/\allowbreak{}Baseline \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
 
-\emph{Beitragende Quellen:} P01, P02, P03, P04, Morrison 1968, PRT-ART~\cite{leis2013art,binna2018hot,mao2012masstree,boffa2024coco,morrison1968patricia}.
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
 
-\emph{Verwandte Literatur:} P05, P06, P10, P11, P12, P13, P20~\cite{fent2020start,schmeisser2022b2tree,zhang2018surf,rao1999css,rao2000csb,hankins2003nodesize,mueller2025btreesback}.
+\emph{Stempel-Neutralität (A-15):} Die drei Unter-Achsen sind Laufzeit-Unter-Achsen und stehen deshalb niemals im Binary-Stempel. Ihre Einhängung ändert weder die Stempel-Zeilen noch den Bau-Versions-Suffix, und sie darf den Achsen-Code-Stand von \texttt{operating\_\allowbreak{}system} nicht anheben (Bump-Verbots-Wache): Ein solcher Sprung verschöbe den SHA512 aller Neubauten gegen den Bestand und erzwänge genau den Voll-Neubau aller Alt-Binaries, den der Owner-Entscheid ausschließt.
+
+\section{System-Sphäre: Erweiterungs-Hardware (\texttt{external\_utils})}
+
+Diese Größe ist die dritte System-Haupt-Achse; sie ist ausschließlich der Sammel-Hub der Hardware-Meta-Achsen --- SIMD- und Vektor-Erweiterungen, GPU, FPGA und NPU sowie externe Beschleuniger (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+
+Der Hub trägt \emph{nur} System-Meta-Metas; das Last-Rahmenwerk gehört ausdrücklich nicht dazu. Weil die Meta-Meta-Achsen keine eigene Stempel-Zeile bekommen, sondern als Klammer-Anhang an das Ende der jeweiligen Realm-Zeile treten, schließt dieser Hub den System-Realm ab: Der Anhang wird typgetrieben aus der Glied-Typliste des Hubs gefaltet (\texttt{External\allowbreak{}Utils\allowbreak{}Hub} $\rightarrow$ \texttt{Simd\allowbreak{}External\allowbreak{}Utils\allowbreak{}Family}), die Ebene steckt in der Klammer-Tiefe und nicht im Namen (Owner-Entscheid E2 und Owner-Antwort Q1 vom 02.08.2026). Im bau-treibenden Angebot führt die Achse heute \texttt{baustein\_\allowbreak{}count=1}, \texttt{stage=ct} und \texttt{binary\_\allowbreak{}id=never}.
+
+\subsection*{Dynamische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Beschreibung \\
+\midrule
+\endhead%
+\texttt{simd} & Vektor-Erweiterungs-Stufe & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=3}. Die Familien-Kennung ist zugleich das Unter-Achsen-Label (Schreibweise \texttt{external\_\allowbreak{}utils.simd=\dots}); die je Dialekt reflektierten Übersetzer-Flags liefert die Option, nicht die Familie. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+Die drei Optionen der Unter-Achse mit ihren Flags je Übersetzer-Dialekt:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{5.3cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} und \texttt{clang}) & Flag (\texttt{msvc}) \\
+\midrule
+\endhead%
+\texttt{no\_\allowbreak{}extension} & --- (leer) & --- (leer) \\
+\texttt{avx2} & \texttt{-mavx2} & \texttt{/arch:AVX2} \\
+\texttt{avx512} & \texttt{-mavx512f} & \texttt{/arch:AVX512} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Notiz (Q2/\allowbreak{}K2):} \texttt{simd} materialisiert als Flag der Übersetzungs-Naht und erscheint damit im Bau-Versions-Suffix (vgl.\ Abschnitt~\ref{sec:stamp-model}) --- niemals als Laufzeit-Typ-Umschalter und niemals in der \texttt{binary\_\allowbreak{}id}.
+
+Zur Unter-Achse gehört ein feiner Merkmals-Katalog \texttt{simd\_\allowbreak{}feature\_\allowbreak{}catalog} mit \texttt{count=23} Merkmalen, gestuft nach \texttt{tier}: vierzehn Merkmale der Stufe \texttt{avx512}, vier der Stufe \texttt{avx256}, drei Begleit-Merkmale (\texttt{companion}) und zwei skalare (\texttt{scalar}). Die Flags sind für \texttt{gpp} und \texttt{clang} durchgängig identisch.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{5.4cm} >{\raggedright\arraybackslash}p{3.7cm}@{}}
+\toprule
+Merkmal (\texttt{cpuinfo}) & Flag (\texttt{gpp} und \texttt{clang}) & Stufe (\texttt{tier}) \\
+\midrule
+\endhead%
+\texttt{avx512f} & \texttt{-mavx512f} & \texttt{avx512} \\
+\texttt{avx512cd} & \texttt{-mavx512cd} & \texttt{avx512} \\
+\texttt{avx512vl} & \texttt{-mavx512vl} & \texttt{avx512} \\
+\texttt{avx512dq} & \texttt{-mavx512dq} & \texttt{avx512} \\
+\texttt{avx512bw} & \texttt{-mavx512bw} & \texttt{avx512} \\
+\texttt{avx512ifma} & \texttt{-mavx512ifma} & \texttt{avx512} \\
+\texttt{avx512vbmi} & \texttt{-mavx512vbmi} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vbmi2} & \texttt{-mavx512vbmi2} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vnni} & \texttt{-mavx512vnni} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}bitalg} & \texttt{-mavx512bitalg} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vpopcntdq} & \texttt{-mavx512vpopcntdq} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}vp2intersect} & \texttt{-mavx512vp2intersect} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}bf16} & \texttt{-mavx512bf16} & \texttt{avx512} \\
+\texttt{avx512\_\allowbreak{}fp16} & \texttt{-mavx512fp16} & \texttt{avx512} \\
+\texttt{avx2} & \texttt{-mavx2} & \texttt{avx256} \\
+\texttt{fma} & \texttt{-mfma} & \texttt{avx256} \\
+\texttt{f16c} & \texttt{-mf16c} & \texttt{avx256} \\
+\texttt{avx\_\allowbreak{}vnni} & \texttt{-mavxvnni} & \texttt{avx256} \\
+\texttt{gfni} & \texttt{-mgfni} & \texttt{companion} \\
+\texttt{vaes} & \texttt{-mvaes} & \texttt{companion} \\
+\texttt{vpclmulqdq} & \texttt{-mvpclmulqdq} & \texttt{companion} \\
+\texttt{bmi2} & \texttt{-mbmi2} & \texttt{scalar} \\
+\texttt{popcnt} & \texttt{-mpopcnt} & \texttt{scalar} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Maschinen-Signaturen (\texttt{count=3}):} Die Registry hält je Zielmaschine die Teilmenge der tatsächlich vorhandenen Merkmale fest --- \texttt{prod1\_\allowbreak{}zen5} (\texttt{host\_\allowbreak{}isa=x86\_\allowbreak{}64}) mit 22 Merkmalen, \texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} mit 9 und \texttt{odroid\_\allowbreak{}gracemont} mit 9. Nur die Zen-5-Maschine trägt die \texttt{avx512}-Stufe; die beiden anderen enden bei \texttt{avx256} samt Begleit- und Skalar-Merkmalen.
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{simd} & Vektor-Erweiterungs-Familie (\texttt{Simd\allowbreak{}External\allowbreak{}Utils\allowbreak{}Family}, \texttt{family\_\allowbreak{}id=simd}, freigeschaltet). Einziges heute freigeschaltetes Glied des Hubs; die Familien für GPU, FPGA und NPU sind im Zuschnitt vorgesehen, aber nicht Teil des bau-treibenden Angebots. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
 
 \section[Build-SIMD: Vektor-/Accelerator-Erweiterungs-Achse]{Build-SIMD: Vektor-/\allowbreak{}Accelerator-Erweiterungs-Achse (Hardware-Beschleuniger)} % chktex 13 (Titel-Doppelpunkt nach Grossbuchstabe, kein Satzende)
+
+\emph{Konservierter Angebots- und Historien-Katalog:} Die Alt-Achsen-Kennung \texttt{axis\_\allowbreak{}09b} ist durch die Haupt-Achse \texttt{external\_\allowbreak{}utils} mit ihrer Unter-Achse \texttt{simd} abgelöst. Der folgende Acht-Bausteine-Katalog bleibt als Angebots- und Historien-Katalog unter dieser Haupt-Achse vollständig erhalten, ebenso die Sub-Achsen-Tabelle SE1--SE3 als historischer Block.
 
 Die Achse \texttt{axis\_\allowbreak{}09b\_\allowbreak{}simd\_\allowbreak{}extension} modelliert die verfügbaren SIMD-/\allowbreak{}Accelerator-Erweiterungen der CPU-Instruktionssatz-Architektur als Sub-Achse zu \texttt{axis\_\allowbreak{}09} (Haupt-ISA). Sie ermöglicht Compile-Time-Auswahl zwischen verschiedenen Vektor-Erweiterungen (SSE2/\allowbreak{}AVX2/\allowbreak{}AVX-512 für x86; NEON/\allowbreak{}SVE2 für ARM\@; RVV für RISC-V) sowie Baseline (Skalar) und GPU-Beschleunigung (CUDA), mit rückwärts-kumulativer Schichthierarchie und hardwarespezifischer Topologie (SIMD-Units pro Sockel, P/\allowbreak{}E-Core-Zugriff).
 
@@ -948,7 +1056,279 @@ Variante & Beschreibung & Quelle \\
 
 \emph{Quellen:} ISA-Spezifikationen und Whitepaper (Intel, ARM, IEEE Micro, ACM TACO, NVIDIA); Einzelnachweise in der Quellenspalte der Bausteine.
 
+\section{System-Sphäre: Äußere Komplex-Klammer (\texttt{build\_target\_complex}) und Bau-Werkzeugkette (\texttt{build\_toolchain})}
+
+Diese Größe ist der Befehls-Klammer-Wrapper über der festen Rekombination der drei System-Haupt-Achsen (\texttt{member\_\allowbreak{}count=3}: \texttt{target\_\allowbreak{}isa}, \texttt{operating\_\allowbreak{}system}, \texttt{external\_\allowbreak{}utils}) und schließt damit den System-Realm-Block ab (vgl.\ Abschnitt~\ref{sec:complex-axis}).
+
+Als Klammer ist er ausdrücklich \emph{keine} vierte Haupt-Achse: Die kanonische System-Achsen-Ordnung bleibt bei dreien. Drei übersetzungszeitliche Abgangs-Wachen (\texttt{static\_\allowbreak{}assert}) halten das fest --- \texttt{compiler}, \texttt{scheduling} und \texttt{load\_\allowbreak{}framework} dürfen nicht als Haupt-Achse zurückkehren; ihre Abgänge waren Umzüge, keine Löschungen. Das Last-Rahmenwerk ist auch kein \emph{Glied} dieser Klammer: Es lebt seit Paket A3 im Mess-Realm, während die System-Meta-Metas unter dem Hub \texttt{external\_\allowbreak{}utils} fahren. Die Achse führt \texttt{stage=ct} und \texttt{binary\_\allowbreak{}id=never}.
+
+\subsection*{Statische Sub-Achsen}
+
+An der Klammer hängt die Unter-Achsen-Gruppe \texttt{build\_\allowbreak{}toolchain} (\texttt{sub\_\allowbreak{}axis\_\allowbreak{}count=3}). Die Registry nennt die drei Glieder flach; die Verschachtelung darunter zeigt die tatsächliche Eltern-Kette.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{7.9cm}@{}}
+\toprule
+Glied & Eltern-Bezug & Beschreibung \\
+\midrule
+\endhead%
+\texttt{compiler} & \texttt{build\_\allowbreak{}target\_\allowbreak{}complex} & \texttt{stage=ct}, \texttt{baustein\_\allowbreak{}count=2}. Die Übersetzer-Wahl selbst; sie war früher eine System-Haupt-Achse und ist mit Paket A3 zur Unter-Achsen-Gruppe der äußeren Klammer geworden. \\
+\texttt{opt\_\allowbreak{}level} & \texttt{compiler} & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=5}. Optimierungsstufe je Übersetzer-Dialekt. \\
+\texttt{atomic128} & \texttt{compiler} & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=2}. Freigabe der 128-Bit-Vergleichs-Tausch-Instruktion. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Notiz:} Die Gruppe hängt an \texttt{build\_\allowbreak{}target\_\allowbreak{}complex} und nicht an \texttt{target\_\allowbreak{}isa}, weil sie den \emph{Bau} aus der Rekombination aller drei Haupt-Achsen beschreibt und nicht eine Eigenschaft der Ziel-ISA allein (O-1r).
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{gcc} & GNU-Übersetzer (\texttt{Gcc\allowbreak{}Compiler\allowbreak{}Axis}, Treiber \texttt{g++-16}, \texttt{supports\_\allowbreak{}fno\_\allowbreak{}gnu\_\allowbreak{}unique=true}). & Code/\allowbreak{}Baseline \\
+\texttt{clang} & LLVM-Übersetzer (\texttt{Clang\allowbreak{}Compiler\allowbreak{}Axis}, Treiber \texttt{clang++-22}, \texttt{supports\_\allowbreak{}fno\_\allowbreak{}gnu\_\allowbreak{}unique=false}). & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+Die fünf Optionen der Unter-Achse \texttt{opt\_\allowbreak{}level} mit ihren Flags je Dialekt; die Spalte \texttt{ieee754\_\allowbreak{}deterministic} weist aus, ob die Stufe die Gleitkomma-Semantik unangetastet lässt:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} und \texttt{clang}) & Flag (\texttt{msvc}) & \texttt{ieee754\_\allowbreak{}deterministic} \\
+\midrule
+\endhead%
+\texttt{O0} & \texttt{-O0} & \texttt{/Od} & \texttt{true} \\
+\texttt{O1} & \texttt{-O1} & \texttt{/O1} & \texttt{true} \\
+\texttt{O2} & \texttt{-O2} & \texttt{/O2} & \texttt{true} \\
+\texttt{O3} & \texttt{-O3} & \texttt{/O2} & \texttt{true} \\
+\texttt{Ofast} & \texttt{-Ofast} & \texttt{/O2} & \texttt{false} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+Die zwei Optionen der Unter-Achse \texttt{atomic128}:
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{5.3cm}@{}}
+\toprule
+Option & Flag (\texttt{gpp} und \texttt{clang}) & Flag (\texttt{msvc}) \\
+\midrule
+\endhead%
+\texttt{no\_\allowbreak{}cx16} & --- (leer) & --- (leer) \\
+\texttt{cx16} & \texttt{-mcx16} & --- (leer) \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Bau-Versionskennung:} \texttt{opt\_\allowbreak{}level}, \texttt{simd} und \texttt{atomic128} materialisieren als Flags der Übersetzungs-Naht und erscheinen damit im Bau-Versions-Suffix der Binary --- einer geordneten Acht-Segment-Folge, in der ein leeres Glied schlicht kein Segment erzeugt (vgl.\ Abschnitt~\ref{sec:stamp-model}). In der \texttt{binary\_\allowbreak{}id} stehen sie niemals.
+
+\emph{Versions-Flag-Grammatik (A13, Owner-Entscheid E2 und Owner-Antwort Q3 vom 02.08.2026):} Die Version eines jeden Achsen-Algorithmus ist einheitlich dreistellig und beginnt mit \texttt{v}; Kurzformen sind verboten. Übersetzungszeitliche Wachen setzen die Form durch:
+
+\begin{quote}
+\verb+version := 'v' UINT '.' UINT '.' UINT [ HWFLAG [ 'e' ] ]+\\
+\verb+HWFLAG  := 'c' (CPU) | 'g' (GPU) | 'f' (FPGA) | 'n' (NPU)+
+\end{quote}
+
+Das Hardware-Flag ist genau \emph{ein} Kleinbuchstabe, direkt an das Zahlen-Tripel angehängt; die Reihenfolge ist fest: erst das Hardware-Flag, dann optional das \texttt{e} für einen experimentellen Prüflings-Algorithmus. Ein \texttt{e} ohne Hardware-Flag ist ungültig. Weil diese Arbeit ausschließlich CPU-Code erzeugt, enden im Zielzustand alle Versionen auf \texttt{c} beziehungsweise \texttt{ce}.
+
+\section{Mess-Sphäre: Mess-Kategorien (\texttt{measurement\_category})}
+
+Diese Größe gehört zum dritten Realm --- den Mess-Achsen, dem \emph{Blut des Messens} (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+
+Sie führt \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} und \texttt{baustein\_\allowbreak{}count=16}. Ihre Werte manifestieren sich als Spalten der Ergebnis-Tabellen und als Einstellungs-Etikett eines Laufs, niemals in der Binary-Identität. Im Kapitel-Modell sind die sechzehn Kategorien die \emph{Unter}-Achse des Mess-Toolings; die Mess-Registry führt sie zusätzlich als eigenen Angebots-Block, weil das Tooling seine Kategorien nicht selbst erfindet, sondern aus diesem Katalog wählt. Die Spalte \texttt{regime\_\allowbreak{}ordinal} trennt das zeit- und observer-basierte Regime (0) vom zählerbasierten PMC-Regime (1).
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.9cm}@{}}
+\toprule
+Kategorie & \texttt{category\_\allowbreak{}ordinal} & Regime (\texttt{regime\_\allowbreak{}ordinal}) \\
+\midrule
+\endhead%
+\texttt{CLU} & 0 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L1} & 1 & 1 --- PMC \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L2} & 2 & 1 --- PMC \\
+\texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L3} & 3 & 1 --- PMC \\
+\texttt{DTLB\_\allowbreak{}MISS} & 4 & 1 --- PMC \\
+\texttt{MEMORY\_\allowbreak{}FOOTPRINT} & 5 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{BRANCH\_\allowbreak{}MISS} & 6 & 1 --- PMC \\
+\texttt{IPC\_\allowbreak{}CPI} & 7 & 1 --- PMC \\
+\texttt{LATENCY\_\allowbreak{}MEAN} & 8 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{LATENCY\_\allowbreak{}P50} & 9 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{LATENCY\_\allowbreak{}P95} & 10 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{LATENCY\_\allowbreak{}P99} & 11 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{LATENCY\_\allowbreak{}P999} & 12 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{THROUGHPUT} & 13 & 0 --- Zeit/\allowbreak{}Observer \\
+\texttt{ENERGY\_\allowbreak{}J} & 14 & 1 --- PMC \\
+\texttt{FILL\_\allowbreak{}BUFFER\_\allowbreak{}OCCUPANCY} & 15 & 0 --- Zeit/\allowbreak{}Observer \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Regime-Zweiteilung:} Neun Kategorien liegen im Zeit- und Observer-Regime (\texttt{CLU}, \texttt{MEMORY\_\allowbreak{}FOOTPRINT}, die fünf Latenz-Kategorien, \texttt{THROUGHPUT}, \texttt{FILL\_\allowbreak{}BUFFER\_\allowbreak{}OCCUPANCY}), sieben im PMC-Regime (die drei Cache-Miss-Stufen, \texttt{DTLB\_\allowbreak{}MISS}, \texttt{BRANCH\_\allowbreak{}MISS}, \texttt{IPC\_\allowbreak{}CPI}, \texttt{ENERGY\_\allowbreak{}J}). Die Aufteilung ist deckungsgleich mit der Zweiteilung \enquote{neun/\allowbreak{}sieben} aus Abschnitt~\ref{sec:axis-triad}.
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
+
+\section{Mess-Sphäre: Mess-Tooling/\allowbreak{}Collector (\texttt{collector})}
+
+Diese Größe ist die Instrumenten-Achse des Mess-Realms: Sie hält fest, mit welchem Werkzeug eine Kategorie erhoben wird (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+
+Sie führt \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} und \texttt{baustein\_\allowbreak{}count=3}. Jeder Baustein trägt sein Regime und die Menge der Kategorien, die er bedient; die Vereinigung der drei Mengen deckt zehn der sechzehn Kategorien ab, die übrigen sind im Angebots-Katalog beschrieben, aber noch keinem Werkzeug zugeordnet.
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}p{8.3cm}@{}}
+\toprule
+Variante & Regime & Bediente Kategorien \\
+\midrule
+\endhead%
+\texttt{Wall\allowbreak{}Clock\allowbreak{}System\allowbreak{}Axis} & 0 & \texttt{LATENCY\_\allowbreak{}MEAN}, \texttt{THROUGHPUT} \\
+\texttt{Observer\allowbreak{}Snapshot\allowbreak{}System\allowbreak{}Axis} & 0 & \texttt{CLU} \\
+\texttt{Pmc\allowbreak{}System\allowbreak{}Axis} & 1 & \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L1}, \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L2}, \texttt{CACHE\_\allowbreak{}MISS\_\allowbreak{}L3}, \texttt{DTLB\_\allowbreak{}MISS}, \texttt{BRANCH\_\allowbreak{}MISS}, \texttt{IPC\_\allowbreak{}CPI}, \texttt{ENERGY\_\allowbreak{}J} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
+
+\section{Mess-Sphäre: Telemetrie-Bausteine (konservierter Katalog)}
+
+Diese Größe war in der Neunzehner-Zählung das \emph{Telemetrie-Organ} (damals T10); seit der Achsen-Neuordnung ist sie eine \emph{zweigeteilte} Haupt-Größe --- Sweep-Unter-Achse des Mess-Toolings im Planer \emph{und} Übersetzungszeit-Hauptgröße im Builder (vgl.\ Abschnitt~\ref{sec:axis-triad}). Ihre Baustein-Katalogisierung bleibt hier als konservierter Katalog erhalten.
+
+Definiert Strategien zur Messung von Index-Operationen (Insert, Lookup, Erase) mit verschiedenen Overhead-Profilen. Unterstützt Density-Tracking für adaptive Node-Typ-Wahl, globale Insert-Counter für Durchsatz-Messungen, HDR-Histogramme für Latenz-Quantile und leaf-only-Counter zur Vermeidung von Cache-Line-False-Sharing in den Messzyklen.
+
+\subsection*{Statische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Beschreibung \\
+\midrule
+\endhead%
+TM1 & Scope (Geltungsbereich) & Gültigkeitsbereich der Zählerverwaltung: leaf-only (nur Blatt-Knoten), per-node (alle Knoten), oder global (einzelner Akkumulator für die ganze Struktur). Compile-Time-Wahl, beeinflusst Overhead durch Konkurrenz-Druck auf gemeinsame Cache-Linien. \\
+TM2 & Metrik-Typ (Messgröße) & Art der gemessenen Metrik: counter (Zähler für Ereignisse), histogram (Verteilung mit Quantilen), oder density (Slot-Belegung pro Knoten). Beeinflusst den Speicher-Footprint und die Mess-Granularität. \\
+TM3 & Overhead-Level (Messlast) & Größenordnung des Mess-Overheads: low (atomare Operationen), medium (per-node-Datenstrukturen), high (Histogramm-Logging). Bestimmt die Eignung für verschiedene Workload-Szenarien (Benchmarking vs. Produktion). \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{7.5cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{Leaf\allowbreak{}Only\allowbreak{}Counter} & Zähler NUR in Blatt-Knoten (vermeidet Cache-Line-Ping-Pong durch Verzicht auf Inner-Node-Updates). Niedriger Overhead bei leaf-only Scope. Entspricht dem kohärenz-schonenden Zähler-Konzept aus Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, obwohl das Original-Paper kein Leaf-Counter-Algorithmus ist --- CE-Baseline für False-Sharing-Vermeidung. & P28 (Kuehn Da\allowbreak{}Mo\allowbreak{}N 2023, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Density\allowbreak{}Tracker} & Per-Node Density/\allowbreak{}Slot-Occupancy-Tracking für adaptive Node-Type-Wahl (4→16→48→256). Kontextuelle Telemetrie zur ART-Struktur (Leis ICDE 2013), misst Slot-Belegung aller Knoten. Höherer Overhead als Leaf\allowbreak{}Only, liefert aber Adaption-Signal für dynamische Rebalancing-Entscheidungen. & P01 (ART/\allowbreak{}Leis ICDE 2013, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Insert\allowbreak{}Counter} & Globaler atomarer Insert-Zähler mit minimalem Overhead (1 atomic increment pro Insert). Kontextuelle Telemetrie zur HOT-Struktur (Binna SIGMOD 2018), global Scope. Ausreichend für Durchsatz-Mess-Reihen, keine Laten-Granularität. & P02 (HOT/\allowbreak{}Binna SIGMOD 2018, Kontext; Code/\allowbreak{}Baseline) \\
+\texttt{Latency\allowbreak{}Histogram} & HDR-Histogramm zur Lookup-Latenz-Verteilung (p50/\allowbreak{}p95/\allowbreak{}p99 Quantile). Basiert auf Hdr\allowbreak{}Histogram (Gil Tene), CC0-1.0 Lizenz. Höchster Overhead (pro Lookup), liefert aber vollständige Latenz-Statistik für SLA-orientierte und research-grade Messreihen. Einziger is\_\allowbreak{}original-Kandidat der Achse. & Hdr\allowbreak{}Histogram (github.com/\allowbreak{}Hdr\allowbreak{}Histogram/\allowbreak{}Hdr\allowbreak{}Histogram\_\allowbreak{}c, CC0-1.0, is\_\allowbreak{}original) \\
+Probability-Hints & Wahrscheinlichkeits-Hinweise der cache-oblivious Bender-Linie (P16/\allowbreak{}P17): verteilungs- bzw.\ wahrscheinlichkeitsbezogene Belegungs-Hinweise, die als Eingabe der Layout-Entscheidungen dienen. Paper-Baustein der Achsen-Sezierung (Rekonstruktions-Ziel dieser Arbeit, keine CE-Baseline). & P16/\allowbreak{}P17 (Bender 2000/\allowbreak{}2005)~\cite{bender2000cobtree,bender2005coboblivious} \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} Hdr\allowbreak{}Histogram (Gil Tene)~\cite{tene_hdrhistogram}, P16/\allowbreak{}P17 (Bender)~\cite{bender2000cobtree,bender2005coboblivious}.
+
+\emph{Verwandte Literatur:} P01, P02, P28~\cite{leis2013art,binna2018hot,kuehn2023bplustree}.
+
+\section{Mess-Sphäre: Last-Rahmenwerk (\texttt{load\_framework}) --- Meta-Meta-Achse}
+
+Diese Größe ist die Meta-Meta-Haupt-Achse des Mess-Realms und steht deshalb an dessen Ende (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+
+Sie führt \texttt{category=measurement\_\allowbreak{}meta\_\allowbreak{}meta}, \texttt{stage=ct}, \texttt{binary\_\allowbreak{}id=never} und \texttt{baustein\_\allowbreak{}count=1}. Ihre Umzugs-Geschichte ist Teil ihrer Identität: Sie hat die System-Welt mit Paket A3 \emph{ersatzlos} Richtung Mess-Realm verlassen und ist dort die Meta-Meta-Haupt-Achse des Planers; unter den Hub der System-Meta-Metas gehört sie ausdrücklich nicht. Im Stempel erhält sie \emph{keine} eigene Meta-Meta-Zeile: Ihre Kennung tritt als dynamischer Klammer-Anhang an das \emph{Ende} der bestehenden Mess-Realm-Zeile (Owner-Entscheid E2 und Owner-Antwort Q1 vom 02.08.2026). Der Speiseweg ist hier eintragsgetrieben --- die gewählte Kennung samt Version kommt aus der Rahmenwerk-Registry des Mess-Realms und steht deshalb nicht im Typ, anders als beim typgetriebenen System-Hub.
+
+\subsection*{Dynamische Sub-Achsen}
+
+Die Registry führt sechs Sweep-Dimensionen (\texttt{resource\_\allowbreak{}control\_\allowbreak{}version=1}); alle sind \texttt{stage=runtime}.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+Dimension & Herkunft (\texttt{source}) & Wert-Typ und Bedeutung \\
+\midrule
+\endhead%
+\texttt{workload} & \texttt{measurement:\allowbreak{}load\_\allowbreak{}framework} & \texttt{token} --- das Lastprofil; Einzelquelle ist das Unter-Achsen-Etikett des Last-Rahmenwerks selbst. \\
+\texttt{thread\_\allowbreak{}count} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Zahl der Arbeiter-Fäden. \\
+\texttt{prefetch\_\allowbreak{}distance} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Vorhol-Abstand. \\
+\texttt{pool\_\allowbreak{}budget\_\allowbreak{}bytes} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Speicher-Budget des Pools. \\
+\texttt{batch\_\allowbreak{}size} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Stapelgröße je Operation. \\
+\texttt{inline\_\allowbreak{}threshold\_\allowbreak{}bytes} & \texttt{resource\_\allowbreak{}control\_\allowbreak{}pod} & \texttt{uint} --- Schwelle der Inline-Ablage. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Ehrlichkeits-Notiz:} Die Wiederholungszahl eines Laufs und die drei Mess-Modi (Debug-, Mess- und Release-Durchführung) sind bewusst \emph{nicht} in dieser Liste. Die Wiederholungszahl ist heute eine reine Etikett-Dimension ohne übersetzungszeitlichen Anker, die drei Modi existieren noch nicht als Typen; beide werden erst nach ihrer Typisierung reflektierbar. Ein handgeschriebener Eintrag wäre ein Phantom --- die honest-0-Doktrin verbietet ihn (offener Punkt W2-B).
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.6cm} >{\raggedright\arraybackslash}p{3.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{ycsb} & Das YCSB-Lastprofil-Rahmenwerk; freigeschaltet, mit dem Unter-Achsen-Etikett \texttt{workload}. Einziger heute freigeschalteter Baustein der Achse. & Code/\allowbreak{}Baseline \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} --- (CE-Baseline, eigene Bausteine).
+
+\section{Build-PG Seitentyp-Achse (PAGE-TYPE)}
+
+\emph{Abgrenzung und Konservierung:} Diese Sektion beschreibt den \texttt{Page\allowbreak{}Kind} der Organ-Welt (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) und ist von der System-Unter-Achse \texttt{page} der Ziel-ISA (Seitengrößen-Freigabe 4k/\allowbreak{}2m/\allowbreak{}1g) verschieden --- beide Größen tragen ähnliche Namen, aber weder gemeinsame Bausteine noch gemeinsame Semantik. Der Katalog bleibt als konservierter Angebots- und Historien-Katalog vollständig erhalten.
+
+Die Seitentyp-Achse definiert die Struktur- und Indexierungsstrategien von Branch-Seiten im Trie-Index: von dicht-indiziertem Direktadressierungsindex (Dense\allowbreak{}Byte), über mehrstufige Dichte-Varianten (Extended\allowbreak{}Dense, Sparse\allowbreak{}Patricia) bis zu Pfadkollaps-Optimierungen (Redirect, Custom\allowbreak{}Cache) und B+-artige sortierte Seiten (BPlus). Alle Seitentypen sind Cache-Line-bewusst und implementieren das Concept-Interface \texttt{Page\allowbreak{}Type\allowbreak{}Strategy} mit garantierter Austauschbarkeit (F15-Permutation).
+
+\subsection*{Statische Sub-Achsen}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Name & Beschreibung \\
+\midrule
+\endhead%
+PG1 & Struktur-Rolle (Branching) & Klassifizierung der Verzweigungsseiten-Architektur: Branch-Seite mit voller Verzweigung, kollabierter Single-Path-Knoten (Redirect) oder spezielle Cache-optimierte Variante. \\
+PG2 & Dichte-Klasse (Density) & Grad der Slot-Auslastung und daraus resultierende Indexierungsstrategie: dicht besiedelt (0-256 Slots), erweitert (>256 Slots) oder sparse mit Patricia-Kompression. \\
+PG3 & Pfad-Kollaps-Strategie & Handhabung eindeutiger eindeutiger Restpfade: keine Kompression (Standard), oder Kollaps durch Redirect/\allowbreak{}Co\allowbreak{}Co-Technik zur Speicherminimierung. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\subsection*{Bausteine}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{8.0cm} >{\raggedright\arraybackslash}p{2.5cm}@{}}
+\toprule
+Variante & Beschreibung & Quelle \\
+\midrule
+\endhead%
+\texttt{Dense\allowbreak{}Byte\allowbreak{}Page\allowbreak{}Type} & Dichte byte-indizierte Verzweigungsseite mit direkter 256-Slot-Adressierung (direct-addressed). Seitentyp 1: direkte Abbildung von Schlüssel-Byte auf Slot-Index ohne Umleitung. Quelle: Adaptive Radix Tree (ART), Leis et al. 2013. & P01 \\
+\texttt{Extended\allowbreak{}Dense\allowbreak{}Page\allowbreak{}Type} & Erweiterte dichte Seite für >256 Einträge mit mehrstufigem Indexierungsschema (z.B. 2-Level-Lookup oder variable k-Byte-Span). Seitentyp 2: Dichte-Klasse für komplexere Slot-Anordnungen. Quelle: Adaptive Radix Tree Erweiterungen, PRT-ART\@. & P01 (extended) \\
+\texttt{Sparse\allowbreak{}Patricia\allowbreak{}Page\allowbreak{}Type} & Spärlich besetzte Seite mit Patricia-Pfadkompression (Single-Bit-Split). Seitentyp 3: Dichte-Klasse mit Bit-Vektor-Traversal für niedrige Branchingness. Quelle: HOT (Height Optimized Trie, Binna et al. 2018, basierend auf Patricia-Trie, Morrison 1968). & P02 \\
+\texttt{Redirect\allowbreak{}Page\allowbreak{}Type} & Kollabierter eindeutiger Restpfad (Single-Path-Knoten). Seitentyp 4: Pfad-Kollaps-Strategie zur Speicheroptimierung bei monopol eindeutigen Nachfolgersequenzen. Weder klassischer Branch noch Leaf, speichert nur das Suffix bis zum nächsten echten Verzweigungs- oder Wert-Knoten. Quelle: Co\allowbreak{}Co-Trie (Boffa et al. 2024). & P04 \\
+\texttt{Custom\allowbreak{}Cache\allowbreak{}Page\allowbreak{}Type} & Cache-Line-orientierte Custom-Seite mit explizitem Layout-Design für 64-Byte-Alignment. Seitentyp 5: Struktur-Rolle Branch mit Hardware-bewusster Geometrie. Quelle: PRT-ART Eigenentwicklung mit TLB-Offset + Cache-Line-Aligned Memory Layout (Achse 5). & PRT-ART \\
+\texttt{BPlus\allowbreak{}Page\allowbreak{}Type} & B+-artige sortierte Verzweigungsseite mit Range-Walk-Traversal. Seitentyp 6: Struktur-Rolle Branch, aber mit sortierter Key-Array-Organisation statt Byte-Indexierung. Quelle: Masstree (Mao et al. 2012), B+-Tree-Familie. & P03 \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Beitragende Quellen:} P01, P02, P03, P04, Morrison 1968, PRT-ART~\cite{leis2013art,binna2018hot,mao2012masstree,boffa2024coco,morrison1968patricia}.
+
+\emph{Verwandte Literatur:} P05, P06, P10, P11, P12, P13, P20~\cite{fent2020start,schmeisser2022b2tree,zhang2018surf,rao1999css,rao2000csb,hankins2003nodesize,mueller2025btreesback}.
+
 \section{Build-HW — Plattform-Hardware-Strategie}
+
+\emph{Ist-Status (konservierter Katalog):} Diese Achse ist aus dem bau-treibenden Angebot der System-Registry ausgeschlossen. Die Registry hält den Ausschluss wörtlich fest: \texttt{extension\_\allowbreak{}hardware\_\allowbreak{}system\_\allowbreak{}axis.hpp} ist eine deprecatete Insel, \texttt{hardware\_\allowbreak{}isa\_\allowbreak{}system\_\allowbreak{}axis.hpp} ein reiner Host-Deskriptor, der den Bau nicht treibt --- beide gehören nicht zum bau-treibenden Angebot. Die statischen Plattform-Profile mit ihren festen Konstanten für Cache-Zeilen-Größe, Seiten-Größe und SIMD-Bit-Breite sind konzeptionell durch die Laufzeit-Hardware-Erkennung des \texttt{Cache\allowbreak{}Engine\allowbreak{}Builder} abgelöst --- eine Fabrik über ISA und Betriebssystem, die Hardware-Werte erhebt statt sie statisch zu setzen (vgl.\ Abschnitt~\ref{sec:hw-probe}). Die fünf Sub-Achsen-Einträge (\texttt{hw1} bis \texttt{hw5}) und die drei Hardware-Profile bleiben als historischer Katalog vollständig erhalten.
 
 Definiert die Plattform-Hardware-Familie (CPU-Architektur, SIMD-Capabilities, Cache-Topologie, Memory-Paging) als Compile-Time-Konstanten für alle Cache-Engine-Algorithmen. Die Achse erfasst, welche Plattformen zur Build-Zeit konfigurierbar sind, und liefert statische Properties (Cache-Line-Größe, Page-Größe, SIMD-Bit-Breite, NUMA-Fähigkeit, Huge\allowbreak{}Page-Fähigkeit) für algorithmengerechte Datenstrukturen.
 
