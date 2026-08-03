@@ -848,6 +848,61 @@ IS3 & ZIH Cluster Affinity & Production machines at TU Dresden: Barnard (Intel X
 \end{longtable}
 \end{scriptsize}
 
+Beyond these three design dimensions, the build-driving system registry carries four system sub-axes on the complex wrapper: two compile-time ones (\texttt{target\_\allowbreak{}isa\_\allowbreak{}complex} and \texttt{scheduling}, each \texttt{stage=ct} with \texttt{kind=fixed\_\allowbreak{}enum\_\allowbreak{}tuple}) and two dynamic ones (\texttt{numa\_\allowbreak{}node} and \texttt{page}). The first bundles the named recombinations of the target machines (\texttt{complex\_\allowbreak{}count=2}) with three fixed members each (owner OD-2).
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{6.9cm}@{}}
+\toprule
+Recombination & Member & Declaration \\
+\midrule
+\endhead%
+\texttt{prod1\_\allowbreak{}zen5} (\texttt{isa=x86\_\allowbreak{}64}) & \texttt{ram\_\allowbreak{}frequency\_\allowbreak{}mhz} & \texttt{declared=false} --- no declared figure. \\
+\texttt{prod1\_\allowbreak{}zen5} & \texttt{cas\_\allowbreak{}latency\_\allowbreak{}cl} & \texttt{declared=false} --- no declared figure. \\
+\texttt{prod1\_\allowbreak{}zen5} & \texttt{cpu\_\allowbreak{}fabrication} & \texttt{declared=true}, \texttt{value=Authentic\allowbreak{}AMD/\allowbreak{}26/\allowbreak{}68/\allowbreak{}0} (vendor/\allowbreak{}family/\allowbreak{}model/\allowbreak{}stepping). \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} (\texttt{isa=x86\_\allowbreak{}64}) & \texttt{ram\_\allowbreak{}frequency\_\allowbreak{}mhz} & \texttt{declared=true}, \texttt{value=4800}, \texttt{declaration\_\allowbreak{}source=\allowbreak{}dmidecode 2026-07}. \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} & \texttt{cas\_\allowbreak{}latency\_\allowbreak{}cl} & \texttt{declared=false} --- no declared figure. \\
+\texttt{prod2\_\allowbreak{}raptor\_\allowbreak{}lake} & \texttt{cpu\_\allowbreak{}fabrication} & \texttt{declared=true}, \texttt{value=Genuine\allowbreak{}Intel/\allowbreak{}6/\allowbreak{}151/\allowbreak{}2}. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note:} the values originate from \texttt{k\allowbreak{}Declared\allowbreak{}Machines}, which in turn mirrors the \texttt{<machines>} block of the user XML (O-4b). \texttt{declaration\_\allowbreak{}source} preserves the frozen origin of a declared figure (A2 note, not a provenance level); runtime levels never appear in this XML (P3).
+
+The second compile-time sub-axis \texttt{scheduling} carries five fixed members. It used to be a system main axis and was re-attached as a \texttt{sub\_\allowbreak{}axis} of the \texttt{target\_\allowbreak{}isa} complex wrapper with package A3 --- a relocation, not a deletion.
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{7.1cm}@{}}
+\toprule
+Member & Registry value & Description \\
+\midrule
+\endhead%
+\texttt{worker\_\allowbreak{}pool\_\allowbreak{}layout} & \texttt{value\_\allowbreak{}ordinal=0} & Distribution of the worker pool across the cores. \\
+\texttt{simd\_\allowbreak{}worker\_\allowbreak{}count\_\allowbreak{}limit} & \texttt{value=2} & Upper bound of concurrent SIMD workers. \\
+\texttt{hetero\_\allowbreak{}core\_\allowbreak{}dispatch} & \texttt{value\_\allowbreak{}ordinal=0} & Dispatch across heterogeneous cores (P and E cores). \\
+\texttt{co\_\allowbreak{}routine\_\allowbreak{}strategy} & \texttt{value\_\allowbreak{}ordinal=0} & Coroutine strategy of job processing. \\
+\texttt{batch\_\allowbreak{}granularity} & \texttt{value\_\allowbreak{}ordinal=0} & Granularity of batch processing. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Note:} the ordinals are raw enum values without a compile-time label template; the identifier strings are compile-coupled to the accessor calls of \texttt{concepts::\allowbreak{}scheduling\_\allowbreak{}strategy.hpp}.
+
+\subsection*{Dynamic sub-axes}
+
+\begin{scriptsize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
+\toprule
+ID & Parameter & Description \\
+\midrule
+\endhead%
+\texttt{numa\_\allowbreak{}node} & NUMA node & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}. Mirror of the organ member \texttt{alloc\_\allowbreak{}hw.numa\_\allowbreak{}node}; the admissible values are the node identifiers of the concrete machine and are not knowable at build time --- hence a declared option source instead of an option catalogue. \\
+\texttt{page} & Page-size release & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}source=machine\_\allowbreak{}resolved}. The release of page sizes (4k/\allowbreak{}2m/\allowbreak{}1g) as a system capability; enforcement lives on the organ side in the \texttt{Alloc\allowbreak{}Page\allowbreak{}Hint} NTTP, this axis is the system side of the release. \\
+\bottomrule
+\end{longtable}
+\end{scriptsize}
+
+\emph{Name trap (guarded at compile time):} the sub-axis is called \texttt{page} and is not \texttt{page\_\allowbreak{}type}. \texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type} is the tree-node \texttt{Page\allowbreak{}Kind} of the organ world and an entirely different axis (blueprint D2.6/\allowbreak{}IV-BLOCKER-5); the \texttt{static\_\allowbreak{}assert} in \texttt{target\_\allowbreak{}isa\_\allowbreak{}sub\_\allowbreak{}axes.hpp} records this. The building-block catalogue of the page type remains unchanged in the conserved legacy section \enquote{Build-PG}.
+
 \subsection*{Building blocks}
 
 \begin{scriptsize}
@@ -864,9 +919,13 @@ Variant & Description & Source \\
 \end{longtable}
 \end{scriptsize}
 
+\emph{Registry state:} the build-driving system registry currently carries two enabled building blocks --- \texttt{x86\_\allowbreak{}64} (native, without triple and march flags) and \texttt{aarch64} (cross compilation with \texttt{triple=\allowbreak{}-target aarch64-linux-gnu} and \texttt{march=\allowbreak{}-march=armv8-a}). The four-ISA catalogue listed above is retained as an \emph{offering} catalogue: Power-ISA and RISC-V are described as building blocks but are not enabled in today's build offering.
+
 \emph{Contributing sources:} ---
 
 \section{Build-PG Page Type Axis (PAGE-TYPE)}
+
+\emph{Delimitation and conservation:} this section describes the \texttt{Page\allowbreak{}Kind} of the organ world (\texttt{axis\_\allowbreak{}01\_\allowbreak{}page\_\allowbreak{}type}) and is distinct from the system sub-axis \texttt{page} of the target ISA (page-size release 4k/\allowbreak{}2m/\allowbreak{}1g) --- both quantities carry similar names but share neither building blocks nor semantics. The catalogue is retained in full as a conserved offering and history catalogue.
 
 The page type axis defines the structural and indexing strategies for branch pages in the trie index: from dense direct-addressed byte indexing (Dense\allowbreak{}Byte), through multi-level density variants (Extended\allowbreak{}Dense, Sparse\allowbreak{}Patricia), to path-collapse optimizations (Redirect, Custom\allowbreak{}Cache) and B+-style sorted pages (BPlus). All page types are cache-line aware and implement the \texttt{Page\allowbreak{}Type\allowbreak{}Strategy} concept interface with guaranteed interchangeability (F15 permutation).
 
