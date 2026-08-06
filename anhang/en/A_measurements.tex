@@ -63,12 +63,49 @@ individual operations \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{
 \input{anhang/en/tabellen/lc_surface_op_rmw_p50_ns.tex}
 
 % =====================================================================
-%  CI-interactive (2026-07, #24): the four figures below are regenerated
+%  CI-interactive (2026-07, #24): the figures below are regenerated
 %  per measurement run by the C++23 generator (Code/08_appendix_generator,
 %  replaces the .ps1 orchestrators) from the WIDE matrix and persisted by
 %  the measurement pipeline to measurement/<dated>/.
 %  \InputIfFileExists: compiles cleanly even BEFORE the first run.
+%  GRAPH REBUILD (2026-08): additionally 3D surfaces (lc_surface3d_<z>),
+%  working-set sweeps (ld_sweep_<z>), ratio matrices
+%  (lc_surface_ratio_<z>), normalised bars (lc_normbar_<z>), the
+%  reference-relative forest plot (exchange_forest_vs_reference) and the
+%  Pareto scatter (latency_tradeoff).
+%  GROUP FALLBACK: in the 6-file / 3-file groups only the FIRST entry
+%  carries the fallback text -- the files of a group appear together or
+%  not at all (the writer emits an honest placeholder file even for a
+%  data-less metric), so six identical italic lines would be pure noise.
 % =====================================================================
+
+\section{Three-dimensional raw-data view}\label{sec:measurements:surfaces3d}
+
+The same six surfaces are additionally plotted as a true 3D surface over the plane (search algorithm
+$\times$ load profile). Both surface axes are \emph{nominal}: the spanned surface deliberately
+carries \emph{no} interpolation or trend claim and is to be read solely as a raw-data and inspection
+view alongside the heatmap.
+
+\InputIfFileExists{anhang/en/tabellen/lc_surface3d_ns_per_op.tex}{}{%
+  \emph{(The six 3D raw-data views appear after the next measurement run.)}}
+\InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_insert_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_lookup_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_erase_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_scan_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_rmw_p50_ns.tex}{}{}
+
+\section{Working-set sweep}\label{sec:measurements:working-set-sweep}
+
+The following curves plot the latency over the working-set size $n$ (keys) --- one curve per swept
+axis value, for the overall latency (\texttt{ns\_per\_op}) as well as the p50 latencies of
+\texttt{insert} and \texttt{lookup}. Measurement series without a \texttt{working\_set\_n} column
+deliberately produce \emph{no} curve; no support point is fabricated.
+
+\InputIfFileExists{anhang/en/tabellen/ld_sweep_ns_per_op.tex}{}{%
+  \emph{(The sweep curves appear after the next measurement run with a \texttt{working\_set\_n}
+  column.)}}
+\InputIfFileExists{anhang/en/tabellen/ld_sweep_op_insert_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/ld_sweep_op_lookup_p50_ns.tex}{}{}
 
 \section{Per-axis latency attribution}\label{sec:measurements:seg-attribution}
 
@@ -105,6 +142,55 @@ samples are not available.
 \InputIfFileExists{anhang/en/tabellen/latency_ecdf.tex}{}{%
   \emph{(The configuration ECDF appears after the next measurement run.)}}
 
+Finally, the Pareto scatter plots the median against the tail latency (one point per configuration
+and operation kind). This makes the lower left front visible: those configurations that are
+favourable in both metrics at once and are therefore not surpassed by any other configuration in
+both metrics simultaneously.
+
+\InputIfFileExists{anhang/en/tabellen/latency_tradeoff.tex}{}{%
+  \emph{(The Pareto scatter appears after the next measurement run with p99 columns.)}}
+
+\section{Reference-relative evaluation}\label{sec:measurements:reference}
+
+The figures below relate all measured values to \emph{one} reference. That reference is a measured
+axis value of the corpus itself (default \texttt{search\_algo}/\texttt{linear\_scan}) and expressly
+\emph{not} an external library baseline: a measured \texttt{std::map} performance series does not
+exist, because every \texttt{std::map} in the corpus is the conformance oracle of the test dock and
+thus a correctness, not a performance data point. If the reference does not occur in a measurement
+series, the figures of this section are omitted without substitute.
+
+\subsection{Ratio matrices}\label{sec:measurements:ratio-matrices}
+
+Per interface function, one matrix shows the quotient of the measured median and the reference
+median. The diverging colour scale is centred on equality (ratio~1), so that advantage and
+disadvantage relative to the reference are distinguishable without comparing numbers. In the
+analysis role this matrix supersedes the heatmap of Section~\ref{sec:measurements:surfaces}; the raw
+heatmap remains alongside it as the raw-value view.
+
+\InputIfFileExists{anhang/en/tabellen/lc_surface_ratio_ns_per_op.tex}{}{%
+  \emph{(The six ratio matrices appear after the next measurement run, provided the reference axis
+  value was measured.)}}
+\InputIfFileExists{anhang/en/tabellen/lc_surface_ratio_op_insert_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_surface_ratio_op_lookup_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_surface_ratio_op_erase_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_surface_ratio_op_scan_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_surface_ratio_op_rmw_p50_ns.tex}{}{}
+
+\subsection{Normalised bars}\label{sec:measurements:normalised-bars}
+
+The same statement condensed across the load profiles: one bar per search algorithm, with the
+reference line at~1. Where the ratio matrix shows the load-profile pattern, the bar gives the
+overall statement per search algorithm.
+
+\InputIfFileExists{anhang/en/tabellen/lc_normbar_ns_per_op.tex}{}{%
+  \emph{(The six normalised bar figures appear after the next measurement run, provided the
+  reference axis value was measured.)}}
+\InputIfFileExists{anhang/en/tabellen/lc_normbar_op_insert_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_normbar_op_lookup_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_normbar_op_erase_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_normbar_op_scan_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/en/tabellen/lc_normbar_op_rmw_p50_ns.tex}{}{}
+
 \section{Axis exchangeability}\label{sec:measurements:exchange}
 
 The four following longtables provide the exchangeability evidence per variable axis from the
@@ -127,6 +213,17 @@ the quartile bounds.
 
 \InputIfFileExists{anhang/en/tabellen/exchange_forest.tex}{}{%
   \emph{(The forest plot appears after the next measurement run.)}}
+
+The second forest plot shows the same aggregates, but turns all pairs onto \emph{one} fixed
+reference axis value in the sense of Section~\ref{sec:measurements:reference}, so that the yardstick
+of the comparison is named unambiguously instead of remaining open. The turn converts the relative
+delta exactly --- $d$ becomes $d' = -d/(1+d)$, because the denominator changes together with the
+reference value; a mere sign inversion would be an arithmetic error here. Points that cannot be
+mapped this way are omitted, not substituted.
+
+\InputIfFileExists{anhang/en/tabellen/exchange_forest_vs_reference.tex}{}{%
+  \emph{(The reference-relative forest plot appears after the next measurement run, provided the
+  reference axis value was measured.)}}
 
 \section{Limitations}\label{sec:measurements:limitations}
 
