@@ -84,9 +84,20 @@ measurement of only one vendor. On the production target machines,
 moreover, each measurement is collected under \emph{two operating-system regimes} to separate production
 fidelity from measurement depth: an \emph{immutable} operating system (Talos) mirrors production use and
 enforces boot/compile-static cache settings (Section~\ref{sec:hardware-history}); a \emph{root Linux with
-full hardware-counter access} (\texttt{perf}/MSR), by contrast, makes the counter-based measurement
-categories (cache, dTLB, and branch misses, IPC/CPI, Section~\ref{sec:sota-instances}) and the
-runtime-configurable cache-near axis parameters (prefetch distance, hardware prefetcher) accessible at all. The time- and observer-based categories
+full hardware-counter access} (\texttt{perf}/MSR), by contrast, is what makes the counter-based
+measurement categories (Section~\ref{sec:sota-instances}) and the runtime-configurable cache-near axis
+parameters (prefetch distance, hardware prefetcher) accessible in the first place.
+
+Which counters that access actually populates is a separate question. In the present state the
+measurement chain opens exactly three generic counters via \texttt{perf\_event\_open}: L1D misses,
+last-level misses and dTLB misses. No portable generic counter exists for L2 misses or coherence
+invalidations, and a vendor-specific RAW counter is deliberately \emph{not} guessed. Branch misses,
+IPC/CPI and energy draw are not wired up. The corresponding columns therefore do not carry a
+\emph{measured} zero: they are to be read as \emph{not implemented} and will follow with the next
+expansion stage. This distinction is part of the honesty doctrine of this work --- a zero only where
+zero was in fact measured.
+
+The time- and observer-based categories
 run identically under both regimes and secure comparability; the PMC categories are collected only under
 the privileged regime and logged per platform with operating system, kernel, and counter domain.
 
