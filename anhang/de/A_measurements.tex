@@ -64,12 +64,51 @@ Einzeloperationen \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{scan
 \input{anhang/de/tabellen/lc_surface_op_rmw_p50_ns.tex}
 
 % =====================================================================
-%  CI-interaktiv (2026-07, #24): die vier folgenden Darstellungen werden
+%  CI-interaktiv (2026-07, #24): die folgenden Darstellungen werden
 %  vom C++23-Generator (Code/08_appendix_generator, ersetzt die .ps1-
 %  Orchestratoren) je Messlauf aus der WIDE-Matrix regeneriert und von
 %  der Mess-Pipeline nach measurement/<datiert>/ persistiert.
 %  \InputIfFileExists: kompiliert auch VOR dem ersten Messlauf sauber.
+%  GRAPH-UMBAU (2026-08): zusaetzlich 3D-Flaechen (lc_surface3d_<z>),
+%  Arbeitsmengen-Sweeps (ld_sweep_<z>), Verhaeltnis-Matrizen
+%  (lc_surface_ratio_<z>), normalisierte Balken (lc_normbar_<z>), der
+%  referenzbezogene Forest-Plot (exchange_forest_vs_reference) und die
+%  Pareto-Streuung (latency_tradeoff).
+%  GRUPPEN-ERSATZTEXT: bei den 6er-/3er-Gruppen traegt nur der ERSTE
+%  Eintrag den Ersatztext -- die Dateien einer Gruppe entstehen
+%  gemeinsam oder gar nicht (der Writer legt auch bei datenloser Metrik
+%  eine ehrliche Platzhalter-Datei an), sechs identische Kursivzeilen
+%  waeren reines Rauschen.
 % =====================================================================
+
+\section{Dreidimensionale Rohdaten-Ansicht}\label{sec:measurements:surfaces3d}
+
+Dieselben sechs Oberfl\"achen sind zus\"atzlich als echte 3D-Fl\"ache \"uber der Ebene
+(Suchalgorithmus $\times$ Lastprofil) aufgetragen. Beide Fl\"achen-Achsen sind \emph{nominal}: die
+aufgespannte Fl\"ache tr\"agt bewusst \emph{keine} Interpolations- oder Trendaussage und ist
+ausschlie\ss{}lich als Rohdaten- und Pr\"ufansicht neben der Heatmap zu lesen.
+
+\InputIfFileExists{anhang/de/tabellen/lc_surface3d_ns_per_op.tex}{}{%
+  \emph{(Die sechs 3D-Rohdaten-Ansichten erscheinen nach dem n\"achsten Messlauf.)}}
+\InputIfFileExists{anhang/de/tabellen/lc_surface3d_op_insert_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_surface3d_op_lookup_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_surface3d_op_erase_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_surface3d_op_scan_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_surface3d_op_rmw_p50_ns.tex}{}{}
+
+\section{Arbeitsmengen-Sweep}\label{sec:measurements:working-set-sweep}
+
+Die folgenden Kurven tragen die Latenz \"uber der Arbeitsmengen-Gr\"o\ss{}e $n$ (Schl\"ussel) auf ---
+je eine Kurve je gesweepter Achsen-Auspr\"agung, und zwar f\"ur die Gesamt-Latenz
+(\texttt{ns\_per\_op}) sowie die p50-Latenzen von \texttt{insert} und \texttt{lookup}. Messreihen
+ohne \texttt{working\_set\_n}-Spalte erzeugen bewusst \emph{keine} Kurve; es wird kein St\"utzpunkt
+erfunden.
+
+\InputIfFileExists{anhang/de/tabellen/ld_sweep_ns_per_op.tex}{}{%
+  \emph{(Die Sweep-Kurven erscheinen nach dem n\"achsten Messlauf mit
+  \texttt{working\_set\_n}-Spalte.)}}
+\InputIfFileExists{anhang/de/tabellen/ld_sweep_op_insert_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/ld_sweep_op_lookup_p50_ns.tex}{}{}
 
 \section{Per-Achsen-Latenz-Attribution}\label{sec:measurements:seg-attribution}
 
@@ -106,6 +145,56 @@ Per-Operation-CDF, da die Rohsamples je Operation nicht vorliegen.
 \InputIfFileExists{anhang/de/tabellen/latency_ecdf.tex}{}{%
   \emph{(Die Konfigurations-ECDF erscheint nach dem n\"achsten Messlauf.)}}
 
+Die Pareto-Streuung tr\"agt schlie\ss{}lich die Median- gegen die Tail-Latenz auf (ein Punkt je
+Konfiguration und Operationsart). Sichtbar wird dadurch die untere linke Front: jene
+Konfigurationen, die in beiden Kennzahlen zugleich g\"unstig sind und damit von keiner anderen
+Konfiguration in beiden Kennzahlen zugleich \"ubertroffen werden.
+
+\InputIfFileExists{anhang/de/tabellen/latency_tradeoff.tex}{}{%
+  \emph{(Die Pareto-Streuung erscheint nach dem n\"achsten Messlauf mit p99-Spalten.)}}
+
+\section{Referenzbezogene Auswertung}\label{sec:measurements:reference}
+
+Die folgenden Darstellungen setzen alle Messwerte zu \emph{einer} Referenz ins Verh\"altnis. Diese
+Referenz ist eine gemessene Achsen-Auspr\"agung des Korpus selbst (Voreinstellung
+\texttt{search\_algo}/\texttt{linear\_scan}) und ausdr\"ucklich \emph{keine} externe
+Bibliotheks-Baseline: eine gemessene \texttt{std::map}-Leistungsserie existiert nicht, denn jedes
+\texttt{std::map} im Korpus ist das Konformit\"ats-Orakel des Pr\"uf-Docks und damit ein
+Korrektheits-, kein Leistungs-Datenpunkt. Kommt die Referenz in einer Messreihe nicht vor, entfallen
+die Darstellungen dieses Abschnitts ersatzlos.
+
+\subsection{Verh\"altnis-Matrizen}\label{sec:measurements:ratio-matrices}
+
+Je Schnittstellen-Funktion zeigt eine Matrix den Quotienten aus gemessenem Median und
+Referenz-Median. Die divergente Farbskala ist um die Gleichheit (Verh\"altnis~1) zentriert, sodass
+Vorteil und Nachteil gegen\"uber der Referenz ohne Zahlenvergleich unterscheidbar sind. In der
+Analyse-Rolle l\"ost diese Matrix die Heatmap aus Abschnitt~\ref{sec:measurements:surfaces} ab; die
+rohe Heatmap bleibt als Rohwert-Ansicht daneben bestehen.
+
+\InputIfFileExists{anhang/de/tabellen/lc_surface_ratio_ns_per_op.tex}{}{%
+  \emph{(Die sechs Verh\"altnis-Matrizen erscheinen nach dem n\"achsten Messlauf, sofern die
+  Referenz-Auspr\"agung gemessen wurde.)}}
+\InputIfFileExists{anhang/de/tabellen/lc_surface_ratio_op_insert_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_surface_ratio_op_lookup_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_surface_ratio_op_erase_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_surface_ratio_op_scan_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_surface_ratio_op_rmw_p50_ns.tex}{}{}
+
+\subsection{Normalisierte Balken}\label{sec:measurements:normalised-bars}
+
+Dieselbe Aussage \"uber die Lastprofile hinweg verdichtet: ein Balken je Suchalgorithmus, die
+Referenzlinie liegt bei~1. Wo die Verh\"altnis-Matrix das Lastprofil-Muster zeigt, gibt der Balken
+die Gesamtaussage je Suchalgorithmus.
+
+\InputIfFileExists{anhang/de/tabellen/lc_normbar_ns_per_op.tex}{}{%
+  \emph{(Die sechs normalisierten Balken-Darstellungen erscheinen nach dem n\"achsten Messlauf,
+  sofern die Referenz-Auspr\"agung gemessen wurde.)}}
+\InputIfFileExists{anhang/de/tabellen/lc_normbar_op_insert_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_normbar_op_lookup_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_normbar_op_erase_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_normbar_op_scan_p50_ns.tex}{}{}
+\InputIfFileExists{anhang/de/tabellen/lc_normbar_op_rmw_p50_ns.tex}{}{}
+
 \section{Achsen-Austauschbarkeit}\label{sec:measurements:exchange}
 
 Die vier folgenden Langtabellen belegen die Austauschbarkeit je variabler Achse anhand der
@@ -128,6 +217,17 @@ nicht die Quartilsgrenzen tr\"agt.
 
 \InputIfFileExists{anhang/de/tabellen/exchange_forest.tex}{}{%
   \emph{(Der Forest-Plot erscheint nach dem n\"achsten Messlauf.)}}
+
+Der zweite Forest-Plot zeigt dieselben Aggregate, dreht aber alle Paare auf \emph{eine} feste
+Referenz-Achsen\-auspr\"agung im Sinne von Abschnitt~\ref{sec:measurements:reference}, sodass der
+Ma\ss{}stab des Vergleichs eindeutig benannt ist statt offen zu bleiben. Die Drehung rechnet das
+relative Delta exakt um --- aus $d$ wird $d' = -d/(1+d)$, denn mit dem Bezugswert wechselt auch der
+Nenner; eine blo\ss{}e Vorzeichen-Umkehr w\"are hier ein Rechenfehler. Punkte, die sich so nicht
+abbilden lassen, werden ausgelassen und nicht ersetzt.
+
+\InputIfFileExists{anhang/de/tabellen/exchange_forest_vs_reference.tex}{}{%
+  \emph{(Der referenzbezogene Forest-Plot erscheint nach dem n\"achsten Messlauf, sofern die
+  Referenz-Auspr\"agung gemessen wurde.)}}
 
 \section{Limitierungen}\label{sec:measurements:limitations}
 
