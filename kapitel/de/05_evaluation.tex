@@ -84,9 +84,20 @@ Produktions-Zielmaschinen wird zudem jede Messung unter \emph{zwei
 Betriebssystem-Regimes} erhoben, um Produktions-Treue von Mess-Tiefe zu trennen: Ein \emph{immutables}
 Betriebssystem (Talos) spiegelt den Produktiv-Einsatz und erzwingt boot-/übersetzungsstatische
 Cache-Einstellungen (Abschnitt~\ref{sec:hardware-history}); ein \emph{root-Linux mit vollem
-Hardware-Zähler-Zugriff} (\texttt{perf}/MSR) macht hingegen die zählerbasierten Mess-Kategorien (Cache-,
-dTLB- und Branch-Misses, IPC/CPI, Abschnitt~\ref{sec:sota-instances}) und die laufzeit-konfigurierbaren
-cache-nahen Achsen-Parameter (Prefetch-Distanz, Hardware-Prefetcher) überhaupt erst zugänglich. Die zeit- und observer-basierten Kategorien laufen
+Hardware-Zähler-Zugriff} (\texttt{perf}/MSR) eröffnet hingegen überhaupt erst den Zugang zu den
+zählerbasierten Mess-Kategorien (Abschnitt~\ref{sec:sota-instances}) und zu den
+laufzeit-konfigurierbaren cache-nahen Achsen-Parametern (Prefetch-Distanz, Hardware-Prefetcher).
+
+Davon zu trennen ist, welche Zähler dieser Zugang in der vorliegenden Fassung tatsächlich füllt: Die
+Mess-Kette öffnet über \texttt{perf\_event\_open} genau drei generische Zähler --- L1D-Misses,
+Last-Level-Misses und dTLB-Misses. Für L2-Misses und Kohärenz-Invalidierungen existiert kein
+portabler generischer Zähler; ein hersteller-spezifischer RAW-Zähler wird bewusst \emph{nicht}
+geraten. Branch-Misses, IPC/CPI und die Energie-Aufnahme sind nicht verdrahtet. Die zugehörigen
+Spalten tragen deshalb keine \emph{gemessene} Null: Sie sind als \emph{nicht implementiert} zu lesen
+und werden mit der nächsten Ausbaustufe nachgezogen. Diese Trennung ist Teil der
+Ehrlichkeits-Doktrin dieser Arbeit --- eine Null nur dort, wo tatsächlich null gemessen wurde.
+
+Die zeit- und observer-basierten Kategorien laufen
 unter beiden Regimes identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
 privilegierten Regime erhoben und je Plattform mit Betriebssystem, Kernel und Zähler-Domäne
 protokolliert.
