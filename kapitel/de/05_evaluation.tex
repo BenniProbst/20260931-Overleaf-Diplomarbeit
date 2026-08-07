@@ -89,11 +89,13 @@ zählerbasierten Mess-Kategorien (Abschnitt~\ref{sec:sota-instances}) und zu den
 laufzeit-konfigurierbaren cache-nahen Achsen-Parametern (Prefetch-Distanz, Hardware-Prefetcher).
 
 Davon zu trennen ist, welche Zähler dieser Zugang in der vorliegenden Fassung tatsächlich füllt: Die
-Mess-Kette öffnet über \texttt{perf\_event\_open} genau drei generische Zähler --- L1D-Misses,
-Last-Level-Misses und dTLB-Misses. Für L2-Misses und Kohärenz-Invalidierungen existiert kein
-portabler generischer Zähler; ein hersteller-spezifischer RAW-Zähler wird bewusst \emph{nicht}
-geraten. Branch-Misses und IPC/CPI sind nicht verdrahtet; die Energie-Aufnahme ist dagegen über einen
-best-effort-Schnappschuss der RAPL-Sysfs-Zone verdrahtet, bleibt aber ohne Root- bzw.\
+Mess-Kette öffnet über \texttt{perf\_event\_open} vier generische Zähler --- L1D-Misses,
+Last-Level-Misses, dTLB-Misses sowie, seit M-3a, Branch-Misses
+(\texttt{PERF\_COUNT\_HW\_BRANCH\_MISSES}, generisch auf Intel wie AMD). Für L2-Misses und
+Kohärenz-Invalidierungen existiert kein portabler generischer Zähler; ein hersteller-spezifischer
+RAW-Zähler wird bewusst \emph{nicht} geraten. IPC/CPI ist dagegen nicht verdrahtet; die
+Energie-Aufnahme ist über einen best-effort-Schnappschuss der RAPL-Sysfs-Zone verdrahtet, bleibt
+aber ohne Root- bzw.\
 Zonen-Leserecht --- seit Linux~5.10 der Regelfall --- leer. Die Spalten der nicht verdrahteten Zähler
 tragen deshalb keine \emph{gemessene} Null: Sie sind als \emph{nicht implementiert} zu lesen
 und werden mit der nächsten Ausbaustufe nachgezogen. Diese Trennung ist Teil der
@@ -191,8 +193,9 @@ schreibt der \texttt{messung\_driver} unter \texttt{Code/\_runs/<date>/<spec\_id
 \texttt{measurements.csv} trägt dabei eine Zeile je Permutation mit den Spalten des kanonischen
 Mess-Records: \texttt{op\_count}, \texttt{total\_cycles}, L1-/L2-/L3-Cache-Misses, dTLB-Misses,
 Kohärenz-Invalidierungen, Energie sowie die Speicher-Felder (\texttt{bytes\_allocated},
-\texttt{bytes\_in\_use\_peak}, Fragmentierung); Branch-Misses und Durchsatz werden als
-Schema-Erweiterung des Records ergänzt (der Durchsatz liegt bislang im Kommando-Pfad vor).
+\texttt{bytes\_in\_use\_peak}, Fragmentierung); Branch-Misses sind seit M-3a real erhoben und liegen
+als additive Schema-Erweiterung des Records vor (\texttt{pmc\_branch\_misses}); der Durchsatz wird
+als Schema-Erweiterung noch ergänzt und liegt bislang im Kommando-Pfad vor.
 Die Auswertung reichert diese Dateien über
 \texttt{binary\_to\_csv} um Profil-ID, Paper-Referenz und Achsen-Belegung an, rendert
 \texttt{csv\_to\_latex}-Steckbriefe je Permutations-ID (in der

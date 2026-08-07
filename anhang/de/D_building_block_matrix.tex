@@ -314,7 +314,7 @@ Variante & Beschreibung & Quelle \\
 \endhead%
 \texttt{Hoard\allowbreak{}Allocator} (A01) & Per-Heap Free-Lists mit SMP-Skalierbarkeit. Berger et al. (PPo\allowbreak{}PP 2000). Synchronisierungskonzept via Per-Heap-Locks + lokale Heap-Caches pro Thread. & P— (OSS, Apache-2.0) \\
 \texttt{Slab\allowbreak{}Allocator} (A02) & Object-Caching-Kernel-Allokator mit Magazine-Cache-Strategie. Bonwick (USENIX 1994, 2001). Klassisches Lehrbuch-Paradigma ohne eigenständigen OSS-Code. & P— (Baseline/\allowbreak{}Textbook) \\
-\texttt{Michael\allowbreak{}Lock\allowbreak{}Free\allowbreak{}Allocator} (A03) & Lock-Free CAS-Allocator mit Hazard-Pointers. Maged Michael (PLDI 2004). Re-Implementierung mit IBM-Patent-Hintergrund. & P— (MIT Re-Impl) \\
+\texttt{Michael\allowbreak{}Lock\allowbreak{}Free\allowbreak{}Allocator} (A03) & Lock-Free CAS-Allocator mit Hazard-Pointers. Maged Michael (PLDI 2004). Re-Implementierung mit IBM-Patent-Hintergrund. & P— (LGPL Re-Impl) \\
 \texttt{Mimalloc\allowbreak{}Allocator} (A04) & Free-List-Sharding mit deferred-free und page-local management. Leijen/\allowbreak{}Zorn/\allowbreak{}de Moura (MSR-TR-2019-18, APLAS 2019). Original Code-Linking (is\_\allowbreak{}original=2/\allowbreak{}2). & P— (OSS, MIT, is\_\allowbreak{}original) \\
 \texttt{Jemalloc\allowbreak{}Allocator} (A05) & Arena-basierte Größenklassen mit per-CPU Arenas und tcache Layer. Evans (BSDCan 2006). Standard-Allokator von Free\allowbreak{}BSD und Facebook. Original Code-Linking (is\_\allowbreak{}original=2/\allowbreak{}2). & P— (OSS, BSD-2-Clause, is\_\allowbreak{}original) \\
 \texttt{TCMalloc\allowbreak{}Allocator} (A06) & Thread-Caching Malloc mit zentralem Page-Heap. Ghemawat/\allowbreak{}Menage (Google ca. 2005) + TEMERAIRE (OSDI 2021). Google-Produktions-Standard. & P— (OSS, Apache-2.0) \\
@@ -1128,14 +1128,16 @@ Option & Flag (\texttt{gpp} und \texttt{clang}) & Flag (\texttt{msvc}) \\
 
 \emph{Bau-Versionskennung:} \texttt{opt\_\allowbreak{}level}, \texttt{simd} und \texttt{atomic128} materialisieren als Flags der Übersetzungs-Naht und erscheinen damit im Bau-Versions-Suffix der Binary --- einer geordneten Acht-Segment-Folge, in der ein leeres Glied schlicht kein Segment erzeugt (vgl.\ Abschnitt~\ref{sec:stamp-model}). In der \texttt{binary\_\allowbreak{}id} stehen sie niemals.
 
-\emph{Versions-Flag-Grammatik (A13, Owner-Entscheid E2 und Owner-Antwort Q3 vom 02.08.2026):} Die Version eines jeden Achsen-Algorithmus ist einheitlich dreistellig und beginnt mit \texttt{v}; Kurzformen sind verboten. Übersetzungszeitliche Wachen setzen die Form durch:
+\emph{Versions-Flag-Grammatik v2 (Owner-KERN vom 07.08.2026, löst die Q3-Grammatik vollständig ab):} Die Version eines jeden Achsen-Algorithmus ist einheitlich dreistellig; ein \texttt{v}-Präfix gibt es seit der Flag-Grammatik v2 nicht mehr, Kurzformen bleiben verboten. Übersetzungszeitliche Wachen setzen die Form durch:
 
 \begin{quote}
-\verb+version := 'v' UINT '.' UINT '.' UINT [ HWFLAG [ 'e' ] ]+\\
-\verb+HWFLAG  := 'c' (CPU) | 'g' (GPU) | 'f' (FPGA) | 'n' (NPU)+
+\verb+version := UINT '.' UINT '.' UINT [ '.' flag ]*+\\
+\verb+flag     := basis [ '{' sub [ '.' sub ]* '}' ] | companion+\\
+\verb+basis    := 'c' | 'g' | 'f' | 'n' | 'x128' | 'x256' | 'x512'+\\
+\verb+sub      := token [ '{' sub [ '.' sub ]* '}' ]  (rekursiv)+
 \end{quote}
 
-Das Hardware-Flag ist genau \emph{ein} Kleinbuchstabe, direkt an das Zahlen-Tripel angehängt; die Reihenfolge ist fest: erst das Hardware-Flag, dann optional das \texttt{e} für einen experimentellen Prüflings-Algorithmus. Ein \texttt{e} ohne Hardware-Flag ist ungültig. Weil diese Arbeit ausschließlich CPU-Code erzeugt, enden im Zielzustand alle Versionen auf \texttt{c} beziehungsweise \texttt{ce}.
+Vor jedem Flag steht ein Punkt, auch vor dem ersten (\texttt{1.0.0.c}, nie \texttt{1.0.0c}); die Basis hängt dabei direkt an ihrer öffnenden Klammer, ohne eigenen Punkt dazwischen (\texttt{c\{p.e\}}, nie \texttt{c.\{p.e\}}). Das Suffix \texttt{e} bedeutet seither \emph{Efficiency Core} und ist ein Sub-Flag wie jedes andere unter der Basis \texttt{c}; das frühere Konzept eines experimentell eingebrachten Prüflings-Algorithmus ist ersatzlos entfallen. Beispielform: \texttt{memory\_layout=SoaMemoryLayout@1.0.0.c\{p.e\}.x512\{f.vl.bw.dq\}.gfni}.
 
 \section{Mess-Sphäre: Mess-Kategorien (\texttt{measurement\_category})}
 
@@ -1399,7 +1401,7 @@ Variante & Beschreibung & Quelle \\
 \endhead%
 \texttt{Hoard\allowbreak{}Allocator} (A01) & Per-Heap Free-Lists mit SMP-Skalierung. Drei-Ebenen-Struktur: Thread-lokale Heaps, globale Heap für Cross-Thread-Migration, False-Sharing-Reduktion durch segregierte Allocations-Anfragen. & A01~\cite{berger2000hoard} (Berger/\allowbreak{}Mc\allowbreak{}Kinley/\allowbreak{}Blumofe/\allowbreak{}Wilson, ASPLOS 2000, 10.1145/\allowbreak{}378993.379232) + Code/\allowbreak{}Baseline \\
 \texttt{Slab\allowbreak{}Allocator} (A02) & Object-Caching Kernel-Allocator. Slab-pro-Objektgröße mit Magazine-Cache pro CPU (Bonwick 1994/\allowbreak{}2001). Klassische Solaris-Kernel-Implementierung für vorallokierte Objekt-Pools. & A02~\cite{bonwick1994slab} (Bonwick, USENIX 1994) + Code/\allowbreak{}Baseline \\
-\texttt{Michael\allowbreak{}Lock\allowbreak{}Free\allowbreak{}Allocator} (A03) & Lock-Free CAS-Allocator nach Michael 2004. Hazard-Pointer-geschützte Lock-Free-Datenstrukturen, MIT-Re-Implementierung mit IBM-Patent-Hintergrund. & A03~\cite{michael2004lockfree} (Michael, PLDI 2004, 10.1145/\allowbreak{}996841.996848) + Code/\allowbreak{}Baseline \\
+\texttt{Michael\allowbreak{}Lock\allowbreak{}Free\allowbreak{}Allocator} (A03) & Lock-Free CAS-Allocator nach Michael 2004. Hazard-Pointer-geschützte Lock-Free-Datenstrukturen, LGPL-Re-Implementierung mit IBM-Patent-Hintergrund. & A03~\cite{michael2004lockfree} (Michael, PLDI 2004, 10.1145/\allowbreak{}996841.996848) + Code/\allowbreak{}Baseline \\
 \texttt{Mimalloc\allowbreak{}Allocator} (A04) & Free-List-Sharding (3 Free-Lists pro Page). Microsoft Research 2019: deferred\_\allowbreak{}free Hooks, temporal Cadence, Page-lokale Sharding.\ is\_\allowbreak{}original: MIT-Direktbindung. & A04~\cite{leijen2019mimalloc} (Leijen/\allowbreak{}Zorn/\allowbreak{}de Moura, APLAS 2019, 10.1007/\allowbreak{}978-3-030-34175-6\_\allowbreak{}13) + is\_\allowbreak{}original (github.com/\allowbreak{}microsoft/\allowbreak{}mimalloc, MIT) \\
 \texttt{Jemalloc\allowbreak{}Allocator} (A05) & Arena-based Size-Class-Allocator. Evans 2006 /\allowbreak{} Free\allowbreak{}BSD\@. Pro-CPU Arenas mit Tcache-Layer für Thread-lokale Caches. Facebook-Standard\@. is\_\allowbreak{}original: BSD-2-Clause-Direktbindung. & A05~\cite{evans2006jemalloc} (Evans, BSDCan 2006, papers.freebsd.org/\allowbreak{}\ldots/\allowbreak{}jemalloc) + is\_\allowbreak{}original (github.com/\allowbreak{}jemalloc/\allowbreak{}jemalloc, BSD-2-Clause) \\
 \texttt{TCMalloc\allowbreak{}Allocator} (A06) & Thread-Cache + Central-Cache + Page-Heap. Google gperftools 2005. Später TEMERAIRE (OSDI 2021) mit Warehouse-Scale-Optimierungen. & A06~\cite{hunter2021temeraire} (TCMalloc 2005; TEMERAIRE, OSDI 2021) + Code/\allowbreak{}Baseline \\
