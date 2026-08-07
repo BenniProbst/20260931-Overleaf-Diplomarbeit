@@ -89,11 +89,13 @@ measurement categories (Section~\ref{sec:sota-instances}) and the runtime-config
 parameters (prefetch distance, hardware prefetcher) accessible in the first place.
 
 Which counters that access actually populates is a separate question. In the present state the
-measurement chain opens exactly three generic counters via \texttt{perf\_event\_open}: L1D misses,
-last-level misses and dTLB misses. No portable generic counter exists for L2 misses or coherence
-invalidations, and a vendor-specific RAW counter is deliberately \emph{not} guessed. Branch misses
-and IPC/CPI are not wired up; energy draw, by contrast, is wired up via a best-effort snapshot of
-the RAPL sysfs zone, but stays empty without root or zone read access --- the normal case since
+measurement chain opens four generic counters via \texttt{perf\_event\_open}: L1D misses,
+last-level misses, dTLB misses, and, since M-3a, branch misses
+(\texttt{PERF\_COUNT\_HW\_BRANCH\_MISSES}, generic on both Intel and AMD). No portable generic
+counter exists for L2 misses or coherence invalidations, and a vendor-specific RAW counter is
+deliberately \emph{not} guessed. IPC/CPI, by contrast, is not wired up; energy draw is wired up via
+a best-effort snapshot of the RAPL sysfs zone, but stays empty without root or zone read access ---
+the normal case since
 Linux~5.10. The columns of the counters that are not wired up therefore do not carry a
 \emph{measured} zero: they are to be read as \emph{not implemented} and will follow with the next
 expansion stage. This distinction is part of the honesty doctrine of this work --- a zero only where
@@ -189,8 +191,9 @@ the target platforms are pending (Section~\ref{sec:limitations}). Per series run
 \texttt{measurements.csv} carries one row per permutation with the columns of the canonical measurement
 record: \texttt{op\_count}, \texttt{total\_cycles}, L1/L2/L3 cache misses, dTLB misses, coherence
 invalidations, energy, plus the memory fields (\texttt{bytes\_allocated},
-\texttt{bytes\_in\_use\_peak}, fragmentation); branch misses and throughput are added as a schema
-extension of the record (throughput so far exists in the command path).
+\texttt{bytes\_in\_use\_peak}, fragmentation); branch misses have been captured for real since M-3a
+and are present as an additive schema extension of the record (\texttt{pmc\_branch\_misses});
+throughput is still to be added as a schema extension and so far exists only in the command path.
 The evaluation enriches these files via
 \texttt{binary\_to\_csv} with profile ID, paper reference, and axis assignment, renders
 \texttt{csv\_to\_latex} fact sheets per permutation ID (in series
