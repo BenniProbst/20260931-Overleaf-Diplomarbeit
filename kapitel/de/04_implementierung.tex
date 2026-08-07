@@ -49,9 +49,9 @@ liegende \emph{Ausführungs- und Mess-Infrastruktur}: Ihre abstrakte messbare Wu
 \texttt{SearchAlgorithmAbiAdapter<A>} liefert über die \texttt{SearchAlgorithmAnatomy} die
 OS-Primitiven (cache-line-ausgerichtete Allokation, NUMA-konformes Read-Pinning, kohärenz-bewusstes
 Schreiben); die Mess- und Observer-Kopplungen des Adapters sind über
-\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gegated --- daraus entstehen drei
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gegated --- daraus entstehen vier
 Auslieferungsvarianten derselben Permutation (Debug mit Observer, Messung mit Aggregator, Release ohne
-Mess-Kopplungen) ---, und den Mess-Aggregator führt der
+Mess-Kopplungen und das bau-gleich zu Release gehaltene Compare-Etikett) ---, und den Mess-Aggregator führt der
 \texttt{ExperimentDriver} host-seitig; die CMake-Option
 \texttt{COMDARE\_\allowbreak{}EXPERIMENT\_\allowbreak{}MODE} markiert Experiment-Kompilate und kodiert
 übersetzungszeitlich die Invariante, dass ein Experiment-Bau stets ein Mess-Bau ist --- sie selbst
@@ -193,7 +193,7 @@ unter derselben Wurzel, tragen aber keine Anatomie.
     \node[box,fill=blue!8,text width=5.3cm] (root) at (0,0) {\texttt{IExecutionEngine} --- \textbf{Treiber der Messung}\\{\scriptsize \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown}; messbarer Vertrag: Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
     \node[box] (ana) at (-4.4,-2.1) {\texttt{IAnatomyBase}\\{\scriptsize Lebewesen (Anatomie-Gattungen)}};
     \node[box] (vir) at (4.4,-2.1) {\texttt{IVirus\-Execution\-Engine}\\{\scriptsize Virus (achsenlos, dennoch messbar)}};
-    \node[box] (sa) at (-6.2,-4.1) {SearchAlgorithm-Gattung\\{\scriptsize $\equiv$ \enquote{Lebewesen} (Säugetier)}};
+    \node[box] (sa) at (-6.2,-4.1) {Map-Gattung\\{\scriptsize Genus \texttt{SearchAlgorithm} $\equiv$ \enquote{Lebewesen} (Säugetier)}};
     \node[box] (cont) at (-2.0,-4.1) {Container-Gattung\\{\scriptsize Set/Sequence/Adapter/View}};
     \node[box] (graph) at (2.2,-4.1) {Graph-Gattung\\{\scriptsize eigener Organsatz}};
     \node[box] (body) at (-7.4,-6.1) {\texttt{Search\-Algorithm\-Anatomy<C>}\\{\scriptsize \emph{Körper}: Komposition $+$ \emph{Verdrahtung} der 18 Organe}};
@@ -213,7 +213,7 @@ unter derselben Wurzel, tragen aber keine Anatomie.
   \caption{Die \emph{eine} Architektur als einzige Hierarchie ohne Parallel-Bäume. An der Wurzel steht
   \texttt{IExecutionEngine} als \emph{Treiber der Messung} --- der universelle messbare Vertrag
   (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) über alle drei Engine-Arten Anatomy,
-  Virus und Hybrid; unter ihm verzweigen die anatomie-tragenden \emph{Gattungen} (SearchAlgorithm,
+  Virus und Hybrid; unter ihm verzweigen die anatomie-tragenden \emph{Gattungen} (Map,
   Container, Graph) und die achsenlosen \emph{Viren}. \texttt{SearchAlgorithm} \emph{ist} das fokale
   Lebewesen (Säugetier); seine Anatomie ist sein \emph{Körper} --- die feste Komposition \emph{und
   Verdrahtung} der 18 Organe ---, und \enquote{SearchEngine} nur dessen ABI-Laufzeit-Sicht. Der
@@ -491,7 +491,9 @@ Auf der Mess-Seite trägt der Planer seine eigene Meta-Meta-Wurzel; deren erste 
 Haupt-Achse ist das Last-Rahmenwerk, das die System-Welt ersatzlos verlassen hat
 (Abschnitt~\ref{sec:axis-triad}), und wie alle Mess-Realm-Achsen ist sie strikt
 binary-id-neutral. Ihr Angebot halten vier Mess-Registries als \texttt{constexpr}-Kataloge: die
-Ablauf-Methodik eines Laufs (Debug-, Mess-, Release-Durchführung), das Last-Rahmenwerk (derzeit
+Ablauf-Methodik eines Laufs (Debug-, Mess-, Release- und ein bereits wählbares Compare-Verfahren,
+dessen Bau-Zeile bewusst release-gleich ist und dessen Replay-Vergleichs-Vollzug noch
+aussteht), das Last-Rahmenwerk (derzeit
 genau ein Eintrag, YCSB in Version~1.0.0), das Rückschreibe-Verfahren (CSV, LaTeX-Tabelle,
 Vergleichs-Metriken) und das Mess-Tooling mit genau drei versionierten Einträgen --- Wallclock,
 Makro, Mikro ---, dessen Wache ein viertes, unabgestimmtes Tooling zum Übersetzungsfehler macht.
