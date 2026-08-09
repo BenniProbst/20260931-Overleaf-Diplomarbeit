@@ -562,8 +562,9 @@ heterogener Speicher. Aus all diesen Technologien ergibt sich der Satz der Mess-
 Cache-Line-Auslastung, Cache-Misses (L1/L2/L3), dTLB-Misses, Speicher-Fußabdruck, Branch-Misses,
 IPC/CPI, Latenz (Mittel und Perzentile p50--p999), Durchsatz, Energie und Fill-Buffer-Auslastung ---,
 deren zeit- und observer-basierte Teilmenge die eigene Apparatur bereits auflöst (Wall-Clock,
-HdrHistogram, Per-Achsen-Observer, die Statistik-Triade aus Median/Perzentilen, Signifikanztest und
-Effektmaß, die Zwei-Phasen-Operationsschleife und das Konformitäts-Gatter gegen \texttt{std::map}),
+HdrHistogram in der nachgelagerten Auswertung, Per-Achsen-Observer, die Statistik-Triade aus
+Median/Perzentilen, Signifikanztest und Effektmaß, die Zwei-Phasen-Operationsschleife und das
+Konformitäts-Gatter gegen \texttt{std::map}),
 während die zählerbasierten PMC-Kategorien an Hardware-Zähler-Zugriff gebunden bleiben; die
 vollständige Mess-Architektur entwickeln das Mess-System (Abschnitt~\ref{sec:measurement-system})
 und Kapitel~\ref{ch:eval}.
@@ -942,7 +943,12 @@ statistisch vergleichbar sind), \emph{Validität} (intern: kausal isolierte Effe
 misst tatsächlich das gemeinte Konzept; extern: Übertragbarkeit auf andere Plattformen und Lasten),
 \emph{Fairness} (identische Schlüssel, Workloads und
 Warmup; fehlende Fähigkeiten als \emph{N/A} statt verdeckt emuliert) und die \emph{Streuung} als Teil der
-Aussage (Perzentile über HDR-Histogramme statt arithmetischer Mittel, mit Signifikanzprüfung). Auf diesen
+Aussage (Perzentile statt arithmetischer Mittel, mit Signifikanzprüfung; die Verteilungssicht liefern
+HDR-Histogramme in der nachgelagerten Auswertung). Berichtete Perzentile folgen dem
+Nearest-Rank-Verfahren: der Rang $R(q,n)=\lceil q\cdot n\rceil$ ist einsbasiert, der zugehörige
+Feldindex $k=R-1$ nullbasiert; der Median ist der Sonderfall $q=0{,}5$ desselben Verfahrens und
+liefert bei geradem $n$ die untere Mitte, nicht das Mittel der beiden mittleren Werte; p95, p99 und
+p999 sind dieselben Ränge mit $q=0{,}95$, $q=0{,}99$ und $q=0{,}999$. Auf diesen
 Kriterien bauen die verwendeten Mess-Muster auf: eine \emph{Zwei-Phasen-Operationsschleife} trennt einen
 verworfenen Warmlauf von der eigentlichen Messung; die Erhebung erfolgt \emph{hybrid} --- isolierte
 Achsen-Algorithmen direkt gegeneinander, ein zusammengesetztes Lebewesen zentral über eine ABI-stabile

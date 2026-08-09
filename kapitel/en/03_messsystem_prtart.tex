@@ -556,9 +556,9 @@ profiles non-functional properties of heterogeneous memory. From all these techn
 measurement categories --- cache-line utilization, cache misses (L1/L2/L3), dTLB misses, memory footprint,
 branch misses, IPC/CPI, latency (mean and percentiles p50--p999), throughput, energy, and fill-buffer
 occupancy ---, whose time- and observer-based subset the present
-apparatus already resolves (wall clock, HdrHistogram, per-axis observers, the statistics triad of
-median/percentiles, significance test, and effect measure, the two-phase operation loop, and the
-conformity gate against \texttt{std::map}),
+apparatus already resolves (wall clock, HdrHistogram in the downstream evaluation, per-axis
+observers, the statistics triad of median/percentiles, significance test, and effect measure, the
+two-phase operation loop, and the conformity gate against \texttt{std::map}),
 while the counter-based PMC categories remain bound to hardware-counter access;
 the complete measurement architecture is developed by the measurement system
 (Section~\ref{sec:measurement-system}) and Chapter~\ref{ch:eval}.
@@ -927,7 +927,12 @@ comparable), \emph{validity} (internal: causally isolated effects; construct: th
 the intended concept; external: transferability to other platforms and loads), \emph{fairness} (identical
 keys, workloads, and warm-up; missing
 capabilities reported as \emph{N/A} rather than covertly emulated), and \emph{dispersion} as part of the
-statement (percentiles over HDR histograms instead of arithmetic means, with significance testing). On
+statement (percentiles instead of arithmetic means, with significance testing; the distributional view is
+provided by HDR histograms in the downstream evaluation). Reported percentiles follow the
+nearest-rank method: the rank $R(q,n)=\lceil q\cdot n\rceil$ is one-based, the corresponding
+array index $k=R-1$ zero-based; the median is the special case $q=0.5$ of the same method and, for
+even $n$, yields the lower middle value, not the mean of the two middle values; p95, p99, and
+p999 are the same ranks with $q=0.95$, $q=0.99$, and $q=0.999$. On
 these criteria the measurement patterns used here build: a \emph{two-phase operation loop} separates a
 discarded warm-up from the actual measurement; collection is \emph{hybrid} --- isolated axis algorithms
 directly against one another, a composed living being centrally over an ABI-stable per-axis observer

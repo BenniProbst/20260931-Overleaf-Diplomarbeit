@@ -331,7 +331,7 @@ gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
   hi/.style={draw,rounded corners,fill=orange!18,very thick,minimum width=1.6cm,minimum height=0.85cm},
   opt/.style={draw,rounded corners,dashed,fill=orange!8,minimum width=2.0cm,minimum height=0.65cm,font=\scriptsize},
   pb/.style={draw,rounded corners,fill=orange!16,very thick,minimum width=3.7cm,minimum height=1.05cm,text width=3.5cm,font=\scriptsize}]
-  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,0.95){Pfad A --- \texttt{ExperimentDriver} (in-process, 7 Phasen)};
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,0.95){In-Process-Pfad --- \texttt{ExperimentDriver} (7 Phasen)};
   \node[ph] (p1) at (0,0){\textbf{1}\\Enumerate};
   \node[ph] (p2) at (1.95,0){\textbf{2}\\Codegen};
   \node[hi] (p3) at (3.9,0){\textbf{3}\\Compile};
@@ -346,17 +346,18 @@ gespiegelter GitHub-Workflow) läuft über alle drei Repositorien.
   \node[opt] (o2) at (4.9,-1.4){opt-in:\\ABI-Verify};
   \draw[->,dashed] (o1)--(p3);
   \draw[->,dashed] (o2)--(p4);
-  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,-2.5){Pfad B --- \texttt{BuildOrchestrator} $+$ \texttt{perm\_runner} (out-of-process, empfohlen)};
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,-2.5){Out-of-Process-Pfad --- \texttt{BuildOrchestrator} $+$ \texttt{perm\_runner} (empfohlen)};
   \node[pb] (b1) at (2.0,-3.95){\textbf{BUILD} \texttt{Build\-Orchestrator}: baut \emph{alle} Tier-Binaries zuerst (resumierbar, RAM-gewahr)};
   \node[pb] (b2) at (8.0,-3.95){\textbf{MEASURE} \texttt{perm\_runner}: laedt $+$ misst jede Tier-Binary einzeln (1 DLL/Prozess, via \texttt{IObservableTier})};
   \draw[->,very thick] (b1)--node[above,font=\scriptsize]{Tier-Binaries} (b2);
 \end{tikzpicture}
-\caption{Die Mess-Pipeline in zwei Ausprägungen. \textbf{Pfad~A} (oben) ist die in-process
+\caption{Die Mess-Pipeline in zwei Ausprägungen. Der \textbf{In-Process-Pfad} (oben) ist die
 Sieben-Phasen-Pipeline des \texttt{ExperimentDriver} je Messreihe (Enumerate $\to$ Codegen $\to$ Compile
 $\to$ Load $\to$ Execute $\to$ Measure $\to$ Persist; zwei opt-in-Phasen kompilieren fehlende Module hot
 und verifizieren den ABI-Vertrag). Hervorgehoben sind die eigentlich substanziellen Phasen:
 \textsc{Compile} (der \emph{Build} der Tier-Binaries) und \textsc{Execute}/\textsc{Measure} (die
-\emph{Messung}); Codegen/Load/Persist sind reines Plumbing. \textbf{Pfad~B} (unten, der empfohlene Weg)
+\emph{Messung}); Codegen/Load/Persist sind reines Plumbing. Der \textbf{Out-of-Process-Pfad}
+(unten, der empfohlene Weg)
 trennt beide Aufgaben out-of-process: der \texttt{BuildOrchestrator} baut \emph{zuerst alle} Tier-Binaries
 (resumierbar, RAM-gewahr), danach lädt und misst \texttt{perm\_runner} jede Binary einzeln (eine DLL je
 Prozess) über die Beobachter-Schnittstelle \texttt{IObservableTier}.}\label{fig:pipeline}
@@ -543,7 +544,11 @@ Die honest-0-Doktrin (Abschnitt~\ref{sec:axis-triad}) ist in diesen Bausteinen e
 statt dokumentiert. Die Wall-Clock-System-Achse verweigert es, ihren Mittelwert als Perzentil zu
 etikettieren: Anfragen nach p50 bis p999 beantwortet sie ungültig, denn die durch die Operationszahl
 geteilte Gesamtzeit ist ein Mittelwert, und ein als Perzentil ausgegebener Mittelwert wäre ein
-Phantomwert --- echte Perzentile liefert erst das HDR-Histogramm. Die Cache-Line-Auslastung wird als
+Phantomwert --- echte Perzentile entstehen erst nachgelagert in der Auswertung: nearest-rank über den
+erhobenen Rohlatenzen, ergänzt um das HDR-Histogramm, das bei drei signifikanten Stellen mit einer
+relativen Bucket-Toleranz von $1/1024 \approx 0{,}0977\,\%$ auflöst; im Messpfad selbst steht bewusst
+kein Histogramm-Bucket, weil er den Rohwert schon bei der Aufnahme unumkehrbar quantisierte.
+Die Cache-Line-Auslastung wird als
 echte Auslastungs-Ratio erhoben --- genutzte Nutzdaten-Bytes gegen belegte Cache-Lines mal
 Zeilenbreite ---, nicht als roher Zeilen-Zähler, der gerade die \emph{inverse} Metrik wäre.
 Speicher-Fußabdruck und Fill-Buffer-Auslastung bleiben ungültig, bis eine echte Peak-Spalte

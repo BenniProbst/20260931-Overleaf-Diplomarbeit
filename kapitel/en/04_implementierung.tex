@@ -326,7 +326,7 @@ mirrored GitHub workflow) runs across all three repositories.
   hi/.style={draw,rounded corners,fill=orange!18,very thick,minimum width=1.6cm,minimum height=0.85cm},
   opt/.style={draw,rounded corners,dashed,fill=orange!8,minimum width=2.0cm,minimum height=0.65cm,font=\scriptsize},
   pb/.style={draw,rounded corners,fill=orange!16,very thick,minimum width=3.7cm,minimum height=1.05cm,text width=3.5cm,font=\scriptsize}]
-  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,0.95){Path A --- \texttt{ExperimentDriver} (in-process, 7 phases)};
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,0.95){In-process path --- \texttt{ExperimentDriver} (7 phases)};
   \node[ph] (p1) at (0,0){\textbf{1}\\Enumerate};
   \node[ph] (p2) at (1.95,0){\textbf{2}\\Codegen};
   \node[hi] (p3) at (3.9,0){\textbf{3}\\Compile};
@@ -341,17 +341,18 @@ mirrored GitHub workflow) runs across all three repositories.
   \node[opt] (o2) at (4.9,-1.4){opt-in:\\ABI verify};
   \draw[->,dashed] (o1)--(p3);
   \draw[->,dashed] (o2)--(p4);
-  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,-2.5){Path B --- \texttt{BuildOrchestrator} $+$ \texttt{perm\_runner} (out-of-process, recommended)};
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,-2.5){Out-of-process path --- \texttt{BuildOrchestrator} $+$ \texttt{perm\_runner} (recommended)};
   \node[pb] (b1) at (2.0,-3.95){\textbf{BUILD} \texttt{Build\-Orchestrator}: builds \emph{all} tier binaries first (resumable, RAM-aware)};
   \node[pb] (b2) at (8.0,-3.95){\textbf{MEASURE} \texttt{perm\_runner}: loads $+$ measures each tier binary individually (1 DLL/process, via \texttt{IObservableTier})};
   \draw[->,very thick] (b1)--node[above,font=\scriptsize]{tier binaries} (b2);
 \end{tikzpicture}
-\caption{The measurement pipeline in two forms. \textbf{Path~A} (top) is the in-process seven-phase pipeline
+\caption{The measurement pipeline in two forms. The \textbf{in-process path} (top) is the seven-phase pipeline
 of the \texttt{ExperimentDriver} per measurement series (Enumerate $\to$ Codegen $\to$ Compile $\to$ Load
 $\to$ Execute $\to$ Measure $\to$ Persist; two opt-in phases hot-compile missing modules and verify the ABI
 contract). Highlighted are the genuinely substantial phases: \textsc{Compile} (the \emph{build} of the tier
 binaries) and \textsc{Execute}/\textsc{Measure} (the \emph{measurement}); Codegen/Load/Persist are pure
-plumbing. \textbf{Path~B} (bottom, the recommended route) separates the two tasks out-of-process: the
+plumbing. The \textbf{out-of-process path}
+(bottom, the recommended route) separates the two tasks out-of-process: the
 \texttt{BuildOrchestrator} builds \emph{all tier binaries first} (resumable, RAM-aware), after which
 \texttt{perm\_runner} loads and measures each binary individually (one DLL per process) through the observer
 interface \texttt{IObservableTier}.}\label{fig:pipeline}
@@ -533,7 +534,12 @@ The honest-0 doctrine (Section~\ref{sec:axis-triad}) is programmed into these bu
 blocks rather than merely documented. The wall-clock system axis refuses to label its mean as a
 percentile: requests for p50 through p999 are answered as invalid, since the total time divided by
 the operation count is a mean, and a mean reported as a percentile would be a phantom value ---
-genuine percentiles are only delivered by the HDR histogram. The cache-line utilization is collected
+genuine percentiles arise only downstream in the evaluation: nearest-rank over the collected raw
+latencies, complemented by the HDR histogram, which at three significant digits resolves with a
+relative bucket tolerance of $1/1024 \approx 0.0977\,\%$; the measurement path itself deliberately
+carries no histogram bucket, because it would irreversibly quantize the raw value already at
+recording time.
+The cache-line utilization is collected
 as a genuine utilization ratio --- used payload bytes against occupied cache lines times line
 width ---, not as a raw line counter, which would be precisely the \emph{inverse} metric. Memory
 footprint and fill-buffer occupancy remain invalid until a genuine peak column or a hardware source
