@@ -6,17 +6,17 @@
 \toprule
 \# & Vorbehalt & Status / Konsequenz \\
 \midrule
-\endfirsthead%
+\endfirsthead
 \multicolumn{3}{c}{\tablename\ \thetable{} -- Fortsetzung}\\
 \toprule
 \# & Vorbehalt & Status / Konsequenz \\
 \midrule
-\endhead%
+\endhead
 \midrule
 \multicolumn{3}{r}{Fortsetzung n\"achste Seite}\\
-\endfoot%
+\endfoot
 \bottomrule
-\endlastfoot%
+\endlastfoot
 1 & \textbf{Cache-Misses (Kernmetrik):} L2 + Coherence strukturell 0; L1/L3/dTLB nur mit gesetztem PMC-Schalter erhoben; Energy best-effort & Ohne \texttt{COMDARE\_ENABLE\_PMC} (Build-Default OFF, damit \texttt{test:unit} ohne HW-Zugriff baut) liefert \texttt{NullPmcSource} available=false, und alle HW-Spalten bleiben 0 -- so entstanden die tabellierten Nullen. Mit dem Schalter erhebt \texttt{LinuxPerfPmcSource} L1-, L3- (Last-Level) und dTLB-Misses real \"uber \texttt{perf\_event\_open}(2) (Kernel-Syscall, keine Vendor-Lib, kein PAPI n\"otig -- PAPI bleibt optionaler Sekund\"arpfad). L2 und Coherence-Invalidierungen bleiben mangels portablem generischem Z\"ahler auch dann strukturell 0; L3 kann auf einzelnen AMD-Plattformen zus\"atzlich beim \"Offnen des Z\"ahlers scheitern; Energie l\"auft best-effort \"uber RAPL-sysfs und bleibt ohne Zonen-Leserecht leer. Der Intel-PCM-Windows-Treiber steht f\"ur die Windows-Lane weiterhin aus (\#26/P4). Die verbleibende L2/Coherence-L\"ucke ist nur indirekt \"uber den Wall-Clock-Proxy (seg\_memory\_layout\_ns/ns\_per\_op) beobachtbar. \\
 2 & 14 gepinnte Achsen = 0 Austauschbarkeits-Belege & Nur 4 der 18 Kompositions-Achsen variieren (search\_algo, node\_type, memory\_layout, prefetch). Gepinnt (je 1 Wert): cache\_traversal, mapping, path\_compression, allocator, concurrency, serialization, value\_handle, index\_organization, io\_dispatch, migration\_policy, filter, queuing\_q1, queuing\_q2, persistence\_target. (isa ist seit INC-2d die System-Achse \texttt{target\_isa} und telemetry seit INC-2c keine binary\_id-Kompositions-Achse mehr -- beide z\"ahlen daher nicht mehr als gepinnte Organ-Achsen.) \\ % chktex 12 (Satzende vor Klammer -- kein Abkuerzungspunkt)
 3 & Observer-Proben-Z\"ahler ($\ast$\_find/$\ast$\_probe/$\ast$\_get) by-design $\approx 1$ & Erwartetes Verhalten, kein Phantom: je Lookup eine Probe. Keine Aussage \"uber interne Iterationen. \\
@@ -27,10 +27,11 @@
 8 & Insert-Profile messen Upserts; stat\_$\ast$-Spalten enthalten Load-Phase & Insert-Pfad ist faktisch Upsert; die stat\_$\ast$-Z\"ahler akkumulieren die Lade-Phase mit. \\
 9 & prefetch misst Key-Werte als Pseudo-Adressen (K9) & Prefetch-Achse interpretiert Schl\"ussel-Werte als Adressen; kein echter Speicher-Prefetch. \\
 10 & node\_type + memory\_layout: Q2-Schritt-4-Beschattung & Apparat-Artefakt m\"oglich (search\_organ\_-Beschattung); search\_algo + prefetch sind am wenigsten konfundiert. \\
-11 & memory\_layout-Effekt teils sub-noise & Teil der Layout-Differenzen liegt unter dem Mess-Rauschen. Auf der Linux-Lane ist PMC nicht mehr extern gegatet (\texttt{perf\_event\_open}, kein Treiber und keine Vendor-Lib n\"otig); extern gegatet bleibt nur die Windows/Intel-PCM-Lane (\#26). Eine PMC-gest\"utzte Re-Messung dieser Reihe steht noch aus. \\
-12 & Sekund\"are Indirektions-Organe (cache\_traversal/mapping): uint16-Schl\"ussel-S\"attigung & Der uint64-Prim\"arschl\"ussel wird beim Auto-Koppeln in die schmaleren slot\_index/key\_type-Felder der GEPINNTEN cache\_traversal-/mapping-Organe verengt (low-bits); bei records $>$ Typbreite kollidieren deren Observer-Eintr\"age. Betrifft NICHT den Prim\"ar-Lookup (uint64); reine Observer-Limitierung gepinnter Achsen (vgl. Zeile 2/4). \\
-13 & Kapsel-internes (verschlucktes) OOM in einer Mess-Op & Nach aussen geworfenes OOM entwertet die Messung jetzt hart (two\_phase\_valid=false). Ein vom Tier-Code INTERN per \texttt{catch(...)} gefangenes OOM (z.B. defensiver Memento-Verzicht) ist von aussen nicht beobachtbar → konservativ als Restvorbehalt dokumentiert, nicht erzwungen. \\ % chktex 11
-14 & Timer-Overhead (\texttt{clock::now()}) nicht kalibriert & Die Wall-Clock-Segmentzeiten enthalten den nicht subtrahierten Eigen-Overhead der \texttt{std::chrono::steady\_clock::now()}-Aufrufe (eine additive, lauf-stabile ns-Komponente je gemessenem Segment). Es findet KEINE Leer-Schleifen-Kalibrierung statt $\to$ dokumentierter Vorbehalt; betrifft den absoluten ns-Nullpunkt, nicht die relativen Achsen-Vergleiche (G5-Audit, MESS-MINOR-7). \\
-15 & Entwurfs-Etiketten = Namenskonvention, kein Mess-Einfluss & Einzelne Pattern-Etiketten im Code/Doku sind Benennungs-/Entwurfsvorbehalte ohne Mess-Wirkung: \enquote{hybrider Visitor} (real ein Memento, kein \texttt{accept()}/Host-Besuch), sowie Interpreter-/Template-/Decorator-Etiketten und \texttt{reserve}-/\texttt{if constexpr}-Hygiene. Reine Naming-Konvention $\to$ als Vorbehalt dokumentiert, kein Einfluss auf Messwerte (G5-Audit, PATTERN-MINOR-1..7). \\
+11 & container\_-Spiegel (Weg-B): O(n)-Flatten+Rebuild als Zusatz-Apparat & Weg-B-Lebewesen (SOTA-B\"aume/Tries/Hash) halten neben dem echten Such-Organ einen sortierten container\_-Spiegel; dessen O(n)-Flatten+Rebuild (bei NEU-Inserts + erfolgreichen Erases; \#211, bis-M3 ungefixt) ist ZUS\"ATZLICHER Apparat-Aufwand, den die echte Baumstruktur nicht hat $\to$ die gemessene ns\_per\_op der Weg-B-Tiere ist um diesen Spiegel-Anteil \"uberh\"oht. (Bei der Weg-A-Array-Familie ist derselbe O(n)-Rebuild der ECHTE Struktur-Kostenanteil, kein Zusatz-Artefakt.) Behebung mit \#188/\#211 + Nachfolge-Neubau (\#215). \\
+12 & memory\_layout-Effekt teils sub-noise & Teil der Layout-Differenzen liegt unter dem Mess-Rauschen $\to$ PMC extern-gated (\#26). \\
+13 & Sekund\"are Indirektions-Organe (cache\_traversal/mapping): uint16-Schl\"ussel-S\"attigung & Der uint64-Prim\"arschl\"ussel wird beim Auto-Koppeln in die schmaleren slot\_index/key\_type-Felder der GEPINNTEN cache\_traversal-/mapping-Organe verengt (low-bits); bei records $>$ Typbreite kollidieren deren Observer-Eintr\"age. Betrifft NICHT den Prim\"ar-Lookup (uint64); reine Observer-Limitierung gepinnter Achsen (vgl. Zeile 2/4). \\
+14 & Kapsel-internes (verschlucktes) OOM in einer Mess-Op & Nach aussen geworfenes OOM entwertet die Messung jetzt hart (two\_phase\_valid=false). Ein vom Tier-Code INTERN per catch(...) gefangenes OOM (z.B. defensiver Memento-Verzicht) ist von aussen nicht beobachtbar → konservativ als Restvorbehalt dokumentiert, nicht erzwungen. \\
+15 & Timer-Overhead (\texttt{clock::now()}) nicht kalibriert & Die Wall-Clock-Segmentzeiten enthalten den nicht subtrahierten Eigen-Overhead der \texttt{std::chrono::steady\_clock::now()}-Aufrufe (eine additive, lauf-stabile ns-Komponente je gemessenem Segment). Es findet KEINE Leer-Schleifen-Kalibrierung statt $\to$ dokumentierter Vorbehalt; betrifft den absoluten ns-Nullpunkt, nicht die relativen Achsen-Vergleiche (G5-Audit, MESS-MINOR-7). \\
+16 & Entwurfs-Etiketten = Namenskonvention, kein Mess-Einfluss & Einzelne Pattern-Etiketten im Code/Doku sind Benennungs-/Entwurfsvorbehalte ohne Mess-Wirkung: „hybrider Visitor" (real ein Memento, kein \texttt{accept()}/Host-Besuch), sowie Interpreter-/Template-/Decorator-Etiketten und \texttt{reserve}-/\texttt{if constexpr}-Hygiene. Reine Naming-Konvention $\to$ als Vorbehalt dokumentiert, kein Einfluss auf Messwerte (G5-Audit, PATTERN-MINOR-1..7). \\
 \end{longtable}
 \end{scriptsize}
