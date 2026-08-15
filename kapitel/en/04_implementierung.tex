@@ -490,7 +490,19 @@ framework (currently exactly one entry, YCSB in version~1.0.0), the write-back m
 table, comparison metrics), and the measurement tooling with exactly three versioned entries ---
 wall clock, macro, micro ---, whose guard turns a fourth, unagreed tooling into a compilation
 error. A dedicated PMC tooling does not exist: the counter instrumentation resides in the micro
-tooling. This registry cut is implementation \emph{state}, not target: the target cut is the
+tooling.
+On the compile side, two separate gates mirror this tooling ladder: the \emph{statistics gate}
+(\texttt{COMDARE\_\allowbreak{}CE\_\allowbreak{}ENABLE\_\allowbreak{}STATISTICS}) switches the
+observer statistics of the macro regime, and the value-based \emph{segment-timing gate}
+(\texttt{COMDARE\_\allowbreak{}CE\_\allowbreak{}ENABLE\_\allowbreak{}SEGMENT\_\allowbreak{}TIMING})
+switches the eighteen per-axis segment timers of the fine grain. An unset segment-timing gate
+\emph{inherits} the state of the statistics gate --- existing builds do not change a single byte
+through the separation ---, and a set segment-timing gate without the statistics gate breaks the
+compilation loudly, because the segment timers write into structures of the observer block. The
+actually effective gate state of every translation unit travels as a dedicated measurement-gate
+member (seven \texttt{;}-separated fields) into the fingerprint preimage of the stamp
+(Section~\ref{sec:stamp-model}) --- the stamp thus never claims an outfit the build does not
+carry. This registry cut is implementation \emph{state}, not target: the target cut is the
 axis-interface model from Section~\ref{sec:mess-chain} --- micro-benchmarking measures an axis
 through its axis interface, and the three wall-clock levels provide the counter-measurement ---,
 and the registry converges towards this model.

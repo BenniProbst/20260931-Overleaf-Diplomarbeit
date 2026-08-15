@@ -499,6 +499,17 @@ genau ein Eintrag, YCSB in Version~1.0.0), das Rückschreibe-Verfahren (CSV, LaT
 Vergleichs-Metriken) und das Mess-Tooling mit genau drei versionierten Einträgen --- Wallclock,
 Makro, Mikro ---, dessen Wache ein viertes, unabgestimmtes Tooling zum Übersetzungsfehler macht.
 Ein eigenes PMC-Tooling existiert nicht: Die Zähler-Instrumentierung steckt im Mikro-Tooling.
+Übersetzungsseitig spiegeln zwei getrennte Gates diese Tooling-Leiter: Das \emph{Statistik-Gate}
+(\texttt{COMDARE\_\allowbreak{}CE\_\allowbreak{}ENABLE\_\allowbreak{}STATISTICS}) schaltet die
+Observer-Statistik des Makro-Regimes, das wertbasierte \emph{Segment-Timing-Gate}
+(\texttt{COMDARE\_\allowbreak{}CE\_\allowbreak{}ENABLE\_\allowbreak{}SEGMENT\_\allowbreak{}TIMING})
+die achtzehn Per-Achsen-Segment-Timer des Feinkorns. Ein nicht gesetztes Segment-Timing-Gate
+\emph{erbt} den Zustand des Statistik-Gates --- Bestandsbauten ändern durch die Trennung kein Byte
+---, und ein gesetztes Segment-Timing-Gate ohne Statistik-Gate bricht die Übersetzung laut, denn
+die Segment-Timer schreiben in Strukturen des Observer-Blocks. Der real wirksame Gate-Zustand
+jeder Übersetzungseinheit wandert als eigenes Mess-Gate-Glied (sieben \texttt{;}-getrennte
+Felder) in das Fingerprint-Preimage des Stempels (Abschnitt~\ref{sec:stamp-model}) --- der
+Stempel behauptet damit nie eine Ausstattung, die der Bau nicht fährt.
 Dieser Registry-Schnitt ist Implementierungs-\emph{Stand}, nicht Soll: Das Ziel-Schnittbild ist
 das Achsen-Interface-Modell aus Abschnitt~\ref{sec:mess-chain} --- Mikro-Benchmarking vermisst
 eine Achse über ihr Achsen-Interface, und die drei Wallclock-Ebenen liefern die Gegenmessung ---,
