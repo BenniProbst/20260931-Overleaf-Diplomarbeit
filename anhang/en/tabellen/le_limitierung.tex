@@ -6,17 +6,17 @@
 \toprule
 \# & Caveat & Status / consequence \\
 \midrule
-\endfirsthead
+\endfirsthead%
 \multicolumn{3}{c}{\tablename\ \thetable{} -- continued}\\
 \toprule
 \# & Caveat & Status / consequence \\
 \midrule
-\endhead
+\endhead%
 \midrule
 \multicolumn{3}{r}{continued on next page}\\
-\endfoot
+\endfoot%
 \bottomrule
-\endlastfoot
+\endlastfoot%
 1 & \textbf{Cache misses (core metric):} L2 + coherence structurally 0; L1/L3/dTLB only collected with the PMC switch set; energy best-effort & Without \texttt{COMDARE\_ENABLE\_PMC} (build default OFF, so that \texttt{test:unit} builds without HW access) \texttt{NullPmcSource} reports available=false and all HW columns stay 0 --- that is how the tabulated zeros arose. With the switch, \texttt{LinuxPerfPmcSource} collects L1, L3 (last-level) and dTLB misses for real via \texttt{perf\_event\_open}(2) (kernel syscall, no vendor library, no PAPI required --- PAPI remains an optional secondary path). L2 and coherence invalidations stay structurally 0 even then, for lack of a portable generic counter; L3 can additionally fail to open on individual AMD platforms; energy runs best-effort via RAPL sysfs and stays empty without read access to the zone. The Intel PCM Windows driver is still pending for the Windows lane (\#26/P4). The remaining L2/coherence gap is observable only indirectly via the wall-clock proxy (seg\_memory\_layout\_ns/ns\_per\_op). \\
 2 & 14 pinned axes = 0 exchangeability evidence & Only 4 of the 18 composition axes vary (search\_algo, node\_type, memory\_layout, prefetch). Pinned (1 value each): cache\_traversal, mapping, path\_compression, allocator, concurrency, serialization, value\_handle, index\_organization, io\_dispatch, migration\_policy, filter, queuing\_q1, queuing\_q2, persistence\_target. (Since INC-2d, isa is the system axis \texttt{target\_isa}, and since INC-2c telemetry is no longer a binary\_id composition axis --- neither therefore counts as a pinned organ axis any more.) \\
 3 & Observer probe counters ($\ast$\_find/$\ast$\_probe/$\ast$\_get) by design $\approx 1$ & Expected behaviour, no phantom: one probe per lookup. Says nothing about internal iterations. \\
@@ -29,8 +29,8 @@
 10 & node\_type + memory\_layout: Q2 step-4 shadowing & Apparatus artefact possible (search\_organ\_ shadowing); search\_algo + prefetch are the least confounded. \\
 11 & container\_ mirror (path B): O(n) flatten+rebuild as extra apparatus & Path-B creatures (SOTA trees/tries/hash) keep a sorted container\_ mirror alongside the real search organ; its O(n) flatten+rebuild (on new inserts + successful erases; \#211, unresolved as of M3) is EXTRA apparatus work the real tree does not incur $\to$ the measured ns\_per\_op of path-B tiers is inflated by this mirror share. (For the path-A array family the same O(n) rebuild is the GENUINE structural cost, not an extra artefact.) Resolved with \#188/\#211 + successor rebuild (\#215). \\
 12 & memory\_layout effect partly sub-noise & Part of the layout differences lies below the measurement noise $\to$ PMC externally gated (\#26). \\
-13 & Secondary indirection organs (cache\_traversal/mapping): uint16 key saturation & The uint64 PRIMARY key is narrowed (static\_cast) into the smaller slot\_index/key\_type fields of the PINNED cache\_traversal/mapping organs when auto-coupling (low bits); for records $>$ type width their observer entries collide. Does NOT affect the primary lookup (uint64); observer-only limitation of pinned axes (cf. rows 2/4). \\
-14 & Capsule-internal (swallowed) OOM in a measured op & An OOM propagated outward now hard-invalidates the measurement (two\_phase\_valid=false). An OOM caught INTERNALLY by tier code via catch(...) (e.g. defensive memento skip) is not observable from outside $\to$ documented as a conservative residual caveat, not forced. \\
+13 & Secondary indirection organs (cache\_traversal/mapping): uint16 key saturation & The uint64 PRIMARY key is narrowed (static\_cast) into the smaller slot\_index/key\_type fields of the PINNED cache\_traversal/mapping organs when auto-coupling (low bits); for records $>$ type width their observer entries collide. Does NOT affect the primary lookup (uint64); observer-only limitation of pinned axes (cf.\ rows 2/4). \\
+14 & Capsule-internal (swallowed) OOM in a measured op & An OOM propagated outward now hard-invalidates the measurement (two\_phase\_valid=false). An OOM caught INTERNALLY by tier code via catch(\ldots) (e.g.\ defensive memento skip) is not observable from outside $\to$ documented as a conservative residual caveat, not forced. \\
 15 & Timer overhead (\texttt{clock::now()}) not calibrated & The wall-clock segment timings include the non-subtracted intrinsic overhead of the \texttt{std::chrono::steady\_clock::now()} calls (an additive, run-stable ns component per measured segment). NO empty-loop calibration is performed $\to$ documented caveat; affects the absolute ns origin, not the relative per-axis comparisons (G5 audit, MESS-MINOR-7). \\
 16 & Design labels = naming convention, no measurement effect & A few pattern labels in code/docs are naming/design caveats with no measurement effect: ``hybrid visitor'' (in reality a memento, no \texttt{accept()}/host visit), plus interpreter/template/decorator labels and \texttt{reserve}/\texttt{if constexpr} hygiene. Pure naming convention $\to$ documented as a caveat, no influence on measured values (G5 audit, PATTERN-MINOR-1..7). \\
 \end{longtable}
