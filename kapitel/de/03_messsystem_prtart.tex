@@ -145,7 +145,7 @@ Slot-Reihenfolge (T0--T17); daneben stehen die Größen der System-Sphäre --- Z
 Erweiterungs-Hardware sowie die zweigeteilte Telemetrie (die Dreiteilung der Achsen ordnet
 Abschnitt~\ref{sec:axis-triad}) --- und die Prüfling-Build-Achse Seitentyp. Die frühere
 Neunzehn-Achsen-Zählung (T0--T18, Zwischenstand Juli 2026) ist durch diese Ordnung
-abgelöst. Viele Achsen sind in Sub-Achsen verfeinert (etwa SA1--SA4
+abgelöst und wird nur bei Speicherung des Gesamt-Algorithmus-Zustandes auf eine Festplatte verwendet und zur compile-time verbaut. Viele Achsen sind in Sub-Achsen verfeinert (etwa SA1--SA4
 oder AA1--AA7) und liefern anderen Achsen verteilte Interfaces für deren Detail-Operationen ---
 genau diese \emph{Achsen-Interfaces} trägt später das Mikro-Benchmarking
 (Abschnitt~\ref{sec:mess-chain}). Tabelle~\ref{tab:axes-overview} gibt den Überblick, welche Veröffentlichungen je Achse
@@ -311,9 +311,9 @@ Anordnung~\cite{bayer1972btree}, Heap-Ablage und nicht-geclusterten Sekundärind
 die \emph{Filter-Achse} (T14) den Bloom-~\cite{bloom1970}, Cuckoo-~\cite{fan2014cuckoo},
 SuRF-~\cite{zhang2018surf} und Xor-Filter~\cite{graf2020xor}. Die \emph{Persistenz-Ziel-Achse}
 (T17) schließlich macht das Ablage-Ziel explizit --- In-Memory als Standard, ein
-Platten-Rückschreibe-Ziel als abgeschaltete Option ---; im kanonischen Vermessungs-Katalog ist sie
-auf ihren In-Memory-Vertreter gepinnt, damit der Permutationsraum bei $2^{17}$ Identitäten bleibt
-(Abschnitt~\ref{sec:mess-chain}).
+Platten-Rückschreibe-Ziel als abgeschaltete Option in Kombination einer abgeschalteten IO-Streaming-Strategie T18 Achse (in dieser Arbeit ausgeblendet) ---; im kanonischen Vermessungs-Katalog ist sie
+auf ihren In-Memory-Vertreter gepinnt, damit der Permutationsraum bei $2^{17}$ theoretischen Identitäten bleibt
+(Abschnitt~\ref{sec:mess-chain}). Diese Rekombination wird in der Realität nicht erreicht, da nicht alle Achsen-Organe miteinander kompatibel sind.
 
 Auch die \emph{Lasten} erscheinen als Instanzen. Die in der Literatur verwendeten Workloads entstammen
 \emph{mehreren}, untereinander nicht vergleichbaren Benchmark-Frameworks; Tabelle~\ref{tab:wl-frameworks}
@@ -384,6 +384,7 @@ abgeleitet.
   {\footnotesize Op-Mix = Anteile von Einfügen/Lookup/Löschen/Scan/RMW\@; neg\% = Anteil negativer Lookups.\par}
 \end{table}
 
+%Die funktionsweise und klare Trennung zwischen Mess-Achse, System-Achse und Organ-Achse wird noch nicht hierarchisch klar. Es ist falsch, dass Mess-Achsen und System-Achsen zusammenfallen - das ist nicht dasselbe. Dass die Gegenprobe eine Gattung bzw. Genus erfordert ist grundsätzlich völliger blödsinn, weil die Tier-Binaries Genus-Interfaces Tragen und die Gegenprobe ja nur durch die Rekombination anderer je Lastprofil möglicherweise stärkerer Permutationen durchgeführt werden kann. Derzeit ist weiterhin die Lebewesen-Methapher als dialektischer Vergleich verlorengegangen und sollte additiv ergänzt werden.
 Der hier sezierte Stand der Technik beruht auf einem festen Korpus: Die Analyse stützt sich
 auf 33~tiefenanalysierte Suchalgorithmus-Veröffentlichungen (P01--P33) und einen parallelen
 Allokator-Korpus aus 23~Arbeiten (A01--A23), deren Achsen-Belegungen als XML-Profile in der
@@ -396,7 +397,7 @@ eine reine Hash-Tabelle als Gegenprobe innerhalb der Map-Gattung --- als zwei w�
 T0-Bausteine, von denen je Permutation genau einer gewählt wird und die beide permutiert werden: ein
 Open-Addressing-Hash nach Knuth (S14, implementiert) und die SwissTable~\cite{abseil_swisstable}
 (als eigener Baustein vorgesehen). Die Gegenprobe erfüllt das Punktanfrage-Subset des
-\texttt{std::map}-Interface (\texttt{find}/\texttt{insert}/\texttt{erase}); die ordnungsbasierten
+\texttt{std::map}-Interface (\texttt{find}/\texttt{insert}/\texttt{erase}) als gewählte Hülle über die karteisch konstruierbaren Gesamt-Suchalgorithmen; die ordnungsbasierten
 Operationen entfallen prinzipbedingt, da eine Hash-Tabelle ungeordnet ist. Über dieses Subset belegt sie
 ein limitiertes Achsen-Subset: Allokation, Prefetch, Nebenläufigkeit und Speicher-Layout bleiben
 geteilt --- und auf der System-Seite trägt die SIMD-Erweiterung konkret das
@@ -463,6 +464,7 @@ Für jeden SOTA-Algorithmus (\emph{State of the Art} --- der Stand der Technik a
 Abschnitt~\ref{sec:overview}) und jeden Allokator hält ein Profil-XML die Achsen-Belegung
 (\texttt{page}, \texttt{node}, \texttt{traversal}, \texttt{value\_handle}, \texttt{concurrency},
 \texttt{allocator}, \texttt{prefetch}, \texttt{telemetry}, \texttt{isa}, \texttt{layout},
+% Alle SOTA-Profile und alle 10 Allokator Profile sind getaggt und was ist mit den anderen Achse, wo wir doch je Achse ein getrennte Permutation durchführen können sollten, was Profil-Ranges bedarf. Im Falle dass 33 Korpus-Arbeiten nur seziert einzelne Bestandteile der Achsen verbessern benötigen sie durchaus ein Profil im sinne eines abstrakten Prüflings (ähnlich einer unvollständigen abstrakten Klasse wie es der PRT-ART ist). Daher zählen diese abstrakten Prüflinge bzw. Korpus-Arbeiten als TODOs für XML Profil-Erstellung von extern als Prüfling oder von intern als Prüflings-Bibliothek aus der Cache Engine heraus, einzubindende Kandidaten, welche die kartesischen Produkte aller durch sie zur Verfügung gestellten Achsen bereitstellen. Wir unterscheiden also zwischen XML-Vollprofilen und XML-abstrakten Profilen. Der PRT-ART ist nur abstrakt aber es muss auch möglich sein, XML-Vollprofile mit der Cache Engine einzugliedern.
 \texttt{reclamation}), eine
 Schlüssel-Wert-Signatur und einen optionalen \texttt{<expected\_workload>}-Tag fest, der die
 Mess-Heuristik überschreibt (Tabelle~\ref{tab:sota-profiles}); alle 30 SOTA-Profile und alle 10
@@ -568,6 +570,7 @@ während die zählerbasierten PMC-Kategorien an Hardware-Zähler-Zugriff gebunde
 vollständige Mess-Architektur entwickeln das Mess-System (Abschnitt~\ref{sec:measurement-system})
 und Kapitel~\ref{ch:eval}.
 
+% Alles korrekt hier, aber ich hatte in vorangegangenen Kapiteln bemängelt, dass dort nicht mit dem Anatomie Modell gearbeitet wurde, ich lag leicht falsch, weil vor diesem Kapitel nirgends damit gearbeitet werden sollte, weil die Begriffe und Taxonomie noch gar nicht geklärt sind. Ab diesem Kapitel sollte das durchweg der Fall sein, davor können wir es anschneiden und auf spätere Kapitel verweisen, aber dort ein "Tier" also solches zu bezeichnen ist nicht hilfreich ohne den Kontext des folgenden Abschnitts. Weiteres Problem: Der Unterschied zwischen Gattung ung Genus interfaces, sowie die nun verschiedenen in der Arbeit verwendeten Genus Interfaces (Etwa Container ebenfalls aus Achsen selbst zu bilden) ist noch nicht erkennbar und muss additiv ergänzt werden.
 \section{Lösungskonzept: das Anatomie-Modell}\label{sec:anatomy-model}
 Aus der dialektischen Aneignung des Standes der Technik ergibt sich das Lösungskonzept dieser Arbeit;
 dieser Abschnitt entwickelt es als \emph{Anatomie-Modell} und definiert dabei die Begrifflichkeiten und
@@ -575,25 +578,23 @@ konzeptionellen Spezialkonstrukte, die die folgenden Abschnitte tragen.
 
 \subsection{Achsen-Komposition und die Lebewesen-Metapher}\label{sec:anatomy-metaphor}
 Die zentrale Idee ist, einen Algorithmus nicht als Monolith zu behandeln, sondern als \emph{Komposition
-orthogonaler Achsen} --- jede Achse eine Teilentscheidung eines cache-bewussten Index (wie Seiten
+orthogonaler Achsen} --- jede Achse eine Teilentscheidung eines Cache-bewussten bzw. System-bewussten Index (wie Seiten
 angeordnet werden, wie Knoten verzweigen, wie Speicher alloziert wird). Ein konkreter Algorithmus ist dann
 ein Punkt im kartesischen Produkt aller Achsen, ein Stand-der-Technik-Entwurf eine explizite
 Konfiguration. Entscheidend ist die \emph{modulare Austauschbarkeit}: Eine neue Achsen-Variante lässt sich
 isoliert untersuchen --- ihr Effekt je Achse \emph{und} für den ganzen Algorithmus messen ---, ohne die
 übrigen neu zu implementieren; genau das löst das Trennbarkeits-Problem, da der Beitrag jedes Bestandteils
-bei sonst fixierten Achsen isoliert messbar wird. Diese Zerlegung beruht auf einer Beobachtung und wird
-von einer Metapher getragen. Erstens
+bei sonst fixierten Achsen isoliert messbar wird. Diese Zerlegung beruht auf der Beobachtung gemeinsamer Belange unterschiedlicher Suchalgoritmen und Paper, sowie der Vergleichbarkeit der Ziele unterschiedlicher Suchalgorithmen und kann daher durch eine Metapher getragen werden. Erstens
 teilen Suchalgorithmen im großen Bild dieselbe \emph{Baum-Anatomie} in unterschiedlicher Ausprägung ---
 von ausgewogenen Suchbäumen über Tries und Radix-Bäume bis zu eigenentwickelten Konstrukten; selbst eine
 sortierte Schlüssel-Wert-Liste ist streng genommen ein einzelnes Blatt eines Baumes, dessen Werte über
-Verweise weiter auf Daten-Blätter zeigen. Die Baum-Struktur ist damit universell über alle
-Suchalgorithmus-Architekturen hinweg und bildet die Leinwand, auf der die Achsen platziert werden;
+Verweise weiter auf Daten-Blätter zeigen. Die Haupt-Differenz zwischen den Algorithmus-Ausprägungen belaufen sich dadurch auf die Auffächerung der Nodes, die Baum-Tiefe, die Baum-Filter und Regelwerke, und die Implementierungs-Details der serialisierung von Speicherseiten, Such-Seiten und Baum-Nodes. Die Baum-Struktur ist damit universell über alle Suchalgorithmus-Architekturen hinweg und bildet die Leinwand, auf der die Achsen platziert werden;
+% Selbst beim Hashing finden wir einen Baum vor der von der Wurzel seines Interfaces gezielt über eine Auffächerung an Hashes sucht. Daher ist das auch ein Baum, nur ist der Kern-Algorithmus für die node anders, ich hoffe das wird in den Achsen so repräsentiert. Die Hülle std::map umfasst damit alle Achsen, die einen key in eine value übersetzen können - egal wie. Diese gehören damit alle zu Gattung+Genus von SearchAlgorithm. Bezüglich der drei Achsen Mess/System/Organ benötigt es eine Anpassung an den Code der weiter fortgeschritten ist. Ich habe bereits ein wenig ergänzt. Bitte ziehe die Abbildungen nach und ergänze stichhaltige Prinzipien visuell wo möglich.
 nicht-baumartige Suchverfahren --- etwa die Hash-Gegenprobe aus Abschnitt~\ref{sec:sota-instances} ---
 bleiben dieselbe Gattung mit eingeschränktem Profil, denn eine eigene Gattung entstünde erst, wenn sich
 der Basis-Achsen-Satz grundlegend unterschiede. Zweitens fasst eine anschauliche Metapher einen konkreten
 Algorithmus als \emph{Lebewesen} auf, dessen \emph{Organe} die Achsen sind --- und das Mess-System als
-seine medizinische Diagnostik (Abbildung~\ref{fig:anatomy-bridge}). Diese Metapher ist dem Hintergrund des
-Autors in der Biomedizinischen Technik geschuldet und soll die Analyse durch Bildhaftigkeit vereinfachen.
+seine medizinische Diagnostik nach Möglichkeiten der medizinischen Einrichtung in der es sich aufhält (Abbildung~\ref{fig:anatomy-bridge}), sowie die System-Achsen den Planeten auf dem das Lebewesen lebt und welche Möglichkeiten und Ressourcen sich dort wiederfinden. Diese Metapher ist dem Hintergrund des Autors in der Biomedizinischen Technik geschuldet und soll die Analyse durch Bildhaftigkeit vereinfachen.
 
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
@@ -653,6 +654,7 @@ dessen konkrete Belegung zu kennen --- so stellt das Allokations-Organ ein gemei
 Allokations-Interface bereit, das Knoten-Layout, Wert-Ablage und Serialisierung für ihre
 Speicheranforderungen verwenden (Abbildung~\ref{fig:axis-organ}). Software-technisch ist dies die
 \emph{Feature-Interaktion} feature-orientierter Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}:
+% Gattung und Genus sind hier nicht vollständig aufgetrennt. Etwa gibt es multiple std::map Kategorien wie hash-map und flat_map und so weiter, die sich also als Kattung einen gemeinsamen Kern an interface funktionen teilen, den man in der Metaprogrammierung also templated über alle Variationen hinweg bedenkenlos verwenden kann (analog Container Typen), aber jede std::map hat darüber hinaus spezielle Interface Funktion über den gemeinsamen Kern hinaus, welche das Genus und damit das reale Tier-Interface ausmachen, wodurch wir Feature-Kern-Komposition für Gattung und Feature-Spezial-Komposition für Genus trennen müssen. Das muss auch visuell nochmal verankert werden bitte. Weiterhin wird hier nicht klar, dass eine Gattung in seinen Interface-Funktions-Implementierungen auf Achsen zugreifen kann, und dass Achsen nicht nur andere Achsen, sondern auch sich selbst rekursiv, oder andere Gattungen aufrufen dürfen - wir verwenden custom container in den SearchAlgorithm Gattungen, und verwenden Teile des Achsen-Pools für Container wieder.
 eine Achse entspricht einem Feature, ein Lebewesen einer Feature-Komposition, ein Lebewesen-Typ (die
 Gattungs-Unterklasse, Abschnitt~\ref{sec:anatomy-levels}) einer statischen Feature-Set-Definition, eine
 Gattung einer (Such-)Algorithmus-Interface-Kategorie und die Anatomie der Verdrahtung
@@ -709,7 +711,7 @@ und die Telemetrie (Mess-Instrumentierung, Abschnitt~\ref{sec:axis-triad}) lesen
 \emph{kann} fremde Interfaces nutzen, \emph{muss} aber nicht. Die Kopplung der Nebenläufigkeit~(T8) an den
 Store ist im Code (noch) nicht verdrahtet (gepunktet).}\label{fig:usage}
 \end{figure}
-
+% Die Frage ist hier, ob die Execution Engine nicht bereits durch ein anderes Konzept abgelöst wurde, sicherlich steht sie immer noch über den Gattungen als Basis. Die Gattungs-Unterklasse heißt jetzt Genus. Weiterhin ist ein Speicher-Organ selbst technisch Gesehen eine Achse, sie greift nur auf andere Achsen-interfaces zurück. Die optionale neunzehte Achse sollte mitgeführt werden. Wir brauchen den Hinweis, dass Graph derzeit nur ein Beispiel ist und nicht implementiert ist (soweit meine Kenntnis über den Code). Daher brauchen Text und Abbildungen ein update. Abbildung 3.8 benötigt weiterhin eine Sichtprüfung, Ebene 3/4/5 sind zusammengestaucht und leider nicht lesbar. Die Ebenen sind jetzt auch zu updaten und insgesamt sind die Träger-Stufen neu in der gesamten Arbeit und noch nicht in Text und Bild visuell verzeichnet. Weiterhin fehlen die konzeptionellen Cache Engine Modi bis zur release Stufe in Text und Bild, sowie eine Erklärung der verschiedenen Interface-Flächen, die jetzt auf den Träger-Stufen Platz gefunden haben.
 \subsection{Das Drei-Ebenen-Modell und die drei Gattungen}\label{sec:anatomy-levels}
 Diese Organe sind in \emph{eine} Architektur eingebettet --- eine einzige, in sich geschlossene Hierarchie
 ohne Parallel-Bäume. An ihrer Wurzel steht die \texttt{ExecutionEngine} als gemeinsame, ausmessbare
@@ -772,7 +774,7 @@ keine eigene Gattung, sondern belegen ein eingeschränktes Achsen-Subset derselb
   \node[drill,fill=orange!20,very thick] (l5) at (-1.6,-5.65){\textbf{Ebene 5 --- Tier-Binary:} je Permutation kompiliert zu \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, verfeinert um die Prüfling-Build-Achse Seitentyp; die Plattform stempeln die drei System-Achsen};
   \draw[->,thick] (s1)--(l3); \draw[->,thick] (l3)--(l4); \draw[->,thick] (l4)--(l5);
 \end{tikzpicture}
-\caption[Die drei Gattungen und die Tier-Hierarchie bis zum kompilierten Binary]{Die Gattungs-/Tier-Hierarchie über fünf Ebenen. \texttt{Map}, \texttt{Container} und \texttt{Graph} sind die drei \emph{Gattungen} (Ebene~1, Außen-Interface). Jede Gattung beherbergt ihre \emph{eigenen} Tier-Unterklassen (Ebene~2): \texttt{Map} ausschließlich das \enquote{Säugetier} (Genus \texttt{SearchAlgorithm}, volle Achtzehn-Achsen-Anatomie), \texttt{Container} jede \emph{nicht}-Säugetier-Unterklasse (Vogel/Reptil/Wirbelloses/Pflanze $=$ Set/Sequence/Adapter/View), \texttt{Graph} noch offene. Der Säugetier-Ast ist hier bis zum Individuum ausgezogen: die achtzehn Achsen-Organe (Ebene~3) permutieren zu einer konkreten Achsen-Komposition $=$ einem konkreten Tier (Ebene~4, z.\,B.\ ART, HOT, Masstree), das je Permutation als eigenständige Tier-Binary kompiliert wird (Ebene~5, zusätzlich verfeinert um die Prüfling-Build-Achse Seitentyp und plattform-gestempelt durch die drei System-Achsen, Abschnitt~\ref{sec:axis-triad})\@. \emph{Jedes Tier-Binary ist damit ein eigenes Tier}; die Hierarchie reicht von der Gattung bis zur einzelnen kompilierten Permutation. Vgl.\ das verdichtete Modell in Abbildung~\ref{fig:three-levels}.}\label{fig:genera}
+\caption[Die drei Gattungen und die Tier-Hierarchie bis zum kompilierten Binary]{Die Gattungs-/Tier-Hierarchie über fünf Ebenen. \texttt{Map}, \texttt{Container} und \texttt{Graph} sind die drei \emph{Gattungen} (Ebene~1, Außen-Interface). Jede Gattung beherbergt ihre \emph{eigenen} Tier-Unterklassen (Ebene~2): \texttt{Map} ausschließlich das \enquote{Säugetier} (Genus \texttt{SearchAlgorithm}, volle Achtzehn-Achsen-Anatomie), \texttt{Container} jede \emph{nicht}-Säugetier-Unterklasse (Vogel/Reptil/Wirbelloses/Pflanze $=$ Set/Sequence/Adapter/View), \texttt{Graph} noch offene. Der Säugetier-Ast ist hier bis zum Individuum ausgezogen: die achtzehn Achsen-Organe (Ebene~3) permutieren zu einer konkreten Achsen-Komposition $=$ einem konkreten Tier (Ebene~4, z.\,B.\ ART, HOT, Masstree), das je Permutation als eigenständige Tier-Binary kompiliert wird (Ebene~5, zusätzlich verfeinert um die Prüfling-Build-Achse Seitentyp und plattform-gestempelt durch die drei System-Achsen, Abschnitt~\ref{sec:axis-triad})\@. \emph{Jedes Tier-Binary ist damit ein eigenes Tier mit einem echten Binary-Genus-Interface und mehreren Flächen je Cache Engine Modus}; die Hierarchie reicht von der Gattung bis zur einzelnen kompilierten Permutation. Vgl.\ das verdichtete Modell in Abbildung~\ref{fig:three-levels}.}\label{fig:genera}
 \end{figure}
 
 \subsection{Entwurfsmuster und Übersetzungszeit-Muster}\label{sec:anatomy-patterns}
@@ -805,9 +807,10 @@ der Apparat eine Komposition benannter Entwurfsmuster und zweier neuer Übersetz
   \node[font=\scriptsize] at (0,-5.86){der \emph{literale} \texttt{std::variant} lebt nur im 11-Achsen-\texttt{baustein\_variants}-Fallback (PRT-ART\,$\leftrightarrow$\,Cache-Engine)};
   \draw[->,thick] (new)--(chain) node[midway,right,font=\scriptsize]{je Achse};
 \end{tikzpicture}
+% Abbildung 3.9 braucht eine Sichtprüfung, die Ränder der Boxen hier sind nicht sauber. Zur Betitelung der Abbildung: std::variants mappt zur Laufzeit einen Interface Eigang auf verschiedene Laufzeit-Ziele und ist daher in dieser Arbeit in der Organ-Achse verboten, weil stets exakt eine kartesische Punkt-Implementierung möglch ist. Bitte prüfe im Code die Baustein variants, weil andere als die exakten Permuationen in der Tier-Binary nichts zu suchen haben - das führt zu binary bloat. Das ist auch in den Code Plänen seit Mai 2026 dokumentiert.
 \caption{Entwurfsmuster als Bausteine der Architektur: oben die im Code durchgängig verwendeten klassischen GoF-Muster mit ihrer jeweiligen Rolle, in der Mitte die zwei in dieser Arbeit benannten neuen Übersetzungszeit-Muster, unten die code-seziert \emph{Drei-Stufen-Concept-Kette} je Achse (Topic-Concept $\to$ Axis-Concept $\to$ CacheEngine-Permutations-Concept $\to$ CRTP-Basis $\to$ \texttt{mp\_list}-Registry) als Verfeinerung von \emph{Strategy}/\emph{CRTP} --- wobei der \emph{literale} \texttt{std::variant} nicht hier, sondern nur im elf-achsigen \texttt{baustein\_variants}-Fallback-Modell auftritt. Ihre Komposition bildet die design-pattern-getriebene, mess-orientierte Architektur (Kapitel~\ref{ch:impl}).}\label{fig:patterns}
 \end{figure}
-
+% Der Hybrid-Modus ist ein erweitertes optionales Konstrukt und noch nicht Kern dieser Arbeit, wir behalten ihn trotzdem, aber bevor der Begriff verwendet wird, muss er vorher erklärt werden was das "Hybrid" ist. Der Hybrid bleibt in der Arbeit ein Ausblick, wir konzentrieren uns auf das manuelle Durchmessen und Erstellen von Tier-Binaries und die break even Analyse vor Anwendung des Hybriden, gehen als nicht weiter als hybrid-compare in der Kette nach dem single-release. Dennoch entwickeln wir die Cache Engine auch hinter diesen Punkt hinaus weiter, auch wenn er in der Diplomarbeit nicht auftaucht.
 Die klassischen Muster sind dabei keine Zierde, sondern die Verkabelung des Apparats: \emph{Strategy}
 kapselt jede der achtzehn Organ-Achsen als austauschbaren Algorithmus, \emph{Abstract Factory}, \emph{Composite}
 und \emph{Iterator} bilden und durchlaufen den Permutations-Baum, \emph{Adapter} bindet Fremd-Code hinter
@@ -822,11 +825,11 @@ Cache-Engine-Standard, und \emph{Policy-based Design} fasst die Komposition als 
 Achsen-Policies~\cite{alexandrescu2001modern}. C++23-Module strukturieren dabei die
 Übersetzungseinheiten, garantieren für sich genommen aber noch keine portable
 ABI-Stabilität~\cite{wg21_modules_abi} --- diese stellt erst die C-stabile Modulgrenze her. Über die etablierten Muster hinaus benennt die Arbeit zwei
-Konstruktionen, für die eine Web-Recherche keine etablierte Bezeichnung fand: die \emph{lazy-spärliche
+Konstruktionen, für die es keine bekannte wissenschaftliche Bezeichnung gibt: die \emph{lazy-spärliche
 kartesische Materialisierung}, die den kombinatorisch explodierenden Varianten-Produktraum aller
 Achsen-Kataloge nur
 arithmetisch zählt und je Pfad mixed-radix einzeln on-demand erzeugt, statt den Compiler mit dem vollen
-Typ-Baum zu sprengen; und das \emph{typgetriebene Quelltext-Emittieren}, das aus einer compile-zeitlichen
+Typ-Baum zu sprengen; und die \emph{typgetriebene Quelltext-Emittieren}, das aus einer compile-zeitlichen
 Achsen-Komposition voll-qualifizierte Typnamen extrahiert, zu C++-Quelltext rendert und je Permutation als
 eigenständiges Modul über die ABI-Grenze lädt --- so wird der Prüfling PRT-ART per Metaprogrammierung in
 Matrix-Schichten gegen die Cache-Engine kompiliert.
@@ -836,6 +839,7 @@ Kapitel~\ref{ch:impl} (Abschnitt~\ref{sec:impl-architecture}); zuvor ordnet der 
 Apparat als Ganzes: in welchen Schichten er von der Experiment-Definition bis zur Auswertung organisiert
 ist und wie er fertiggestellt wird.
 
+% Das Mess-System ist formal als Mess-Achse definiert, aber im Gegensatz zu den ZWEIPHASIG System-Achsen und Organ-Achsen sind Mess-Achsen DREIPHASIG und definieren die Verträge über CEB und Tier/Hybrid, durchdringen diese also zur Compile time, weil sie deren Eigenschaften im Planer (Träger müssen noch strategisch korrekt erklärt werden) zur Laufzeit freigibt. Die Interfaces müssen auch gegen die Träger-Stufen auf ihrere Lokalität und Verträge zwischen Planer/CEB/Hybrid/Tier eingeordnet werden und ob sich mögliche bestandteile über mehrere Träger erstrecken - wo sitzt die Steuerung und wie ist sie umgesetzt? Bitte in Text und Bild update.
 \subsection{Fünf Interface-Schichten: E4 bis E0}\label{sec:anatomy-layers}
 Das Anatomie-Modell ordnet das \emph{Gemessene}: was ein Lebewesen ist und aus welchen Organen es
 besteht. Quer dazu braucht der Apparat, der solche Lebewesen erzeugt und vermisst, ein zweites
@@ -895,7 +899,7 @@ Dieses Prinzip korrespondiert mit der Matrix-Programmierweise des Apparats
 kompiliert wird, wird der Apparat selbst in Interface-Schichten gegen eingefrorene Verträge entwickelt;
 wie jede Schicht dabei einzeln --- gegen einen Ersatz ihrer Nachbar-Ebene --- geprüft wird, zeigt
 Abschnitt~\ref{sec:impl-contracts}.
-
+% Das Tier-Binary durchläuft keine Schichten sondern enthält sie fest einkompiliert, das gilt auch für alle anderen Träger. Das Einzige was durch die Schichten läuft sind die Konfigurationen für zu bauende oder zu messende Ziel-Subjekte auf Grundlage der XML bis zum fertigen Tier-Binary.
 Die E-Schichten sind ausdrücklich vom Drei-Ebenen-Modell (Abschnitt~\ref{sec:anatomy-levels}) zu
 unterscheiden, so ähnlich beide auf den ersten Blick wirken: Das Drei-Ebenen-Modell ist die
 \emph{Anatomie-Sicht} --- es ordnet \emph{ein} Lebewesen von der Gattung über die Unterklasse zu den
@@ -907,6 +911,7 @@ Tier-Binary die Schichten E3 bis E1. Nachdem damit geklärt ist, was komponiert 
 Schichten der Apparat es verarbeitet, wendet sich der folgende Abschnitt der Frage zu, wie sich die so
 komponierten Lebewesen fair vermessen lassen.
 
+% Ist find wirklich eine offizielle Methode von std::map oder ein Artefakt aus der Standard-C++-Bibliothek? Ich kenne find hauptsächlich als Range-Suchmethode, nicht als konkrete Interface Funktion von std::map, daher brauchen wir wenn dann eine getrennte Bibliothek über die Iteratoren von Genus-Interfaces, die solche Operationen formal anbietet und dabei alle kartesischen Produkte aller Achsen gleichermaßen compile time unterstützt. Die Hüllen std::map für SearchAlgorithm und std::vector für Container müssen vollständig in der Implementierung aufgeführt sein, aber wir konzentrieren uns auf die benötigten interface Funktionen. Es sind dennoch die Implementierung aller Interface Funktionen langfristig Pflicht. Wir benötigen Container innerhalb der Achsen, weil sie als Abstraktions-Schicht einerseits die Implementierung erleichtern, zweitens in unserer Aufmachung Metaprogrammiert compile time optimal aufgestellt werden und drittens weil sie genau die erlaubten Achsen im Kompilat eines Tier-Binaries verwenden und damit das Gesamt-Konstrukt lückenlos vergleichbar machen, da sich Eigenschaften von SearchAlgorithm und Container ähneln. Würden wir C++ Standard-Container verwenden, würden wir die Kontrolle über diese verlieren und könnten keine uniformen messbaren Ergebnisse mit Micro-benchmarking erzeugen, die bei jedem Durchlauf die exakt gleiche Laufzeit entfalten. Daher sind eigene Container kein nice-to-have sondern eine Notwendigkeit um eine wissenschaftliche Mess-Qualität zu erreichen. Ich sehe noch ein Problem in der nicht ganz konformen Verwendung von Sub-Achse vs Unter-Achse - wir sollten uns auf einen Begriff einigen.
 \section{Das Mess-System}\label{sec:measurement-system}
 Damit strukturell verschiedene Suchalgorithmen \emph{fair} verglichen werden, bildet die Arbeit sie alle
 auf eine einzige, gut verstandene Schnittstelle ab: den C++-Vertrag der geordneten Map
@@ -934,7 +939,7 @@ Entwurfsraum-Aufzählung des Data Calculator und dem klassischen
 \emph{Policy-based Design}~\cite{alexandrescu2001modern} führt diese Taxonomie compile- und
 laufzeitvariable Achsen-Ebenen jedoch ausdrücklich gemeinsam; eine etablierte Benennung dieser
 Staffelung fand eine Web-Recherche nicht (vgl.\ Abschnitt~\ref{sec:anatomy-patterns}).
-
+% Perfekte Beschreibung der wissenschaftlichen Arbeitsweise, aber der erste Lauf bei den Messungen ist ein zu verwerfender Cache warmup eines potentiell kalten Cache (siehe Pläne und Ledger), der verworfen wird, um beim erneuten Messen in einen definitiv warmen cache zu starten und durch den Vergleich der Mess-Parameter aus dem kalten ersten Cache Anlauf, einen möglichen tatsächlich zuvor kalten Cache zu identifizieren und durch das Parameter diff die Beschleunigung abzuschätzen, die sich gegen einen kalten Cache durch das Verfahren abzeichnet. Daher sind die Gründe unseres Messverfahrens noch nicht ganz scharf. Weiterhin ist die hierarchische Feinuntergliederung der Messung noch nicht ganz geklärt an dieser Stelle, wie sich w/ma/mi einfügen. Mess/System/Organ Achesn werden nicht in korrekter konzeptioneller Reihenfolge genannt.
 Diese Bausteine sind nur so aussagekräftig wie ihre Vermessung. Wissenschaftliches Messen unterliegt
 etablierten Gütekriterien~\cite{hoefler2015benchmarking}: \emph{Reproduzierbarkeit} (feste Seeds,
 deterministische Reihenfolge, dokumentierte Konfiguration, sodass Läufe methodisch wiederholbar und
@@ -961,8 +966,8 @@ mit je eigener Klassen-Wurzel, je eigenem Angebots-Katalog und je eigener Stempe
 (Abschnitt~\ref{sec:stamp-model}) entwickelt werden. Diese Dreiteilung ist die zweite Gestalt des
 Trennbarkeits-Problems: Nicht nur die Entwurfsentscheidungen untereinander, auch das Gemessene, die
 Plattform und das Mess-Instrument müssen getrennt bleiben, damit ein gemessener Effekt eindeutig
-zuzuordnen ist.
-
+zuzuordnen ist. Die Mess-Achsen klären auch weiterhin die Problemfrage, ob überhaupt ein Messapparat in die Cache Engine und die Tier-Binaries eingebaut werden soll. % Hier fehlt der Unterschied zwischen DREIPHASIG und ZWEIPHASIG
+% Es gibt eine abgeschaltete neunzehnte Organ-Achse -> update der realen Form
 Die \emph{Organ-Achsen} sind das \emph{Gemessene}: Organe des Lebewesens, Teil der Gattungen,
 permutierbar --- jede Belegung verändert die Identität der Tier-Binary. Kanonisch sind es
 \emph{achtzehn} Organ-Haupt-Achsen in fester Slot-Reihenfolge T0--T17
@@ -970,7 +975,7 @@ permutierbar --- jede Belegung verändert die Identität der Tier-Binary. Kanoni
 Implementierungs-Nummerierung. Die frühere Neunzehn-Achsen-Zählung (Zwischenstand Juli 2026) ist
 eine historische Vorstufe dieser Ordnung: Aus ihr sind die Telemetrie und die ISA in die
 System-Sphäre umgezogen, und das Persistenz-Ziel ist als achtzehnte Organ-Achse hinzugekommen.
-
+% Die Methapher für Blut stand schon immer für die Verbindung aller Organ-Achsen in der Anatomie durch das flüssige Organ "Blut" welches dynamisch im Planer zu einer compile time Konfiguration angepasst werden kann, aber nicht für die System-Achsen, die eher den Lebensraum eines Tiers kennzeichnen. Die Mess-Achsen kennzeichnen die Ausstattung eines Labors in dem ein Tier untersucht wird. Ein Tier kann ohne Messung sehr gut leben, aber es soll nur das gesündeste Tier in die freie Wildbahn entlassen werden. Jedes Tier sollte bestmöglich an seinen Lebensraum angepasst sein, wenn es eine bestimmte Eigenschaft nicht besitzt (etwa kann es nicht schwimmen), dann kann es diesen Teil seines Lebensraumes (sprich die Hardware) nicht zu seinem Vorteil nutzen - oder zu seinem Nachteil, falls die Messung ergründet, dass die Spezialisierung des Tiers an sich gar nicht auf diesen Lebensraum ausgelegt sein sollte, weil es die Qualität des Tiers negativ beeinflusst (ein Affe sollte klettern, ein Fisch schwimmen und nicht jeweils verkehrt herum, weil das Konzept des Affen es ist, die Früchte hoch auf den Bäumen zu erreichen, und das Konzept des Fisches ist es, kleine Lebewesen im Wasser zu jagen und zu fressen - unterschiedliche Zielstellungen die jeweils zu einem bestimmten Design geführt haben). Die Mess-Achsen lassen noch den deep research der Erfolgs-Parameter je Achse an dieser Stelle vermissen. Die Arbeit beschreibt außerdem stets den Ist-Stand und nie was war. Weiteres Thema: das --debug flag aus dem state pattern wurde aus den Zuständen ausgegliedert und muss im Text nach der Planung und Code nachgezogen werden.
 Die \emph{System-Achsen} sind die Belange der Bau- und Ziel-Plattform. Kanonisch sind es \emph{genau
 drei} Haupt-Achsen in fester Ordnung: die Ziel-ISA (\texttt{target\_isa}), das Betriebssystem
 (\texttt{operating\_system}) und die Erweiterungs-Hardware (\texttt{external\_utils}); letztere ist
@@ -1004,7 +1009,7 @@ IPC/CPI). Das Regime ist ein Merkmal der Mess-Achse, nicht des gemessenen Organs
 Organ-Achse kann von beiden Regimen beleuchtet werden. Die observer-basierte Teilmenge löst die
 Apparatur bereits auf, die PMC-Teilmenge bleibt an Hardware-Zähler-Zugriff gebunden
 (Abschnitt~\ref{sec:sota-instances}).
-
+% Bezüglich der Beschreibung Labor-Einrichtung vs Lebensraum bitte die anderen Kommentare gegenlesen. Die CEB ist die CacheEngineBuilder, die Abkürzungen sollte beschrieben sein. Die CEB ist das Messwerkzeug, welches der Planer für die Experimente erstellt. Die Konzeption ist hier weiterhin nicht durchgängig erkennbar.
 Konzeptionell folgt daraus ein doppelter Wurzel-Schnitt mit \emph{zwei} Realm-Wurzeln --- statt der
 \emph{einen} gemeinsamen Wurzel aller Nicht-Organ-Achsen, die frühere Fassungen dieser Arbeit noch
 vorsahen: Der System-Realm wurzelt am \texttt{CacheEngineBuilder}, der die Plattform kennt und die
@@ -1014,7 +1019,7 @@ eine eigene abstrakte Klassen-Wurzel und einen eigenen Angebots-Katalog; die Cod
 Wurzeln entwickelt Abschnitt~\ref{sec:impl-system-axes}. Verbindlich ist auch die kanonische
 Gesamt-Ordnung aller Haupt-Achsen: erst das Mess-Tooling, dann die drei System-Achsen in ihrer
 festen Reihenfolge, dann die Organ-Slots T0--T17.
-
+% Welche Umzüge meinst du? Wie gesagt ist die Diplomarbeit ein Abbild der Ist-Form der PLANUNG was umgesetzt werden wird und im optimalen Fall am Ende der Bearbeitungszeit steht, nicht von dem was war. Der Inhalt gehört in die Arbeit aber nicht als Dokumentation der Historie sondern viel mehr wie es im Präsens aussieht.
 Diese Ordnung ist das Ergebnis datierbarer \emph{Umzüge}, keine bloße Umbenennung. Eine frühere
 Fünfer-Liste der System-Achsen führte neben den drei heutigen Haupt-Achsen noch den Compiler, das
 Scheduling und das Last-Rahmenwerk: Der Compiler ist als Unter-Achsen-Gruppe der Bau-Werkzeugkette
@@ -1043,7 +1048,7 @@ Heuristik-Ableitung (Abschnitt~\ref{sec:heuristics}) systematisch vergiften, wä
 sichtbar bleibt und gezielt geschlossen werden kann. Das Prinzip gilt durchgängig --- von der
 Achsen-Verdrahtung (nur Achsen mit real messbarem Laufzeit-Knopf melden Laufzeit-Effekte; die übrigen
 gelten ehrlich als übersetzungsstatisch) bis zur Verfügbarkeits-Meldung der Zähler-Quellen.
-
+% PMC ist default immer an, wenn vorhanden, das stimmt bei dir nicht, weiterhin sogar getrennte Messung von P-Cores und E-Cores unterstützt auf Intel und AMD.
 Was diese Mess-Muster konkret erheben, sind drei gegenläufige Komponenten --- \emph{Latenz},
 \emph{Durchsatz} und \emph{Speicherverbrauch} ---, gegen die sich jede Achsen-Permutation als
 Trade-off-Profil aufspannen lässt: dieselbe Permutation, die in Abbildung~\ref{fig:design-space} ein Punkt
@@ -1076,7 +1081,7 @@ cache-bewusste Suchstrukturen eigentlich zentrale vierte Komponente --- das Verh
 und Index-Ebene über Hardware-Performance-Zähler --- ist im aktuellen Implementierungsstand noch nicht
 erhoben (gestrichelt).}\label{fig:measurement-triangle}
 \end{figure}
-
+% Du hast hier die Prinzipien des Stempelsystems vorweg genommen und in der sequentiellen Leseabfolge der Arbeit kennt noch niemand das Prinzip von Lager oder Stempel und deren umfassende Rolle im System, daher ist die Erklärung hier notwendig, aber nicht hinreichend belegt.
 \subsection{Komplex-Achsen: die Ziel-ISA als feste Rekombination}\label{sec:complex-axis}
 Nach außen verhalten sich die drei System-Haupt-Achsen wie \emph{eine}: Eine \emph{Komplex-Achse}
 ist eine Klammer über einer festen Rekombination mehrerer Haupt-Achsen --- alle Glieder bleiben
