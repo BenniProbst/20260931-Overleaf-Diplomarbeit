@@ -914,7 +914,7 @@ komponierten Lebewesen fair vermessen lassen.
 % Ist find wirklich eine offizielle Methode von std::map oder ein Artefakt aus der Standard-C++-Bibliothek? Ich kenne find hauptsächlich als Range-Suchmethode, nicht als konkrete Interface Funktion von std::map, daher brauchen wir wenn dann eine getrennte Bibliothek über die Iteratoren von Genus-Interfaces, die solche Operationen formal anbietet und dabei alle kartesischen Produkte aller Achsen gleichermaßen compile time unterstützt. Die Hüllen std::map für SearchAlgorithm und std::vector für Container müssen vollständig in der Implementierung aufgeführt sein, aber wir konzentrieren uns auf die benötigten interface Funktionen. Es sind dennoch die Implementierung aller Interface Funktionen langfristig Pflicht. Wir benötigen Container innerhalb der Achsen, weil sie als Abstraktions-Schicht einerseits die Implementierung erleichtern, zweitens in unserer Aufmachung Metaprogrammiert compile time optimal aufgestellt werden und drittens weil sie genau die erlaubten Achsen im Kompilat eines Tier-Binaries verwenden und damit das Gesamt-Konstrukt lückenlos vergleichbar machen, da sich Eigenschaften von SearchAlgorithm und Container ähneln. Würden wir C++ Standard-Container verwenden, würden wir die Kontrolle über diese verlieren und könnten keine uniformen messbaren Ergebnisse mit Micro-benchmarking erzeugen, die bei jedem Durchlauf die exakt gleiche Laufzeit entfalten. Daher sind eigene Container kein nice-to-have sondern eine Notwendigkeit um eine wissenschaftliche Mess-Qualität zu erreichen. Ich sehe noch ein Problem in der nicht ganz konformen Verwendung von Sub-Achse vs Unter-Achse - wir sollten uns auf einen Begriff einigen.
 \section{Das Mess-System}\label{sec:measurement-system}
 Damit strukturell verschiedene Suchalgorithmen \emph{fair} verglichen werden, bildet die Arbeit sie alle
-auf eine einzige, gut verstandene Schnittstelle ab: den C++-Vertrag der geordneten Map
+auf eine einzige, gut verstandene Schnittstelle ab: den C++-Vertrag der geordneten Map-Hülle
 \texttt{std::map<Key,\,Value>} mit Punktanfrage (\texttt{find}), Einfügen/Aktualisieren (\texttt{insert},
 \texttt{emplace}), Löschen (\texttt{erase}) und ordnungsbasierter Navigation
 (\texttt{lower\_bound}/\texttt{upper\_bound}, Bereichs-Iteration)~\cite{iso_cpp}. Die Achsen beschreiben das
@@ -975,7 +975,7 @@ permutierbar --- jede Belegung verändert die Identität der Tier-Binary. Kanoni
 Implementierungs-Nummerierung. Die frühere Neunzehn-Achsen-Zählung (Zwischenstand Juli 2026) ist
 eine historische Vorstufe dieser Ordnung: Aus ihr sind die Telemetrie und die ISA in die
 System-Sphäre umgezogen, und das Persistenz-Ziel ist als achtzehnte Organ-Achse hinzugekommen.
-% Die Methapher für Blut stand schon immer für die Verbindung aller Organ-Achsen in der Anatomie durch das flüssige Organ "Blut" welches dynamisch im Planer zu einer compile time Konfiguration angepasst werden kann, aber nicht für die System-Achsen, die eher den Lebensraum eines Tiers kennzeichnen. Die Mess-Achsen kennzeichnen die Ausstattung eines Labors in dem ein Tier untersucht wird. Ein Tier kann ohne Messung sehr gut leben, aber es soll nur das gesündeste Tier in die freie Wildbahn entlassen werden. Jedes Tier sollte bestmöglich an seinen Lebensraum angepasst sein, wenn es eine bestimmte Eigenschaft nicht besitzt (etwa kann es nicht schwimmen), dann kann es diesen Teil seines Lebensraumes (sprich die Hardware) nicht zu seinem Vorteil nutzen - oder zu seinem Nachteil, falls die Messung ergründet, dass die Spezialisierung des Tiers an sich gar nicht auf diesen Lebensraum ausgelegt sein sollte, weil es die Qualität des Tiers negativ beeinflusst (ein Affe sollte klettern, ein Fisch schwimmen und nicht jeweils verkehrt herum, weil das Konzept des Affen es ist, die Früchte hoch auf den Bäumen zu erreichen, und das Konzept des Fisches ist es, kleine Lebewesen im Wasser zu jagen und zu fressen - unterschiedliche Zielstellungen die jeweils zu einem bestimmten Design geführt haben). Die Mess-Achsen lassen noch den deep research der Erfolgs-Parameter je Achse an dieser Stelle vermissen. Die Arbeit beschreibt außerdem stets den Ist-Stand und nie was war. Weiteres Thema: das --debug flag aus dem state pattern wurde aus den Zuständen ausgegliedert und muss im Text nach der Planung und Code nachgezogen werden.
+% Die Methapher für Blut stand schon immer für die Verbindung aller Organ-Achsen in der Anatomie durch das flüssige Organ "Blut" welches dynamisch im Planer zu einer compile time Konfiguration angepasst werden kann, aber nicht für die System-Achsen, die eher den Lebensraum eines Tiers kennzeichnen. Die Mess-Achsen kennzeichnen die Ausstattung eines Labors in dem ein Tier untersucht wird. Ein Tier kann ohne Messung sehr gut leben, aber es soll nur das gesündeste Tier in die freie Wildbahn entlassen werden. Jedes Tier sollte bestmöglich an seinen Lebensraum angepasst sein, wenn es eine bestimmte Eigenschaft nicht besitzt (etwa kann es nicht schwimmen), dann kann es diesen Teil seines Lebensraumes (sprich die Hardware) nicht zu seinem Vorteil nutzen - oder zu seinem Nachteil, falls die Messung ergründet, dass die Spezialisierung des Tiers an sich gar nicht auf diesen Lebensraum ausgelegt sein sollte, weil es die Qualität des Tiers negativ beeinflusst (ein Affe sollte klettern, ein Fisch schwimmen und nicht jeweils verkehrt herum, weil das Konzept des Affen es ist, die Früchte hoch auf den Bäumen zu erreichen, und das Konzept des Fisches ist es, kleine Lebewesen im Wasser zu jagen und zu fressen - unterschiedliche Zielstellungen die jeweils zu einem bestimmten Design geführt haben). Die Mess-Achsen lassen noch den deep research der Erfolgs-Parameter je Achse an dieser Stelle vermissen. Die Arbeit beschreibt außerdem stets den Ist-Stand und nie was war. Weiteres Thema: das --debug flag aus dem state pattern wurde aus den Zuständen ausgegliedert und muss im Text nach der Planung und Code nachgezogen werden. Weitere Falschaussage: Laut Code werden System-Achsen durchaus darüber permutiert, welche Organ-Achsen-Eigenschaften die CEB freigeben darf, die System-Unter-Achsen permutieren auch.
 Die \emph{System-Achsen} sind die Belange der Bau- und Ziel-Plattform. Kanonisch sind es \emph{genau
 drei} Haupt-Achsen in fester Ordnung: die Ziel-ISA (\texttt{target\_isa}), das Betriebssystem
 (\texttt{operating\_system}) und die Erweiterungs-Hardware (\texttt{external\_utils}); letztere ist
@@ -990,7 +990,7 @@ Effekten der Plattform und der Mess-Instrumente vermengt werden. Bau-Steuergrö�
 Optimierungsstufe und SIMD-Erweiterung multiplizieren deshalb nur die \emph{Bau}-Matrix --- sie
 erscheinen in der Bau-Versionskennung der Binary (Abschnitt~\ref{sec:stamp-model}) ---, nie den
 Organ-Permutationsraum.
-
+% Debug ist ein Flag und kein Zustand
 Die \emph{Mess-Achsen} schließlich sind die Belange des Messens selbst --- die Mess-Instrumente.
 Sie bilden den dritten, von beiden anderen getrennten Realm: Das Last-Rahmenwerk
 (\texttt{load\_framework}), das die Workload-Konventionen aus
@@ -1047,7 +1047,7 @@ Lieber eine als ungültig markierte Messung als ein erfundener Effekt: Ein Phant
 Heuristik-Ableitung (Abschnitt~\ref{sec:heuristics}) systematisch vergiften, während eine ehrliche Lücke
 sichtbar bleibt und gezielt geschlossen werden kann. Das Prinzip gilt durchgängig --- von der
 Achsen-Verdrahtung (nur Achsen mit real messbarem Laufzeit-Knopf melden Laufzeit-Effekte; die übrigen
-gelten ehrlich als übersetzungsstatisch) bis zur Verfügbarkeits-Meldung der Zähler-Quellen.
+gelten als übersetzungsstatisch) bis zur Verfügbarkeits-Meldung der Zähler-Quellen.
 % PMC ist default immer an, wenn vorhanden, das stimmt bei dir nicht, weiterhin sogar getrennte Messung von P-Cores und E-Cores unterstützt auf Intel und AMD.
 Was diese Mess-Muster konkret erheben, sind drei gegenläufige Komponenten --- \emph{Latenz},
 \emph{Durchsatz} und \emph{Speicherverbrauch} ---, gegen die sich jede Achsen-Permutation als
@@ -1103,7 +1103,7 @@ keine Klammer je Glied; die Betriebssystem-Distribution ist dort eine Stempel-Va
 vierte Ausprägung. Die CAS-Latenz ist im heutigen Stand ein rein \emph{deklariertes} Glied
 (Provenienz-Stufe \enquote{deklariert, nicht gemessen}, Abschnitt~\ref{sec:hw-probe}); die Arbeit
 weist das aus, statt einen Messwert vorzutäuschen.
-
+% Ab hier sieht alles sehr gut aus
 \subsection{Hardware-Erkennung als zweigeteilte Mess-Achse}\label{sec:hw-probe}
 Damit die deklarierten Plattform-Glieder keine still veraltenden Konstanten werden, führt das
 Konzept die Hardware-Erkennung als weitere zweigeteilte Haupt-Achse ein --- und zwar als
@@ -1138,7 +1138,7 @@ manuellen \texttt{dmidecode}-Abfrage --- wird durch eine Erhebung ersetzt, die b
 erneut stattfindet und ihre Vertrauensstufe mitführt. Im Implementierungsstand dieser Arbeit liegen
 von dieser Achse das Provenienz-Vokabular samt SPD-Parser und Fehler-Domäne sowie Erhebungs-Kette
 und Plattform-Auswahl-Matrix als Code vor (Kapitel~\ref{ch:impl}).
-
+% Bitte nach dem Code das Konzept der Fingerprints und deren Syntax überarbeiten. SHA256 wird jetzt verwendet
 \subsection{Identitäts-Stempel: eine Zeile je Realm}\label{sec:stamp-model}
 Die Dreiteilung wird an der Tier-Binary selbst ablesbar. Ihre \emph{Permutations}-Identität ist die
 \texttt{binary\_id}: der Pfad aus achtzehn \texttt{achse=wert}-Segmenten in kanonischer
@@ -1166,7 +1166,7 @@ einer bereits gebauten Permutation hängt. Gemessene \emph{Werte} ---
 etwa eine erhobene RAM-Rate --- erscheinen niemals in Stempel oder \texttt{binary\_id}: Gestempelt
 wird die Übersetzungszeit-Plattform-\emph{Klasse}, nie ein Messwert
 (Abschnitt~\ref{sec:hw-probe}).
-
+% Die Stempel Syntax für alle Träger-Stufen ist wesentlich feiner als das
 \subsection{Subsysteme und die Kette von der XML zur Tier-Binary}\label{sec:mess-chain}
 Organisiert ist der Apparat als \emph{ein} Hauptkanal: \emph{Eine} Anwender-XML ist die einzige
 Quelle des gesamten Prozesses. Sie \emph{zeigt an}, welche Experimente, Achsen, Einstellungen und
@@ -1176,7 +1176,7 @@ nach dem Vorbild des Java-POM\@: ein deklaratives Manifest, das gegen ein Reposi
 eine unregistrierte Referenz ist ein harter Validierungsfehler, keine stille Auslassung. Der
 Experiment-\emph{Planer} löst die XML gegen die drei Angebots-Kataloge auf und baut je
 Ziel-Plattform und Mess-Aufgabe \emph{einen} \texttt{CacheEngineBuilder}, in den die gewählten
-Mess-Achsen einkompiliert werden; dieser Builder orchestriert mit ihnen den Bau der Tier-Binaries
+Mess-Achsen einkompiliert werden; dieser Builder orchestriert den Bau der Tier-Binaries
 und stempelt sie mit seiner Plattform (Abschnitt~\ref{sec:stamp-model}); die Tier-Binary
 schließlich trägt die Organ-Permutation. Jede Stufe der Kette speist sich so aus ihrem art-eigenen
 Angebot --- Mess-Katalog $\to$ Planer, System-Katalog $\to$ Builder, Organ-Katalog $\to$
