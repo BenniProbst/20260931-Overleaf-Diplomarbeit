@@ -148,6 +148,8 @@ Organ-Satz ist damit keine Konvention, sondern eine übersetzungszeitlich geprü
 % Kacheln 3.35->3.75cm, Raster 4.05cm) und passt nativ in \textwidth (16cm); so bleibt die
 % \footnotesize-Schrift unskaliert statt per resizebox (x0.90) verkleinert. Regel: resizebox nur zum
 % VERKLEINERN (vgl. fig:m-model).
+
+% Umzüge werden nicht historisch benannt, sondern nur der ist Zustand
 \begin{tikzpicture}[font=\footnotesize,
   ax/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=2.0cm,text width=3.55cm,align=center,inner sep=2pt}]
   \node[ax] (t0) at (0,0){\textbf{T0 Suchalgorithmus}\\{\tiny SA1--SA4}\\{\tiny Array256, OriginalART/HOT, KAry, Interpol., Hash \dots\,(21: 17 Basis $+$ 4 per-K)}\\{\tiny\itshape Std.\ Array256}};
@@ -173,7 +175,7 @@ Organ-Satz ist damit keine Konvention, sondern eine übersetzungszeitlich geprü
 \end{tikzpicture}
 \caption{Galerie der achtzehn Organ-Achsen (T0--T17, kanonische Slot-Reihenfolge): je Achse das Implementierungs-Konzept --- Kurzname, Sub-Achsen-Familie und eine repräsentative Auswahl der austauschbaren Bausteine. Jede Achse ist ein \texttt{Concept}-Interface mit mehreren Strategie-Bausteinen (\emph{Strategy}-Muster); eine konkrete Composition belegt je Slot genau einen. Der \emph{Standard} (\enquote{Std.}) ist eine abgeleitete Vergleichs-Baseline, kein Code-Flag; bei den großen Achsen T0/T6/T15 ist die Gesamt-Bausteinzahl in Klammern angegeben. Die T-Nummern sind Slots der Komposition, keine Verzeichnis-Nummern der Implementierung. Gegenüber der Neunzehner-Galerie früherer Fassungen (T0--T18, Zwischenstand Juli 2026) sind Telemetrie und ISA in die System-Sphäre umgezogen, und das Persistenz-Ziel ist als achtzehnter Slot hinzugekommen --- im kanonischen Vermessungs-Katalog auf seinen In-Memory-Vertreter gepinnt (Abschnitt~\ref{sec:axis-triad}). Die vollständige Matrix mit Herkunfts-Quellen führt Anhang~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
-
+% Die konzeptionelle Hierarchie hat sich gewandelt und muss aus den Plänen und aus dem Code hierhin nachgezogen werden
 \subsection{Die eine Architektur im Code}\label{sec:impl-architecture}
 Die \emph{eine} Architektur aus Abschnitt~\ref{sec:anatomy-model} wird auf Code-Ebene über eine ABI-stabile \emph{Hülle} nach außen sichtbar. Das Lebewesen
 \texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind nur zwei
@@ -269,7 +271,7 @@ template<class... Ts> class SearchEngine;   // ABI-Laufzeit-Sicht des Lebewesens
 \end{tikzpicture}
 \caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase} und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der achtzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird; rechts das je Achse wiederholte Implementierungs-Muster --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die \texttt{mp\_list}-Baustein-Familie und die Übersetzungszeit-Auflösung \texttt{resolve\_baustein}, die je Achse zwischen Prüfling-Slot und Cache-Engine-Standard wählt.}\label{fig:uml-interfaces}
 \end{figure}
-
+% Die Absätze bis "Zwei Eigenschaften" und bis zum Kapitel "Qualitätssicherung" sind erheblich gegen den Plan veraltet und müssen aus dem Stand des Codes und Ledgers nachgezogen werden. Der gesamte konzeptionelle Stack trägt nicht mehr.
 \subsection{Vom Profil zur Tier-Binary: Planer, Builder und Mess-Pipeline}\label{sec:impl-pipeline}
 Die Kette von der Anwender-XML zur Tier-Binary (Abschnitt~\ref{sec:mess-chain}) hat im Code eine
 benannte Gestalt. Ihr Einstieg ist der Mess-Treiber \texttt{comdare-messung-driver}, der die Rollen
@@ -386,7 +388,7 @@ die Messreihen, \texttt{binary\_to\_csv} deserialisiert die binären Mess-Record
 \texttt{diagram\_generator} die A4-bewussten TikZ-Diagramme, und \texttt{latex\_to\_pdf} setzt das
 Manuskript.}\label{fig:toolchain}
 \end{figure}
-
+% Historie ist wieder nicht so sehr relevant hier, nur der Ist Stand. Weiterhin besteht in allen Kapitel 4 Abschnitten ein bedarf nach deep research, ob ähnliche Verfahren und Architekturen wissenschaftlich existieren und ob wir diese zitieren können, um uns auf genügend Quellen zu stützen. Klar ist die Architektur meine Erfindung, aber es gibt immer Anhaltspunkte, die aus der realen Welt übernommen werden können. Bitte achte in der gesamten Diplomarbeit auf wissenschaftliche Sprache. Die Ebenen E1 bis E4 werden nicht nochmal verbildlicht, beschrieben oder in einer Abbildung gezeigt, bitte hole das nach und prüfe die Texte stets auf die Abbildung des Ist-Zustandes, dass ein fremder Mensch sie ohne Vorwissen lesen und verstehen kann, der nur den Kontext der zuvor sequentiell davor eingelesenen Kapitel kennst aber sonst nichts. Nicht erklärte abkürzungen, die zuvor nicht erklärt wurden, müssen zum Zeitpunkt ihres sequentiellen Auftretens beschrieben sein. Die Verträge wurden mittlerweile auch in verschiedene Flächen an den Binaries der Träger-Schichten zergliedert und das muss ergänzt werden, ist das im Code nicht der Fall, muss das ledger geprüft und der Code nachgezogen werden, wie auch der Text hier.
 \section{Qualitätssicherung: Contract-Tests je Schicht}\label{sec:impl-contracts}
 Das Schichtenmodell E4--E0 mit seinen eingefrorenen Interface-Verträgen hat
 Abschnitt~\ref{sec:anatomy-layers} als Konzept entwickelt; dieser Abschnitt beschreibt seine Umsetzung
@@ -406,7 +408,7 @@ Test-Scope, kein Laufzeit-Umschalter im Produktiv-Code. So kann eine Schicht fer
 sein, bevor die tiefere Ebene ihre Werte überhaupt konsumiert, und die Prüffrage jeder Grenze ---
 reicht die Schicht ihre Definition \emph{verlustfrei} an die nächste weiter?
 (Abschnitt~\ref{sec:anatomy-layers}) --- wird vom Entwurfsgrundsatz zum ausführbaren Abnahme-Test.
-
+% Warum prüfst du an der CSV Ausgabe und nicht die standard xlsx?
 Je Schicht konkretisiert sich das so: Für die Definitions- und Auswertungs-Schicht~E4 prüft der
 Harness die Übersetzung der deklarativen XML-Profile in die Achsen-Ebenen-Struktur ---
 Golden-Fixtures vergleichen die aus einem Profil emittierten Achsen-Ebenen strukturell gegen eine
@@ -430,7 +432,7 @@ ehrlich behandelt statt still verletzt wird und dass jede applizierte Stellgrö�
 in der persistierten Ergebnis-Datei sichtbar ist --- geprüft an der CSV-Ausgabe, nicht am
 In-Process-Zustand ---, dazu der Erhalt der Zwei-Phasen-Operationsschleife (verworfener Warmlauf,
 Messlauf) als Invariante.
-
+% Was ist das zwei Gate Protokoll? Kannst du das hier bitte erklären und auch den Mess-Zyklus der 2 Wiederholungen und die Gründe des Doppellaufs schärfen? Weiterhin sind es nicht mehr 131072 Identitäten, sondern der Planer plant die Möglichkeiten im B+-Experiment-Baum nach in der XML vorhersagbaren Möglichkeiten und wir müssen je Achse die Mächtigkeit aller Möglichkeiten berechnen, um die Tatsächliche Anzahl der Möglichkeiten über alle Achsen hinweg, betrachtet als Stufen errechnen zu können, die sich weiterhin je Plattform durch fehlende Freigaben unterscheiden. 2 hoch 17 Identitäten ist mittlerweile grund falsch und kann nie statisch bestimmt sein. Der Absatz liest sich wie ein Statusbericht und nicht wie eine wissenschaftliche Arbeit welche Wissen über die Funktionalität der eigenen Implementierung konzeptionell vermitteln möchte und Design-Entscheidungen erklärt
 Oberhalb der Schicht-Harnesse sichert ein \emph{Zwei-Gate-Protokoll} jedes Implementierungs-Paket
 ab.\ \emph{Gate~1} ist das scharfe Gate des Engine-Repositories: Die volle Test-Suite --- im Stand
 dieser Arbeit 320 registrierte Tests --- läuft ungekürzt \emph{zweimal}, und abgenommen wird
@@ -450,7 +452,7 @@ aufzuweichen.
 Dieses Protokoll ist Methodik, kein Systembestandteil: Es beschreibt, \emph{wie} Änderungen am
 Apparat abgenommen werden, nicht, was die Binaries tragen. Die Verzeichnis- und Suite-Struktur,
 auf der es läuft, dokumentiert Anhang~\ref{app:code}.
-
+% Die Mess-Achse treibt die Freigabe der Mess-Quelle über die System-Achsen-Wurzel in Form der CEB selbst, so sollte es auch im code sein.
 Die Fertigstellung folgt der Schichtung top-down --- E4, E3, E2, dann der Mess-Querschnitt~M
 unmittelbar vor E1 ---, und die Infrastruktur~E0 wird bewusst zuletzt konsolidiert
 (Abschnitt~\ref{sec:anatomy-layers}); die Grenze E3$\to$E2 ist im heutigen Stand bereits
