@@ -3,7 +3,7 @@
 % [SKELETT] Methodik zuerst, dann Analyse der Ergebnisse auf Basis der Methodik (zusammengelegt aus alt 06+07).
 
 Die Evaluation legt zuerst die Methodik offen und wertet darauf aufbauend die Messreihen aus.
-
+% Die Evaluation ist inhaltlich korrekt, aber wenn wir den Inhalt der Diplomarbeit technisch auf Cacheline awareness ausgerichtet hatten, dann interessieren uns doch besonders die Unterschiede der Cacheline bezogenen Optimierung zwischen unterschiedlichen Testplattformen, besonders perf und PMC bezogene Messwerte und deren Zusammenhänge zu verschiedenen Achsen und Tier-Binary-Gattungs-Interface Aufrufe. Bitte prüfe, ob die Evaluation thematisch zu dieser Arbeit passt, ja inhaltlich ist es korrekt, aber additiv sollten wir alle evaluations-Mechaniken der gesamten Planung und und des Prinzips "vollautomatische Experiment Evaluation aus XML" beleuchten - die Arbeit automatisiert im Kern genau diese Evaluation. Bitte lies die gesamte bereits korrigierte Arbeit bis hierhin gegen und ergänze Methodik, die bereits in der Arbeit selbst steckt. Wir brauchen hier ein deep research zur Strategie, wie eine Master thesis Evaluation aufgebaut ist, aktuell können wir das so nicht stehen lassen. Der globale default Workload ist die Permuatation über ALLE verfügbaren workloads.
 \section{Methodik}\label{sec:eval-method}
 Drei \emph{Hypothesen} leiten die Auswertung:
 \begin{description}
@@ -77,6 +77,7 @@ AVX2- und --- auf Barnard --- ein AVX-512-Build vorbereitet, und auf Hybrid-CPUs
 getrennt vermessen (über die eigenen Zähler-Domänen \texttt{cpu\_core} und \texttt{cpu\_atom}) statt
 zusammenaggregiert. Der produktive Mess-Betrieb selbst ist ein \emph{Zwei-Maschinen-Betrieb} --- eine
 AMD-Maschine (der genannte Ryzen~9~9950X3D) neben einer Intel-Maschine (Core~i9-12900K, Alder Lake) ---, und die zählerbasierte % chktex 29
+% Die Hardwareeigenschaften sollten im Code der Cache Engine im Planer auf der Kommandozeile oder per file system review output prüfbar sein, um verfügbare XML Einstellungen zu deklarieren und in einem wählbaren in-house setup die XML auf der CLI geführt mit allen Optionen zu erstellen. Nicht verfügbare Optionen sind auch nicht wählbar, dieser Modus sollte optional sein. Das eben beschriebene Verfahren fehlt auch noch im Code.
 Erhebung führt dafür zwei getrennte Hersteller-Lanes (AMD und Intel), die hart gegatet sind: Erst wenn
 beide Lanes ihre Zähler-Voraussetzungen nachgewiesen haben, arbeitet eine Maschinen-Lane ihren
 Mess-Strang ab --- eine stille Teil-Messung nur eines Herstellers gibt es nicht. Auf den
@@ -91,6 +92,7 @@ Zum Stand dieser Fassung ist das zweite Regime \emph{entworfen, aber nicht vollz
 berichteten Messungen stammen sämtlich vom root-Linux-Regime der beiden Produktionsmaschinen; der
 Talos-Spiegel bleibt als Anforderung bestehen und wird nach der Abgabe erhoben.
 
+% Dieser Abschnitt ist wesentlich überholt, die Messund erhebt nun so einiges mit PMC
 Davon zu trennen ist, welche Zähler dieser Zugang in der vorliegenden Fassung tatsächlich füllt: Die
 Mess-Kette öffnet über \texttt{perf\_event\_open} vier generische Zähler --- L1D-Misses,
 Last-Level-Misses, dTLB-Misses sowie, seit M-3a, Branch-Misses
@@ -103,12 +105,12 @@ Zonen-Leserecht --- seit Linux~5.10 der Regelfall --- leer. Die Spalten der nich
 tragen deshalb keine \emph{gemessene} Null: Sie sind als \emph{nicht implementiert} zu lesen
 und werden mit der nächsten Ausbaustufe nachgezogen. Diese Trennung ist Teil der
 Ehrlichkeits-Doktrin dieser Arbeit --- eine Null nur dort, wo tatsächlich null gemessen wurde.
-
+% Zeit und observer sind in checkpoint_measure vereint und wir trennen je w/ma/mi deren Verantwortlichkeiten
 Die zeit- und observer-basierten Kategorien laufen
 unter beiden Regimes identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
 privilegierten Regime erhoben und je Plattform mit Betriebssystem, Kernel und Zähler-Domäne
 protokolliert.
-
+% Welcher Determinismus wurde gebrochen? Warum fehlt diese Optimierungsstufe und ist das nicht im Ermessen des Entwicklers was er bei der Verwendung des Systems unter Warnung der Konsequenzen verwendet? Maximale Optimierung muss wählbar bleiben.
 Der Umfang des vollständigen Baus ist als \emph{Soll} festgelegt: Je System-Permutation --- je im
 Profil deklarierter Kombination der Bau-Steuergrößen aus Optimierungsstufe und SIMD-Erweiterung
 (Abschnitt~\ref{sec:axis-triad}) --- werden die $2^{17} = 131072$ Organ-Permutationen des kanonischen
@@ -117,7 +119,7 @@ anstehen, entscheidet allein das Profil; im Stand dieser Arbeit deklariert es vi
 Optimierungsstufen mal zwei SIMD-Stufen), wobei die aggressivste Optimierungsstufe bewusst fehlt, weil
 sie den IEEE-754-Gleitkomma-Determinismus des Apparats bräche. Ergebnisse dieser Voll-Bau-Läufe stehen
 aus (Abschnitt~\ref{sec:eval-results}).
-
+% Es wird für fremde Bibliotheken sogar auf die automatische Installation und Kompilation mit dem original compiler - sofern Umsetzbar oder vergleichbar - bestanden und es gibt auch ein System welches den Originalcode und compiler beweist, für die Funktionen, welche seziert in die Achsen eingingen. Daher muss jeder sezierte Teilalgorithmus dieselben Performance Eigenschaften besitzen weil er weiterhin zur compile time eingebunden und damit zu einem wieder originalen Binary Block kompiliert wird.
 Faire Vergleichbarkeit ist über feste Regeln gesichert: Jeder Vergleich trennt einen gemeinsamen
 Minimalmodus (Common-Denominator: externe Werte-Handles, keine PRT-ART-Spezialpfade) vom
 PRT-ART-Native-Modus (Inline-Umschaltung und adaptive Seitentyp-Wahl je Verzweigungspunkt); alle
@@ -129,6 +131,7 @@ Allokator und Commit-Hash mitgeloggt, und jede Konfiguration wird in mehreren ge
 vermessen; die Latenz-Perzentile bestimmt die nachgelagerte Auswertung nearest-rank aus den Rohwerten
 und ergänzt sie um die HDR-Verteilungssicht (Abschnitt~\ref{sec:impl-system-axes}).
 
+% Die CEB steuert die Threads über das erzeugen paralleler Anfragen auf die Tier-Binaries. Die Threads der Ausführung werden hier erzeugt. Das Prinzip des Lagers wurde nie richtig bildlicht und im Text erklärt aber wird jetzt ohne Vorwissen einfach so aufgegriffen - bitte beheben.
 Auch der Mess-\emph{Betrieb} ist Teil dieser Fairness-Regeln. Die Messung bleibt strikt vom Bau
 getrennt: Mess-Läufe starten nie automatisch mit einem grünen Bau, sondern werden ausdrücklich
 ausgelöst --- ein grüner Bau beweist Bau-Fähigkeit, kein Mess-Ergebnis. Während der Debug-Modus zur
@@ -140,7 +143,7 @@ die Konformitätsprüfung am Prüf-Dock (Abschnitt~\ref{sec:impl-contracts}); Ba
 je Maschine in Meilenstein-Batches von je 4096 Binaries am Stück abgearbeitet, mit gleichverteilter
 Zuteilung der gemeinsam baubaren Binaries über die Maschinen und inventarisierter Wiederaufnahme nach
 Unterbrechung.
-
+% Das Messkurvensystem muss genauer erklärt werden, auch grafisch. Der Hybrid Modus kompiliert nur mithilfe der CEB, aber selbst gar nicht, das könnte man missverstehen.
 Über die drei Hypothesen hinaus erhält die Auswertung eine vierte, eigenständige
 \emph{Evaluations-Dimension}: den heuristischen Gegenbeweis. Sein Konzept ist in
 Kapitel~\ref{ch:measurement} entwickelt --- der Hybrid-Modus kompiliert die heuristisch geschätzte
@@ -176,7 +179,7 @@ zwei Vergleichsmengen mit festgelegtem Vorrang: primär gegen die rekonstruierte
 gegen alle bekannten Tier-Binary-Permutationen, insbesondere das beste Einzel-Binary; dieser zweite
 Vergleich ordnet ein, ob ein etwaiger Vorsprung der Heuristik als Ganzer oder schlicht einer einzeln
 überlegenen Permutation zuzuschreiben ist.
-
+% Mit Messfühler muss auch langsamer sein als ohne Messfühler, sonst stimmt was nicht.
 Daraus folgt die Entscheidungsregel: Der Gegenbeweis gilt je Workload-Klasse als \emph{erbracht},
 wenn die beobachterfrei neu gebaute Rekombination die schnellste Paper-Rekonstruktion in der
 Wall-Clock schlägt und der Abstand das Unsicherheitsband der Bau-Varianten übersteigt; er gilt als
@@ -185,7 +188,7 @@ Ergebnis wäre ein Resultat, denn es bezifferte erstmals, wie viel Schätzfehler
 Kurven-Prognose und realem Verhalten liegt. Die Messdaten dieser Dimension stehen aus; sie werden
 nach den ersten vollständigen Messläufen zusammen mit den Reihen A--C in
 Abschnitt~\ref{sec:eval-results} eingespeist.
-
+% Dieser folgende Abschnitt ist erheblich veraltet. Die CSV kann nur aus einer xlsx erstellt werden die schon existiert, wenn auch nur im RAM, Ansonsten ist alles korrekt. Das Stempelsystem und seine weiten Auswirkungen sind nicht erklärt und fehlen komplett.
 \section{Ergebnisse und Analyse}\label{sec:eval-results}
 Zum Zeitpunkt der Erstellung sind Methodik und Auswertungs-Pipeline vorhanden und auf Beispieldaten
 verifiziert; eine erste reale Smoke-Messreihe (43 Permutationen, echte DLL-Messung auf der
@@ -214,6 +217,7 @@ je Lauf \emph{eine} Datei mit einem Blatt je gewählter Unter-Achsen-Permutation
 bleibt als einstellbarer Fallback derselben Factory erhalten (je Blatt dann eine eigene Datei), und
 Spalten, deren Wert sich innerhalb eines Laufs nie ändert, wandern in die Metadaten, statt in jeder
 Zeile wiederholt zu werden.
+% Die Auswertungslogik erscheint mir insgesamt doppelt erklärt, weil die 3 Modi schon weiter oben erklärt wurden. Strukturell ist das nicht konsistent. Sicher fehlte allerdings der Bezug zur XML.
 Die drei Messreihen werden dann ausgewertet: Reihe~A (PRT-ART vs.\ Stand der Technik, mit den
 Evaluations-Hypothesen H1--H3 aus Abschnitt~\ref{sec:eval-method}), Reihe~B (systematische Variation der
 Cache-Engine-Permutationen, gespeist aus dem Full Join der Stufe~3) und Reihe~C (Merge/Regression alt
@@ -236,6 +240,7 @@ reinen Cache-Engine-Bauten bleiben Suffix und Namens-Erweiterung folgerichtig au
 %   \input{tikz/B_cache_engine_perms/heatmap.tikz}
 %   \input{tikz/C_merge/comparison.tikz}
 
+% Die Kernaussage dieses Absatzes taucht nun schon zum dritten mal auf und ein schöner Abschluss des kapitels bezüglich seiner Überschrift ist es auch nicht. Das Ziel ist hier die erreichten Ziele in der Evaluation darzustellen. Die Überleitung ist etws plumb, Bitte recherchiere im Web wie man die Überleitung strukturell sauber zusammenziehen kann, um über alle Teilbereiche des Kapitels Ergebnisse zusammenfassen.
 Den Kern der Auswertung bildet die \emph{Achsen-Sensitivitätsanalyse}, die unmittelbar das
 Trennbarkeits-Problem der Aufgabenstellung beantwortet: Im Stand der Technik sind die Gewichtungen der
 Verbesserungen \emph{einzelner} Algorithmus-Bestandteile bislang nicht trennbar, weil jede Veröffentlichung
