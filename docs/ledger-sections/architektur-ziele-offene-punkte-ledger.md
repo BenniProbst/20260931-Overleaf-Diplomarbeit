@@ -143,6 +143,11 @@ Voll-Messung (C5) sind Abgabe-Voraussetzungen, aber **nicht** CI-pruefbar.
 - **T5** Konsistenz-Pflicht Lizenz-Matrix: Aenderungen an den Lizenz-Staenden der Code-Repos
   (ce = duales Modell, DA-Repo + PRT-ART = Apache-2.0) muessen in der Thesis-Lizenz-Matrix nachgezogen
   werden; einmalige Schluss-Pruefung vor Abgabe. (offen, mittel)
+- **T5-NACHTRAG 10.09.2026:** Lizenz-Matrix nachgezogen am 07.09.2026 (Thesis-Commits 510aa43 / Merge 0b582b35):
+  super Apache-2.0, ce + PRT-ART Comdare Research License 1.0 (Change Date 2031-08-10), Thesis-Repositorium
+  CC BY 4.0 + Copyright Benjamin-Elias Probst (Owner-Entscheid Lizenz-/Vertragszug #179, Punkt 8). Der Klammertext
+  "DA-Repo + PRT-ART = Apache-2.0" (Stand 03.08.) ist damit Historie; die einmalige Schluss-Pruefung vor Abgabe
+  bleibt offen (super #121). (nachgezogen, Schluss-Pruefung offen)
 - **T6** [NEU 03.08.] Anhaenge-Realm-Einzel-Gliederungs-LUECKE: Befund-Doc 02.08. weist **8 Stuecke,
   DE+EN** aus (super-Task #6, startfrei). Umsetzung streng nach Sprach-Doktrin Abschnitt 1 (DE fuehrend,
   EN synchron) und Text-Doktrinen 1.1; laeuft PARALLEL zum ce-Hauptstrang (anderes Repo, disjunkt).
