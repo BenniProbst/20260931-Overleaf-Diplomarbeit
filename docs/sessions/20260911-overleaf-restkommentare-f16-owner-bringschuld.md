@@ -36,3 +36,15 @@ Beides ist Owner-Bringschuld und KEINE Startbedingung fuer den #121-Zug (Owner 1
   ohne diese beiden Posten und traegt sie beim Feinschluss nach, sobald sie eintreffen. Traeger: Board #121
   (Gate-Vermerk), #130 (16 ungetragene Thesis-Auftraege), Ledger-Zug #221 (KON14x-Kandidat). Kein Thesis-Text
   geaendert; Commit trailer-frei (Thesis = Copyright Benjamin-Elias Probst).
+
+## 4 KORREKTUR (2026-09-11T16:54:07Z, additiv, K4)
+
+Der Satz in Abschnitt 1 "kein Kommentar-Commit nach 246eff9 im Thesis-Repo, Probe: git log ab 246eff9" ist
+  zurueckzunehmen: (a) die Alt-SHAs des Extrakts (c2d21fae, 246eff9, dad2d52c) existieren seit dem History-Rewrite des
+  Thesis-Repos (01.09.2026, Trailer-Rewrite; Merge-Basis 113d8f2f) nicht mehr -- git meldet "unknown revision"; die
+  Probe ist so nicht fahrbar; (b) nach 246eff9 kamen am 27.08. acht weitere Kommentar-Commits
+  (KOMMENTAR-EXTRAKT-NACHTRAG-2708.md: 5 neue %-Zeilen in kapitel/de/06_fazit.tex + diplomarbeit.tex, sechs
+  Folge-Commits an 06:226), die im Extrakt-Nachtrag erfasst sind. Der Stand "3 Restkommentare" stuetzt sich auf das
+  Owner-Wort 06.09.2026 (O-29, nach dem 27.08.-Nachtrag), nicht auf eine Commit-Probe. Kuenftige Probe:
+  Kommentar-Muster (%-Zeilen des Owners) je Kapitel gegen den Extrakt + Nachtrag zaehlen, SHAs nur aus der neuen
+  Historie.
