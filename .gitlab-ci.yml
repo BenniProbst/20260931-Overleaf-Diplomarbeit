@@ -73,13 +73,19 @@ thesis:pdf:
     matrix:
       - THESIS_LANG: [de, en]   # REV 3: beide Sprachfassungen sind Abgabe-Artefakte -> beide werden kompiliert und gegatet
   variables:
-    COMDARE_THESIS_KNOWN_WARNINGS: "1"   # §7: genau EINE bekannte (User-akzeptierte) Warning erlaubt; sonst gilt das Dokument als kaputt
+    COMDARE_THESIS_KNOWN_WARNINGS: "0"   # war "1" (99b9a35 27.06.2026) und deckte genau die F-1-Zeile; seit #234 (M-1, Owner W-2 Shim raus) misst CI 289/16625 0/0 (R-4 (b))
+    COMDARE_THESIS_KNOWN_BOXES: "0"      # Overfull/Underfull [hv]box: ab #234 gemessen 0 (FIX-r2 Abschn. 4/5, R-4 (a))
+    COMDARE_THESIS_KNOWN_PKGWARN: "0"    # Package-/Class-Warning:     ab #234 gemessen 0 (FIX-r2 Abschn. 4/5, R-4 (a))
   script:
     - 'command -v latexmk >/dev/null 2>&1 || { echo "latexmk (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
     # Sprachwahl exakt wie build.ps1: \def\thesislang{<lang>} VOR \input gewinnt gegen \providecommand (config/language.tex).
     - 'latexmk -pdf -interaction=nonstopmode -halt-on-error -jobname=diplomarbeit-${THESIS_LANG} -usepretex="\def\thesislang{${THESIS_LANG}}" diplomarbeit.tex'
     # ── §7 Hard-Gate: 0 Fehler (latexmk -halt-on-error oben) + <= bekannte Warnings + .blg ohne Repeated-entry/Warning ──
     - 'test -s diplomarbeit-${THESIS_LANG}.log || { echo "GATE-FAIL [${THESIS_LANG}]: diplomarbeit-${THESIS_LANG}.log fehlt (Build unvollstaendig)"; exit 1; }; W=$(grep -c "LaTeX Warning" diplomarbeit-${THESIS_LANG}.log 2>/dev/null || true); W=${W:-0}; echo "LaTeX-Warnings=$W (erlaubt <=${COMDARE_THESIS_KNOWN_WARNINGS})"; test "$W" -le "${COMDARE_THESIS_KNOWN_WARNINGS}" || { echo "GATE-FAIL [${THESIS_LANG}]: $W LaTeX-Warnings > ${COMDARE_THESIS_KNOWN_WARNINGS} bekannte -> Dokument unordentlich"; exit 1; }'
+    - 'B=$(grep -cE "^(Overfull|Underfull) \\\\[hv]box" diplomarbeit-${THESIS_LANG}.log 2>/dev/null || true); B=${B:-0}; echo "Box-Warnungen=$B (erlaubt <=${COMDARE_THESIS_KNOWN_BOXES})"; test "$B" -le "${COMDARE_THESIS_KNOWN_BOXES}" || { echo "GATE-FAIL [${THESIS_LANG}]: $B Box-Warnungen > ${COMDARE_THESIS_KNOWN_BOXES}"; exit 1; }'
+    - 'P=$(grep -cE "^(Package|Class) [A-Za-z0-9_-]+ Warning" diplomarbeit-${THESIS_LANG}.log 2>/dev/null || true); P=${P:-0}; echo "Paket-/Klassen-Warnungen=$P (erlaubt <=${COMDARE_THESIS_KNOWN_PKGWARN})"; test "$P" -le "${COMDARE_THESIS_KNOWN_PKGWARN}" || { echo "GATE-FAIL [${THESIS_LANG}]: $P Paket-/Klassen-Warnungen > ${COMDARE_THESIS_KNOWN_PKGWARN}"; exit 1; }'
+    # Nachweis-Zeile (R-4 (b)): Paketversionen stehen nur im .log, nicht im Job-Trace -> microtype-Version sichtbar machen
+    - 'echo "microtype: $(grep -m1 -E "^Package: microtype " diplomarbeit-${THESIS_LANG}.log 2>/dev/null || echo unbekannt)"'
     - 'if [ -f diplomarbeit-${THESIS_LANG}.blg ]; then R=$(grep -ciE "Repeated entry|Warning--" diplomarbeit-${THESIS_LANG}.blg 2>/dev/null || true); R=${R:-0}; echo "BibTeX .blg Warnings/Repeated=$R"; test "$R" -eq 0 || { echo "GATE-FAIL [${THESIS_LANG}]: .blg unsauber ($R Repeated/Warning) -> Literatur pruefen"; exit 1; }; else echo ".blg nicht vorhanden (keine BibTeX-Stufe in diesem Lauf)"; fi'
   artifacts:
     paths:
