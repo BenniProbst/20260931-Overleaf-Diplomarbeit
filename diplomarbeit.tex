@@ -55,42 +55,34 @@
 \usepackage{siunitx}
 \usepackage{listings}
 \usepackage{microtype}
-% [F-1, 17.09.2026] SHIM FUER microtype VOR 3.2b (TeX Live 2025, Overleaf-Default) -- HEILUNG, KEIN FILTER.
+% [F-1, 17.09.2026] microtype VOR 3.2b: BEFUND UND WEG -- WARUM HIER KEIN SHIM STEHT.
 % GEGENSTAND: der Owner-Lauf vom 13.09.2026 meldete "LaTeX Warning: Command \showhyphens   has changed."
-% DREI Leerzeichen im Literal -- geprueft wurde also nicht \showhyphens, sondern das ROBUSTE INNEN-Makro
-% "\showhyphens<Leerzeichen>", das \DeclareRobustCommand (latex.ltx:10951) anlegt. Genau daran scheiterte der
-% frueher hier stehende [DA-FIX]-Block: er setzte das AUSSEN-Makro und liess das Innen-Makro unberuehrt.
-% URSACHE: microtype 3.2a (2025/02/11) ist aelter als der LaTeX-Kernel 2025-06-01 und prueft das Innen-Makro
-% per \CheckCommand OHNE Stern gegen den Rumpf VOR dieser Kernel-Fassung (microtype-pdftex.def 3.2a
-% Z.1504-1507, Erwartungsrumpf Z.1515-1518); seit 2025-06-01 traegt der Kernel-Rumpf zusaetzlich
-% \tracinglostchars\z@. Unmittelbar nach der Pruefung definiert microtype \showhyphens ohnehin neu
-% (Owner-Log Z.985 "Redefining \showhyphens on input line 305") -- die Meldung ist folgenlos fuer die
-% Ausgabe, aber eine echte Log-Regression; sie wird deshalb nicht unterdrueckt, sondern ursaechlich geheilt.
-% WIRKWEISE: der Shim stellt VOR der Pruefung (sie laeuft \AtBeginDocument) genau den Rumpf her, den 3.2a
-% erwartet. Er ist per \@ifpackagelater{microtype}{2025/02/12} auf Fassungen vor 3.2b beschraenkt; ab 3.2b
-% (2025/07/09) patcht microtype das Innen-Makro, statt es zu pruefen -- dort ist der Shim inert.
-% PDF-NEUTRAL: \showhyphens wird im Satz nirgends benutzt (0 Treffer in kapitel/, anhang/,
-% aufgabenstellung/, config/, zihpub.cls); Seitenzahl, Umbruch und Overfull-Bilanz bleiben unveraendert.
-% VERIFIZIERT am Objekt gegen die ECHTE microtype-3.2a-Quelle (tlnet-Archiv 2025/04/01, sha256 in der
-% QUELLEN-Datei des Beweisorts), Belege in .../234/fix/logs-r2/f1-proben-r2/:
-%   R1 3.2a OHNE Shim  -> 1x "has changed"; die Log-Zeile ist BYTE-GLEICH zur Owner-Zeile 982 (md5 gleich)
-%   R2 3.2a MIT Shim   -> 0x "has changed", "Redefining \showhyphens" weiterhin 1x, 0 Warnungen gesamt
-%   R2FALSCH Kontrolle -> Shim mit EINEM abweichenden Token (\hbadness\@ne statt \hbadness\z@): die Warnung
-%                         KEHRT ZURUECK. Das beweist, dass der Shim ueber den Rumpf wirkt und nichts filtert.
-%   R3 unter 3.2d      -> Shim inert, 1x "Patching command `\showhyphens'.", 0 Warnungen
-%   R4 diese Arbeit    -> DE und EN unter 3.2a: ohne Shim 1x, mit Shim 0x, Seiten 200/190 unveraendert
-% ZUSAETZLICH EMPFOHLEN (Umgebung, ausserhalb dieses Repos): "tlmgr update --self && tlmgr update microtype"
-% bzw. auf Overleaf Menu -> Settings -> TeX Live version -> 2026. NACHWEIS im eigenen Log: "Package:
-% microtype ... v3.2b" oder hoeher UND "Package microtype Info: Patching command `\showhyphens'." und NULL
-% Treffer "Command \showhyphens   has changed". Notwendig ist der Schritt nicht mehr -- der Shim traegt
-% beide Welten --, er bleibt aber die sauberere Dauerloesung.
-% ABRAEUM-BEDINGUNG: ersatzlos entfernen, sobald jede Bau-Umgebung microtype >= 3.2b traegt.
-\makeatletter
-\@ifpackagelater{microtype}{2025/02/12}{}{%
-  \expandafter\long\expandafter\def\csname showhyphens \endcsname#1{\setbox0\vbox{\color@begingroup%
-    \everypar{}\parfillskip\z@skip\hsize\maxdimen\normalfont\pretolerance\m@ne\tolerance\m@ne%
-    \hbadness\z@\showboxdepth\z@\ #1\color@endgroup}}}
-\makeatother
+% (Owner-Log Z.982). DREI Leerzeichen im Literal -- geprueft wurde also nicht \showhyphens, sondern das
+% ROBUSTE INNEN-Makro "\showhyphens<Leerzeichen>", das \DeclareRobustCommand (latex.ltx:10951) anlegt.
+% URSACHE: microtype 3.2a (2025/02/11) ist aelter als der LaTeX-Kernel 2025-06-01 und prueft dieses
+% Innen-Makro per \CheckCommand OHNE Stern gegen den Rumpf VOR dieser Kernel-Fassung
+% (microtype-pdftex.def 3.2a Z.1504-1507, Erwartungsrumpf Z.1515-1518); seit 2025-06-01 traegt der
+% Kernel-Rumpf zusaetzlich \tracinglostchars\z@. Unmittelbar nach der Pruefung definiert microtype
+% \showhyphens ohnehin neu (Owner-Log Z.985 "Redefining \showhyphens on input line 305") -- die Meldung
+% ist folgenlos fuer die Ausgabe, aber eine echte Log-Regression. \showhyphens wird im Satz nirgends
+% benutzt (0 Treffer in kapitel/, anhang/, aufgabenstellung/, config/, zihpub.cls).
+% H3 -- VOLLZOGEN (Commit a7a45dd9): der frueher an dieser Stelle stehende [DA-FIX]-Block ist ersatzlos
+% entfernt. Er setzte das AUSSEN-Makro und liess das Innen-Makro unberuehrt; er war also wirkungslos
+% gegen genau diese Meldung -- toter Code, der eine Heilung nur vortaeuschte.
+% H1 -- OWNER-HANDGRIFF (Umgebung, ausserhalb dieses Repos) und damit der gueltige Weg:
+% "tlmgr update --self && tlmgr update microtype" bzw. auf Overleaf Menu -> Settings -> TeX Live version
+% -> 2026. NACHWEIS im eigenen Log: "Package: microtype ... v3.2b" oder hoeher UND "Package microtype
+% Info: Patching command `\showhyphens'." UND NULL Treffer "Command \showhyphens   has changed".
+% Ab 3.2b (2025/07/09) patcht microtype das Innen-Makro, statt es zu pruefen; unter der lokalen Kette
+% (TeX Live 2026, microtype 3.2d) tritt die Meldung vorher wie nachher nicht auf (0x gemessen).
+% H2 -- VERWORFEN durch Owner-Entscheid W-2 vom 17.09.2026: ein Praeambel-Shim, der vor der Pruefung
+% genau den von 3.2a erwarteten Rumpf herstellt, wurde gebaut und am Objekt VERIFIZIERT (ohne Shim 1x
+% "has changed" byte-gleich zur Owner-Zeile 982, mit Shim 0x; Kontrolle mit einem einzigen abweichenden
+% Token laesst die Warnung zurueckkehren; Seiten und Bytes in DE und EN unveraendert). Er steht per
+% Owner-Entscheid NICHT im Dokument; die Belege liegen im Beweisort
+% .../20260916-parallel-234-235-203/234/fix/logs-r2/ (f1-proben-r2, r4-thesis-mt32a).
+% NICHT ERNEUT EINBAUEN -- der Weg ist H1. Unter TL2025/microtype 3.2a kehrt bis dahin die eine
+% Log-Zeile zurueck; das ist die mit W-2 gewaehlte Lage und im Abgabe-Vermerk als Kenntnisnahme gefuehrt.
 \setlength{\emergencystretch}{3em}     % Rest-Overfulls (unumbrechbare lange \texttt-Tokens) abfangen
 % Drei-stellige Seitenzahlen (Anhang, S.\,100+) ragten in fett-Helvetica 1.29pt aus der
 % Standard-Nummern-Box des Inhaltsverzeichnisses; Box verbreitern, damit sie sauber hineinpassen.
