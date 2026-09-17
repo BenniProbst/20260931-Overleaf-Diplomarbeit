@@ -30,6 +30,21 @@
 
 \documentclass[diplominf,utf8,lof,lot,twoside]{zihpub}
 
+% [F-7 / S-2, 17.09.2026] KOLUMNENTITEL GETRENNT VOM INHALTSVERZEICHNIS.
+% GEGENSTAND: zwei Anhang-D-Abschnitte trugen Titel, die als Kolumnentitel breiter als der Satzspiegel
+% wurden -> "scrlayer-scrpage Warning: \headheight to low" + "Overfull \vbox" (Owner-Log 13.09.2026).
+% Der erste Fix kuerzte den Titel im klassischen Optionalargument \section[kurz]{lang} -- damit wandert
+% die Kuerzung aber AUCH ins Inhaltsverzeichnis und in \ref-Titel, obwohl dort nichts zu eng war
+% (nachgemessen am .toc-Diff: D.23 und D.27 verloren je ihre \texttt-Bezeichner, DE und EN).
+% KOMA-Script kann beide Orte trennen: \scr@sect setzt bei aktivem erweiterten Optionalargument
+% "tocentry/head/reference" einzeln (scrreprt.cls:3702-3711 der hier geladenen Fassung 3.49.2).
+% Freigeschaltet wird das ueber headings=optiontotocandhead (scrreprt.cls:1320-1325 ->
+% \scr@activate@xsection{3}); DANACH schreibt \section[head={Kurz}]{Lang} nur den Kolumnentitel kurz.
+% RUECKWIRKUNGSFREI fuer den Bestand, am Objekt gemessen: der Zweig fuer ein Optionalargument OHNE '='
+% ist unter \scr@osectarg=3 wortgleich mit dem Zweig unter 0 (beide: tocentry=head=reference=#7), und
+% keines der Sectioning-Optionalargumente dieser Arbeit enthaelt ein '=' (6 Vorkommen, 0 mit '=').
+\KOMAoptions{headings=optiontotocandhead}
+
 % --- Additional packages (NOT loaded by zihpub.cls) -------------------
 \usepackage{booktabs}
 \usepackage{enumitem}
@@ -51,9 +66,33 @@
 % Zweig \MT@ifdefined@n@TF{showhyphens }) -> unter TeX Live 2026 tritt die Warnung nicht auf
 % (0 Treffer "LaTeX Warning" in den Bauten DE und EN vom 16.09.2026).
 % Die Abraeum-Bedingung des Blocks ("ENTFERNEN, sobald microtype > 3.2a die Kernel-Aenderung kennt")
-% ist damit erfuellt. ABHILFE fuer TeX-Live-2025-Umgebungen (z.B. Overleaf): dort die TeX-Live-Version
-% auf 2026 stellen. \showhyphens wird im Satz nirgends benutzt (0 Treffer in kapitel/, anhang/,
-% aufgabenstellung/), die Entfernung ist daher PDF-neutral.
+% ist damit erfuellt.
+% ABHILFE fuer TeX-Live-2025-Umgebungen (z.B. Overleaf) -- ZWEI Wege, beide vor der Abgabe pruefbar;
+% welcher gilt, entscheidet der Owner (Stand 17.09.2026 OFFEN, die Regression gilt bis dahin als offen):
+%   (H1) PAKET aktualisieren, nicht zwingend die ganze Distribution: "tlmgr update --self && tlmgr
+%        update microtype" (oder gleich TeX Live 2026). NACHWEIS im eigenen Log: eine Zeile
+%        "Package: microtype ... v3.2b" oder hoeher UND "Package microtype Info: Patching command
+%        `\showhyphens'." und NULL Treffer "Command \showhyphens   has changed". Auf Overleaf heisst
+%        derselbe Schritt: Menu -> Settings -> TeX Live version -> 2026.
+%        H1 ist der Weg mit GEMESSENER Wirkung, belegt durch die beiden Logs selbst: der Owner-Lauf
+%        vom 13.09.2026 traegt "Package: microtype 2025/02/11 v3.2a" (Z.782), 0x "Patching command",
+%        dafuer Z.982 die Warnung und Z.985 "Redefining \showhyphens on input line 305"; die Bauten
+%        vom 17.09.2026 tragen "microtype 2026/03/01 v3.2d", 1x "Patching command `\showhyphens'."
+%        und 0x "has changed" -- also genau die beiden Zweige aus microtype-pdftex.def
+%        (\MT@ifdefined@n@TF{showhyphens }: patchen statt pruefen, sobald das Innen-Makro bekannt ist).
+%   (H2) SHIM im Dokument, falls die Umgebung nicht aktualisiert werden darf: VOR dem Laden von
+%        microtype \showhyphens auf genau die Form setzen, die microtype 3.2a per \CheckCommand*
+%        erwartet (Rumpf OHNE \tracinglostchars\z@), gewacht mit
+%        \@ifpackagelater{microtype}{2025/02/12}{}{...}, damit der Shim unter 3.2b+ inert bleibt.
+%        H2 IST BIS HEUTE UNVERIFIZIERT und darf so NICHT in die Abgabe: auf prod1 liegt weder eine
+%        TeX-Live-2025-Installation noch die microtype-3.2a-Quelle, und eigene Proben vom 17.09.2026
+%        (Beweisort .../234/fix/logs-r1/f1-proben/) zeigen, dass ein nachgebauter \CheckCommand* auf
+%        \showhyphens unter TL2026 IMMER "has changed" meldet -- auch mit dem woertlichen Kernel-Rumpf
+%        (Kontrollprobe F0). Eine solche Probe unterscheidet die Rumpf-Frage also gar nicht; sie taugt
+%        weder als Erfolgs- noch als Misserfolgs-Nachweis fuer einen Shim. H2 braucht deshalb zuerst
+%        die echte 3.2a-Quelle und eine TL2025-Umgebung, sonst waere es geraten.
+% \showhyphens wird im Satz nirgends benutzt (0 Treffer in kapitel/, anhang/, aufgabenstellung/), die
+% Entfernung ist daher PDF-neutral; beide Wege aendern die Ausgabe ebenfalls nicht, nur das Log.
 \setlength{\emergencystretch}{3em}     % Rest-Overfulls (unumbrechbare lange \texttt-Tokens) abfangen
 % Drei-stellige Seitenzahlen (Anhang, S.\,100+) ragten in fett-Helvetica 1.29pt aus der
 % Standard-Nummern-Box des Inhaltsverzeichnisses; Box verbreitern, damit sie sauber hineinpassen.
