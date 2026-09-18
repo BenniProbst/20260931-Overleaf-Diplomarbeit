@@ -11,9 +11,9 @@ bleibt bei \emph{bekannten} Begriffen, Konzepten und Veröffentlichungen; die sy
 das eigene Begriffsgerüst folgen in Kapitel~\ref{ch:measurement}.
 
 \section{Konzept und Überblick über den Stand der Technik}\label{sec:overview}
-Wir kartieren zunächst die Landschaft der Suchstrukturen --- vergleichsbasierte Bäume, digitale und
-präfixbasierte Verfahren, Hashing, räumliche und flache Strukturen --- und ordnen die bekannten Vertreter
-mit ihren Kernideen und Belegstellen ein. Die Gesamtheit der jeweils besten veröffentlichten Verfahren
+Zunächst wird die Landschaft der Suchstrukturen kartiert --- vergleichsbasierte Bäume, digitale und
+präfixbasierte Verfahren, Hashing, räumliche und flache Strukturen --- und die bekannten Vertreter
+werden mit ihren Kernideen und Belegstellen eingeordnet. Die Gesamtheit der jeweils besten veröffentlichten Verfahren
 bezeichnet die Literatur als \emph{Stand der Technik} (englisch \emph{State of the Art}, kurz SOTA);
 gemeint sind damit in dieser Arbeit stets die publizierten Suchstruktur-Entwürfe, an denen sich ein
 neuer Entwurf messen lassen muss. Hier deutet sich bereits an, dass sich jeder Algorithmus in einem
@@ -53,39 +53,79 @@ AVL-Balance verbindet und so die Zahl der Zeiger-Indirektionen je Suchschritt se
 nach den Bytes des Schlüssels statt durch Vergleich, sodass die Suchpfadlänge von der Schlüssellänge und
 nicht von der Schlüsselanzahl abhängt: der \emph{Trie}~\cite{delabriandais1959trie,fredkin1960trie} als
 Grundform, in dem jeder Wurzelpfad einen Schlüssel buchstabiert und gemeinsame Präfixe geteilt werden,
-die pfadkomprimierten Radix-/PATRICIA-Bäume~\cite{morrison1968patricia}, die dünn belegte Ein-Kind-Ketten
-kollabieren, und der
+die pfadkomprimierten Radix-/PATRICIA-Bäume~\cite{morrison1968patricia}\footnote{PATRICIA
+(\emph{Practical Algorithm To Retrieve Information Coded in Alphanumeric}): Morrisons pfadkomprimierter
+binärer Trie, dessen innere Knoten nur die Bitposition festhalten, an der sich die Schlüssel des
+jeweiligen Teilbaums erstmals unterscheiden~\cite{morrison1968patricia}.}, die dünn belegte
+Ein-Kind-Ketten kollabieren, und der
 \emph{Adaptive Radix Tree} (ART)~\cite{leis2013art}, der die Knotenrepräsentation an den tatsächlichen
-Verzweigungsgrad anpasst und dieser Arbeit durchgängig als Referenzentwurf dient.
+Verzweigungsgrad anpasst.
+%% OWNER-VORLAGE: OV-K2-B --- Rolle von ART: Referenzentwurf als Quelle der einzeln vermessbaren
+%% Teilentscheidungen (Knotenklassen, lineare Suche), der Gesamtbaum als Pruefling; Default gesetzt,
+%% Widerspruch genuegt.
+ART dient dieser Arbeit als Referenzentwurf: Seine Entwurfsentscheidungen --- die nach Verzweigungsgrad
+gestaffelten Knotenklassen Node4, Node16, Node48 und Node256 sowie die lineare Suche innerhalb kleiner
+Knoten --- kehren in Kapitel~\ref{ch:measurement} als einzeln vermessbare Teilentscheidungen wieder,
+während der ART-Gesamtbaum als Prüfling und nicht als durchgängig mitgemessene Struktur auftritt.
 
 Jenseits der baumartigen Verfahren bildet \emph{Hashing} Schlüssel direkt über eine Hashfunktion ab und
 kennt keine inhärente Ordnung, weshalb Bereichsabfragen teuer sind~\cite{knuth1998taocp3};
 Cuckoo-Hashing~\cite{pagh2004cuckoo}, das im Gegensatz zu offener und verketteter Adressierung konstante
 Worst-Case-Lookups garantiert, und Tabellen wie SwissTable~\cite{abseil_swisstable}, die dank
 SIMD-Gruppen-Probing hohe praktische Dichte erzielen,
-treten dieser Arbeit als nicht-baumartige Vergleichsgröße zur Seite\@. \emph{Räumliche} Strukturen
+bilden die nicht-baumartige Vergleichsklasse der Literatur\@. \emph{Räumliche} Strukturen
 (k-d-Baum~\cite{bentley1975kdtree}, Quadtree~\cite{finkel1974quadtree}, R-Baum~\cite{guttman1984rtree})
-partitionieren einen mehrdimensionalen Schlüsselraum und liegen außerhalb des Umfangs, ebenso wie die
-theoretischen \enquote{Exoten} --- der van-Emde-Boas-Baum~\cite{vanemdeboas1975} und der y-fast
-Trie~\cite{willard1983yfast} mit $O(\log\log u)$ über einem Universum der Größe~$u$ oder der die
-Vergleichsschranke unterschreitende Fusion Tree~\cite{fredman1993fusion} --- sowie die randomisierte
-Skip-Liste~\cite{pugh1990skiplist}, das flache, sortierte
+partitionieren einen mehrdimensionalen Schlüsselraum und liegen außerhalb des Umfangs dieser Arbeit,
+ebenso wie die theoretischen \enquote{Exoten} --- der van-Emde-Boas-Baum~\cite{vanemdeboas1975} und der
+y-fast Trie~\cite{willard1983yfast} mit $O(\log\log u)$ über einem Universum der Größe~$u$ oder der die
+Vergleichsschranke unterschreitende Fusion Tree~\cite{fredman1993fusion}\@. Zur flachen Klasse zählen die
+randomisierte Skip-Liste~\cite{pugh1990skiplist}, das flache, sortierte
 Array mit Binär- oder Interpolationssuche~\cite{knuth1998taocp3} --- streng genommen das einzelne Blatt
 eines Baumes --- und das Suffix-Array, das dieses Layout auf String-Schlüsseln zu einem platzsparenden
 Volltext-Index verallgemeinert und dessen leichtgewichtige, speicher-budgetierte Konstruktion als
-Musterbeispiel des Algorithm-Engineerings gilt~\cite{manzini2002suffixarray}. Diese Arbeit konzentriert sich auf die baumartigen Strukturen
-der vergleichs- und der digitalbasierten Klasse (Abbildung~\ref{fig:search-map}); so verschieden die
-Klassen äußerlich wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen.
+Musterbeispiel des Algorithm-Engineerings gilt~\cite{manzini2002suffixarray}.
+
+%% OWNER-VORLAGE: OV-K2-A --- Umfang der Arbeit dreiwertig (Untersuchungsgegenstand / vorgeschaltete
+%% Filter / zuschaltbare, nicht freigegebene Bausteine) statt der bisherigen Zweiteilung; der Bestand wird
+%% genannt, die Messaussage bleibt auf den freigegebenen Satz begrenzt. Default gesetzt, Widerspruch genuegt.
+Der Umfang dieser Arbeit gliedert sich entlang dieser Landschaft in drei Stufen. Untersuchungsgegenstand
+sind erstens die baumartigen Strukturen der vergleichs- und der digitalbasierten Klasse
+(Abbildung~\ref{fig:search-map}) und mit ihnen die elementaren Suchmethoden auf sortierten Feldern, aus
+denen Baumknoten bestehen: die Binär- und die k-äre Suche~\cite{knuth1998taocp3,schlegel2009kary}, die
+Interpolationssuche~\cite{perl1978interpolation}, das
+Eytzinger-Layout~\cite{khuong2017eytzinger}\footnote{Eytzinger-Layout: die implizite, zeigerfreie
+Anordnung eines sortierten Feldes in der Ebenenreihenfolge eines vollständigen Binärbaums --- die Kinder
+des Elements an Position~$i$ liegen an den Positionen $2i$ und $2i+1$ ---, sodass der Suchpfad ohne Zeiger
+berechenbar ist und die Speicherzugriffe der Suche für Prefetching vorhersagbar
+werden~\cite{khuong2017eytzinger}.} und die lineare Suche innerhalb kleiner Knoten~\cite{leis2013art};
+das flache, sortierte Feld liegt damit nicht außerhalb des Umfangs, sondern ist als Knoteninneres sein
+kleinster Baustein. Zweitens gehören approximative Mitgliedschaftsfilter als vorgeschaltete Bausteine
+zum Umfang --- der Bloom-Filter~\cite{bloom1970}, der Cuckoo-Filter~\cite{fan2014cuckoo}, der
+Xor-Filter~\cite{graf2020xor} und SuRF~\cite{zhang2018surf} als bereichsfähiger Filter; Cuckoo-Hashing
+tritt in dieser Arbeit also nicht als Hash-Tabelle, sondern in seiner Filter-Form auf. Drittens liegen
+weitere Vertreter --- die Skip-Liste, die Hash-Suche, der binäre Suchbaum, der B-Baum, die Gesamtbäume
+ART~\cite{leis2013art}, HOT~\cite{binna2018hot}, START~\cite{fent2020start},
+Wormhole~\cite{wu2019wormhole} und SuRF~\cite{zhang2018surf} sowie eine skalare Nachbildung der
+SwissTable --- als zuschaltbare, im Referenzlauf nicht freigegebene Bausteine vor; die
+SwissTable-Nachbildung erlaubt dabei keine Messaussage über die SIMD-basierte Vorlage. Außerhalb des
+Umfangs bleiben die räumlichen Strukturen, die theoretischen Exoten und das Suffix-Array. So verschieden
+die Klassen äußerlich wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen;
+welche Bausteine im Referenzlauf tatsächlich vermessen werden, nennt Kapitel~\ref{ch:measurement} mit
+Stand und Quelle.
 
 Quer zu dieser Suchalgorithmus-Sicht steht die etablierte Untergliederung der \emph{Container} der
 C++-Standardbibliothek~\cite{iso_cpp}: Sequenz-Container (\texttt{std::vector}) ordnen nach
 Einfügeposition, geordnet-assoziative (\texttt{std::map}, \texttt{std::set}) nach Schlüsselordnung,
 ungeordnete (\texttt{std::unordered\_map}) bilden über eine Hashfunktion ab. Diese genormten
 Schnittstellen-Verträge bilden die gemeinsame Basis, gegen die sich strukturell verschiedene Verfahren
-einheitlich vermessen lassen --- die geordnete Map als gemeinsamer Nenner einer Vertrags-Hülle vergleichs- wie
-digitalbasierter Suchstrukturen, der \texttt{std::vector} als Sequenz-Sicht und die Hash-Tabelle als
-ungeordnete Gegenprobe; ihre Einordnung in das Begriffsgerüst dieser Arbeit entwickelt
-Kapitel~\ref{ch:measurement}.
+einheitlich vermessen lassen. Diese Arbeit setzt auf zwei von ihnen als Vertrags-Hüllen auf: auf der
+geordneten Map als gemeinsamem Nenner vergleichs- wie digitalbasierter Suchstrukturen und auf dem
+\texttt{std::vector} als Sequenz-Sicht; die Hash-Tabelle bleibt als ungeordnete Gegenprobe der
+begriffliche Gegenpol der Literatur, ist aber keine eigene Vertrags-Hülle dieser Arbeit --- ihre
+Bausteine sind, soweit vorhanden, der geordneten Map-Hülle untergeordnet und nur zuschaltbar
+(vorstehender Absatz). Die Einordnung beider Hüllen in das Begriffsgerüst dieser Arbeit entwickelt
+Kapitel~\ref{ch:measurement}; ihre vollständige Ausführung in der Implementierung zeigt
+Kapitel~\ref{ch:impl}.
 
 Alle bisher genannten Verfahren sind \emph{fest entworfene} Strukturen: ihr innerer Aufbau steht fest,
 bevor die erste Anfrage eintrifft. Eine etablierte Forschungslinie verlagert den Entwurf dagegen in die
@@ -130,10 +170,10 @@ Entscheidungs-Zeitpunkt --- sind voneinander unabhängig; der Heuristik-Begriff,
 verbindet, folgt in Abschnitt~\ref{sec:heuristics-basics}.
 
 \section{Hardware: historische Anpassung an die Suchleistung}\label{sec:hardware-history}
-Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Wir zeichnen die historische
-Einführung cache-naher Hardware nach --- Cache-Hierarchie, Cache-Line, Adressübersetzung, Kohärenz --- mit Fokus
-auf die \emph{statischen und übersetzungszeit-relevanten} Eigenschaften, die später die Abstraktion in
-Abschnitt~\ref{sec:software-means} tragen.
+Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Nachgezeichnet wird die
+historische Einführung cache-naher Hardware --- Cache-Hierarchie, Cache-Line, Adressübersetzung, Kohärenz ---
+mit Fokus auf die \emph{statischen und übersetzungszeit-relevanten} Eigenschaften, die später die
+Abstraktion in Abschnitt~\ref{sec:software-means} tragen.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center]
   \foreach \i in {0,...,7} { \draw (\i*0.55,0) rectangle (\i*0.55+0.55,0.55); }
@@ -152,12 +192,18 @@ x86-64 und gängigen ARM-Kernen (etwa Cortex-A76 oder Neoverse~V2), 128\,Byte et
 und System-Level-Cache~\cite{apple_optimization}, schmalere 32\,Byte auf älteren oder
 eingebetteten Kernen~\cite{hennessy2019architecture,intel_optimization,amd_sog}.
 Programme können sie zur Laufzeit \emph{auslesen} --- über \texttt{CPUID} (x86), \texttt{CTR\_EL0} (ARM)
-oder \texttt{riscv\_hwprobe} (RISC-V\@; eingeschränkt, u.\,a.\ CBO-Blockgrößen)~\cite{arm_arm,intel_sdm} ---,
+oder \texttt{riscv\_hwprobe} (RISC-V\@; eingeschränkt, u.\,a.\ CBO-Blockgrößen)~\cite{arm_arm,intel_sdm,linux_riscv_hwprobe}\footnote{\texttt{CTR\_EL0}
+ist das \emph{Cache Type Register} der ARM-Architektur, ein Systemregister, das u.\,a.\ die kleinste
+Line-Größe der Instruktions- und der Daten-Caches kodiert~\cite{arm_arm}; \texttt{riscv\_hwprobe} ist der
+Linux-Systemaufruf, über den ein RISC-V-Programm Eigenschaften des laufenden Kerns abfragt, darunter die
+Blockgrößen der Cache-Block-Operationen (CBO) zum Nullsetzen, zur Verwaltung und zum Vorabholen von
+Cache-Blöcken~\cite{linux_riscv_hwprobe}.} ---,
 aber nicht verändern; auch die Tiefe
 der Hierarchie variiert (einfache RISC-V-Kerne wie der SiFive~U74 enden bei L2, manche AMD-Prozessoren
 bringen einen
 gestapelten 3D-V-Cache-L3 mit). Für ein cache-line-bewusstes Layout ist die je Zielplattform ermittelte
-Line-Größe daher ein \emph{Eingabeparameter der Übersetzung}, keine feste Annahme. Der Transfer einer
+Line-Größe daher ein \emph{Eingabeparameter der Übersetzung}, keine feste Annahme; wie dieser
+Eingabeparameter in dieser Arbeit gebunden wird, zeigt Kapitel~\ref{ch:measurement}. Der Transfer einer
 Line erfolgt zudem nicht streng blockweise am Stück: \emph{critical-word-first} liefert zuerst das
 angefragte Wort, und DDR5 unterteilt den Speicherkanal in zwei unabhängige
 32-Bit-Sub-Kanäle~\cite{micron_ddr5}; nicht-temporale bzw.\ Write-Combining-Schreibzugriffe umgehen
@@ -176,7 +222,7 @@ klassifizieren Hill und Smith Fehlzugriffe in drei Klassen (\emph{3-C-Modell}): 
 Kapazität) und \emph{conflict} (mehr heiße Lines fallen auf ein Set, als es Ways
 hat)~\cite{hill1989associativity}; die Lehrbuch-Darstellung ergänzt in Mehrkern-Systemen
 \emph{coherence}-Fehlzugriffe als vierte Klasse~\cite{hennessy2019architecture}. Die Klassifikation
-ist mehr als Buchhaltung, denn sie trennt die Gegenmittel: Compulsory-Misses adressiert Prefetching
+ist handlungsleitend, denn sie trennt die Gegenmittel: Compulsory-Misses adressiert Prefetching
 (Abschnitt~\ref{subsec:prefetching}), Capacity-Misses adressieren kompaktere Layouts, und
 Conflict-Misses entstehen gerade bei den regelmäßigen Adressmustern großer Knoten-Arrays --- liegen
 heiße Elemente um Zweierpotenz-Abstände auseinander, konkurrieren sie um dieselben
@@ -209,8 +255,12 @@ al.~\cite{samuel2005procaware} machen den Knoten prozessor-bewusst; der Adaptive
 Tree~\cite{leis2013art} staffelt mit Node4/16/48/256 die Knotengröße cache-line-orientiert, und Schmidt et
 al.~\cite{schmidt2025hbm} vermessen Stride- gegen Sequenz-Zugriffe auf High-Bandwidth-Memory. Als
 konkrete Layout-Optionen kennt die Literatur das dichte und das cache-line-ausgerichtete Array-of-Structs,
-das spaltenorientierte Struct-of-Arrays, das bit-gepackte LOUDS~\cite{jacobson1989louds} und das
-SIMD-gekachelte AoSoA. Die mehrstufige Hierarchie selbst ist überdies Gegenstand
+das spaltenorientierte Struct-of-Arrays, das bit-gepackte, succinct Layout, wie es LOUDS-basierte
+Tries~\cite{jacobson1989louds} und SuRF~\cite{zhang2018surf} nutzen, und das SIMD-gekachelte
+AoSoA\footnote{AoSoA (\emph{Array of Structures of Arrays}): ein hybrides Layout, das die Datensätze in
+Kacheln fester Breite gruppiert und innerhalb jeder Kachel feldweise ablegt, sodass ein SIMD-Register
+genau eine Kachelspalte lädt; es verbindet die Zugriffslokalität des Array-of-Structs mit der
+Vektorisierbarkeit des Struct-of-Arrays.}. Die mehrstufige Hierarchie selbst ist überdies Gegenstand
 software-/hardware-kooperativer Prefetch-Verfahren wie dem hierarchischen Instruktions-Prefetcher für
 Server-Anwendungen von
 Zhang et al.~\cite{zhang2025hierarchical}, der in diese Arbeit als Prefetching-Instanz und nicht als
@@ -254,8 +304,8 @@ Wartezeit der anderen füllt --- Entwurfsantworten, die in
 Abschnitt~\ref{subsec:cc-structures} als Parameter wiederkehren.
 
 \subsection{Hauptspeicher und Adressübersetzung: DRAM, NUMA und TLB}\label{subsec:memory-numa-tlb}
-Hinter dem letzten Cache liegt der DRAM-Hauptspeicher, dessen Kenngrößen die JEDEC-Norm für die
-aktuelle Generation DDR5 festlegt (JESD79-5)~\cite{jedec_jesd79_5}. Zwei Größen werden dabei häufig
+Hinter dem letzten Cache liegt der DRAM-Hauptspeicher, dessen Kenngrößen für die Generation DDR5 die
+JEDEC-Norm JESD79-5 festlegt~\cite{jedec_jesd79_5}. Zwei Größen werden dabei häufig
 vermengt: Die \emph{Datenrate} in Megatransfers je Sekunde (MT/s\@; zwei Transfers je Takt) misst die
 Bandbreite des Interfaces, die \emph{CAS-Latenz} (CL) zählt Taktzyklen bis zur ersten Antwort einer
 geöffneten Zeile --- da die CL-Zyklenzahl mit der Nennrate mitwächst, senken steigende Datenraten die
@@ -285,11 +335,13 @@ mehrstufig aus (L1-dTLB plus gemeinsamer L2-STLB)~\cite{intel_sdm,drepper2007mem
 der dTLB die zweite, eigenständige Grenze neben der Cache-Line, denn große oder weit gestreute Knoten
 erhöhen den dTLB-Druck unabhängig von der Cache-Auslastung. Im Stand der Technik tritt der dTLB vorwiegend als \emph{Mess-Ziel}
 auf; algorithmenseitig adressieren ihn große Seiten (Huge-Pages, 2\,MiB/1\,GiB), die den TLB-Reach
-vergrößern, von mehreren Allokatoren (mimalloc, jemalloc, TCMalloc,
-snmalloc) unterstützt werden und die Schmidt et al.~\cite{schmidt2025hbm} mit 2-MiB-Seiten empirisch nutzen ---
-eine eigenständige dTLB-Optimierung bleibt in den Suchalgorithmus-Papern jedoch unterbelegt, eine
-Beobachtung, auf die die Forschungslücke in Kapitel~\ref{ch:measurement}
-(Abschnitt~\ref{sec:task-concerns}) zurückkommt.
+vergrößern, von mehreren Allokatoren --- mimalloc~\cite{leijen2019mimalloc}, jemalloc~\cite{evans2006jemalloc},
+TCMalloc~\cite{hunter2021temeraire} und snmalloc~\cite{lietar2019snmalloc} --- unterstützt werden und die
+Schmidt et al.~\cite{schmidt2025hbm} mit 2-MiB-Seiten empirisch nutzen; diese vier Allokatoren liegen in
+dieser Arbeit als austauschbare Allokator-Bausteine vor, und den Freigabe-Stand der Allokator-Bausteine
+im Referenzlauf nennt Kapitel~\ref{ch:measurement}. Eine eigenständige dTLB-Optimierung bleibt in den
+Suchalgorithmus-Papern jedoch unterbelegt, eine Beobachtung, auf die die Forschungslücke in
+Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:task-concerns}) zurückkommt.
 
 \subsection{Schreibpfad, Ersetzung und Kohärenz}\label{subsec:write-coherence}
 Auch das Schreib- und Update-Verhalten der Caches ist überwiegend mikroarchitektonisch fixiert.
@@ -375,7 +427,7 @@ Hardware-Parameter sie explizit in den Entwurf binden.
   Originalarbeiten.
 \end{table}
 
-Zwei Beobachtungen an der Tabelle tragen weiter. Erstens bindet jeder Entwurf eine \emph{Handvoll}
+Zwei Beobachtungen an der Tabelle tragen weiter. Erstens bindet jeder Entwurf nur \emph{wenige}
 Parameter fest ein --- kein bekannter Entwurf behandelt die Parameter-Menge der vorigen Abschnitte
 als offenen Eingaberaum. Zweitens lassen beide Philosophien dieselbe Frage offen: Wie lässt sich
 \emph{gemessenes} Lokalitätswissen der konkreten Zielplattform --- deren Cache-Eigenschaften
@@ -445,19 +497,29 @@ Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} --- lässt sich 
 Abstraktion \emph{umsetzen}? Zur
 Verfügung stehen die etablierten Mittel des software-technischen Entwurfs: die benannten
 Entwurfsmuster~\cite{gamma1994patterns}, der statische Polymorphismus des \emph{Curiously Recurring
-Template Pattern} samt \emph{Policy-based Design}~\cite{alexandrescu2001modern} sowie die Komposition aus
+Template Pattern} (CRTP)~\cite{coplien1995crtp,vandevoorde2017templates}\footnote{CRTP\@: Eine Klasse
+leitet von einer Klassenschablone ab, der sie sich selbst als Schablonenargument übergibt
+(\texttt{class Derived: Base<Derived>}); die Basis kann dadurch bereits zur Übersetzungszeit auf Elemente der
+abgeleiteten Klasse zugreifen und ersetzt virtuelle Aufrufe durch statisch aufgelöste --- ohne
+Laufzeit-Indirektion und ohne Tabelle virtueller Funktionen. Benannt und beschrieben hat das Muster
+Coplien 1995 im \emph{C++ Report}~\cite{coplien1995crtp}.} samt \emph{Policy-based
+Design}~\cite{alexandrescu2001modern} sowie die Komposition aus
 austauschbaren Bausteinen, wie sie die invasive Software-Komposition aus
 Gray-Box-Komponenten~\cite{assmann2003invasive}, die generative Programmierung~\cite{czarnecki2000generative}
 und die feature-orientierten Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}
 beschreiben; C++23-Module strukturieren die Übersetzungseinheiten solcher Baustein-Kompositionen,
 garantieren für sich genommen aber noch
 keine portable ABI-Stabilität~\cite{wg21_modules_abi} --- relevant, sobald vorübersetzte Bausteine
-ausgetauscht werden sollen.
+ausgetauscht werden sollen; wie diese Arbeit die Binärschnittstelle ihrer vorübersetzten Bausteine
+stattdessen stabil hält, zeigt Kapitel~\ref{ch:impl}.
 
 Damit aus austauschbaren Bausteinen ein konkretes System wird, braucht es neben den
 Kompositions-Techniken eine \emph{Beschreibungsform} für die jeweils gewählte Konfiguration. Die
 etablierte Antwort sind \emph{deklarative Konfigurationsmodelle}: Feature-Modelle beschreiben seit
-der FODA-Studie konfigurierbare Variantenräume als Merkmal-Hierarchien mit
+der FODA-Studie\footnote{FODA (\emph{Feature-Oriented Domain Analysis}): die Domänenanalyse-Methode des
+Software Engineering Institute, die die gemeinsamen und die variablen Merkmale (\emph{Features}) einer
+Produktfamilie in einem Merkmal-Baum mit Pflicht-, Optional- und Alternativ-Knoten samt
+Auswahl-Constraints erfasst~\cite{kang1990foda}.} konfigurierbare Variantenräume als Merkmal-Hierarchien mit
 Auswahl-Constraints~\cite{kang1990foda}, die generative Programmierung erzeugt aus solchem
 Konfigurationswissen im Problemraum die Systemvariante im
 Lösungsraum~\cite{czarnecki2000generative}, und die Produktlinien-Literatur systematisiert die
@@ -509,12 +571,12 @@ der Mechanismus, der aus den Messergebnissen die jeweils beste Konfiguration abl
 Zielsetzung und Ausblick dieser Arbeit (Abschnitt~\ref{sec:outlook}).
 
 Schließlich sind die in der Literatur teils synonym gebrauchten Begriffe abzugrenzen\@. \emph{Adaptiv}
-heißt eine Heuristik, die ihre Entscheidung an veränderliche Bedingungen anpasst; \emph{dynamisch}
-bezieht sich enger auf den Zeitpunkt --- die Auswertung zur Laufzeit statt zur Übersetzungszeit; und
-\emph{messwertgetrieben} (\emph{measurement-driven}) betont die Datenquelle --- die Entscheidung
-gründet auf erhobenen Messwerten und nicht auf festen Modellannahmen. Eine adaptive Heuristik ist
-somit stets dynamisch, eine dynamische nicht notwendig adaptiv, und beide können, müssen aber nicht
-messwertgetrieben sein.
+(\emph{adaptive}) heißt eine Heuristik, die ihre Entscheidung an veränderliche Bedingungen anpasst;
+\emph{dynamisch} (\emph{dynamic}) bezieht sich enger auf den Zeitpunkt --- die Auswertung zur Laufzeit
+statt zur Übersetzungszeit; und \emph{messgetrieben} (\emph{measurement-driven}; gleichbedeutend
+\emph{messwertgetrieben}) betont die Datenquelle --- die Entscheidung gründet auf erhobenen Messwerten
+und nicht auf festen Modellannahmen. Eine adaptive Heuristik ist somit stets dynamisch, eine dynamische
+nicht notwendig adaptiv, und beide können, müssen aber nicht messgetrieben sein.
 
 Damit sind die Grundlagen beisammen: die Landschaft der Suchstrukturen, die Hardware-Eigenschaften, die
 ihre Leistung prägen, die Workload-Konventionen, unter denen sie verglichen werden, die Software-Mittel
