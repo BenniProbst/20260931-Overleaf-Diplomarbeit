@@ -1386,8 +1386,24 @@ Treiber-Bau-Stellen gesetzt; nur die hardwarefreie Test-Zelle baut ohne sie. Die
 mikroarchitektur-gebunden: Für AMD Zen~5 (prod1) ist der Ereignis-Katalog für L2-Demand-Misses und
 Fremd-CCX-Fills am Objekt kreuzgeprobt, für Intel liegt kein Katalog-Eintrag vor, und der
 Last-Level-Zähler scheitert auf Zen~5 beim Öffnen; jede dieser Lücken erscheint als fehlender Wert, nie
-als Null. Die getrennte Messung der P- und E-Kerne auf Intel und AMD ist als Scheduling-Dimension und
-über die Kern-Pinning-Bausteine angelegt; ihre Verdrahtung in das Lauf-Profil --- für prod2, den Intel
+als Null.
+%% OWNER-VORLAGE: OV-02 --- Kern-Modi der hybriden Messung (Owner G-091): Sechs-Modus-Modell mit HybridAware
+%% als Pflicht-Modus im Präsens, Durchführungs-Stand (Verdrahtung in das Lauf-Profil offen) an genau
+%% dieser einen Stelle in Kapitel 3; Default gesetzt, Widerspruch genügt.
+Die getrennte Messung der P- und E-Kerne auf Intel und AMD ist als Scheduling-Dimension
+\texttt{hetero\_core\_dispatch} der Ziel-ISA (Werte \texttt{None}, \texttt{HybridAware},
+\texttt{PCoresOnly}, \texttt{ECoresOnly}) und über die Kern-Pinning-Bausteine angelegt; das Mess-Modell
+führt dafür sechs Kern-Modi: vier Pinning-Modi je Kern-Sorte (P- oder E-Kerne, gepinnt auf einen
+einzelnen Kern oder auf alle Kerne der Sorte), den ungepinnten Referenzlauf als fünften und
+\emph{HybridAware} als sechsten Modus\footnote{HybridAware: Der Lauf kennt die heterogene
+Kern-Topologie der Maschine, pinnt seine Threads zur Laufzeit über die Affinitäts-Schnittstelle des
+Betriebssystems (unter Linux \texttt{sched\_setaffinity}) auf ausgewählte Kerne beider Sorten und
+misst dort mit dem zur Kern-Sorte gehörenden Zähler-Satz; anders als \texttt{PCoresOnly} und
+\texttt{ECoresOnly} legt er die Kern-Sorte nicht für den ganzen Lauf fest, anders als \texttt{None}
+läuft er nicht ungepinnt.}. Die Cache-Line-Awareness-Messung setzt den HybridAware-Modus voraus, weil
+sich Cache-Line-Effekte sonst nicht gezielt an bestimmten hybriden Kernen vermessen lassen; der Modus
+ist deshalb Pflicht-Bestandteil des Mess-Modells, keine Option. Durchführungs-Stand: Der
+Pinning-Aktuator ist gebaut, die Verdrahtung der Kern-Modi in das Lauf-Profil --- für prod2, den Intel
 Core i9-12900K (Alder Lake) mit P- und E-Kernen --- ist offen.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
@@ -1455,7 +1471,8 @@ Erkennung erhebt er zu seiner Laufzeit die Ist-Eigenschaften der Maschine und se
 Vendor-Erkennungs-Familie und das Betriebssystem --- als Geräte-Segment der Mess-Stempel-Zeile
 (Abschnitt~\ref{sec:stamp-model}) ---, niemals einen Messwert. Die Kern-Topologie hybrider CPUs (P- und
 E-Kerne) wird als Unter-Achse der Ziel-ISA geführt (Scheduling-Dimension \texttt{hetero\_core\_dispatch}),
-damit Cache-Line-Effekte gezielt je Kern-Typ vermessen werden können.
+damit Cache-Line-Effekte gezielt je Kern-Typ vermessen werden können (Sechs-Modus-Modell mit
+HybridAware als Pflicht-Modus, Abschnitt~\ref{sec:axis-triad}).
 
 Jedes Erhebungs-Ergebnis trägt eine \emph{Provenienz}-Stufe samt Erhebungszeitpunkt, in
 absteigender Vertrauens-Ordnung: \emph{konfiguriert-gemessen} (privilegierte Systemabfrage),
