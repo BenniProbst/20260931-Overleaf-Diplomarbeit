@@ -1014,10 +1014,11 @@ der Apparat eine Komposition benannter Entwurfsmuster und zweier neuer Übersetz
 (Abbildung~\ref{fig:patterns}).
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
-  \node[draw,rounded corners,fill=green!5,minimum width=12.8cm,minimum height=1.9cm] (classic) at (0,0){};
-  \node[font=\bfseries\footnotesize] at (0,0.6){Klassische Entwurfsmuster (GoF) --- im Code durchgängig verwendet};
-  \node[font=\scriptsize] at (0,0.1){\emph{Strategy} (18 Organ-Achsen) $\cdot$ \emph{Abstract Factory}\,/\,\emph{Composite}\,/\,\emph{Iterator} (Permutations-Baum)};
-  \node[font=\scriptsize] at (0,-0.42){\emph{Adapter} (Fremd-Code) $\cdot$ \emph{Observer}\,/\,\emph{Decorator} (Mess-Hüllen) $\cdot$ \emph{Memento} (CoW) $\cdot$ \emph{CRTP}\,/\,\emph{Template Method}};
+  \node[draw,rounded corners,fill=green!5,minimum width=12.8cm,minimum height=2.4cm] (classic) at (0,0){};
+  \node[font=\bfseries\footnotesize] at (0,0.85){Klassische Entwurfsmuster (GoF) --- im Code durchgängig verwendet};
+  \node[font=\scriptsize] at (0,0.38){\emph{Strategy} (18 Organ-Achsen) $\cdot$ \emph{Abstract Factory} (Docks, Mappen) $\cdot$ \emph{Director}\,/\,\emph{Builder} (Plan-Emission)};
+  \node[font=\scriptsize] at (0,-0.12){\emph{Iterator} (Experimentbaum) $\cdot$ \emph{Adapter} (Fremd-Code) $\cdot$ \emph{Observer} (Snapshots) $\cdot$ \emph{Visitor} (Mess-Naht)};
+  \node[font=\scriptsize] at (0,-0.62){\emph{Chain of Responsibility} $\cdot$ \emph{Memento} (CoW) $\cdot$ \emph{Command} $\cdot$ \emph{Facade} $\cdot$ \emph{CRTP}\,/\,\emph{Template Method}};
   \node[draw,rounded corners,fill=orange!8,minimum width=12.8cm,minimum height=2.3cm] (new) at (0,-2.85){};
   \node[font=\bfseries\footnotesize] at (0,-1.98){Neue Übersetzungszeit-Muster (Beitrag dieser Arbeit)};
   \node[font=\scriptsize,text width=11.4cm,align=left,anchor=west] at (-5.9,-2.6){\textbf{1.}~\emph{lazy-spärliche kartesische Materialisierung} --- der volle Varianten-Produktraum wird nur gezählt und je Pfad mixed-radix einzeln on-demand erzeugt};
@@ -1035,14 +1036,27 @@ der Apparat eine Komposition benannter Entwurfsmuster und zweier neuer Übersetz
 
 % Der Hybrid-Modus ist ein erweitertes optionales Konstrukt und noch nicht Kern dieser Arbeit, wir behalten ihn trotzdem, aber bevor der Begriff verwendet wird, muss er vorher erklärt werden was das "Hybrid" ist. Der Hybrid bleibt in der Arbeit ein Ausblick, wir konzentrieren uns auf das manuelle Durchmessen und Erstellen von Tier-Binaries und die break even Analyse vor Anwendung des Hybriden, gehen als nicht weiter als hybrid-compare in der Kette nach dem single-release. Dennoch entwickeln wir die Cache Engine auch hinter diesen Punkt hinaus weiter, auch wenn er in der Diplomarbeit nicht auftaucht.
 Die klassischen Muster sind dabei keine Zierde, sondern die Verkabelung des Apparats: \emph{Strategy}
-kapselt jede der achtzehn Organ-Achsen als austauschbaren Algorithmus, \emph{Abstract Factory}, \emph{Composite}
-und \emph{Iterator} bilden und durchlaufen den Permutations-Baum, \emph{Adapter} bindet Fremd-Code hinter
-der stabilen Engine-Schnittstelle an, und \emph{Observer} sowie \emph{Decorator} (nicht-intrusive
-Mess-Hüllen) erheben die Messwerte, während ein \emph{Memento} (Copy-on-Write) den Zustand zwischen
-Warmlauf und Messung sichert~\cite{gamma1994patterns}; nicht verwendet werden hingegen \emph{Singleton},
-\emph{Flyweight} und \emph{Bridge}, während das \emph{Command}-Muster allein als Befehls-Kanal des
-Hybrid-Modus auftritt --- des Betriebs, in dem ein Heuristik-Tier zwischen vorgeladenen Tier-Binaries an
-der ABI-Grenze wechselt (Abschnitt~\ref{sec:heuristics-modes}). Den statischen Polymorphismus liefert das
+kapselt jede der achtzehn Organ-Achsen als austauschbaren Algorithmus, \emph{Director} und
+\emph{Builder} emittieren den Plan (ein Walk, je Ausgabe-Syntax ein Builder), eine \emph{Abstract
+Factory} konstruiert die Docks der Hybrid-Stufe und die Ergebnis-Mappen an genau einem Ort, ein
+\emph{Iterator} durchläuft den lazy materialisierten Experimentbaum, \emph{Adapter} bindet Fremd-Code
+hinter der stabilen Engine-Schnittstelle an, \emph{Observer} erhebt die Mess-Snapshots je Achse, ein
+\emph{Visitor} ist die Mess-Naht am \texttt{dlopen}-Übergang, \emph{Chain of Responsibility} trägt die
+Hardware-Erhebungskette und die Auswahl-Filterkette, und ein \emph{Memento} (Copy-on-Write) sichert
+den Zustand zwischen Warmlauf und Messung~\cite{gamma1994patterns}. Die Mess-Hüllen der Achsen halten
+keine Komponenten-Instanz und kein Voll-Interface und sind ausdrücklich kein \emph{Decorator}, und ein
+\emph{Composite} im Sinne des Katalogs hat keinen Anker im Code. Nicht verwendet werden im Hot-Path
+und in den Organ-Achsen \emph{Singleton}, \emph{Flyweight} und \emph{Bridge}: host-seitige Registries
+nutzen Meyers-Singletons (die eine Instanz als funktionslokales statisches
+Objekt)~\cite{meyers2005effective}, die Katalog-Erzeugung Flyweight-Tabellen je Achse, und
+\enquote{Bridge} tritt im Code nur als Tätigkeitswort auf, nicht als Muster. Das \emph{Command}-Muster
+trägt mehrere Rollen --- die übersetzungszeitliche Command-Basis der Achsen, die System-Komplex-Achse
+als Command-Wrapper und den typisierten Steuer-Befehlskanal ---; der Befehls-Kanal des Hybrid-Modus,
+des Betriebs, in dem ein Heuristik-Tier zwischen vorgeladenen Tier-Binaries an der ABI-Grenze wechselt
+(Abschnitt~\ref{sec:heuristics-modes}), ist eine dieser Rollen, und eine \emph{Facade} bündelt die
+Anhang-Erzeugung und die lesende Plan-Emission (Muster-Register mit Code-Orten:
+Abschnitt~\ref{sec:impl-hybrid-lager}, Anhang~\ref{app:adr}, ADR-11). Den statischen Polymorphismus
+liefert das
 \emph{Curiously Recurring Template Pattern} (CRTP) samt \emph{Template-Method}-Concept-Prüfungen;
 die Wahl zwischen Prüfling- und Cache-Engine-Standard je Achse trifft die Verbund-Strategie des
 Merge-Plans (\texttt{Verbund1\_CeOnly}, \texttt{Verbund2\_Replace}, \texttt{Verbund2\_Hybrid},
