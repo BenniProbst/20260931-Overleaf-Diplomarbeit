@@ -1,84 +1,219 @@
 \chapter{Code-Struktur}\label{app:code}
 
-Dieser Anhang dokumentiert die reale Quellcode-Struktur der drei Repositorien aus
-Abschnitt~\ref{sec:repos} nachprüfbar auf Verzeichnis-Ebene. Erhoben wurde der Code-Stand am
-Stichtag 2.~August~2026 per Verzeichnis-Listing (zwei bis drei Ebenen tief); maßgeblich sind die
-Commits \texttt{2b0a9bd8} (\texttt{comdare-cache-engine}), \texttt{32e8ffa}
-(\texttt{comdare-prt-art}) und \texttt{daee6c85}
-(\texttt{probst-\allowbreak{}Diplomarbeit-\allowbreak{}cache-\allowbreak{}engine},
-Super-Repository). Build-Artefakte (\texttt{build*/}), IDE-Verzeichnisse und der vendorte
-Fremdcode unter \texttt{ext/} sind ausgeblendet beziehungsweise zu einem Sammel-Eintrag
-zusammengefasst; alle übrigen genannten Pfade existieren im erhobenen Stand. Pfadangaben sind
-relativ zur jeweiligen Repository-Wurzel.
+%% OWNER-VORLAGE: OV-K4-4 --- Zählwort \enquote{vier Repositorien} und der vierte Abschnitt (Manuskript-Repositorium)
+%% hängen am Abschnittstitel \enquote{Vier-Repository-Architektur} (Label sec:repos, Kapitel 4). Bei Widerspruch
+%% wird das Zählwort nachgezogen; der vierte Abschnitt bleibt, weil das Repositorium existiert. Default gesetzt;
+%% Widerspruch genügt.
+Dieser Anhang dokumentiert die Quellcode-Struktur der vier Repositorien aus Abschnitt~\ref{sec:repos}
+nachprüfbar auf Verzeichnis-Ebene (zwei bis drei Ebenen tief). Maßgeblich ist je Repositorium der Zweig
+\texttt{development}: für die beiden Code-Repositorien in dem Commit, den das Super-Repositorium als
+Submodul-Zeiger (Gitlink\footnote{Ein Submodul ist ein in ein übergeordnetes Repositorium eingebettetes
+Git-Repositorium; \texttt{.gitmodules} deklariert je Submodul \texttt{path} und \texttt{url}, optional
+\texttt{branch} und \texttt{update}. Der Gitlink ist der im übergeordneten Repositorium verzeichnete
+Commit des Submoduls~\cite{git2026gitmodules}.}) führt, für das Super-Repositorium sein eigener Stand und
+für das Manuskript-Repositorium der Commit, aus dem die CI das PDF baut: \texttt{comdare-cache-engine}
+\texttt{eb69abc1}, \texttt{comdare-prt-art} \texttt{b539d6ee},
+\texttt{probst-\allowbreak{}Diplomarbeit-\allowbreak{}cache-\allowbreak{}engine} \texttt{d989e008} und
+\texttt{20260931-\allowbreak{}overleaf-\allowbreak{}diplomarbeit} \texttt{56a8fe08}. Build-Artefakte
+(\texttt{build*/}), IDE-Verzeichnisse und LaTeX-Bauartefakte sind ausgeblendet; der vendorte Fremdcode
+unter \texttt{ext/} und die Vorspann-Unterlagen der Arbeit erscheinen als Sammel-Einträge. Alle genannten
+Pfade existieren im genannten Stand; Pfadangaben sind relativ zur jeweiligen Repository-Wurzel. Die
+Lizenz-Basis jedes Repositoriums (\texttt{LICENSE}, \texttt{NOTICE}, \texttt{LICENSES/},
+\texttt{REUSE.toml}\footnote{REUSE ist eine Spezifikation der Free Software Foundation Europe für
+maschinenlesbare Lizenz- und Urheberangaben: Die Lizenztexte liegen unter \texttt{LICENSES/} mit dem
+SPDX-Bezeichner als Dateiname, und \texttt{REUSE.toml} ordnet Dateien ihren Lizenzen
+zu~\cite{fsfe2024reuse}.}) ist Teil der Struktur; die Lizenzaussage der Arbeit selbst trifft der Vorspann.
 
-\section*{comdare-cache-engine --- Bausteine-Bibliothek und Builder}
+\section*{comdare-cache-engine --- Bausteine-Bibliothek, Planer und Builder}
 
-Das Repository folgt dem Pitchfork-Layout: \texttt{apps/} enthält die ausführbaren Programme,
-\texttt{libs/} die Bibliotheken, \texttt{libs/common} den querschnittlichen Code. Der vendorte
-Fremdcode der A-/P-Serie liegt gesammelt unter \texttt{ext/} und wird hier nicht aufgefächert.
+Das Repository folgt dem Pitchfork-Layout\footnote{Konvention für die Verzeichnisstruktur nativer
+C-/C++-Projekte (Pike, \emph{cxx-pflR1}; Spezifikation im Repositorium \texttt{vector-of-bool/pitchfork}):
+\texttt{apps/} für Programme, \texttt{libs/} für Bibliotheken, daneben \texttt{tools/}, \texttt{tests/},
+\texttt{docs/} und \texttt{external/} als benannte Wurzelverzeichnisse~\cite{pike2018pitchfork}.}:
+\texttt{apps/} enthält die ausführbaren Programme, \texttt{libs/} die Bibliotheken, \texttt{libs/common}
+den querschnittlichen Code und \texttt{libs/traeger} den Schnitt der vier Träger-Stufen; der vendorte
+Fremdcode liegt gesammelt unter \texttt{ext/} und wird hier nicht aufgefächert. Dem CMake-Bau ist ein
+GNU-Bauweg vorgelagert: \texttt{configure.sh} und ein statisches \texttt{Makefile} mit den
+GNU-Standardzielen\footnote{\texttt{all}, \texttt{install}, \texttt{check}, \texttt{installcheck},
+\texttt{uninstall}, \texttt{clean}, \texttt{distclean}, \texttt{mostlyclean} und
+\texttt{maintainer-clean} nach den GNU Coding Standards, Abschnitt \emph{Standard Targets for
+Users}~\cite{gnu2026standards}; das Test-Ziel heißt dort \texttt{check}, nicht \texttt{test}.} reichen an
+das bauende CMake-Skript weiter.
+
+%% OWNER-VORLAGE: OV-05 --- Begriffs-Kanon: \enquote{Unter-Achse} ist der deutsche Führungsbegriff dieses
+%% Anhangs (englischer Musterbegriff sub\_axis im Glossar). Kippt der Kanon auf \enquote{Sub-Achse}, ziehen
+%% die Lesehilfe und die system\_axes-Zeile des Baums nach. Default gesetzt; Widerspruch genügt.
+Die Achsen liegen in drei Heimaten je Kategorie: \texttt{organ\_\allowbreak{}axes/} (22 Verzeichnisse: die 18
+Kompositions-Haupt-Achsen, \texttt{organ\_\allowbreak{}meta\_\allowbreak{}meta/} sowie \texttt{cacheline/}, \texttt{simd/} und
+\texttt{telemetry\_\allowbreak{}axis/}), \texttt{system\_\allowbreak{}axes/} (\texttt{target\_\allowbreak{}isa}, \texttt{operating\_\allowbreak{}system} und
+\texttt{external\_\allowbreak{}utils} samt ihren Unter-Achsen sowie \texttt{compiler}, \texttt{scheduling} und
+\texttt{extension\_\allowbreak{}hardware}; Unter-Achsen u.\,a. \texttt{optimization\_\allowbreak{}level}, \texttt{compiler\_\allowbreak{}atomic}
+und \texttt{simd}) und \texttt{mess\_\allowbreak{}axes/} (Mess-Tooling-Registry der drei Mess-Ebenen
+\texttt{wallclock}, \texttt{macro} und \texttt{micro}). Jede Heimat besitzt eine generierte Registry-XML
+als maschinenlesbares Abbild ihres Bestands:
+\texttt{algorithm\_\allowbreak{}profiles/\allowbreak{}cache\_\allowbreak{}engine\_\allowbreak{}axis\_\allowbreak{}registry.xml},
+\texttt{include/\allowbreak{}cache\_\allowbreak{}engine/\allowbreak{}measurement/\allowbreak{}system\_\allowbreak{}axis\_\allowbreak{}registry.xml}
+und \texttt{measurement\_\allowbreak{}axis\_\allowbreak{}registry.xml}, erzeugt von \texttt{tools/\allowbreak{}axis\_\allowbreak{}registry\_\allowbreak{}gen},
+\texttt{system\_\allowbreak{}axis\_\allowbreak{}registry\_\allowbreak{}gen} und \texttt{measurement\_\allowbreak{}axis\_\allowbreak{}registry\_\allowbreak{}gen} per
+Compile-Time-Reflexion. Die kanonische Ordnung der 18 Kompositions-Achsen ist \texttt{search\_\allowbreak{}algo},
+\texttt{cache\_\allowbreak{}traversal}, \texttt{mapping}, \texttt{path\_\allowbreak{}compression}, \texttt{node\_\allowbreak{}type},
+\texttt{memory\_\allowbreak{}layout}, \texttt{allocator}, \texttt{prefetch}, \texttt{concurrency},
+\texttt{serialization}, \texttt{value\_\allowbreak{}handle}, \texttt{index\_\allowbreak{}organization}, \texttt{io\_\allowbreak{}dispatch},
+\texttt{migration\_\allowbreak{}policy}, \texttt{filter}, \texttt{queuing\_\allowbreak{}q1}, \texttt{queuing\_\allowbreak{}q2} und
+\texttt{persistence\_\allowbreak{}target}. Die Träger-Stufen \texttt{planner}, \texttt{ceb}, \texttt{tier} und
+\texttt{hybrid} sind als CMake-Ziele unter \texttt{libs/traeger/} geschnitten; ihre Substanz liegt in
+\texttt{libs/cache\_\allowbreak{}engine/}: \texttt{profile\_\allowbreak{}facade/planner/} für den Planer, \texttt{builder/} für den
+Builder, \texttt{anatomy/} und \texttt{organ\_\allowbreak{}axes/} für die Tier-Substanz, \texttt{hybrid/} für die
+Hybrid-Stufe. Die Datei-Identität der Bausteine sichern die Overlay-Quellmenge
+(\texttt{builder/\allowbreak{}overlay\_\allowbreak{}source\_\allowbreak{}set.hpp}, Glied~[7] des Tier-Fingerprints, Hash per
+\texttt{tools/\allowbreak{}overlay\_\allowbreak{}source\_\allowbreak{}hash\_\allowbreak{}gen}) und der Versions-Lock
+\texttt{tools/\allowbreak{}axis\_\allowbreak{}version\_\allowbreak{}lock/\allowbreak{}axis\_\allowbreak{}version.lock}, den das CI-Gate
+\texttt{contract:axis-version-lock} prüft.
 
 {\footnotesize
 \begin{verbatim}
-comdare-cache-engine/                       Stand: Commit 2b0a9bd8
-|-- adapters/               ABI-Adapter der A-/P-Serie
-|                   (A01-hoard ... A20-dlmalloc, P01-ART ... P30-HazardPointers)
+comdare-cache-engine/                 Zweig development @ eb69abc1
+|-- configure.sh, Makefile            GNU-Bauweg (configure / make / make check
+|                                     / make install) vor CMake; Makefile
+|                                     statisch, reicht an CMake weiter
+|-- CMakeLists.txt, CMakePresets.json, cmake/
+|                                     bauendes CMake-Skript + Bau-Module
+|-- LICENSE, NOTICE, LICENSES/, REUSE.toml, LICENSE_AUDIT_EXT.md
+|                                     Lizenz-Basis (Comdare Research License
+|                                     1.0, REUSE-Zuordnung, Lizenz-Audit des
+|                                     ext/-Bestands)
+|-- README.md, MANUAL_RUN.md, CITATION.cff, CONTRIBUTING.md, SECURITY.md,
+|   CODE_OF_CONDUCT.md, CHANGELOG.md, PROJECT_LAYER_MAP.md
+|                                     Projekt- und Community-Dokumente
+|-- adapters/               ABI-Adapter der A-/P-Serie (10 A-, 12 P-Eintraege im
+|                           lueckenhaften Nummernband A01..A20 / P01..P30)
 |-- apps/                   Executables (Pitchfork)
+|   |-- experiment_planner/     Planer-Rolle als eigene Binary (Subkommando-CLI,
+|   |                           u. a. validate, plan, simulate, check-size,
+|   |                           status, version, help)
 |   |-- cache_engine_builder/   Builder-Hauptprogramm (main.cpp)
 |   |-- perm_runner/            Runner fuer generierte Permutations-Module
-|   `-- anatomy_codegen_tool/, catalog_codegen_tool/, adhoc_emitter/,
-|       f15_compare/, h2_score_akte_tool/, is_original_validator/
-|                               Codegen- und Pruef-Werkzeuge
+|   `-- modul_emitter/, adhoc_emitter/, anatomy_codegen_tool/,
+|       catalog_codegen_tool/, f15_compare/, h2_score_akte_tool/,
+|       is_original_validator/
+|                               Emitter, Codegen- und Pruef-Werkzeuge
 |-- libs/                   Bibliotheken (Pitchfork)
-|   |-- cache_engine/       CacheEngine: Achsen-Bausteine + Builder-Bibliothek
-|   |   |-- axes/               ein Unterverzeichnis je Achse (alloc, layout,
-|   |   |                       prefetch_axis, telemetry_axis, concurrency_axis,
-|   |   |                       persistence_target, ...)
+|   |-- cache_engine/       CacheEngine: Achsen-Heimaten, Bausteine,
+|   |   |                   Builder-Bibliothek
+|   |   |-- organ_axes/         Organ-Heimat (22 Verzeichnisse: 18 Kompositions-
+|   |   |                       Haupt-Achsen, organ_meta_meta/, cacheline/,
+|   |   |                       simd/, telemetry_axis/)
+|   |   |-- system_axes/        System-Heimat (target_isa, operating_system,
+|   |   |                       external_utils samt Unter-Achsen; compiler,
+|   |   |                       scheduling, extension_hardware)
+|   |   |-- mess_axes/          Mess-Heimat (Mess-Tooling-Registry
+|   |   |                       wallclock/macro/micro)
+|   |   |-- mess/               Mess-/Steuer-Naht (MessVisitor, Genus-Kaskade,
+|   |   |                       Steuer-Docks Planer -> CEB)
+|   |   |-- hybrid/             Hybrid-Tier-Stufe (Dock-Vertraege, Dock-Array,
+|   |   |                       Dock-Factory, XML-Parser, Modul-ABI v1,
+|   |   |                       Stempel-Kette, Binary-Proxy, Heuristik-Adapter)
 |   |   |-- topics/, anatomy/, compositions/, profile_facade/
 |   |   |                       Achsen-Dach (AxisKind), Anatomie-Kern,
-|   |   |                       Kompositions- und Katalog-Schicht
+|   |   |                       Kompositions- und Katalog-Schicht;
+|   |   |                       profile_facade/planner/ = Planer-Substanz
+|   |   |                       (ExperimentPlanDirector, Simulation, Version,
+|   |   |                       Legende)
+|   |   |-- execution_engine/   ExecutionEngine-Wurzel ueber AnatomyBase
+|   |   |                       (Mess-Schicht)
 |   |   |-- builder/            codegen/, permutation_loop/, module_loader/,
-|   |   |                       experiment_driver/ (ExperimentDriver),
-|   |   |                       experiment_tree/ (ExperimentPlanDirector),
+|   |   |                       experiment_driver/ (ExperimentDriver,
+|   |   |                       Phase 1-7), experiment_tree/ (Achsen-Pfad-
+|   |   |                       Serialisierung, Genus-Bindung, CEB-Generator),
 |   |   |                       build_orchestrator/, pruef_dock/, bestandslog/,
-|   |   |                       curve_fit/, ...
-|   |   |-- include/cache_engine/abi/   ABI-Header (baustein_variants.hpp,
-|   |   |                       resolve_baustein.hpp, module_abi_v1.hpp,
-|   |   |                       anatomy_version_stamp.hpp, ...)
+|   |   |                       lager_ablage/, measure_storage/, curve_fit/,
+|   |   |                       overlay_source_set.hpp (Overlay-Quellmenge)
+|   |   |                       u. a.
+|   |   |-- heuristik/, subsystems/, concurrency_manager/, reclamation/,
+|   |   |   harness/, anatomy_drive/, src/, virus/
+|   |   |                       Kurven/Spline/Break-Even, zwoelf Subsystem-
+|   |   |                       Engines (c01..c12) + Plattform-Profiler,
+|   |   |                       Nebenlaeufigkeits-Manager, RCU-Reclamation,
+|   |   |                       Mess-Harness, Antriebe, SHA-Kerne,
+|   |   |                       Graph-Algorithmen
+|   |   |-- include/cache_engine/abi/   ABI-Header (stempel_basis.hpp,
+|   |   |                       baustein_variants.hpp, resolve_baustein.hpp,
+|   |   |                       module_abi_v1.hpp, anatomy_version_stamp.hpp,
+|   |   |                       anatomy_fingerprint.hpp,
+|   |   |                       anatomy_stamp_entries.hpp u. a.)
 |   |   |-- include/cache_engine/measurement/   Realm-Wurzeln + Registries
 |   |   |                       (system_axis.hpp, measurement_*_registry.hpp,
+|   |   |                       system_axis_registry.xml,
+|   |   |                       measurement_axis_registry.xml,
 |   |   |                       ram_frequency_reading.hpp, spd_ddr5_parser.hpp,
 |   |   |                       ram_probe_chain.hpp, hardware_probe_factory.hpp)
+|   |   |-- include/cache_engine/lager/, naming/
+|   |   |                       Lager-Schluessel-Schema, Begriffs-Alias-Registry
+|   |   |-- include/cache_engine/{api,concepts,allocators,platform,
+|   |   |   platform_probe,fingerprint,indexes,hbm}/
+|   |   |                       uebrige oeffentliche Header (Sammel-Eintrag)
 |   |   `-- algorithm_profiles/ sota/ (33 Profil-Dateien *.profile.xml +
-|   |                        sota_h2_scores.xml), allocators/, load_profiles/,
-|   |                        thesis_profiles/, permutation_axes.xml
+|   |                        sota_h2_scores.xml), cache_engine_axis_registry.xml
+|   |                        (generiert), paper_experiments/, allocators/,
+|   |                        load_profiles/, thesis_profiles/,
+|   |                        permutation_axes.xml
+|   |-- traeger/            Traeger-Stufen planner/ -> ceb/ -> tier/ -> hybrid/
+|   |                       (CMake-Schnitt; Substanz in libs/cache_engine/)
 |   |-- common/             Querschnitt: config/, measurement/, platform/,
 |   |                       serialization/ (xml_config_parser/), succinct/
-|   |-- execution_engine/   ExecutionEngine-Bibliothek (result_aggregator)
-|   |-- search_engine/      SearchEngine-Bausteine (node/, page/, traversal/,
-|   |                       operations/, memory_layout/, value_handle/, ...)
+|   |-- execution_engine/   Ergebnis-Aggregation (result_aggregator,
+|   |                       experiment_demo)
+|   |-- search_engine/      deklariertes Skelett: node/, page/, traversal/,
+|   |                       operations/, memory_layout/, value_handle/ u. a.
+|   |                       (nur CMake-Eintraege, keine Quelldateien)
 |   `-- test_infra/         benchmark_suite/, test_data/, workload_generator/
-|-- ext/             vendorte Fremd-Repositorien der A-/P-Serie (Sammel-Eintrag)
+|-- ext/             vendorte Fremd-Repositorien der A-/P-Serie nach allocator/,
+|                    prefetch/, queuing/, traversal/ gegliedert; daneben io/
+|                    (liburing, libxlsxwriter, zlib) und A05-jemalloc
+|                    (Sammel-Eintrag)
 |-- tests/                  unit/, integration/, generic_module_tests/,
-|                           module_specific_tests/, fixtures/
-|-- tools/       Hilfswerkzeuge (abi_stability_test/, gen_golden_fullpilot/,
+|                           module_specific_tests/, fixtures/,
+|                           pruefling_fixture/, deprecated/ (Archiv geparkter
+|                           Tests)
+|-- tools/       Registry-Generatoren axis_registry_gen/,
+|                system_axis_registry_gen/, measurement_axis_registry_gen/;
+|                axis_version_lock/ (Versions-Lock); overlay_source_hash_gen/;
+|                vor_push_gate/; abi_stability_test/, gen_golden_fullpilot/,
 |                best_binary_selector/, p27_bundle_finder/, ycsb_cli/,
-|                axis_registry_gen/ u.a.; der fruehere permutation_codegen-
-|                Zweitkanal ist entfernt, vgl. Kapitel 4)
-`-- docs/                   Architektur-, Status- und Session-Dokumentation
+|                mess_report/, latex_anhang/, latex_toolchain/,
+|                compiler_provisioning/, prerequisites/, gitlab_ci_zih_push/,
+|                socks5_zih_delivery/
+|-- benchmarks/, scripts/   Mikro-/Plattform-/YCSB-Benchmarks; CI-Wachen, Lint-
+|                           und Lande-Gate-Skripte (Shell)
+|-- modules/, prerequisites/, _*.py   nur README bzw. vier Werkbank-Hilfsskripte
+|                                     (Python, ausserhalb der Buildchain)
+`-- docs/                   Architektur-, Plan-, Status-, Ledger-, Audit-,
+                            Lizenz- und Session-Dokumentation
 \end{verbatim}
 }
 
-\begin{center}\small
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+%% OWNER-VORLAGE: OV-02 --- Träger-Stufen (Zeile Träger-Stufen) und Hybrid-Stufe (Zeile Hybrid-Stufe) stehen
+%% als Struktur (\enquote{geschnitten}, \enquote{liegt}) ohne Durchführungs-Behauptung; Router und Eviction
+%% der Hybrid-Stufe sind als nicht gebaut ausgewiesen. Widerspricht der Owner der Zweiteilung
+%% Plan-Ist-Stand/Durchführungs-Stand, fällt nur die Ehrlichkeits-Klammer, nie die Zeile. Default gesetzt;
+%% Widerspruch genügt.
+{\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
 \toprule
 \textbf{Komponente} & \textbf{Pfad} & \textbf{Zweck} \\
 \midrule
+\endhead%
+\midrule
+\endfoot%
+\bottomrule
+\endlastfoot%
 CacheEngineBuilder &
 \texttt{apps/\allowbreak{}cache\_engine\_builder/} &
 Builder-Executable (Konfiguration zu Permutations-Modulen) \\
 ExperimentDriver &
 \texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}experiment\_driver/} &
-sieben-phasiger Experiment-Treiber (host-seitig) \\
+Phase-1-bis-7-Pipeline (host-seitig): \texttt{phase1\_\allowbreak{}enumerate} bis
+\texttt{phase7\_\allowbreak{}export}, zwei Opt-in-Schritte \\
 Codegenerierung &
 \texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}codegen/} &
 \texttt{generate\_\allowbreak{}module\_\allowbreak{}from\_\allowbreak{}profile} samt Templates \\
@@ -90,76 +225,151 @@ Modul-Loader &
 Laden der erzeugten Module \\
 ABI-Header &
 \texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}include/\allowbreak{}cache\_engine/\allowbreak{}abi/} &
-u.\,a. \texttt{baustein\_\allowbreak{}variants.hpp}, \texttt{resolve\_\allowbreak{}baustein.hpp} \\
+u.\,a. \texttt{stempel\_\allowbreak{}basis.hpp} (CRTP-Vertrag aller Stempel-Träger),
+\texttt{baustein\_\allowbreak{}variants.hpp}, \texttt{resolve\_\allowbreak{}baustein.hpp},
+\texttt{anatomy\_\allowbreak{}fingerprint.hpp}, \texttt{anatomy\_\allowbreak{}stamp\_\allowbreak{}entries.hpp} \\
 XML-Config-Parser &
 \texttt{libs/\allowbreak{}common/\allowbreak{}serialization/\allowbreak{}xml\_config\_parser/} &
 Parser der Profil- und Experiment-XMLs \\
-Achsen-Bausteine &
-\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}axes/} &
-je Achse ein Unterverzeichnis \\
+Achsen-Heimaten &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}\{organ\_axes,\allowbreak{}system\_axes,\allowbreak{}mess\_axes\}/} &
+je Kategorie eine Heimat; \texttt{organ\_\allowbreak{}axes/} je Kompositions-Haupt-Achse ein
+Unterverzeichnis (18) sowie \texttt{organ\_\allowbreak{}meta\_\allowbreak{}meta/} \\
 SOTA-Profile &
 \texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}algorithm\_profiles/\allowbreak{}sota/} &
-33 Profil-Dateien (\texttt{*.profile.xml}): die 30 eigenständigen SOTA-Algorithmus-Profile
-(Abschnitt~\ref{sec:sota-instances}) plus drei Dateien für die Nebenläufigkeits-Disziplinen
-\texttt{olc}, \texttt{rcu} und \texttt{hazard\_\allowbreak{}pointers} \\
+33 Profil-Dateien (\texttt{*.profile.xml}): 30 Vollprofile eigenständiger Suchentwürfe
+(Abschnitt~\ref{sec:sota-instances}) und drei abstrakte Profile \texttt{olc}, \texttt{louds} und
+\texttt{vampir}, dazu \texttt{sota\_\allowbreak{}h2\_\allowbreak{}scores.xml} \\
 Adapter A-/P-Serie &
 \texttt{adapters/} &
 ABI-Adapter über dem \texttt{ext/}-Fremdcode (10~A-, 12~P-Einträge) \\
-\bottomrule
-\end{tabular}
-\end{center}
+Planer &
+\texttt{apps/\allowbreak{}experiment\_planner/} &
+Planer-Rolle als eigene Binary (\texttt{comdare-\allowbreak{}experiment-\allowbreak{}planner});
+Subkommando-CLI mit u.\,a. \texttt{validate}, \texttt{plan}, \texttt{simulate}, \texttt{check-size},
+\texttt{status}, \texttt{version}, \texttt{help} \\
+Plan-Director &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}profile\_facade/\allowbreak{}planner/} &
+deterministischer Director-Walk (\texttt{experiment\_\allowbreak{}plan\_\allowbreak{}director.hpp}),
+Planungs-Simulation (\texttt{planner\_\allowbreak{}simulation.hpp}), Planer-Version und Fingerprint
+(\texttt{planner\_\allowbreak{}version.hpp}) \\
+Träger-Stufen &
+\texttt{libs/\allowbreak{}traeger/} &
+Stufenkette \texttt{planner}, \texttt{ceb}, \texttt{tier}, \texttt{hybrid} (in dieser Reihenfolge) als
+CMake-Ziele; die Substanz liegt in \texttt{libs/\allowbreak{}cache\_engine/} \\
+Achsen-Registries &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}algorithm\_profiles/\allowbreak{}cache\_engine\_axis\_registry.xml},
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}include/\allowbreak{}cache\_engine/\allowbreak{}measurement/\allowbreak{}\{system,\allowbreak{}measurement\}\_axis\_registry.xml} &
+generierte Abbilder der drei Heimaten (\texttt{tools/\allowbreak{}*\_registry\_gen}) \\
+Versions-Lock &
+\texttt{tools/\allowbreak{}axis\_version\_lock/} &
+\texttt{axis\_\allowbreak{}version.lock} über den Overlay-Schnitt (im genannten Stand 719 Records),
+geprüft vom CI-Gate \texttt{contract:\allowbreak{}axis-version-lock} \\
+Overlay-Quellmenge &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}builder/\allowbreak{}overlay\_source\_set.hpp},
+\texttt{tools/\allowbreak{}overlay\_source\_hash\_gen/} &
+Dateimenge und Hash des Fingerprint-Glieds [7] \\
+Hybrid-Stufe &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}hybrid/} &
+Dock-Verträge, Dock-Array, Dock-Factory, XML-Parser der \texttt{<hybrid\_tier>}-Sektion, Modul-ABI v1,
+Stempel-Kette, Binary-Proxy, Heuristik-Adapter; Router und Eviction nicht gebaut \\
+Mess-/Steuer-Naht &
+\texttt{libs/\allowbreak{}cache\_engine/\allowbreak{}mess/} &
+MessVisitor-Naht (\texttt{mess\_\allowbreak{}naht.hpp}), Genus-Kaskade
+(\texttt{genus\_\allowbreak{}kaskade.hpp}), Steuer-Docks vom Planer zur CEB
+(\texttt{steuer\_\allowbreak{}dock.hpp}) \\
+Reproduktionsweg &
+\texttt{configure.sh}, \texttt{Makefile} &
+GNU-Bauweg vor CMake: \texttt{configure}, \texttt{make}, \texttt{make check}, \texttt{make install};
+\texttt{Makefile} statisch mit den GNU-Standardzielen, reicht an CMake weiter \\
+Lizenz-Basis &
+\texttt{LICENSE}, \texttt{NOTICE}, \texttt{LICENSES/}, \texttt{REUSE.toml} &
+Comdare Research License 1.0 (SPDX \texttt{LicenseRef-\allowbreak{}Comdare-\allowbreak{}Research-1.0}),
+Change Date 2031-08-10, danach Apache-2.0; REUSE-Zuordnung je Fremdpaket \\
+\end{longtable}
+}
 
 \section*{comdare-prt-art --- Prüfling}
 
-Der Prüfling ist als Header-Bibliothek unter \texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/}
-organisiert; jeder Baustein liegt in einem eigenen thematischen Unterverzeichnis.
+Der Prüfling ist als Header-Bibliothek\footnote{Header-only: Bibliothek, deren Definitionen vollständig in
+Header-Dateien liegen und beim Einbinden übersetzt werden; eine separat übersetzte Bibliotheksdatei gibt es
+nicht.} unter \texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/} organisiert; jeder Baustein
+liegt in einem eigenen thematischen Unterverzeichnis (14), \texttt{prt\_art/src/} ist ein bewusst leerer
+Implementations-Slot. Die Cache Engine lädt ihn als Plugin: \texttt{comdare\_pruefling.cmake} registriert
+den Code-Weg über \texttt{COMDARE\_CE\_PRUEFLINGE}, die generierte \texttt{prt\_art\_axis\_registry.xml} ist
+der Registry-Weg für den Planer (\texttt{COMDARE\_PRT\_ART\_DIR}); eine Kreuzprobe im Prüflings-Kontrakt
+der Cache Engine meldet es, wenn nur einer der beiden Wege gesetzt ist, und bricht die Konfiguration ab,
+wenn beide auf verschiedene Orte zeigen (Abschnitt~\ref{sec:prtart-impl}). Im Stempel führt der Prüfling
+seine Achsen unter eigenem Namensraum (Präfix \texttt{prt-art.}).
 
 {\footnotesize
 \begin{verbatim}
-comdare-prt-art/                            Stand: Commit 32e8ffa
-|-- CMakeLists.txt, comdare_pruefling.cmake   Build-Einstieg (CMake)
+comdare-prt-art/                            Zweig development @ b539d6ee
+|-- CMakeLists.txt, comdare_pruefling.cmake   Build-Einstieg (CMake) + Plugin-
+|                                             Registrierungs-Snippet fuer die ce
+|-- LICENSE, NOTICE, LICENSES/, REUSE.toml    Lizenz-Basis (Comdare Research
+|                                             License 1.0)
+|-- README.md, CITATION.cff, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md,
+|   CHANGELOG.md, PROJECT_LAYER_MAP.md, CMakePresets.json   (Sammel-Eintrag)
 |-- prt_art/
-|   |-- include/prt_art/    Bausteine des Prueflings (Header)
+|   |-- include/prt_art/    Bausteine des Prueflings (Header, 14 Verzeichnisse)
 |   |   |-- identity/           prt_art_search_engine.hpp (PrtArtSearchEngine),
 |   |   |                       prt_art_execution_engine_adapter.hpp,
-|   |   |                       prt_art_pruefling_factory.hpp
-|   |   |-- allocator/          pool_descriptor.hpp, pool_router.hpp, pool_set.hpp
+|   |   |                       prt_art_pruefling_factory.hpp,
+|   |   |                       prt_art_identity.hpp, status.hpp
+|   |   |-- allocator/          pool_descriptor.hpp, pool_router.hpp,
+|   |   |                       pool_set.hpp
 |   |   |-- concurrency/        olc_with_reserved_blocks.hpp
-|   |   |-- prefetch/           path_oriented_prefetch.hpp, redirect_prefetch.hpp,
-|   |   |                       distance_estimator.hpp
-|   |   |-- memory_layout/      multi_level_layout.hpp u.a.
+|   |   |-- prefetch/           path_oriented_prefetch.hpp,
+|   |   |                       redirect_prefetch.hpp, distance_estimator.hpp
+|   |   |-- memory_layout/      multi_level_layout.hpp u. a.
 |   |   |-- measurement/        density_tracker.hpp, hypothesis_metrics.hpp
 |   |   |-- telemetry/          leaf_only_counter.hpp
-|   |   `-- ...                 nodes/, slots/, default_lookup/, value_handle/,
-|   |                           value_buffer/, internal_search/,
-|   |                           serialization/, ...
-|   |-- legacy_reimpl/      14 Re-Implementierungen im Nummernband P11-P27
-|   |                       (P11-CSS-tree ... P27-Zhang-ASPLOS-Hierarchical)
+|   |   |-- slots/              Slot-Wrapper der vier Achsen-Beitraege
+|   |   |                       (axis_01_page_type, axis_07_prefetch,
+|   |   |                       axis_11_telemetry, axis_14_value_handle)
+|   |   |                       + Kompositions-Demo
+|   |   `-- ...                 nodes/, default_lookup/, value_handle/,
+|   |                           value_buffer/, internal_search/, serialization/
+|   |-- legacy_reimpl/      14 Re-Implementierungen der Arbeiten P11-P27
+|   |                       (ohne P15, P20, P25; P11-CSS-tree ...
+|   |                       P27-Zhang-ASPLOS-Hierarchical)
 |   |-- algorithm_profiles/ prtart_pruefling.profile.xml,
-|   |                       permutation_axes_extension.xml
+|   |                       permutation_axes_extension.xml,
+|   |                       prt_art_axis_registry.xml (generiert von
+|   |                       registry_gen/, eigener Namensraum engine=prt_art)
 |   |-- codegen/ + permutations_codegen/   Codegen-Vorlagen des Prueflings
-|   |-- registry_gen/, src/ Registry-Generator und Uebersetzungseinheiten
+|   |-- registry_gen/       Registry-Generator + Roundtrip-Pruefung
+|   |                       (registry_roundtrip.cmake)
+|   |-- src/                Implementations-Slot, bewusst leer (header-only)
 |   `-- tests/unit/         modulnahe Tests
 |-- tests/unit/             repositoriumsweite Unit-Tests
 |-- cmake/                  Build-Hilfsdateien
-`-- docs/                   sessions/ (Entwicklungs-Dokumentation)
+`-- docs/                   architektur/, ledger-sections/ (repo-lokales
+                            Ledger), sessions/
 \end{verbatim}
 }
 
-\begin{center}\small
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+{\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
 \toprule
 \textbf{Komponente} & \textbf{Pfad} & \textbf{Zweck} \\
 \midrule
+\endhead%
+\midrule
+\endfoot%
+\bottomrule
+\endlastfoot%
 PrtArtSearchEngine &
 \texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}identity/\allowbreak{}prt\_art\_search\_engine.hpp} &
-hybride Engine des Prüflings (Vector/Map/Tuple-API) \\
+hybride Engine des Prüflings: Vector-API bei einem, Map-API bei zwei, Map-Tuple-API bei mehr als zwei
+Parametern \\
 ExecutionEngine-Adapter &
 \texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}identity/\allowbreak{}prt\_\allowbreak{}art\_\allowbreak{}execution\_\allowbreak{}engine\_\allowbreak{}adapter.hpp} &
 ABI-Anbindung an die Mess-Infrastruktur \\
 Pool-Allokator &
 \texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}allocator/} &
-Deskriptoren der 4+1+2-Pools \\
+Deskriptoren der sieben Pools: vier Seiten-Pools A--D, ein Rest-Pool R, zwei Wert-Pools (4+1+2) \\
 OLC &
 \texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}concurrency/} &
 OLC mit reservierten Blöcken \\
@@ -174,84 +384,276 @@ DensityTracker, H1--H3 &
 \texttt{density\_\allowbreak{}tracker.hpp}, \texttt{hypothesis\_\allowbreak{}metrics.hpp} \\
 legacy\_reimpl &
 \texttt{prt\_art/\allowbreak{}legacy\_reimpl/} &
-14 Vergleichs-Re-Implementierungen (P11--P27) \\
+14 Vergleichs-Re-Implementierungen (P11--P27, ohne P15, P20, P25) \\
 Prüflings-Profil &
 \texttt{prt\_art/\allowbreak{}algorithm\_profiles/} &
 Profil- und Achsen-Erweiterungs-XML \\
-\bottomrule
-\end{tabular}
-\end{center}
+Registry-Abzug &
+\texttt{prt\_art/\allowbreak{}algorithm\_profiles/\allowbreak{}prt\_art\_axis\_registry.xml},
+\texttt{prt\_art/\allowbreak{}registry\_gen/} &
+generierte Achsen-Registry des Prüflings (\texttt{engine=prt\_art}) mit Roundtrip-Prüfung; liegt als
+Fixture auch in der Cache Engine (\texttt{tests/\allowbreak{}unit/\allowbreak{}thesis\_tiere/}) \\
+Slot-Beitrag &
+\texttt{prt\_art/\allowbreak{}include/\allowbreak{}prt\_art/\allowbreak{}slots/} &
+vier Slot-Wrapper und Kompositions-Demo (Slot-Merge in die Achsen 01, 07, 11, 14) \\
+Plugin-Einbindung &
+\texttt{comdare\_pruefling.cmake} &
+Registrierungs-Snippet für den Plugin-Controller der Cache Engine
+(\texttt{COMDARE\_\allowbreak{}CE\_\allowbreak{}PRUEFLINGE}; Kontrakt
+\texttt{cmake/\allowbreak{}pruefling\_\allowbreak{}kontrakt.cmake} der Cache Engine) \\
+Repo-Ledger &
+\texttt{docs/\allowbreak{}ledger-sections/} &
+repo-lokales Architektur- und Offene-Punkte-Ledger (Vier-Ledger-Struktur) \\
+Lizenz-Basis &
+\texttt{LICENSE}, \texttt{NOTICE}, \texttt{LICENSES/}, \texttt{REUSE.toml} &
+Comdare Research License 1.0 (SPDX \texttt{LicenseRef-\allowbreak{}Comdare-\allowbreak{}Research-1.0}) \\
+\end{longtable}
+}
 
 \section*{probst-Diplomarbeit-cache-engine --- Super-Repository}
 
-Das Super-Repository bündelt Mess-Treiber, Experiment-Konfigurationen, Auswertungs-Pipeline und
-Manuskript; die beiden Code-Repositorien sind unter \texttt{Code/\allowbreak{}external/} als
-Submodule eingebunden.
+Das Super-Repositorium bündelt Mess-Treiber, Experiment-Konfigurationen, die neunstufige
+Auswertungs-Pipeline (\texttt{01} bis \texttt{09}), CI-Wachen und die Einbindung der drei anderen
+Repositorien als Submodule~\cite{git2026gitmodules}. Unter \texttt{Code/\allowbreak{}external/} liegen drei
+Einträge: die beiden Code-Repositorien und das Manuskript-Repositorium als statischer Fundort der aus der
+Messung erzeugten LaTeX-Anlage neben dem übrigen Quellcode, der auch den netzlosen Lokal-Fall trägt.
+Dasselbe Manuskript-Repositorium ist zusätzlich als Baupfad \texttt{thesis/\allowbreak{}diplomarbeit}
+eingebunden, in dem die CI das PDF baut; \texttt{.gitmodules} führt damit vier Submodule.
 
+%% OWNER-VORLAGE: OV-AB-01 --- Vorspann-Unterlagen der Super-Wurzel (Exposés, Skizzen, Anmeldung,
+%% Korrespondenz; Dateinamen mit Personendaten): eine neutrale Sammel-Zeile im Baum ohne Dateinamen.
+%% Alternative: bewusst ausblenden und im Vorspann-Satz als Ausblendung nennen. Beide Formen tragen keine
+%% Personendaten. Default gesetzt; Widerspruch genügt.
 {\footnotesize
 \begin{verbatim}
-probst-Diplomarbeit-cache-engine/           Stand: Commit daee6c85
+probst-Diplomarbeit-cache-engine/     Zweig development @ d989e008
+|-- .gitmodules                       vier Submodule (zwei davon Zeiger auf das
+|                                     Manuskript)
+|-- configure.sh, Makefile            GNU-Bauweg vor CMake (all, install, check,
+|                                     installcheck, uninstall, clean, ...)
+|-- LICENSE, NOTICE, LICENSES/, REUSE.toml
+|                                     Lizenz-Basis (Apache-2.0 fuer den
+|                                     Eigencode; LICENSES/ traegt die
+|                                     Lizenztexte der Fremdkomponenten)
+|-- README.md, MANUAL_RUN.md, CITATION.cff, CONTRIBUTING.md, SECURITY.md,
+|   CODE_OF_CONDUCT.md, CHANGELOG.md, PROJECT_LAYER_MAP.md   Projekt-Dokumente
 |-- Code/
 |   |-- 01_sample_data_generator/   Erzeugung von Beispieldaten
-|   |-- 02_messung_driver/          Mess-Treiber (main.cpp, v32_orchestrator.hpp,
-|   |                            plugin_loader.hpp, measurement_writer.hpp, ...)
-|   |-- 03_binary_to_csv/           Auswertungs-Stufe 1: binaere Messdaten -> CSV
+|   |-- 02_messung_driver/          Mess-Treiber (main.cpp,
+|   |                               v32_orchestrator.hpp, plugin_loader.hpp,
+|   |                               measurement_writer.hpp, ...)
+|   |-- 03_binary_to_csv/           Auswertungs-Stufe 1: binaere Messdaten
+|   |                               -> CSV
 |   |-- 04_csv_to_latex/            Auswertungs-Stufe 2: CSV -> LaTeX-Tabellen
 |   |-- 05_diagram_generator/       Auswertungs-Stufe 3: Diagramm-Erzeugung
+|   |                               (TikZ)
 |   |-- 06_latex_to_pdf/            Manuskript-Build (build_thesis.sh/.bat)
 |   |-- 07_tier_binary_report/      Bericht ueber die Tier-Mess-Binaries
-|   |-- 08_appendix_generator/      In-Process-Generator des Mess-Anhangs
-|   |                               (ersetzt generate_wide_appendix.ps1)
+|   |-- 08_appendix_generator/      In-Process-Generator des Mess-Anhangs (linkt
+|   |                               csv_to_latex und diagram_generator direkt)
 |   |-- 09_tex_formatter/           satz-neutraler LaTeX-Quelltext-Formatierer
-|   |-- experiment_config/          config_a_prt_art_vs_sota.xml,
-|   |                               config_b_cache_engine_perms.xml,
-|   |                               config_c_merge_alt_neu.xml, messreihen.xml,
-|   |                               sample_data/
-|   |-- external/               Submodule: comdare-cache-engine, comdare-prt-art
-|   `-- tests/, cmake/, tools/      repoweite Tests, Build- und Hilfsskripte
-|-- thesis/diplomarbeit/            Manuskript: diplomarbeit.tex, Makefile,
-|                                   kapitel/{de,en}/, anhang/{de,en}/,
-|                                   tabellen/, tikz/
-|-- docs/                           Ledger, Architektur- und Session-Dokumentation
+|   |-- common/                     gemeinsamer Perzentil-Kanon
+|   |                               (percentile_canon.hpp)
+|   |-- ci_wachen/                  CI-Wachen in C++ (CI-Invarianten,
+|   |                               YAML-Scanner, Gitlink-Paritaet,
+|   |                               Lizenz-Konsistenz, Mutationslauf,
+|   |                               XML-Wohlgeformtheit, WIDE-Aggregat)
+|   |-- experiment_config/          messreihen.xml (Messreihen-Katalog:
+|   |                               A_defined, A_full, B_CacheEngine_Perms,
+|   |                               C_Merge_Alt_Neu), thesis_profiles/
+|   |                               (f1_durchstich), sample_data/
+|   |-- test_data_xml/              XML-Schemata experiment_schema.xsd und
+|   |                               messreihe_v32_schema.xsd, golden-XML,
+|   |                               Testdaten-XML
+|   |-- external/               Submodule: comdare-cache-engine,
+|   |                           comdare-prt-art,
+|   |                           20260931-overleaf-diplomarbeit (statischer
+|   |                           Fundort)
+|   |-- tests/, cmake/              repoweite Tests, Build-Hilfsdateien
+|   `-- CMakeLists.txt, CMakePresets.json, USAGE.md, MANUAL_RUN.md, README.md
+|-- thesis/diplomarbeit/            Manuskript-Repositorium als Submodul
+|                                   (Baupfad; Struktur im eigenen Abschnitt);
+|                                   daneben ZIHLatexVorlage/
+|                                   (Dokumentklassen-Vorlage)
+|-- ci/, scripts/                   CI-Wachen (Shell) und Hygiene-Skripte
+|                                   (Diff-/ASCII-Wache, Worktree-Wache,
+|                                   Testdaten-Beschaffung)
+|-- docs/                           Ledger (Vollfassung und dichte Fassung),
+|                                   Architektur- und Plan-Dokumente, Termine,
+|                                   Glossar, Mess-Planung mit Erstbelegen
+|                                   (docs/architektur/measurement/),
+|                                   Session-Dokumentation
 |-- Forschungsarbeiten/             Literatur-Sammlung je Achse (Sammel-Eintrag)
-|-- measurement/                    Mess-Ergebnis-Rueckschrieb (persistierte
-|                                   Messlaeufe der CI)
-`-- Messdaten-Backup/               additive Sicherung der Roh-Messdaten
+|-- measurement/                    thesis_compiles/: persistierte PDF-Kompilate
+|                                   des CI-Rueckschriebs
+`-- <Vorspann-Unterlagen>           Exposes, Skizzen, Anmeldeunterlagen und
+                                    Vorarbeiten der Arbeit (Sammel-Eintrag)
 \end{verbatim}
 }
 
-\begin{center}\small
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+{\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
 \toprule
 \textbf{Komponente} & \textbf{Pfad} & \textbf{Zweck} \\
 \midrule
+\endhead%
+\midrule
+\endfoot%
+\bottomrule
+\endlastfoot%
 messung\_driver &
 \texttt{Code/\allowbreak{}02\_messung\_driver/} &
 Mess-Treiber: lädt Permutations-Module, orchestriert die Messreihen \\
 Experiment-Konfigurationen &
 \texttt{Code/\allowbreak{}experiment\_config/} &
-XML-Konfigurationen A/B/C und \texttt{messreihen.xml} \\
+\texttt{messreihen.xml} (Messreihen-Katalog des Treibers: \texttt{A\_defined}, \texttt{A\_full},
+\texttt{B\_\allowbreak{}CacheEngine\_\allowbreak{}Perms}, \texttt{C\_\allowbreak{}Merge\_\allowbreak{}Alt\_\allowbreak{}Neu}),
+\texttt{thesis\_\allowbreak{}profiles/} (Durchstich-Profil), \texttt{sample\_\allowbreak{}data/} \\
 binary\_to\_csv &
 \texttt{Code/\allowbreak{}03\_binary\_to\_csv/} &
 Auswertungs-Pipeline, Stufe~1 \\
 csv\_to\_latex &
 \texttt{Code/\allowbreak{}04\_csv\_to\_latex/} &
-Auswertungs-Pipeline, Stufe~2 \\
+Auswertungs-Pipeline, Stufe~2, mit gemeinsamem Perzentil-Kanon (\texttt{Code/\allowbreak{}common/}) \\
 diagram\_generator &
 \texttt{Code/\allowbreak{}05\_diagram\_generator/} &
 Diagramm-Erzeugung aus CSV-Daten \\
 latex\_to\_pdf &
 \texttt{Code/\allowbreak{}06\_latex\_to\_pdf/} &
 Manuskript-Build-Skripte \\
+tier\_binary\_report &
+\texttt{Code/\allowbreak{}07\_tier\_binary\_report/} &
+Bericht über die Tier-Mess-Binaries \\
+appendix\_generator &
+\texttt{Code/\allowbreak{}08\_appendix\_generator/} &
+Auswertungs-Stufe~4: In-Process-Erzeugung des Mess-Anhangs (je Sprache Kern- und Darstellungs-.tex aus
+einer WIDE-Matrix) \\
+tex\_formatter &
+\texttt{Code/\allowbreak{}09\_tex\_formatter/} &
+satz-neutraler LaTeX-Quelltext-Formatierer \\
+XML-Schemata &
+\texttt{Code/\allowbreak{}test\_data\_xml/} &
+\texttt{experiment\_\allowbreak{}schema.xsd} (Experiment-Profil), \texttt{messreihe\_\allowbreak{}v32\_\allowbreak{}schema.xsd}
+(Messreihe), golden-XML und Testdaten-XML \\
+CI-Wachen &
+\texttt{Code/\allowbreak{}ci\_wachen/}, \texttt{ci/}, \texttt{scripts/} &
+Wachen in C++ (Gitlink-Parität, Lizenz-Konsistenz, CI-Invarianten) und Shell (Anhang-Vorwärts-Kanal,
+Frische-, Bestandslog-, Diff-/ASCII-Wache) \\
 Submodule &
 \texttt{Code/\allowbreak{}external/} &
-Einbindung der beiden Code-Repositorien \\
+Einbindung der beiden Code-Repositorien und des Manuskript-Repositoriums (statischer Fundort); zweiter
+Zeiger \texttt{thesis/\allowbreak{}diplomarbeit} als Baupfad \\
+Submodul-Deklaration &
+\texttt{.gitmodules} &
+vier Submodule; Baupfad \texttt{thesis/\allowbreak{}diplomarbeit} mit \texttt{branch} und \texttt{update},
+statischer Fundort bewusst ohne \\
 Manuskript &
 \texttt{thesis/\allowbreak{}diplomarbeit/} &
-LaTeX-Quellen der Arbeit (DE/EN) \\
-Messdaten-Backup &
-\texttt{Messdaten-Backup/} &
-additive Sicherung der Roh-Messdaten \\
+Manuskript-Repositorium als Submodul (Baupfad der PDF-CI) \\
+Mess-Rückschrieb &
+\texttt{measurement/\allowbreak{}thesis\_compiles/}, \texttt{docs/\allowbreak{}architektur/\allowbreak{}measurement/} &
+persistierte PDF-Kompilate des CI-Rückschriebs; Mess-Planung mit den Erstbelegen der Rohdaten \\
+Reproduktionsweg &
+\texttt{configure.sh}, \texttt{Makefile} &
+GNU-Bauweg vor CMake (wie in der Cache Engine) \\
+Lizenz-Basis &
+\texttt{LICENSE}, \texttt{NOTICE}, \texttt{LICENSES/}, \texttt{REUSE.toml} &
+Apache-2.0 für den Eigencode; Submodule und Fremdkomponenten je eigene Lizenz (21 Lizenztexte unter
+\texttt{LICENSES/}) \\
+\end{longtable}
+}
+
+\section*{20260931-overleaf-diplomarbeit --- Manuskript-Repositorium}
+
+Das Manuskript-Repositorium trägt die LaTeX-Quellen beider Sprachfassungen (Schalter
+\texttt{\textbackslash{}thesislang} in \texttt{diplomarbeit.tex}), die Generator-Ausgabe der Messung unter
+\texttt{anhang/\allowbreak{}\{de,en\}/\allowbreak{}tabellen/} und eine eigene CI mit den Jobs
+\texttt{lint:secrets}, \texttt{lint:latex} und \texttt{thesis:pdf}. Die Mess-CI des Super-Repositoriums
+legt die Generator-Ausgabe per Commit in diesem Repositorium ab und stößt den PDF-Bau an; dieser
+Rückschreib-Kanal ist der Grund, warum das Manuskript ein eigenes, versioniertes Repositorium ist
+(Abschnitt~\ref{sec:repos}). Im Super-Repositorium ist es zweifach eingebunden: als Baupfad
+\texttt{thesis/\allowbreak{}diplomarbeit} und als statischer Fundort
+\texttt{Code/\allowbreak{}external/\allowbreak{}20260931-\allowbreak{}overleaf-\allowbreak{}diplomarbeit}. Das
+Aufgabenblatt liegt als eigenes Kapitel unter \texttt{aufgabenstellung/}; die Lizenz-Basis ist CC BY 4.0
+(\texttt{LICENSES/\allowbreak{}CC-BY-4.0.txt})~\cite{cc2013by40}, die Lizenzaussage trägt der Vorspann.
+
+%% OWNER-VORLAGE: OV-AB-02 --- getrackte PDF-Fassung im Manuskript-Wurzelverzeichnis: Sammel-Zeile
+%% \enquote{gesicherte PDF-Fassung der Arbeit} ohne Dateinamen. Kenntnisnahme: ihr Stand ist nicht der
+%% Abgabestand; ob sie zur Abgabe erneuert oder als Sicherung belassen wird, ist Owner-Sache. Default
+%% gesetzt; Widerspruch genügt.
+{\footnotesize
+\begin{verbatim}
+20260931-overleaf-diplomarbeit/     Zweig development @ 56a8fe08
+|-- diplomarbeit.tex                Rahmendokument: Sprachschalter, Vorspann,
+|                                   Lizenzabsatz, Einbindung von Kapiteln und
+|                                   Anhaengen
+|-- aufgabenstellung/               de.tex, en.tex (offizielles Aufgabenblatt
+|                                   als Kapitel)
+|-- kapitel/{de,en}/                sechs eingebundene Kapitel 01_einleitung ..
+|                                   06_fazit sowie nicht eingebundene
+|                                   Quelldateien
+|-- anhang/{de,en}/                 Anhaenge A .. F
+|   `-- tabellen/                   Generator-Ausgabe der Messung (*.tex, u. a.
+|                                   le_limitierung.tex)
+|-- config/                         language.tex (Sprachumschaltung)
+|-- literatur.bib                   Literaturdatenbank (BibTeX)
+|-- zihpub.cls, alphadin.bst, plaindin.bst, zih_logo_de_sw.{eps,pdf}
+|                                   Dokumentklasse, Bibliographie-Stile, Logo
+|-- Makefile, build.ps1, build_all.ps1
+|                                   lokale Bau-Einstiege (pdflatex/bibtex;
+|                                   PowerShell)
+|-- .gitlab-ci.yml                  CI: lint:secrets, lint:latex, thesis:pdf
+|-- LICENSE, NOTICE, LICENSES/, REUSE.toml   Lizenz-Basis (CC BY 4.0)
+|-- docs/, sessions/, tools/        repo-lokales Ledger, Quellhinweise,
+|                                   Sitzungs-Uebergaben, TeX-Formatierer
+`-- <PDF-Fassung>                   gesicherte PDF-Fassung der Arbeit
+                                    (Sammel-Zeile)
+\end{verbatim}
+}
+
+{\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.185\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Komponente} & \textbf{Pfad} & \textbf{Zweck} \\
+\midrule
+\endhead%
+\midrule
+\endfoot%
 \bottomrule
-\end{tabular}
-\end{center}
+\endlastfoot%
+Rahmendokument &
+\texttt{diplomarbeit.tex} &
+Vorspann, Lizenzabsatz, \texttt{\textbackslash{}thesislang}-Schalter, Include-Liste der Kapitel und
+Anhänge \\
+Kapitel &
+\texttt{kapitel/\allowbreak{}de/} (\texttt{kapitel/\allowbreak{}en/}) &
+sechs eingebundene Kapitel; die englische Fassung folgt der deutschen als Übersetzung \\
+Anhänge &
+\texttt{anhang/\allowbreak{}de/} (\texttt{anhang/\allowbreak{}en/}) &
+A Messwerte, B Code-Struktur, C Glossar, D Bausteinmatrix, E Architekturentscheidungen,
+F Vergleichs-Schnittstellen \\
+Generator-Ausgabe &
+\texttt{anhang/\allowbreak{}\{de,en\}/\allowbreak{}tabellen/} &
+von \texttt{04\_\allowbreak{}csv\_\allowbreak{}to\_\allowbreak{}latex}, \texttt{05\_\allowbreak{}diagram\_\allowbreak{}generator} und
+\texttt{08\_\allowbreak{}appendix\_\allowbreak{}generator} erzeugte \texttt{.tex} (Tabellen, Diagramme,
+Limitierungen); Ort der Messwerte (Anhang~\ref{app:measurements}) \\
+Aufgabenblatt &
+\texttt{aufgabenstellung/} &
+\texttt{de.tex}, \texttt{en.tex} \\
+Literatur &
+\texttt{literatur.bib} &
+BibTeX-Datenbank der Arbeit \\
+Klasse und Stile &
+\texttt{zihpub.cls}, \texttt{alphadin.bst}, \texttt{plaindin.bst} &
+Dokumentklasse und Bibliographie-Stile \\
+CI &
+\texttt{.gitlab-ci.yml} &
+\texttt{lint:secrets}, \texttt{lint:latex}, \texttt{thesis:pdf} (DE und EN mit Warnungs-Gates) \\
+Lizenz-Basis &
+\texttt{LICENSE}, \texttt{NOTICE}, \texttt{LICENSES/}, \texttt{REUSE.toml} &
+CC BY 4.0 (SPDX \texttt{CC-BY-4.0}), Copyright beim Autor \\
+Repo-Ledger &
+\texttt{docs/\allowbreak{}ledger-sections/} &
+repo-lokales Ledger (Vier-Ledger-Struktur) \\
+\end{longtable}
+}
