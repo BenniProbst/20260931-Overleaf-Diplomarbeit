@@ -260,9 +260,16 @@ dem Enable-Flag der Konfiguration und dem Detektions-Flag \texttt{COMDARE\_HAVE\
 --- ein fehlender Vendor schaltet den Baustein ab, statt den Bau zu brechen ---; SOTA-Bausteine werden über
 constexpr-Enable-Flags samt \texttt{mp\_filter} (\texttt{COMDARE\_AXIS\_*\_USE\_}-/\texttt{ENABLE\_}-Flag-Familie)
 übersetzungszeitlich zu- oder abgeschaltet, jeweils mit sicherem, familienweise gewähltem Fallback:
-Allokator-Adapter ersetzen den fehlenden Vendor durch \texttt{std::malloc}/\texttt{std::free},
-Datenstruktur-Adapter durch einen Stub, der bei Benutzung kontrolliert eine
-\texttt{std::runtime\_error}-Ausnahme wirft, sodass der Build eigenständig lauffähig bleibt. Die vom
+Allokator-Adapter ersetzen den fehlenden Vendor in \texttt{if constexpr}-Zweigen durch die portable
+ausgerichtete Allokation (\texttt{portable\_aligned\_alloc}), der Vendor-Shim liefert für den nie
+ausgeführten Zweig nur Forward-Stubs, und der Achsen-Wert \texttt{StdMalloc} ist ein eigener Baustein,
+kein Notnagel; Datenstruktur-Adapter fremder Suchverfahren tragen hinter ihrem Enable-Flag eine
+eigenständige Re-Implementierung als Körper, während die Bindung an den Original-Code über den
+Bibliotheks-Bau mit dem Original-Compiler läuft --- ein Stub, der zur Laufzeit eine Ausnahme wirft,
+kommt in den Organ-Achsen nicht vor (die dort geworfenen Typen sind Vertragsverletzungen wie
+\texttt{invalid\_argument}, \texttt{length\_error} oder \texttt{logic\_error} und die
+Allokations-Fehler \texttt{bad\_alloc} und \texttt{bad\_array\_new\_length}, kein
+\texttt{runtime\_error}) ---, sodass der Build eigenständig lauffähig bleibt. Die vom
 Prüfling nicht belegten Organ-Achsen beziehen ihren Baustein auf demselben Weg aus der Cache-Engine
 (Abschnitt~\ref{sec:prtart-impl}). Die Integration des hierarchischen
 Prefetching~\cite{zhang2025hierarchical} liefert zusätzlich einen Call-Graph-Analyzer zur Übersetzungszeit
