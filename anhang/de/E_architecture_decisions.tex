@@ -2,12 +2,70 @@
 
 % [#90/AP-B5] Kompakte ADR-Sammlung (Architecture Decision Records), aus den Kapiteln nachgezeichnet.
 % Nur dokumentierte Entscheidungen; jede ADR belegt per \ref auf den tragenden Thesis-Abschnitt.
+% Neuaufsatz nach Ist-Stand (Owner N-53); Begriffe nach dem Glossar-Kanon (Anhang C).
+% Viertes Feld 'Vollzugsstand' genau einmal je ADR, nur wo Plan-Ist-Stand und Durchführung auseinanderliegen.
+%% OWNER-VORLAGE: OV-AE-1 --- ADR-Feld \enquote{Kontext} unter der Ist-Stand-Doktrin: Kontext = geltende
+%% Randbedingung im Präsens ohne Zeitmarken; Begründungen bleiben, Ereignisse entfallen; der Vollzugsstand
+%% steht als viertes Feld genau einmal je ADR. Default gesetzt; Widerspruch genügt.
+%% OWNER-VORLAGE: OV-AE-4 --- Erweiterung des Anhangs um acht Ist-Stand-Entscheidungen (ADR-13 bis ADR-20)
+%% samt Übersichtstafel; die zwölf Bestands-ADRs behalten Nummer und Ordnung. Default gesetzt; Widerspruch
+%% genügt (dann bleiben zwölf ADRs, und die acht Gegenstände gehen als Posten an die Kapitel 3 bis 5).
 Dieser Anhang sammelt die tragenden Entwurfsentscheidungen der Arbeit als kompakte
-\emph{Architecture Decision Records} (ADRs): je Entscheidung der Kontext, in dem sie fiel, die
-Entscheidung selbst und ihre wichtigste Konsequenz. Ziel ist die schnelle Nachvollziehbarkeit ---
-\emph{warum} der Apparat so gebaut ist, wie ihn die Kapitel beschreiben; die ausführliche
-Herleitung und Begründung liegt jeweils im per \emph{Beleg} referenzierten Abschnitt des
-Haupttextes und wird hier nicht wiederholt.
+\emph{Architecture Decision Records}\footnote{Architecture Decision Record (ADR): eine kurze, nummerierte
+Aufzeichnung einer Entwurfsentscheidung mit Kontext, Entscheidung und Konsequenzen --- eingeführt von
+Nygard~\cite{nygard2011adr} als kurze Textdatei in einem Format nach Art eines Alexander-Musters und als
+Werkzeug-Format beschrieben von Kopp, Armbruster und Zimmermann~\cite{kopp2018madr}.} (ADRs): je
+Entscheidung der Kontext, in dem sie fiel, die Entscheidung selbst und ihre wichtigste Konsequenz. Ziel
+ist die schnelle Nachvollziehbarkeit --- \emph{warum} der Apparat so gebaut ist, wie ihn die Kapitel
+beschreiben; die ausführliche Herleitung und Begründung liegt jeweils im per \emph{Beleg} referenzierten
+Abschnitt des Haupttextes und wird hier nicht wiederholt. Wo der Ist-Stand des Plans und die
+Durchführung auseinanderliegen, weist die ADR den Vollzugsstand an genau einer Stelle als viertes Feld
+aus. Der Bestand umfasst zwanzig Entscheidungen: die zwölf Entscheidungen der Konzeption (ADR-1 bis
+ADR-12) und acht Entscheidungen der Identität, der Schnittstellen, des Betriebs und des Baus (ADR-13 bis
+ADR-20); Tabelle~\ref{tab:adr-overview} gibt die Übersicht.
+
+\begin{footnotesize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.3cm}>{\raggedright\arraybackslash}p{6.0cm}>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{3.8cm}@{}}
+\caption{Übersicht der zwanzig Architekturentscheidungen: Kurztitel, tragender Abschnitt und
+Vollzugsstand --- \emph{vollzogen} (gebaut und belegt), \emph{teilweise} (gebaut, mit benanntem offenem
+Gegenstand) oder \emph{Plan} (nur Plan-Ist-Stand); die Begründungen stehen in den Datensätzen, nicht in
+der Tafel}\label{tab:adr-overview}\\
+\toprule
+ADR & Entscheidung (Kurztitel) & Beleg (Abschnitt) & Vollzugsstand \\
+\midrule
+\endfirsthead%
+\multicolumn{4}{@{}l}{\tablename\ \thetable{} --- Fortsetzung}\\
+\toprule
+ADR & Entscheidung (Kurztitel) & Beleg (Abschnitt) & Vollzugsstand \\
+\midrule
+\endhead%
+\midrule
+\multicolumn{4}{@{}r}{\footnotesize Fortsetzung auf der nächsten Seite}\\
+\endfoot%
+\bottomrule
+\endlastfoot%
+ADR-1 & C-stabile Modulgrenze statt C++-Modul-ABI & Abschn.~\ref{sec:impl-architecture} & vollzogen \\
+ADR-2 & Compile-Time-Permutation über Typlisten & Abschn.~\ref{sec:axes-impl} & teilweise (Aufschaltung der achtzehnten Achse) \\
+ADR-3 & Drei-Ebenen-Modell als die eine Architektur & Abschn.~\ref{sec:anatomy-levels} & vollzogen \\
+ADR-4 & Durchreich-Doktrin und erzwungene Vollbelegung & Abschn.~\ref{sec:axes-impl} & vollzogen \\
+ADR-5 & Schichtenmodell E4--E0 mit eingefrorenen Verträgen & Abschn.~\ref{sec:anatomy-layers} & vollzogen \\
+ADR-6 & Explizit kodierte Nicht-Erhebung statt Phantomwert & Abschn.~\ref{sec:measurement-system} & vollzogen \\
+ADR-7 & Vier-Repository-Architektur mit orthogonalen Träger-Stufen & Abschn.~\ref{sec:repos} & vollzogen \\
+ADR-8 & Familienweise Adapter-Fallbacks & Abschn.~\ref{sec:axes-impl} & vollzogen \\
+ADR-9 & Mess-Gating in drei Schichten und vier Arbeitsmodi & Abschn.~\ref{sec:impl-pipeline} & teilweise (Replay-Ablauf compare/release) \\
+ADR-10 & \texttt{std::map}-Vertrag mit Konformitäts-Gatter & Abschn.~\ref{sec:measurement-system} & teilweise (volle \texttt{std::map}-Schnittstelle, Container-Hülle) \\
+ADR-11 & Entwurfsmuster-Register mit belegten Rollen & Abschn.~\ref{sec:anatomy-patterns} & vollzogen \\
+ADR-12 & Mess-Regime-Doppel Talos und root-Linux & Abschn.~\ref{sec:eval-method} & teilweise (Talos-Regime) \\
+ADR-13 & Vier Träger-Stufen und ein Stempel-Vertrag & Abschn.~\ref{sec:stamp-model} & teilweise (Stempel-Export Hybrid, SOTA-Zweig) \\
+ADR-14 & Identitäts-Schnitt: nur Organ-Achsen bilden die \texttt{binary\_id} & Abschn.~\ref{sec:axis-triad} & vollzogen \\
+ADR-15 & Mess-Visitor-Naht (Fläche 3) statt Sidecar & Abschn.~\ref{sec:anatomy-levels} & vollzogen \\
+ADR-16 & Lager als Bestand mit Übersetzungszeit-Schlüsseln & Abschn.~\ref{sec:lager} & teilweise (Lager-Vollausbau) \\
+ADR-17 & Optimierungsstufe als Anwender-Wahl, Bau-Welt identitätswirksam & Abschn.~\ref{sec:eval-build-scope} & teilweise (O0/O1-Wahl, Flag-Durchreichung) \\
+ADR-18 & Ein offizieller Bauweg als GNU-Vorbau über CMake & Anhang~\ref{app:code} & teilweise (Framework-Export) \\
+ADR-19 & Vier CI-Zellen ohne Skip & Abschn.~\ref{sec:impl-contracts} & teilweise (Mini-Pipelines je Träger-Stufe) \\
+ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise (Erstellungsmodus, headless Steuerpfad, Schema-Drift) \\
+\end{longtable}
+\end{footnotesize}
 
 \begin{description}
 
@@ -15,143 +73,462 @@ Haupttextes und wird hier nicht wiederholt.
   \textbf{Kontext:} Jede Permutation wird als eigenständige Tier-Binary kompiliert und zur Laufzeit
   geladen; C++23-Module strukturieren zwar die Übersetzungseinheiten, garantieren für sich genommen
   aber keine portable ABI-Stabilität~\cite{wg21_modules_abi}.
-  \textbf{Entscheidung:} Eine einheitliche C-Modulgrenze
-  (\texttt{comdare\_create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exportiert je Permutation genau
-  ein Lebewesen; dahinter liegt die dreischichtige Abstraktionskette
-  \texttt{CacheEngine} $\to$ \texttt{ExecutionEngine} $\to$ \texttt{SearchEngine}.
-  \textbf{Konsequenz:} Die ABI-Stabilität stellt die C-Grenze her, nicht das Modulsystem; der
-  ABI-Vertrag wird je Modul prüfbar (opt-in ABI-Verify).
+  \textbf{Entscheidung:} Eine einheitliche C-Modulgrenze exportiert je Permutation genau ein Lebewesen
+  --- eine \texttt{IAnatomyBase}-Instanz --- über sieben gattungs-agnostisch benannte Pflicht-Symbole:
+  die vier Ur-Symbole ABI-Version, Magic, Factory (\texttt{comdare\_create\_anatomy()}) und Destroy,
+  die zwei Identitäts-Symbole Gattung und Genus, wobei die Gattung nicht als zweites Datum gepflegt,
+  sondern übersetzungsstatisch aus dem Genus abgeleitet wird, und das Stempel-Zeilen-Symbol. Die
+  Namensgleichheit über alle Gattungen ist das Stabilitäts-Argument: Der Lader kann die Gattung
+  erfragen, bevor er sie kennt. Dahinter liegen zwei Engine-Begriffe: die \texttt{CacheEngine} als
+  Bibliothek der Achsen-Bausteine und die \texttt{ExecutionEngine} als Ausführungs- und
+  Mess-Infrastruktur mit der Wurzel \texttt{IExecutionEngine}, unter der \texttt{IAnatomyBase} steht;
+  die API-Fassade ist \texttt{ICacheEngine}; der Name \enquote{SearchEngine} bezeichnet die ABI-Laufzeit-Sicht
+  des Genus \texttt{SearchAlgorithm}, kein drittes Kettenglied; das gleichnamige Auslagerungs-Modul ist
+  deklariert und nicht verdrahtet.
+  \textbf{Konsequenz:} Die ABI-Stabilität stellt die C-Grenze her, nicht das Modulsystem (ABI-Major~9);
+  der Lader prüft jedes Modul beim Laden fail-closed gegen die Symbol-Pflichtmenge und die
+  Identitäts-Ableitung --- ein Modul mit widersprüchlicher Identität oder ohne Stempel-Symbol wird
+  abgewiesen, statt als falsche Identität in Stempel, Lager und Messreihe zu wandern.
   \textbf{Beleg:} Abschnitte~\ref{sec:contributions},~\ref{sec:anatomy-patterns}
-  und~\ref{sec:impl-architecture}.
+  und~\ref{sec:impl-architecture}; Abbildung~\ref{fig:one-architecture}.
 
+  %% OWNER-VORLAGE: OV-AE-1 --- der Satz zur Elf-Achsen-Vorstufe ist als Historie entfallen; die Sache
+  %% (variant-Verbot, quarantänierter Test-Bestand) steht als Ist-Stand. Default gesetzt; Widerspruch genügt.
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand der Aufschaltung der achtzehnten Achse in den Referenzkatalog
+  %% als viertes Feld (Plan-Ist-Stand und Durchführung an einer Stelle). Default gesetzt; Widerspruch genügt.
   \item[ADR-2 --- Compile-Time-Permutation über Typlisten statt Laufzeit-Adaption]\hfill\\
   \textbf{Kontext:} Achtzehn Organ-Kompositions-Achsen zählen schon im kanonischen
   Vermessungs-Katalog $2^{17} = 131072$ Binary-Identitäten je System-Permutation --- eine davon,
   das Persistenz-Ziel, auf ihren In-Memory-Vertreter gepinnt ---, und der rohe
   Varianten-Produktraum über alle Achsen-Kataloge samt Unter-Achsen liegt Größenordnungen darüber;
-  der Hot-Path darf weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches tragen.
+  der Hot-Path darf weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches tragen. Die Pinnung ist eine
+  Budget-Entscheidung (laut Katalogkopf rund 224~GB und 24~h Voll-Bau statt rund 448~GB und 48~h);
+  der Plan sieht die Variation aller achtzehn Achsen vor, und die Mächtigkeit eines konkreten Plans
+  rechnet der Planer je XML im Director-Walk, nie statisch.
   \textbf{Entscheidung:} Die Permutation läuft übersetzungszeitlich über
-  Boost.MP11-Typlisten (\texttt{mp\_list}) und concept-geprüftes \texttt{if constexpr}
-  (\texttt{resolve\_baustein}) --- kein Runtime-Tag, kein \texttt{std::variant}; der literale
-  \texttt{std::variant}-Katalog besteht nur als historische Elf-Achsen-Vorstufe
-  (\texttt{baustein\_variants}-Fallback).
-  \textbf{Konsequenz:} Die Achsen-Abstraktion bleibt eine zero-cost abstraction.
+  Boost.Mp11-Typlisten\footnote{Boost.Mp11: eine C++11-Metaprogrammier-Bibliothek zur
+  übersetzungszeitlichen Manipulation von Datenstrukturen, die Typen enthalten; ihr Listentyp ist
+  \texttt{mp\_list}~\cite{dimov_mp11}.}: je Achse eine Gesamt-Liste, per Filter über das
+  Freigabe-Prädikat zur Enabled-Liste, gebunden an den Kompositions-Slot, dazu concept-geprüfte
+  Achsen-Deskriptoren mit dem Inventar \texttt{variants} und eine generische Registry-zu-Baum-Reflektion;
+  der golden-Referenzkatalog schneidet je Slot die ersten Vertreter der Enabled-Liste --- kein
+  Runtime-Tag, kein \texttt{std::variant}. \texttt{std::variant}, \texttt{virtual} und
+  Laufzeit-Switches sind in Tier- und Hybrid-Binaries doktrinär ausgeschlossen; eine
+  übersetzungszeitliche Wache erzwingt das, und der variant-basierte Baustein-Cluster
+  (\texttt{baustein\_variants}, \texttt{resolve\_baustein}) ist ein quarantänierter Test-Bestand ohne
+  Bibliotheks-Konsumenten.
+  \textbf{Konsequenz:} Die Achsen-Abstraktion bleibt eine zero-cost abstraction; in die
+  Binary-Identität gehen ausschließlich die achtzehn Organ-Achsen ein (ADR-14).
+  \textbf{Vollzugsstand:} Die Aufschaltung der achtzehnten Achse in den Referenzkatalog verlangt zwei
+  Schritte zugleich --- den Katalog-Grad zwei für das Persistenz-Ziel und den Rückschreib-Schalter der
+  Persistenz-Achse --- und ist nicht vollzogen.
   \textbf{Beleg:} Abschnitte~\ref{sec:contributions},~\ref{sec:anatomy-patterns},~\ref{sec:axes-impl}
-  und~\ref{sec:mess-chain}.
+  und~\ref{sec:mess-chain}; Abbildung~\ref{fig:patterns}.
 
+  %% OWNER-VORLAGE: OV-05 --- Begriffs-Kanon angewandt: Genus führt, Gattungs-Unterklasse als Alias in
+  %% Klammern; die vierte Gattung HeuristikAdapter ohne eigenes Dock. Default gesetzt; Widerspruch genügt.
   \item[ADR-3 --- Drei-Ebenen-Modell als die \emph{eine} Architektur]\hfill\\
   \textbf{Kontext:} Anatomie-Metapher und technische Engine-Sicht drohen zu parallelen
   Modellbäumen auseinanderzulaufen.
-  \textbf{Entscheidung:} Es gibt genau eine Hierarchie ohne Parallel-Bäume --- Gattung
-  (Außen-Interface, das Prüf-Dock) $\to$ Gattungs-Unterklasse (fester Achsen-Satz) $\to$
-  Achsen-Organe --- unter \texttt{IExecutionEngine} als gemeinsamer messbarer Wurzel; eine eigene
-  Gattung entstünde erst, wenn sich der Basis-Achsen-Satz grundlegend unterschiede.
-  \textbf{Konsequenz:} \enquote{SearchEngine} ist nur die ABI-Laufzeit-Sicht desselben Lebewesens,
-  kein zweites Modell.
+  \textbf{Entscheidung:} Es gibt genau eine Hierarchie ohne Parallel-Bäume --- Gattung (Ebene~1,
+  Außen-Interface: die Prüf-Dock-Gattungen Map, Container und Graph sowie die vierte Gattung
+  HeuristikAdapter, die kein eigenes Dock hat, weil ihre Binaries per \texttt{genus()} das Ziel-Genus
+  melden und am Dock des Ziels andocken) $\to$ Genus (Ebene~2, die Tier-Unterklasse mit festem
+  Achsen-Satz, als Alias Gattungs-Unterklasse; die sechs Genera \texttt{SearchAlgorithm},
+  \texttt{Set}, \texttt{Sequence}, \texttt{Adapter}, \texttt{View} und
+  \texttt{FunctionInterfaceReroute}) $\to$ Achsen-Organe (Ebene~3) --- unter \texttt{IExecutionEngine}
+  als gemeinsamer messbarer Wurzel; eine eigene Gattung entstünde erst, wenn sich der
+  Basis-Achsen-Satz grundlegend unterschiede.
+  \textbf{Konsequenz:} Das Genus \texttt{SearchAlgorithm} unter der Gattung Map und seine
+  ABI-Laufzeit-Sicht (\enquote{SearchEngine}) sind zwei Sichten desselben Lebewesens, kein zweites
+  Modell.
   \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-model},~\ref{sec:anatomy-levels}
-  und~\ref{sec:impl-architecture}.
+  und~\ref{sec:impl-architecture}; Abbildungen~\ref{fig:three-levels} und~\ref{fig:genera}.
 
   \item[ADR-4 --- Durchreich-Doktrin und erzwungene Vollbelegung]\hfill\\
   \textbf{Kontext:} Nicht-baumartige Verfahren (etwa die Hash-Gegenprobe) tragen baum- und
   trie-spezifische Achsen wie Pfadkompression oder Knotentyp nicht sinnvoll.
   \textbf{Entscheidung:} Solche Achsen fallen nicht weg, sondern werden als Durchreich-Varianten
-  (\texttt{None}) belegt; das \texttt{IsComposition}-Concept erzwingt übersetzungszeitlich die
-  Belegung aller achtzehn Organe, sodass keine Composition mit offener Achse übersetzt.
+  (\texttt{None}) belegt --- ein Durchreich-Wert ist ein Algorithmus mit leerem Pfad, kein Weglassen;
+  das Pflicht-Concept \texttt{IsComposition} des Genus \texttt{SearchAlgorithm} erzwingt
+  übersetzungszeitlich die Belegung aller achtzehn Organe (achtzehn Typ-Forderungen und ein
+  Organ-Zähler von achtzehn mit ABI-Bruch-Wache), sodass keine Komposition dieses Genus mit offener
+  Achse übersetzt.
   \textbf{Konsequenz:} Nicht-baumartige Verfahren erfordern keine eigene Gattung, sondern ein
-  eingeschränktes Achsen-Subset derselben Gattung.
+  eingeschränktes Achsen-Subset innerhalb desselben Genus.
   \textbf{Beleg:} Abschnitte~\ref{sec:sota-instances},~\ref{sec:anatomy-levels}
   und~\ref{sec:axes-impl}.
 
+  %% OWNER-VORLAGE: OV-AE-1 --- der Kontext nennt die Randbedingung im Präsens; das Rücknahme-Ereignis zweier
+  %% Inkremente entfällt als Datum, seine Begründung bleibt. Default gesetzt; Widerspruch genügt.
+  %% OWNER-VORLAGE: OV-AE-3 --- E-Schichten: fünf (E4 bis E0, Thesis-Fassung der Kapitel 3 und 4) gegen vier
+  %% plus E0 als Querschnitt (Plan-Dossier); AE folgt der gebauten Thesis-Fassung. Widerspruch genügt, dann
+  %% wechseln Kapitel 3, Kapitel 4 und dieser Anhang in einem Zug.
   \item[ADR-5 --- Schichtenmodell E4--E0 mit eingefrorenen Verträgen und Contract-Tests]\hfill\\
-  \textbf{Kontext:} Zwei Implementierungs-Inkremente über mehrere Ebenen gleichzeitig mussten
-  vollständig zurückgenommen werden; bei einem Produktraum, der jede vollständige Materialisierung
-  ausschließt, sind Mehr-Ebenen-Änderungen praktisch nicht abnehmbar.
-  \textbf{Entscheidung:} Die Experiment-Pipeline gliedert sich in die Schichten E4--E0 (plus
-  Querschnitt~M); jede Schicht wird einzeln fertiggestellt, mit explizit eingefrorenem
-  Interface-Vertrag zur Nachbar-Ebene, und gegen einen übersetzungszeitlichen Ersatz (Fake) der
-  Nachbar-Ebene contract-getestet.
+  \textbf{Kontext:} Bei einem Produktraum, der jede vollständige Materialisierung ausschließt, sind
+  Änderungen über mehrere Ebenen zugleich praktisch nicht abnehmbar; deshalb wird je Ebene einzeln
+  fertiggestellt.
+  \textbf{Entscheidung:} Die Experiment-Pipeline gliedert sich in die fünf Schichten E4--E0 (E4
+  Definition und Auswertung, E3 Permutations-Baum, E2 Tier-Binaries, E1 Laufzeit-Konfiguration, E0
+  Infrastruktur) und den Querschnitt~M\@; die E-Kennungen sind eine Konzept-Ordnung mit je einem
+  Code-Ort. Jede Schicht wird einzeln fertiggestellt, mit explizit eingefrorenem Interface-Vertrag zur
+  Nachbar-Ebene (der Vertrags-Freeze der Schicht E1 im ABI-Adapter: Signaturen, Datenlayout und
+  Fähigkeiten eingefroren, Semantik-Änderungen nur additiv), und gegen einen übersetzungszeitlichen
+  Ersatz (Fake) der Nachbar-Ebene contract-getestet.
   \textbf{Konsequenz:} Jede Ebene ist einzeln abnehmbar, bevor die nächste beginnt; die Grenze
-  E3$\to$E2 ist bereits golden-getestet.
-  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-layers} und~\ref{sec:impl-contracts}.
+  E3$\to$E2 ist ohne Modul-Bau gegen einen Fake der Schicht E2 contract-getestet, geprüft wird allein
+  die statische Baum- und Sichtstruktur samt ihrer Mixed-Radix-Bijektion.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-layers} und~\ref{sec:impl-contracts};
+  Abbildungen~\ref{fig:e-layers} und~\ref{fig:impl-layers}.
 
-  \item[ADR-6 --- honest-0-Doktrin: ehrliche Null bzw.\ ehrliche Leere]\hfill\\
+  %% OWNER-VORLAGE: OV-AC-01 --- Lemma-Wortlaut \enquote{Explizit kodierte Nicht-Erhebung} (Anhang C) führt;
+  %% der Code-Bezeichner honest_* steht nur noch als Implementierungsname in der Fußnote. Default gesetzt;
+  %% Widerspruch genügt.
+  \item[ADR-6 --- Explizit kodierte Nicht-Erhebung statt Phantomwert]\hfill\\
   \textbf{Kontext:} Nicht wirklich erhebbare Werte (Zähler ohne Hardware-Zugriff, Achsen ohne
   echten Laufzeit-Parameter) laden zu plausiblen Phantomwerten ein, die die Heuristik-Ableitung
   systematisch vergiften würden.
-  \textbf{Entscheidung:} Das System meldet ehrlich ungültig oder leer statt eines Phantomwerts ---
-  per-Ereignis-Gültigkeits-Flags je Messung; die Wall-Clock-Quelle verweigert es etwa, ihren
-  Mittelwert als Perzentil zu etikettieren.
+  \textbf{Entscheidung:} Das System meldet ehrlich ungültig oder leer statt eines Phantomwerts und
+  unterscheidet je Messwert drei Zustände: gültiger Messwert, explizit kodierte Nicht-Erhebung (nicht
+  anwendbar oder Quelle nicht verfügbar) und Messfehler\footnote{Die Bezeichnerfamilie
+  \texttt{honest\_*} des Codes ist der Implementierungsname dieser Doktrin (Anhang~\ref{app:glossary});
+  methodisch ist die Nicht-Erhebung eine ausgewiesene Klasse fehlender Werte im Sinne der
+  Missing-Data-Literatur~\cite{graham2009missing}, nie ein imputierter Wert.}. Je Ereignis reist ein
+  Gültigkeits-Flag mit, sodass eine echte Null ein Messergebnis bleibt; die Wall-Clock-Quelle bietet nur
+  Mittelwert und Durchsatz an und verweigert es, ihren Mittelwert als Perzentil zu etikettieren, und
+  eine negative Dauer ist ein Messfehler, kein Nullwert; ein PMC-Katalog ohne Modell-Eintrag liefert
+  \enquote{nicht anwendbar}, nie eine geratene Kodierung; die Generatoren erzeugen für eine Messreihe
+  ohne gültige Zeile keine Ausgabe statt einer leeren.
   \textbf{Konsequenz:} Lücken bleiben sichtbar und gezielt schließbar; die Doktrin ist in den
   Bausteinen einprogrammiert statt nur dokumentiert.
-  \textbf{Beleg:} Abschnitte~\ref{sec:measurement-system} und~\ref{sec:impl-system-axes}.
+  \textbf{Beleg:} Abschnitte~\ref{sec:measurement-system},~\ref{sec:impl-system-axes}
+  und~\ref{sec:axis-triad}.
 
-  \item[ADR-7 --- Drei-Repository-Split mit orthogonalen Subsystemen]\hfill\\
-  \textbf{Kontext:} Mess-Apparat, Prüfling und Auswertung haben getrennte Verantwortlichkeiten
-  und Lebenszyklen.
-  \textbf{Entscheidung:} Drei Repositorien --- \texttt{comdare-cache-engine} (\emph{wie} gemessen
-  wird), \texttt{comdare-prt-art} (der Prüfling) und \texttt{probst-Diplomarbeit-cache-engine}
-  (\emph{was} getestet wird) ---, \texttt{comdare-cache-engine} dabei mit Pitchfork-Quellbaum-Layout;
-  die vier Subsysteme
-  (Mess-Treiber, CacheEngineBuilder, CacheEngine, Prüfling) liegen orthogonal zu dieser Aufteilung.
-  \textbf{Konsequenz:} Builder und CacheEngine teilen sich ein Repo als ausführbare Datei bzw.\
-  Bibliothek; die Rollen bleiben klar getrennt.
-  \textbf{Beleg:} Abschnitt~\ref{sec:repos}.
+  %% OWNER-VORLAGE: OV-K4-4 --- Titel \enquote{Vier-Repository-Architektur} (das Manuskript-Repository als
+  %% viertes), gleichlautend mit Kapitel 4. Default gesetzt; Widerspruch genügt.
+  \item[ADR-7 --- Vier-Repository-Architektur mit orthogonalen Träger-Stufen]\hfill\\
+  \textbf{Kontext:} Mess-Apparat, Prüfling, Experiment-Definition samt Auswertung und das Manuskript
+  haben getrennte Verantwortlichkeiten und Lebenszyklen; die Messwerte werden versioniert direkt in das
+  Manuskript eingebaut, weshalb das Manuskript ein eigenes Repositorium mit eigener Pipeline ist.
+  \textbf{Entscheidung:} Vier Repositorien --- \texttt{comdare-cache-engine} (\emph{wie} gemessen
+  wird; Bausteine-Bibliothek und Builder im Pitchfork-Quellbaum-Layout, Anhang~\ref{app:glossary}),
+  \texttt{comdare-prt-art} (der Prüfling), das Projekt-Repository
+  \texttt{probst-Diplomarbeit-cache-engine} (\emph{was} durch den Anwender getestet wird:
+  Experiment-Definition in XML und XSD, Mess-Treiber, Auswertungs-Werkzeugkette) und das
+  Manuskript-Repository mit eigener CI, in das der Vorwärts-Kanal die Generator-Ausgabe als Tabellen-
+  und Diagramm-Dateien per Commit einlegt ---; orthogonal zu dieser Aufteilung liegen die vier
+  Träger-Stufen Planer $\to$ CacheEngineBuilder $\to$ Tier-Binary $\to$ Hybrid-Tier-Binary, wobei
+  Stufe $N+1$ nur an Stufe $N$ hängt; Planer und CEB sind ein Treiber-Binary mit zwei Rollen, und den
+  Mess-Aggregator führt der \texttt{ExperimentDriver} host-seitig.
+  \textbf{Konsequenz:} Builder und CacheEngine teilen sich das Engine-Repository --- der Builder als
+  ausführbare Datei über seiner Builder-Bibliothek, die CacheEngine als Bibliothek ---; die Rollen
+  bleiben klar getrennt, und der Prüfling ist keine Stufe, sondern der quer liegende Lieferant von
+  Organ-Bausteinen.
+  \textbf{Beleg:} Abschnitt~\ref{sec:repos} und Anhang~\ref{app:code};
+  Abbildung~\ref{fig:traeger-stufen}.
 
   \item[ADR-8 --- Familienweise Adapter-Fallbacks für eigenständig lauffähige Builds]\hfill\\
   \textbf{Kontext:} Fremd-Code (Allokator-Vendors, SOTA-Bausteine) ist nicht auf jeder Plattform
   und in jedem Build verfügbar oder aktiviert.
-  \textbf{Entscheidung:} Übersetzungszeitliche Flag-Familien schalten Adapter zu oder ab, jeweils
-  mit sicherem, familienweise gewähltem Fallback: Allokator-Adapter ersetzen den fehlenden Vendor
-  durch \texttt{std::malloc}/\texttt{std::free}, Datenstruktur-Adapter durch einen Stub, der bei
-  Benutzung kontrolliert eine \texttt{std::runtime\_error}-Ausnahme wirft.
+  \textbf{Entscheidung:} Übersetzungszeitliche Flag-Familien schalten Adapter zu oder ab --- je
+  Vendor ein Familien-Schalter, dessen Nutzung aus Freigabe und Verfügbarkeit folgt, hinter 23
+  Vendor-Shim-Headern ---, jeweils mit sicherem, familienweise gewähltem Fallback: Die
+  Allokator-Adapter ersetzen den fehlenden Vendor in \texttt{if constexpr}-Zweigen durch die portable
+  ausgerichtete Allokation (\texttt{portable\_aligned\_alloc}), der Vendor-Shim liefert für den nie
+  ausgeführten Zweig nur Forward-Stubs, und der Achsen-Wert \texttt{StdMalloc} ist ein eigener
+  Baustein, kein Notnagel; Datenstruktur-Adapter fremder Suchverfahren schalten über einen
+  Familien-Schalter und tragen eine eigenständige Re-Implementierung als Körper, während die Bindung an
+  den Original-Code über den Bibliotheks-Bau mit dem Original-Compiler läuft.
   \textbf{Konsequenz:} Der Build bleibt ohne jede Fremd-Aktivierung eigenständig lauffähig.
   \textbf{Beleg:} Abschnitt~\ref{sec:axes-impl}.
 
-  \item[ADR-9 --- Mess-Gating und vier Auslieferungsvarianten]\hfill\\
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand des modus-spezifischen Ablaufs von compare und release als
+  %% viertes Feld; die vier Modi sind Registry, kein Etikett. Default gesetzt; Widerspruch genügt.
+  \item[ADR-9 --- Mess-Gating in drei Schichten und vier Arbeitsmodi]\hfill\\
   \textbf{Kontext:} Mess- und Observer-Kopplungen kosten Zeit und dürfen den Produktiv-Pfad
   nicht belasten.
-  \textbf{Entscheidung:} Die Mess-Kopplungen des Laufzeit-Adapters sind über
-  \texttt{COMDARE\_MEASUREMENT\_ON} gegated; daraus entstehen vier Auslieferungsvarianten derselben
-  Permutation (Debug mit Observer, Messung mit Aggregator, Release ohne Mess-Kopplungen sowie
-  Compare als bereits wählbares, bau-gleich zu Release gehaltenes Etikett für den künftigen
-  Replay-Vergleich), und den
+  \textbf{Entscheidung:} Die Mess-Kopplungen des Laufzeit-Adapters sind über die Master-Option
+  \texttt{COMDARE\_MEASUREMENT\_MODE} gegated, die \texttt{COMDARE\_MEASUREMENT\_ON} definiert und die
+  der Release-Modus erzwungen abschaltet; die schaltbare Fläche zerfällt in drei trennbare Schichten
+  --- Basis-Zeit, Observer-Zähler und Feinkorn-Segment-Timer je Achse ---, die Abschaltungsstufen der
+  Messung. Die Ablaufmethodik kennt vier Arbeitsmodi derselben Permutation, als Registry und nicht als
+  Etikett: \texttt{build} (bauen ohne Messen), \texttt{measure} (deterministischer
+  Ein-Thread-Messlauf, der einzige Modus mit Messung), \texttt{compare} (liest das Messwertlager, die
+  Stufe vor \texttt{release}) und \texttt{release} (Voll-Optimierung ohne Mess-Instrumentierung); der
+  Arbeitsmodus ist eine Unter-Achse des Mess-Realms und geht nicht in die Binary-Identität ein, einen
+  Debug-Zustand gibt es nicht (\texttt{--debug} ist ein Flag der Planer-Shell), und den
   Mess-Aggregator führt der \texttt{ExperimentDriver} host-seitig.
-  \textbf{Konsequenz:} Der Produktiv-Pfad bleibt mess-frei und trägt keinen Mess-Overhead.
-  \textbf{Beleg:} Abschnitte~\ref{sec:repos} und~\ref{sec:impl-pipeline}.
+  \textbf{Konsequenz:} Der Produktiv-Pfad bleibt mess-frei und trägt keinen Mess-Overhead; wählbar sind
+  vier Modi, in der Bau-Semantik verschieden ist allein \texttt{measure} --- alle vier Registry-Zeilen
+  tragen den Release-Bautyp.
+  \textbf{Vollzugsstand:} Der modus-spezifische Replay-Ablauf von \texttt{compare} und die aus
+  Messwerten erzeugte optimale Release-Binary sind als Paket nach dem ersten vollständigen Messlauf
+  geschnitten; \texttt{compare} ist ein wählbares, validierbares Etikett mit release-gleicher
+  Bau-Semantik.
+  \textbf{Beleg:} Abschnitte~\ref{sec:repos},~\ref{sec:impl-pipeline} und~\ref{sec:eval-method};
+  Abbildungen~\ref{fig:modi-kette} und~\ref{fig:abschaltungsstufen}.
 
+  %% OWNER-VORLAGE: OV-AE-2 --- Container-Hülle: gefordert ist eine vollständige std::vector-Hülle für die
+  %% Container-Genera, gebaut ist ein std::deque-Orakel für Sequence (Set: std::set, Adapter: std::queue,
+  %% std::stack, std::priority_queue, View: std::span); der Text nennt den Ist-Stand und trägt die
+  %% Forderung als offene Auflage im Vollzugsstand. Owner-Wort erbeten, ob das Sequence-Orakel auf
+  %% std::vector umgestellt wird (dann Code-Auftrag, kein Textauftrag). Default gesetzt; Widerspruch genügt.
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand (volle std::map-Schnittstelle, Genus-Iterator-Bibliothek) als
+  %% viertes Feld. Default gesetzt; Widerspruch genügt.
   \item[ADR-10 --- \texttt{std::map}-Vertrag als gemeinsamer Nenner mit Konformitäts-Gatter]\hfill\\
   \textbf{Kontext:} Strukturell verschiedene Suchalgorithmen sind nur über eine gemeinsame, gut
   verstandene Außen-Schnittstelle fair vergleichbar.
   \textbf{Entscheidung:} Alle Verfahren werden auf den C++-Vertrag der geordneten Map
-  \texttt{std::map<Key,\,Value>} abgebildet (parallel \texttt{std::vector} als
-  Container-Vergleichsfall); ein Konformitäts-Gatter prüft diesen Vertrag vor jeder Messung.
+  \texttt{std::map<Key,\,Value>}~\cite{iso_cpp} abgebildet; die Container-Genera werden gegen je ein
+  Standard-Orakel gehalten --- \texttt{Set} gegen \texttt{std::set}, \texttt{Sequence} gegen
+  \texttt{std::deque}, \texttt{Adapter} gegen \texttt{std::queue}, \texttt{std::stack} und
+  \texttt{std::priority\_queue}, \texttt{View} gegen \texttt{std::span} ---, und \texttt{std::vector}
+  dient als Inner-Substrat des Genus \texttt{Adapter}. Ein Konformitäts-Gatter prüft diesen Vertrag vor
+  jeder Messung in der bindenden Reihenfolge Import $\to$ Gatter $\to$ Messen, über die fünf
+  Kern-Operationen \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{clear} und \texttt{size},
+  mit Konformitäts-Quoten als Ergebnisform.
   \textbf{Konsequenz:} Nur Vergleichbares wird verglichen; die Achsen beschreiben ausschließlich
   das innere Verhalten hinter der festen Schnittstelle.
-  \textbf{Beleg:} Abschnitt~\ref{sec:measurement-system}.
+  \textbf{Vollzugsstand:} Der Ausbau des Gatters auf die volle \texttt{std::map}-Schnittstelle und die
+  Genus-Iterator-Bibliothek stehen aus; die Forderung, die Container-Genera über eine vollständige
+  \texttt{std::vector}-Hülle zu führen, ist als Auflage offen --- das gebaute Sequence-Orakel ist
+  \texttt{std::deque}.
+  \textbf{Beleg:} Abschnitte~\ref{sec:measurement-system} und~\ref{sec:impl-contracts}.
 
-  \item[ADR-11 --- Entwurfsmuster-Auswahl mit Negativliste; Command nur im Hybrid-Modus]\hfill\\
+  \item[ADR-11 --- Entwurfsmuster-Register mit belegten Rollen]\hfill\\
+  \emph{Command als Bündelungs- und Befehlsmuster.}\hfill\\
   \textbf{Kontext:} Der Apparat ist bewusst eine Komposition benannter Entwurfsmuster; unklare
   Muster-Rollen würden die Architektur verwässern.
-  \textbf{Entscheidung:} Verwendet werden u.\,a.\ \emph{Strategy}, \emph{Abstract Factory},
-  \emph{Composite}, \emph{Iterator}, \emph{Adapter}, \emph{Observer}, \emph{Decorator},
-  \emph{Memento} und CRTP\@; \emph{nicht} verwendet werden \emph{Singleton}, \emph{Flyweight} und
-  \emph{Bridge}, und das \emph{Command}-Muster tritt ausschließlich als Befehls-Kanal des
-  Hybrid-Modus auf.
-  \textbf{Konsequenz:} Jedes Muster hat genau eine benannte Rolle in der Verkabelung des Apparats.
-  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-patterns} und~\ref{sec:heuristics-modes}.
+  \textbf{Entscheidung:} Verwendet werden, je mit benanntem Code-Ort: \emph{Strategy} mit
+  CRTP~\cite{coplien1995crtp} je Organ-Achse (auch der Stempel-Vertrag der Träger ist ein
+  CRTP-Vertrag, ADR-13), \emph{Abstract Factory} (Hybrid-Docks, Kompositions-Fabrik,
+  Prüflings-Registry), \emph{Director} mit \emph{Builder} (Plan-Emission), \emph{Iterator} (der
+  lazy durchlaufene Experimentbaum), \emph{Adapter} (Fremd-Code hinter der ABI-Grenze),
+  \emph{Observer} (Mess-Snapshots je Achse), \emph{Visitor} (die Mess-Naht am
+  \texttt{dlopen}-Übergang, ADR-15), \emph{Chain of Responsibility} (Hardware-Erhebungskette und
+  Auswahl-Filterkette), \emph{Memento} (Copy-on-Write im ABI-Adapter, Zustand je Tier),
+  \emph{Command} und \emph{Facade} --- dieselben Rollen wie das Muster-Register in
+  Abschnitt~\ref{sec:impl-hybrid-lager} (Abbildung~\ref{fig:muster}), benannt nach dem Katalog von
+  Gamma et al.~\cite{gamma1994patterns} und als Tupel von Achsen-Policies
+  komponiert~\cite{alexandrescu2001modern}. Die Muster \emph{Composite} und \emph{Decorator} gehören nicht dazu:
+  Die Mess-Hüllen der Achsen halten keine Komponenten-Instanz und kein Voll-Interface und sind
+  ausdrücklich kein Decorator, und ein Composite im Sinne des Katalogs hat keinen Anker im Code.
+  \emph{Nicht} verwendet werden im Hot-Path und in den Organ-Achsen \emph{Singleton}, \emph{Flyweight}
+  und \emph{Bridge}; host-seitige Registries nutzen Meyers-Singletons\footnote{Meyers-Singleton: die
+  eine Instanz als funktionslokales statisches Objekt, das beim ersten Aufruf initialisiert
+  wird~\cite{meyers2005effective}.}, die Katalog-Erzeugung Flyweight-Tabellen je Achse, und
+  \enquote{Bridge} ist in den ABI-Adaptern ein Tätigkeitswort, kein Muster. Das \emph{Command}-Muster
+  trägt die übersetzungszeitliche Bündelung von Achsen-Rekombinationen (die System-Komplex-Achse als
+  Command-Wrapper, der Hub der externen Werkzeuge als Invoker, die Command-Basis der Achsen im
+  Querschnitt~M) und den typisierten Steuer-Befehlskanal; der Befehls-Kanal des Hybrid-Modus ist eine
+  dieser Rollen.
+  \textbf{Konsequenz:} Jedes Muster trägt benannte Rollen mit Code-Ort in der Verkabelung des Apparats
+  und wird übersetzungszeitlich statt laufzeit-polymorph ausgeführt.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-patterns},~\ref{sec:heuristics-modes}
+  und~\ref{sec:impl-hybrid-lager}.
 
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand ohne Frist- oder Zeitaussage: der Talos-Spiegel bleibt Anforderung
+  %% und ist nicht erhoben (gleichlautend mit Kapitel 5). Default gesetzt; Widerspruch genügt.
   \item[ADR-12 --- Mess-Regime-Doppel: immutables Talos und root-Linux]\hfill\\
   \textbf{Kontext:} Produktions-Treue und Mess-Tiefe stehen im Konflikt: Ein produktionsnahes
   System verwehrt gerade den Hardware-Zähler-Zugriff, den tiefe Messungen brauchen.
   \textbf{Entscheidung:} Auf den Produktions-Zielmaschinen wird jede Messung unter zwei
-  Betriebssystem-Regimes erhoben: einem immutablen Betriebssystem (Talos) als Produktiv-Spiegel
-  und einem root-Linux mit vollem Hardware-Zähler-Zugriff (\texttt{perf}/MSR).
+  Betriebssystem-Regimes erhoben: einem immutablen Betriebssystem (Talos\footnote{Talos Linux: das
+  unveränderliche, API-gesteuerte Betriebssystem für Kubernetes von Sidero
+  Labs~\cite{siderolabs_talos}.}) als Produktiv-Spiegel und einem root-Linux mit vollem
+  Hardware-Zähler-Zugriff (\texttt{perf}~\cite{demelo2010perf,linux_perf_event_open} und die
+  modellspezifischen Register, MSR).
   \textbf{Konsequenz:} Die zeit- und observer-basierten Kategorien laufen unter beiden Regimes
   identisch und sichern die Vergleichbarkeit; die PMC-Kategorien werden nur unter dem
   privilegierten Regime erhoben.
-  \textbf{Vollzugsstand:} Die Entscheidung gilt, ist aber erst zur Hälfte eingelöst --- die
-  berichteten Messungen stammen sämtlich vom root-Linux-Regime; der Talos-Spiegel bleibt
-  Anforderung und wird nach der Abgabe erhoben.
+  \textbf{Vollzugsstand:} Die Entscheidung gilt und ist zur Hälfte eingelöst: Die berichteten
+  Messungen stammen sämtlich vom root-Linux-Regime der beiden Produktionsmaschinen --- prod1 mit der
+  AMD-Mikroarchitektur Zen~5 und prod2 mit dem Intel Core i9-12900K (Alder Lake) ---; der
+  Talos-Spiegel bleibt Anforderung und ist nicht erhoben. Für Intel trägt der PMC-Rohereignis-Katalog
+  keine Belegung, für Zen~5 ist sie am Objekt kreuzgeprüft.
   \textbf{Beleg:} Abschnitte~\ref{sec:eval-method} und~\ref{sec:contributions}.
+
+  %% OWNER-VORLAGE: OV-AE-4 --- ADR-13 bis ADR-20: acht Entscheidungen, die der Code trägt und der Anhang
+  %% zuvor nicht nannte (Owner: das Stempelsystem und seine Auswirkungen fehlten). Default gesetzt.
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand (Stempel-Export der Hybrid-Stufe, Registry-Wrapper-Stempel des
+  %% SOTA-Zweigs, Stempel-Identität je Diagramm) als viertes Feld. Default gesetzt; Widerspruch genügt.
+  \item[ADR-13 --- Vier Träger-Stufen und ein Stempel-Vertrag]\hfill\\
+  \emph{Der Stempel als Identität, Lager-Schlüssel, Skip-Kriterium und Einordnung.}\hfill\\
+  \textbf{Kontext:} Die Konfiguration wandert durch vier Träger-Stufen (Planer, CacheEngineBuilder,
+  Tier-Binary, Hybrid-Tier-Binary); jede Stufe braucht eine ABI-stabile, übersetzungszeitliche
+  Identität, in die kein Messwert eingeht.
+  \textbf{Entscheidung:} Ein einziger CRTP-Vertrag bindet alle vier Träger: sieben Stempel-Interfaces
+  (Version, Mess-Zeile, System-Zeile, Organ-Zeile, Fingerprint, Gesamt-Stempel, Angeschlossene) mal
+  vier Träger ergeben 28 dreiwertige Zulassungszellen (Tabelle~\ref{tab:stempel-matrix}); die Absenz
+  der Organ-Zeile beim CEB ist der maschinelle Riegel \enquote{der CEB trägt keine Organ-Achsen}, und
+  die Prüfung läuft als \texttt{static\_assert} unter jeder Erbin. Der Planer trägt einen
+  SHA-256-Fingerprint aus Version, ISA und Betriebssystem, die Tier-Binary einen SHA-512-Fingerprint
+  über elf Glieder (Format~6), darunter die drei Realm-Zeilen, das Werkzeugketten-Glied und den Hash
+  der Overlay-Quellmenge (Konkatenation in fester Ordnung, einmal SHA-512); der CEB trägt einen
+  SHA-512-Provenienz-Fingerprint, der kein Wiederverwendungs-Kriterium ist. Die Klammer-Grammatik der
+  Stempel-Einträge lebt einmal (\texttt{c\{p.e\}} ist \texttt{c} mit den Untergliedern \texttt{p} und
+  \texttt{e}, nie flach), und die Klammer-Tiefe ist die Meta-Meta-Ebene des Eintrags.
+  \textbf{Konsequenz:} Der Stempel trägt fünf Rollen --- Identität, Cache-Schlüssel, Lager-Schlüssel,
+  Skip-Kriterium und Einordnung; der Selbst-Stempel des Treiber-Binaries (\texttt{--version}) trägt nur
+  die Einordnung und ist weder Cache-Schlüssel noch Bau-Eingang.
+  \textbf{Vollzugsstand:} Der Registry-Wrapper-Stempel des SOTA-Zweigs und der Stempel-Export der
+  Hybrid-Stufe sind offen; die Stempel-Identität in jedem Diagramm und jeder Tabelle des Anhangs ist
+  Ausbaustufe.
+  \textbf{Beleg:} Abschnitte~\ref{sec:stamp-model},~\ref{sec:anatomy-levels},~\ref{sec:mess-chain},~\ref{sec:impl-contracts}
+  und~\ref{sec:eval-identity}; Abbildung~\ref{fig:traeger-flaechen}.
+
+  %% OWNER-VORLAGE: OV-AE-4 --- Ist-Stand-Entscheidung (Code trägt, Anhang nannte sie nicht). Default gesetzt.
+  \item[ADR-14 --- Identitäts-Schnitt: nur Organ-Achsen bilden die \texttt{binary\_id}]\hfill\\
+  \emph{System- und Mess-Achsen sind identitätsneutral.}\hfill\\
+  \textbf{Kontext:} Drei Achsen-Heimaten (Organ, System, Mess) führen je eine eigene Registry mit
+  generierter XML\@; gingen Mess- oder System-Werte in die Identität ein, entstünden Doppel-Binaries
+  derselben Permutation und ein Lager, das dieselbe Binary mehrfach hält.
+  \textbf{Entscheidung:} Die \texttt{binary\_id} ist der Pfad aus achtzehn \texttt{achse=wert}-Segmenten
+  in kanonischer Slot-Reihenfolge (die Organ-Zahl achtzehn lebt an genau einem Ort); alle Mess-Achsen
+  und alle System-Achsen tragen in ihren Registries \texttt{binary\_id = never}; Unter-Achsen sind
+  Laufzeit-Permutation und stehen in keiner Bau-Job-Legende; der Arbeitsmodus ist identitätsneutral.
+  Die Bau-Welt reist stattdessen als Fingerprint-Glied mit --- die System-Zeile und das
+  Werkzeugketten-Glied mit \texttt{vendoropt} (ADR-17).
+  \textbf{Konsequenz:} Lager-Schlüssel und Regressions-Detektor (Referenzkatalog $2^{17}$ mit
+  CRC-64-Anker) sind organ-stabil; dieselbe Organ-Permutation gegen zwei Bau-Welten ist ein
+  verschiedenes Artefakt mit verschiedenem Fingerprint.
+  \textbf{Beleg:} Abschnitte~\ref{sec:axis-triad},~\ref{sec:stamp-model}
+  und~\ref{sec:impl-system-axes}; Tabelle~\ref{tab:axes-overview}.
+
+  %% OWNER-VORLAGE: OV-AE-4 --- Ist-Stand-Entscheidung (Code trägt, Anhang nannte sie nicht). Default gesetzt.
+  \item[ADR-15 --- Mess-Visitor-Naht (Fläche 3) statt Sidecar]\hfill\\
+  \emph{Gattungs- und Genus-Interfaces bleiben unverändert.}\hfill\\
+  \textbf{Kontext:} Ein Beobachter, der von außen Felder aus einer Tier-Binary abholt, misst die
+  Nachbarschaft und nicht den Gegenstand: Was gemessen wird, entscheidet dann der Host durch die Wahl
+  der Felder; Mess-Felder in den fachlichen Interfaces würden die Gattungs- und Genus-Verträge
+  verändern.
+  \textbf{Entscheidung:} Jede Träger-Stufe bietet drei Interface-Flächen: Fläche~1 das
+  Genus-Interface (Laufzeit, Abstract Factory), Fläche~2 den Stempel (Übersetzungszeit, ABI-stabil),
+  Fläche~3 den Mess-Durchstich; die Messung quert als eigener Durchstich
+  (\texttt{tier\_measure\_accept} mit \texttt{IMessVisitor}), ein Visitor am
+  \texttt{dlopen}-Übergang mit doppeltem Dispatch~\cite{gamma1994patterns}; je nachdem, ob die
+  Messeinrichtung in CEB und Tier-Binary aktiviert ist, wird am Interface ein Mess-Visitor übergeben
+  oder nicht.
+  \textbf{Konsequenz:} Die fachlichen Interfaces tragen keine Mess-Felder; die Gate-Kombination CEB
+  aus, Tier an ist durch einen Deckungs-Test belegt; die Mess-Gate-Belegung reist als eigenes
+  Fingerprint-Glied mit eigenen Positionen für die Hybrid-Ebene.
+  \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-levels},~\ref{sec:impl-pipeline}
+  und~\ref{sec:measurement-system}; Abbildung~\ref{fig:traeger-flaechen}.
+
+  %% OWNER-VORLAGE: OV-AE-4 --- Ist-Stand-Entscheidung (Code trägt, Anhang nannte sie nicht). Default gesetzt.
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand des Lager-Vollausbaus als viertes Feld. Default gesetzt;
+  %% Widerspruch genügt.
+  \item[ADR-16 --- Lager als Bestand mit Übersetzungszeit-Schlüsseln]\hfill\\
+  \emph{Messung immer an, im Lager nur Fehlendes nachmessen.}\hfill\\
+  \textbf{Kontext:} Ein Referenzraum von $2^{17}$ Kompositionen je System-Permutation (laut
+  Katalogkopf rund 224~GB und 24~h Voll-Bau) ist nur mit Wiederverwendung gebauter Binaries und
+  gemessener Werte beherrschbar; die Messung soll immer eingeschaltet sein und im Lager nur
+  nachmessen, was dort nicht zu finden ist.
+  \textbf{Entscheidung:} Bestand~1 hält die Binary unter ihrem SHA-512-Fingerprint; Bestand~2 hält
+  die Messwerte unter dem Paar aus Fingerprint der vermessenen Binary und Hardware-Identität der
+  messenden Maschine, die Mess-Zelle steht daneben und wird nie in den Digest gefaltet; eine
+  vorgefundene Binary wird übersprungen, wenn ihr grünes Prüf-Testat inventarisiert ist, sonst gebaut
+  oder gemessen; ein Versions-Lock über die Overlay-Quellmenge macht stille Quell-Drift zum
+  CI-Fehler.
+  \textbf{Konsequenz:} Die Identität reist unverändert vom Lager über die Mess-Zeile
+  (\texttt{permutation\_id}, \texttt{fingerprint}) in Mappe und Anhang.
+  \textbf{Vollzugsstand:} Bestand~1 und~2 und das Schlüssel-Schema sind gebaut; Bestand~3 und~4
+  (Synthese-Batches und Lösungen), die Planer-Blattfunktion, die CEB-Vollplatzierung, die
+  Hybrid-Ablage, der Commit-Skip, das Rebuild-Flag je Stufe und die XML-Sektion \texttt{publish} sind
+  der Lager-Vollausbau.
+  \textbf{Beleg:} Abschnitte~\ref{sec:lager},~\ref{sec:eval-method},~\ref{sec:stamp-model}
+  und~\ref{sec:heuristics-modes}; Abbildungen~\ref{fig:lager-bestaende}
+  und~\ref{fig:eval-lager-kreislauf}.
+
+  %% OWNER-VORLAGE: OV-AE-4 --- Ist-Stand-Entscheidung (Code trägt, Anhang nannte sie nicht). Default gesetzt.
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand (O0/O1 als Anwender-Wahl, Flag-Durchreichung) als viertes Feld,
+  %% gleichlautend mit Kapitel 5. Default gesetzt; Widerspruch genügt.
+  \item[ADR-17 --- Optimierungsstufe als Anwender-Wahl]\hfill\\
+  \emph{Haus-weit O2, O3 auf XML-Wunsch; die Bau-Welt ist identitätswirksam.}\hfill\\
+  \textbf{Kontext:} Messreihen über verschieden optimierte Bau-Welten sind nicht vergleichbar;
+  die maximale Optimierung muss dem Anwender wählbar bleiben.
+  \textbf{Entscheidung:} Die Release-Flags gelten haus-weit mit O2 --- einschließlich Vendor-Bau,
+  FetchContent und Einbettung --- per erzwungenem Cache-Wert; O3 wird nur auf XML-Eingangswunsch
+  mitgebaut; die Bau-Welt-Stufe geht als Feld \texttt{vendoropt} in das Werkzeugketten-Glied des
+  Fingerprints ein (Übersetzungsfehler statt stillem Default); ein Gate verwirft eigene
+  Release-Optimierungsflags an der Achse vorbei; die Unter-Achse \texttt{opt\_level} bietet O0 bis
+  Ofast mit dem Determinismus-Flag nach IEEE~754~\cite{ieee754_2019}, das allein Ofast verneint.
+  \textbf{Konsequenz:} Zwei Baue derselben Permutation gegen eine O2- und eine O3-Welt sind
+  verschiedene Artefakte mit verschiedenem Fingerprint; ein stiller Skip ist ausgeschlossen.
+  \textbf{Vollzugsstand:} O0 und O1 als Anwender-Wahl in der XML und die Durchreichung weiterer
+  Compiler-Flags aus der XML sind Plan-Ist-Stand und werden im golden-Fenster gebaut (Default O2, O3
+  überschreibend wählbar).
+  \textbf{Beleg:} Abschnitte~\ref{sec:eval-build-scope},~\ref{sec:impl-system-axes}
+  und~\ref{sec:complex-axis}.
+
+  %% OWNER-VORLAGE: OV-AE-4 --- Ist-Stand-Entscheidung (Code trägt, Anhang nannte sie nicht). Default gesetzt.
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand (Framework-Export, Nachlauf-Wachen) als viertes Feld; keine
+  %% Lande-Behauptung für den Ausbau-Zweig. Default gesetzt; Widerspruch genügt.
+  \item[ADR-18 --- Ein offizieller Bauweg als GNU-Vorbau über CMake]\hfill\\
+  \emph{\texttt{configure.sh}, \texttt{make}, \texttt{make check} und \texttt{make install}.}\hfill\\
+  \textbf{Kontext:} Das einzige unter Linux offizielle Verfahren ist \texttt{configure.sh},
+  \texttt{make} und \texttt{make install} beziehungsweise \texttt{make check}, und diese drei müssen
+  im Wurzelordner liegen; eine Konfiguration darf nur eine Wahrheit haben.
+  \textbf{Entscheidung:} \texttt{configure.sh} ist ein POSIX-sh-Vorbau ohne Python, gebaut wird
+  weiterhin mit CMake; das \texttt{Makefile} ist statisch eingecheckt und reicht nur an CMake weiter,
+  mit den GNU-Standardzielen~\cite{gnu2026standards} \texttt{all}, \texttt{install}, \texttt{check},
+  \texttt{installcheck}, \texttt{uninstall}, \texttt{clean}, \texttt{distclean},
+  \texttt{mostlyclean} und \texttt{maintainer-clean} (das Test-Ziel heißt \texttt{check}); die
+  Konfiguration lebt ausschließlich in \texttt{config.status} und im CMake-Cache, und das Makefile
+  trägt bewusst keine Vorgabewerte --- ein generiertes Makefile wäre eine zweite Wahrheit ohne
+  Gegenwert.
+  \textbf{Konsequenz:} Es gibt keinen zweiten Bauweg neben CMake und keine zweite
+  Konfigurations-Wahrheit; der Vorbau ist mit \texttt{sh -n} prüfbar.
+  \textbf{Vollzugsstand:} \texttt{configure.sh} und \texttt{Makefile} liegen im Repositorium; der
+  Framework-Export für Konsumenten (\texttt{install(EXPORT)}, \texttt{find\_package}) und die
+  Nachlauf-Wachen sind Bau-Posten.
+  \textbf{Beleg:} Anhang~\ref{app:code}.
+
+  %% OWNER-VORLAGE: OV-AE-4 --- Ist-Stand-Entscheidung (Code trägt, Anhang nannte sie nicht). Default gesetzt.
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand (Mini-Pipeline je Träger-Stufe) als viertes Feld. Default
+  %% gesetzt; Widerspruch genügt.
+  \item[ADR-19 --- Vier CI-Zellen ohne Skip]\hfill\\
+  \emph{gcc und clang je Release und Debug; ein Job ist rot oder grün.}\hfill\\
+  \textbf{Kontext:} Zwei Übersetzer finden verschiedene Fehler; ein stiller Job-Skip oder ein
+  tolerierter Fehler erzeugt falsches Grün.
+  \textbf{Entscheidung:} Die Test-Suite läuft in vier Zellen --- gcc und clang jeweils als Release-
+  und Debug-Bau --- ohne Änderungs-Skip; die Zelle ist die Warnung, der Job ist rot;
+  \texttt{allow\_failure} trägt nur zwei deklarierte Ausnahmen --- den arm64-Smoke-Bau ohne
+  verfügbaren Runner und den manuellen Relock-Wartungsjob ---, keine Bau- oder Test-Zelle; je
+  Übersetzer und Bautyp gibt es einen Objekt-Cache-Schlüssel mit genau einem Schreiber; der
+  Übersetzer-Mindeststand ist g++~15.3; der golden-Referenzkatalog $2^{17}$ mit CRC-64-Anker ist
+  der Regressions-Detektor mit eingefrorener Kardinalität.
+  \textbf{Konsequenz:} Abgenommen wird nur \enquote{0~failed} in allen vier Zellen ohne
+  Ausnahmeliste --- ein Gate im Sinne der Continuous Delivery~\cite{humble2010cd} ---, und eine
+  Test-Zahl wird nur mit dem Lauf genannt, der sie erzeugt hat.
+  \textbf{Vollzugsstand:} Die Mini-Pipeline je Träger-Stufe (vier Stufen mal gcc und clang mal Release
+  und Debug) ist entblockt und nicht gebaut.
+  \textbf{Beleg:} Abschnitt~\ref{sec:impl-contracts}.
+
+  %% OWNER-VORLAGE: OV-AE-4 --- Ist-Stand-Entscheidung (Code trägt, Anhang nannte sie nicht). Default gesetzt.
+  %% OWNER-VORLAGE: OV-02 --- Vollzugsstand (headless Steuerpfad, XML-Erstellungsmodus, Schema-Drift) als
+  %% viertes Feld, gleichlautend mit Kapitel 4. Default gesetzt; Widerspruch genügt.
+  \item[ADR-20 --- XML als einzige Steuerung]\hfill\\
+  \emph{Die XML trägt Was, Wo und Wann, nie das Wie.}\hfill\\
+  \textbf{Kontext:} Der Apparat wird aus einem deklarativen Experiment-Profil betrieben; Begriffe
+  werden nicht übersetzt, sondern müssen konform sein --- wäre eine Übersetzung nötig, ist das eine
+  Regression und ein Übersetzungszeit-Fehler.
+  \textbf{Entscheidung:} Zwei Schemata beschreiben Profil und Messreihe
+  (\texttt{experiment\_schema.xsd}, \texttt{messreihe\_v32\_schema.xsd}); die Parse-Naht bricht laut
+  ab, die Validierung ist ein eigener Baustein, und die CI prüft die Wohlgeformtheit; die XML trägt
+  Was, Wo und Wann, nie das Wie; die Achsen-Registries werden als XML generiert und sind damit
+  maschinenlesbare Abbilder; der Planer ist ein Subkommando-Werkzeug (\texttt{validate},
+  \texttt{plan}, \texttt{cache-key}, \texttt{fingerprint}, \texttt{status}, \texttt{check-size},
+  \texttt{simulate}, \texttt{version}) und der Shell-Steuerpfad; als zweiter Steuerpfad ist eine
+  API-Kommandozeile mit headless Dienst vorgesehen, der den Planer als Zelle auf Kubernetes oder auf
+  bare metal bedient, sowie ein kommandozeilengeführter Erstellungsmodus für die Anwender-XML, in dem
+  nicht verfügbare Optionen nicht wählbar sind.
+  \textbf{Konsequenz:} Es gibt keinen Behelfsweg neben der XML\@; die SOTA-Profile sind als XML
+  ausführbar.
+  \textbf{Vollzugsstand:} Der headless Steuerpfad und der Erstellungsmodus sind Posten nach der
+  Kampagne; die Hybrid-Sektion ist geparst, aber im Schema nicht deklariert, die
+  Organ-Meta-Meta-Sektion deklariert, aber nicht gelesen, und die \texttt{publish}-Sektion fehlt.
+  \textbf{Beleg:} Abschnitte~\ref{sec:mess-chain} und~\ref{sec:impl-pipeline};
+  Abbildung~\ref{fig:pipeline}.
 
 \end{description}
