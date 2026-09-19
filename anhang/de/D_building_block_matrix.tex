@@ -255,7 +255,7 @@ LOUDS-Dense/\allowbreak{}Sparse & Knotentyp-Paar des succinct Range-Filters Su\a
 
 Diese Achse ist das \emph{Speicher-Layout-Organ} (T5) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
-Diese Achse klassifiziert die räumliche Organisation von Datensätzen im Speicher und beeinflusst damit Cache-Effizienz, SIMD-Vectorisierbarkeit und False-Sharing-Charakteristiken. Sie erfasst orthogonal vier Design-Dimensionen: (1) Alignment-Strategien (Cache-Line-Padding vs. Strict-Packing), (2) Datenorganisation (zeilenorientiert Ao\allowbreak{}S vs.\ spaltenorientiert So\allowbreak{}A vs. Hybrid Ao\allowbreak{}So\allowbreak{}A), (3) Packing-Dichte (dense vs.\ succinct bit-packed), (4) Stride-Muster (sequenziell vs.\ interleaved). Die Layout-Wahl ist ein primärer Treiber für Cache-Lokalität und SIMD-Fähigkeit bei Index-Traversal.
+Diese Achse klassifiziert die räumliche Organisation von Datensätzen im Speicher und beeinflusst damit Cache-Effizienz, SIMD-Vectorisierbarkeit und False-Sharing-Charakteristiken. Sie erfasst orthogonal vier Design-Dimensionen, von denen drei als Unter-Achsen-Tags im Code stehen (HM1--HM3): (1) Alignment-Strategien (Cache-Line-Padding vs. Strict-Packing), (2) Datenorganisation (zeilenorientiert Ao\allowbreak{}S vs.\ spaltenorientiert So\allowbreak{}A vs. Hybrid Ao\allowbreak{}So\allowbreak{}A), (3) Packing-Dichte (dense vs.\ succinct bit-packed); die vierte, das Stride-Muster (HM4, sequenziell vs.\ interleaved), ist eine geplante Dimension ohne tragenden Layout-Baustein, für die der Code keinen Tag führt (ein permutierbarer Stride-Wert bräche die auf fünf Layout-Bausteine festgelegte \texttt{All\allowbreak{}Layouts}-Liste des 320er-Katalogs). Die Layout-Wahl ist ein primärer Treiber für Cache-Lokalität und SIMD-Fähigkeit bei Index-Traversal.
 
 \subsection*{Statische Unter-Achsen}
 
@@ -268,7 +268,7 @@ ID & Name & Beschreibung \\
 HM1 & Alignment-Strategie & Entscheidung zwischen Cache-Line-gepaddetem Layout (False-Sharing-Vermeidung) und Strict-Packing (Speicherkompaktheit). Bestimmt Stride-Overhead bei sequenzieller Traversal. \\
 HM2 & Daten-Organisation & Grundlegende Speicher-Ordnung: Array-of-Structs (Ao\allowbreak{}S, zeilenorientiert), Struct-of-Arrays (So\allowbreak{}A, spaltenorientiert), oder Hybrid Ao\allowbreak{}So\allowbreak{}A (Block-basierte Mischung). Kritisch für Cache-Line-Ausnutzung bei Feld-selektiven Scans. \\
 HM3 & Packing-Dichte & Dichtegrad der Speichernutzung: von Standard-Records (8--64 Byte) bis zu kompaktem Bit-Packing (z.B. LOUDS-Bitmaps mit \textasciitilde{}1 Bit pro Slot). Beeinflusst Decode-Latenz und L1/\allowbreak{}L2-Auslastung. \\
-HM4 & Stride-Muster & Muster der Speicheradressierung bei Traversal: Sequenzielle Strides (aufeinanderfolgende Records), Interleaved (z.B. um Hot-Cold-Daten zu trennen) oder Cache-Aware-Layouts (z.B. Eytzinger BFS). Optimiert Prefetch-Effizienz. \\
+HM4 & Stride-Muster (geplant, kein Code-Tag) & Muster der Speicheradressierung bei Traversal: Sequenzielle Strides (aufeinanderfolgende Records), Interleaved (z.B. um Hot-Cold-Daten zu trennen) oder Cache-Aware-Layouts (z.B. Eytzinger BFS). Optimiert Prefetch-Effizienz. Im Code ohne tragenden Layout-Baustein und ohne Tag: Ein permutierbarer Stride-Wert bräche die auf fünf Layout-Bausteine festgelegte \texttt{All\allowbreak{}Layouts}-Liste des 320er-Katalogs. \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
