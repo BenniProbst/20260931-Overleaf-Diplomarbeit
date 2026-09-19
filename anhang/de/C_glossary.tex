@@ -1,124 +1,532 @@
 \chapter{Glossar}\label{app:glossary}
 
-% [AP-E2] Abkuerzungen + Kern-Begriffe, die in Kap. 1--3 verwendet werden. EN-Pendant via AP-EN nachziehen.
-Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Begriffe zusammen.
+% Glossar: Abkürzungen und Kern-Begriffe der Kapitel 1--6 und der Anhänge A--F; der EN-Zwilling
+% anhang/en/C_glossary.tex zieht nach der DE-Überarbeitung nach (Owner V-3).
+%% OWNER-VORLAGE: OV-AC-03 --- Lemma-Form: deutscher Führungsbegriff im Label, englischer Musterbegriff
+%% als erstes Element des Eintrags, Aliase am Ende (Owner W-9 (a)); Alternative (b): englisches Lemma im
+%% Label. Default (a) gesetzt, weil die Bestands-Einträge die Form bereits tragen; Widerspruch genügt.
+Dieses Glossar fasst die in der Arbeit verwendeten Abkürzungen und zentralen Begriffe zusammen. Jedes
+Fachbegriff-Lemma nennt zuerst den englischen Musterbegriff, dann die Definition und zuletzt die in
+dieser Arbeit gleichbedeutend gebrauchten Aliase; Registry- und Code-Bezeichner stehen in
+Schreibmaschinenschrift. Die Verweise zeigen auf den Abschnitt, der den Begriff einführt.
 
 \begin{description}
   \item[ABI] Application Binary Interface --- die binär-stabile Schnittstelle, über die der Builder
   die Permutations-Module (Lebewesen) lädt.
-  \item[Achse] Eine orthogonale Teilentscheidung (\enquote{Organ}) eines Suchalgorithmus; das Framework
-  führt achtzehn Organ-Kompositions-Achsen (T0--T17) neben den drei System-Haupt-Achsen und dem
-  Mess-Realm (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+%% OWNER-VORLAGE: OV-02 --- Abschaltungsstufen: Modell im Präsens (Owner-Kommentar führt),
+%% Durchführungs-Stand an genau dieser einen Stelle, gleichlautend mit Kapitel 4; Widerspruch genügt.
+  \item[Abschaltungsstufe] (\emph{instrumentation shut-off level}) Stufung, in der die
+  Messeinrichtung einer Tier-Binary zurückgenommen wird: Stufe~1 schaltet in der Makro- und der
+  Mikro-Ebene die Erhebung der Achsen-Parameter ab, sodass die Wall-Clock-Messung für
+  \texttt{measure} und \texttt{compare} bestehen bleibt; Stufe~2 (permutativ, \texttt{release})
+  entfernt auch die Wall-Clock-Messung und mit ihr die Mess-Flächen und -Interfaces aus dem
+  Kompilat. Durchführungs-Stand: Der Code trägt die Mess-Gates G2 und G3, deren Zustand ein
+  Fingerprint-Glied ist, und den Release-Modus ohne Instrumentierung; die zweistufige Abschaltung
+  als Permutations-Größe ist als Bau-Schritt benannt (Abbildung~\ref{fig:abschaltungsstufen},
+  Abschnitt~\ref{sec:impl-system-axes}).
+  \item[Achse] (\emph{axis}) Eine orthogonale Teilentscheidung (\enquote{Organ}) eines
+  Suchalgorithmus. Das Framework ordnet seine Achsen drei Realms zu: achtzehn Organ-Haupt-Achsen
+  (Kompositions-Achsen in fester Slot-Reihenfolge T0--T17, Registry-Etikett T00--T17) und eine
+  optionale Organ-Meta-Meta-Achse \texttt{disk\_io}; drei System-Haupt-Achsen
+  (\texttt{target\_isa}, \texttt{operating\_system}, \texttt{external\_utils}) mit ihrem
+  Komplex-Wrapper; und den Mess-Realm mit der Mess-Tooling-Haupt-Achse
+  (vgl.\ Abschnitt~\ref{sec:axis-triad}). Jede Achse ist Haupt-, Unter- oder Meta-Meta-Achse (siehe
+  die Lemmata); in die \texttt{binary\_id} gehen ausschließlich die achtzehn Organ-Haupt-Achsen ein.
+%% OWNER-VORLAGE: OV-02 --- Erfolgs-Parameter-Katalog: Plan-Ist im Präsens, Durchführungs-Stand
+%% (Katalog offen) an dieser einen Stelle, gleichlautend mit Kapitel 3; Widerspruch genügt.
+  \item[Achsen-Erfolgs-Parameter] (\emph{axis success parameter}) Die je Achsen-Interface
+  erhobenen Kenngrößen, an denen ein Interface-Aufruf von Anfang bis Ende gemessen wird; das
+  Messgerät ist der Mess-Checkpoint \texttt{checkpoint\_measure} (Mikro-Ebene), und ab der
+  Makro-Ebene werden alle Parameter einschließlich der PMC-Zähler zusammengeführt
+  (vgl.\ Abschnitt~\ref{sec:measurement-system}). Der Katalog der Parameter je Achse ist Gegenstand
+  einer eigenen Erhebung und liegt nicht vor.
+%% OWNER-VORLAGE: OV-05 --- Begriffs-Kanon: \enquote{Unter-Achse} führt, \emph{sub-axis} ist der
+%% Musterbegriff, \enquote{Sub-Achse} bleibt Alias; Default gesetzt, Widerspruch genügt.
   \item[Adaptiv vs.\ dynamisch vs.\ messgetrieben] Begriffsabgrenzung für die Anpassung des
   Algorithmus-Verhaltens.\ \emph{Adaptiv}: Anpassung anhand laufzeit-beobachteter Datenmerkmale
-  (z.\,B.\ adaptive Knotengrößen in ART)\@. \emph{Dynamisch}: die Laufzeit-Auswahl des fertig
+  (z.\,B.\ adaptive Knotengrößen in ART)\@. \emph{Dynamisch}: im allgemeinen Sprachgebrauch jede zur
+  Laufzeit getroffene Entscheidung; in dieser Arbeit enger die Laufzeit-Auswahl des fertig
   kompilierten Permutations-\emph{Moduls} über den Permutations-Identifier (Modul-Ladung) --- alle
   achtzehn Organ-Achsen sind je Binary compile-time-gebacken; hinzu kommen laufzeit-\emph{variierbare}
-  Parameter dynamischer Sub-Achsen (Prefetch-Distanz, Stapelgröße, Inline-Schwelle, Pool-Budget;
-  vgl.\ Abschnitt~\ref{sec:measurement-system}), keine Laufzeit-Wahl einzelner Achsen-Strategien.
+  Parameter dynamischer Unter-Achsen (\emph{sub-axes}: Prefetch-Distanz, Stapelgröße,
+  Inline-Schwelle, Pool-Budget; vgl.\ Abschnitt~\ref{sec:measurement-system}), keine Laufzeit-Wahl
+  einzelner Achsen-Strategien.
   \emph{Messgetrieben} (\emph{measurement-driven}): Auswahl der Konfiguration auf Basis empirisch
-  erhobener Messreihen --- das Leitmotiv dieser Arbeit; der zugehörige Auswahl-Mechanismus ist in
-  einem ersten Inkrement implementiert (\texttt{best\_binary\_selector}: Ranking und Auslieferung der
-  besten Permutation je Metrik aus den Mess-CSVs), die vollautomatische, lastprofilübergreifende
-  Auswahl bleibt Ausblick.
-  \item[Anatomie] Der \emph{Körper} eines Lebewesens: die feste Komposition seiner achtzehn
-  Achsen-Organe und vor allem deren \emph{Verdrahtung} --- die generalisierten Interfaces, über die
-  ein Organ die Dienste der übrigen nutzt (etwa das gemeinsame Allokations-Interface). Kein zweites
-  Modell neben dem Suchalgorithmus, sondern dessen Innenstruktur
-  (vgl.\ Abschnitt~\ref{sec:anatomy-metaphor}).
+  erhobener Messreihen --- das Leitmotiv dieser Arbeit; der
+  zugehörige Auswahl-Mechanismus ist in einem ersten Inkrement implementiert
+  (\texttt{best\_binary\_selector}: Ranking und Auslieferung der besten Permutation je Metrik aus
+  den Mess-CSVs), die vollautomatische, lastprofilübergreifende Auswahl ist Gegenstand des Ausblicks
+  (vgl.\ Abschnitt~\ref{sec:outlook}).
+  \item[Alder Lake] Intel-Mikroarchitektur mit heterogenen Performance- und Efficiency-Kernen; die
+  zweite Messplattform dieser Arbeit (prod2, Intel Core i9-12900K) gehört ihr an. In der
+  System-Registry ist sie die Rekombination \texttt{prod2\_alder\_lake} (CPU-Fabrikation
+  GenuineIntel/6/151/2, RAM-Frequenz 4800~MHz deklariert, CAS-Latenz nicht erhoben).
+  \item[Anatomie] (\emph{anatomy}) Der \emph{Körper} eines Lebewesens: die feste Komposition seiner
+  achtzehn Achsen-Organe und vor allem deren \emph{Verdrahtung} --- die generalisierten Interfaces,
+  über die ein Organ die Dienste der übrigen nutzt (etwa ein Container-Genus als Knoten-Substrat der
+  Achse \texttt{node\_type} oder als Index-Organisation). Kein zweites Modell neben dem
+  Suchalgorithmus, sondern dessen Innenstruktur (vgl.\ Abschnitt~\ref{sec:anatomy-metaphor}).
+  \item[Antwort-Status] (\emph{answer status}) Die je Forschungs-Haupt- und -Teilfrage im Fazit
+  ausgewiesene Stufe der Beantwortung: \emph{beantwortet} (ein Beleg am Objekt oder eine Messung
+  trägt die Antwort), \emph{strukturell beantwortet} (der Apparat, der die Antwort liefert, ist
+  gebaut und getestet, die Messung steht aus) oder \emph{offen} (weder Struktur noch Messung
+  liegen vor). Ohne Messwerte und konkrete Belege gilt eine Frage als nicht beantwortet, auch wenn
+  ihre Struktur trägt (vgl.\ Abschnitt~\ref{sec:answers}).
+  \item[AoSoA] Array of Structures of Arrays --- Speicher-Layout, das Datensätze in Blöcke fester
+  Breite zerlegt und innerhalb eines Blocks feldweise (SoA) ablegt; es verbindet die
+  Cache-Line-Dichte des SoA-Layouts mit der Lokalität des AoS-Layouts. In dieser Arbeit eine
+  Ausprägung der Organ-Achse \texttt{memory\_layout}.
+  \item[Arbeitsmodus] (\emph{work mode}) Die vier Modi der Ablauf-Kette, in dieser Reihenfolge:
+  \texttt{build} (Bau der Tier-Binaries), \texttt{measure} (der deterministische Mess-Lauf),
+  \texttt{compare} (Vergleich der Mess-Ebenen und Permutationen aus dem Messwertlager) und
+  \texttt{release} (Auslieferung ohne Messfühler). Der Arbeitsmodus ist eine Unter-Achse des
+  Mess-Realms (\texttt{work\_mode}), keine Eigenschaft der Binary-Identität; das Modus-Token
+  \texttt{compare} ist von dem gleichlautenden Alias der Wallclock-Ebene in der Mess-Konfiguration
+  zu unterscheiden. Alias: Modus, Ablauf-Kette.
   \item[ART] Adaptive Radix Tree~\cite{leis2013art}; Referenzentwurf mit adaptiven Knotengrößen
   (Node4/16/48/256).
+%% OWNER-VORLAGE: OV-02 --- Autonome Auswertung: Verfahren im Präsens, Durchführungs-Stand
+%% (ML-Klassifikation = Ausblick) an genau dieser einen Stelle; Default gesetzt, Widerspruch genügt.
   \item[Autonome Heuristik-Profil-Auswertung]
   (\emph{autonomous profile-driven heuristic evaluation}) Der angestrebte Mechanismus, der aus den
   Messreihen je Lastprofil automatisch die beste Achsen-Konfiguration ableitet und als
   wiederverwendbare Heuristik-Richtlinie ablegt (Ziel-Mechanismus: ML-Klassifikation von
   Lastprofil-/Achsen-Features auf Konfigurationen). Erste Bausteine sind implementiert --- die
   automatische Best-Binary-Auswahl aus Messreihen (\texttt{best\_binary\_selector}) und die
-  Extraktion/Ablage als XML-Lastprofil-Ergebnis ---; die ML-Klassifikation selbst ist weiterhin
+  Extraktion/Ablage als XML-Lastprofil-Ergebnis ---; die ML-Klassifikation selbst ist
   Ausblick (vgl.\ Abschnitt~\ref{sec:outlook}).
   \item[AVX, AVX-512] x86-SIMD-Erweiterungen (256- bzw.\ 512-Bit).
+%% OWNER-VORLAGE: OV-02 --- Lager-Bestände: Plan-Ist (vier Bestände) im Präsens; Durchführungs-Stand
+%% (Bestand 3/4 = Lager-Vollausbau) steht im Lemma Lager; Default gesetzt, Widerspruch genügt.
+  \item[Bestand] (\emph{stock}) Eine der vier Ablage-Klassen des Lagers, übersetzungsstatisch im
+  Schlüssel-Schema festgeschrieben: Bestand~1 die gebauten Tier-Binaries, geschlüsselt über ihren
+  SHA-512-Fingerprint, die Mess-Zelle daneben geklammert; Bestand~2 die Messwerte, geschlüsselt
+  über den Fingerprint der vermessenen Binary und die Hardware-Identität der messenden Maschine, die
+  Plattform-Zelle daneben geklammert und nie in den Digest fusioniert; Bestand~3 die
+  Synthese-Batches mit den synthetisierten Mess-Kurven als Dateien; Bestand~4 die Lösungen je
+  Anwender-XML (vgl.\ Abschnitt~\ref{sec:lager}).
+  \item[binary\_id] Der Identitäts-Pfad einer Tier-Binary im Permutationsraum: die Belegung der
+  achtzehn Organ-Haupt-Achsen in kanonischer Reihenfolge (achtzehn Segmente, das letzte
+  \texttt{persistence\_target}). System- und Mess-Achsen stehen nie in der \texttt{binary\_id}
+  (Registry-Attribut \texttt{binary\_id} mit dem Wert \texttt{never}); sie wirken über Bau-Version,
+  Stempel-Zeilen und CSV-Spalten.
   \item[built\_stem] Feld der Plan-Textform (Fassung v1.1), das je Bau-Schritt den real gebauten
   Datei-Stamm ausweist --- erzeugt von derselben Funktion, die auch der Bau-Orchestrator beim echten
   Bau ruft; Beleg des \emph{einen} Hauptkanals (vgl.\ Abschnitt~\ref{sec:impl-pipeline}).
-  \item[CacheEngineBuilder] Das autonome Plattform-Ausmess-System der Kette: Wurzel des
-  System-Realms; baut und stempelt die Tier-Binaries je Plattform und führt die
-  Sieben-Phasen-Pipeline über den \texttt{ExperimentDriver} aus (vgl.\ Abschnitte~\ref{sec:mess-chain}
-  und~\ref{sec:impl-pipeline}).
+  \item[CacheEngineBuilder] (CEB) Das autonome Plattform-Ausmess-System der Kette und die zweite
+  der vier Träger-Stufen; Wurzel des System-Realms. Der CEB empfängt vom Planer den freigegebenen
+  System-Achsen-Raum, permutiert System- und Organ-Achsen zu Tier-Binaries, baut und stempelt sie
+  je Plattform und führt die Sieben-Phasen-Pipeline über den \texttt{ExperimentDriver} aus. Sein
+  Stempel trägt Mess- und System-Zeile, aber keine Organ-Zeile (der maschinelle Riegel); sein
+  SHA-512-Fingerprint ist Provenienz, kein Wiederverwendungs-Kriterium
+  (vgl.\ Abschnitte~\ref{sec:mess-chain} und~\ref{sec:impl-pipeline}).
+  \item[CEB] siehe \emph{CacheEngineBuilder}.
+  \item[checkpoint\_measure] Das zentrale Messinstrument des Systems: ein Messpunkt, der zu einem
+  Zeitpunkt die Eingangsparameter und die Zeit erhebt. Auf der Wall-Clock-Ebene ist er das
+  parameter-leere Minimum; sind Makro- oder Mikro-Ebene aktiv, vollzieht er zusätzlich die
+  Parameter-Klammer --- Zeit und Beobachter sind im Checkpoint vereint, die Verantwortung ist je
+  Mess-Ebene getrennt. Die Zeilen landen in der Mess-Arena, die Verschachtelung führt die
+  Stapel-Arena. Alias: Mess-Checkpoint.
   \item[CLU] Cache-Line-Utilization --- Anteil genutzter Bytes je geladener Cache-Line.
   \item[CPI, IPC] Cycles per Instruction bzw.\ Instructions per Cycle.
-  \item[CRTP] Curiously Recurring Template Pattern --- C++-Idiom für statischen Polymorphismus.
-  \item[Drei-Ebenen-Modell] Die Schichtung der einen Architektur: \emph{Gattung} (Ebene~1, das
-  äußere Algorithmus-Interface --- Map, Container, Graph), \emph{Gattungs-Unterklasse}
-  (Ebene~2, fester Achsen-Satz) und \emph{Organe}/\emph{Achsen} (Ebene~3). Siehe
-  Abschnitt~\ref{sec:anatomy-levels}.
+  \item[CRTP] Curiously Recurring Template Pattern --- C++-Idiom für statischen Polymorphismus:
+  Eine Klasse leitet von einer Klassenschablone ab, die sie selbst als Schablonen-Argument erhält,
+  sodass die Basis zur Übersetzungszeit auf die Erbin zugreift~\cite{coplien1995crtp}. Im Framework
+  die Bauform des einen Stempel-Vertrags aller Träger-Stufen (die Schablone \texttt{StempelBasis}
+  mit der Erbin und der Träger-Stufe als Parametern) und der Achsen-Konzepte.
+  \item[Drei-Ebenen-Modell] (\emph{three-level model}) Die Schichtung der einen Architektur:
+  \emph{Gattung} (Ebene~1, das äußere Algorithmus-Interface --- Map, Container, Graph,
+  HeuristikAdapter), \emph{Genus} (Ebene~2, Gattungs-Unterklasse mit festem Achsen-Satz ---
+  SearchAlgorithm, Set, Sequence, Adapter, View, FunctionInterfaceReroute) und
+  \emph{Organe}/\emph{Achsen} (Ebene~3). Siehe Abschnitt~\ref{sec:anatomy-levels}.
   \item[dTLB] Daten-Translation-Lookaside-Buffer; cacht Daten-Adressübersetzungen.
-  \item[Gattung] Ein nach außen sichtbares Interface (Map, Container, Graph) --- die
-  oberste Ebene (Ebene~1) des Frameworks; siehe \emph{Drei-Ebenen-Modell}.
-  \item[Gattungs-Unterklasse] Die zweite Ebene unter einer Gattung mit festem Achsen-Satz
-  (Code-Begriff: \emph{Tier-Unterklasse}, \texttt{AnatomyGenus}). In der biologischen Lesart das
-  \enquote{Säugetier} = SearchAlgorithm (volle Achtzehn-Achsen-Anatomie); unter \texttt{Container}
-  die Unterklassen Set, Sequence, Adapter und View (\enquote{Vogel}, \enquote{Reptil},
-  \enquote{Wirbelloses}, \enquote{Pflanze}).
+  \item[ECDF] Empirische Verteilungsfunktion (\emph{empirical cumulative distribution function})
+  --- Treppenfunktion, die jedem Wert den Anteil der Beobachtungen zuordnet, die ihn nicht
+  überschreiten~\cite{wilk1968probability}; im Mess-Anhang die Darstellung der Latenz-Verteilung
+  über die Konfigurationen (bei einer einzigen Konfiguration eine einstufige Treppe).
+%% OWNER-VORLAGE: OV-AC-01 --- Nichterhebungs-Begriff: \enquote{explizit kodierte Nicht-Erhebung}
+%% (Kapitel 4, 6, Anhang A) führt, \enquote{Doktrin der ausgewiesenen Nichterhebung} (Kapitel 3) ist
+%% Alias desselben Lemmas; Default gesetzt, Widerspruch genügt.
+  \item[Explizit kodierte Nicht-Erhebung] (\emph{explicitly coded non-observation}) Doktrin der
+  Mess-Kette: Ein nicht erhobener Wert ist ein eigener Zustand (NaN nach IEEE~754 bzw.\ ein
+  Gültigkeits-Flag~\cite{ieee754_2019}) und wird nie als Null oder Phantomwert geführt --- weder im
+  Schema noch in CSV, xlsx, Tabelle oder Diagramm; eine Messreihe ohne gültige Zeile erzeugt keine
+  Ausgabe statt einer leeren. Der fehlende Wert bleibt damit als eigene Kategorie
+  auswertbar~\cite{graham2009missing}. Alias: Doktrin der ausgewiesenen Nichterhebung; im Code die
+  Bezeichner-Familie \texttt{honest\_*} (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+  \item[Eytzinger-Layout] (\emph{Eytzinger layout}) Anordnung eines sortierten Feldes in der
+  Ebenen-Reihenfolge eines impliziten vollständigen Binärbaums (Kinder von Index~$i$ bei $2i$ und
+  $2i+1$), sodass die binäre Suche cache-line- und prefetch-freundlich
+  verläuft~\cite{khuong2017eytzinger}. In dieser Arbeit eine Ausprägung der Speicher-Layout-Achse.
+  \item[Fingerprint] (\emph{fingerprint}) Der kryptografische Identitäts-Hash je Träger-Stufe: Der
+  Planer trägt einen SHA-256 über Version, ISA und Betriebssystem (64 Hex-Zeichen); die Tier-Binary
+  einen SHA-512 über elf Glieder in fester Ordnung (Format~6: Format-Kennung, Mess-, System- und
+  Organ-Zeile, Unter-Achsen-Werteset, Toolchain, Enabled-Mengen-Signatur der Bau-Achsen,
+  Overlay-Quellmenge, Mess-Gates, Hybrid-Komposit, Bau-Versions-Basis; 128 Hex-Zeichen); der CEB
+  einen SHA-512 als Provenienz. Der Fingerprint ist der Lager-Schlüssel des Bestands~1 und das
+  Wiedererkennungs-Kriterium einer Permutation.
+  \item[First-Touch] (\emph{first-touch policy}) NUMA-Platzierungsregel des Betriebssystems: Eine
+  Speicherseite wird dem Knoten zugeordnet, dessen Prozessor sie zuerst beschreibt; deshalb
+  entscheidet der initialisierende Thread über die Speicher-Lokalität~\cite{lameter2013numa}.
+  \item[Forest-Plot] (\emph{forest plot}) Darstellung mehrerer Effektschätzer mit ihren
+  Unsicherheitsintervallen als übereinander gestellte Punkt-Balken-Zeilen~\cite{lewis2001forest};
+  im Mess-Anhang die Sicht auf den Achsen-Austausch je Konfiguration gegen eine Referenz.
+  \item[Gattung] (Code: \texttt{AnatomyGattung}) Ein nach außen sichtbares Interface --- Map,
+  Container, Graph, HeuristikAdapter ---, die oberste Ebene (Ebene~1) des Frameworks; die Gattung
+  ist die Ableitung des Genus (eine gepflegte Quelle) und wird über ein gattungs-agnostisches
+  C-Symbol erfragt, bevor der Loader sie kennt. In der Produktlinien-Lesart ist die Gattung die
+  Feature-Kern-Komposition, das Genus die Feature-Spezial-Komposition. Lesehinweis:
+  \enquote{Adapter} ohne Präfix meint stets den Container-Genus, die Hybrid-Gattung heißt immer
+  HeuristikAdapter (siehe \emph{Drei-Ebenen-Modell}, \emph{Genus}).
+%% OWNER-VORLAGE: OV-05 --- Führungsbegriff Genus; Gattungs-Unterklasse und Tier-Unterklasse bleiben
+%% als Aliase lesbar; Default gesetzt, Widerspruch genügt.
+  \item[Gattungs-Unterklasse] siehe \emph{Genus} (Alias).
+  \item[Genus] (\emph{genus}) Die zweite Ebene unter einer Gattung mit festem Achsen-Satz (Code:
+  \texttt{AnatomyGenus}). Sechs Genera: SearchAlgorithm unter Map --- das \enquote{Säugetier} mit
+  der vollen Achtzehn-Achsen-Anatomie ---, Set, Sequence, Adapter und View unter Container
+  (\enquote{Vogel}, \enquote{Reptil}, \enquote{Wirbelloses}, \enquote{Pflanze}) sowie
+  FunctionInterfaceReroute unter HeuristikAdapter. Letzterer klassifiziert das Hybrid-Artefakt;
+  \texttt{genus()} einer Hybrid-Binary meldet dagegen das geerbte Ziel-Genus, der Durchstich bleibt
+  nach außen transparent. Der Genus ist die einzige gepflegte Quelle der Einordnung; je Genus gibt
+  es genau ein Prüf-Dock. Alias: Gattungs-Unterklasse, Tier-Unterklasse.
+  \item[Gitlink] (\emph{gitlink}) Der im übergeordneten Repositorium verzeichnete Commit eines
+  Submoduls (Eintragsmodus 160000); \texttt{.gitmodules} deklariert je Submodul Pfad, URL und
+  optional den Zweig~\cite{git2026gitmodules}. Das Super-Repositorium führt so den maßgeblichen
+  Stand von Engine, Prüfling und Manuskript.
   \item[GoF] \enquote{Gang of Four} --- die kanonischen Entwurfsmuster nach Gamma et
   al.~\cite{gamma1994patterns}.
+%% OWNER-VORLAGE: OV-K3-01 --- 2^17 = 131072 als eingefrorener Katalog-Anker (Regressions-Detektor)
+%% neben der dynamischen Mächtigkeit des geplanten Raums; beide tragen, nichts gestrichen.
+%% Widerspruch genügt.
+  \item[golden-Referenzkatalog] (\emph{golden reference catalogue}) Der feste Regressions-Detektor
+  des Ganzsystems: siebzehn Organ-Achsen mit je zwei Ausprägungen, \texttt{persistence\_target} auf
+  den In-Memory-Vertreter gepinnt, ergeben $2^{17} = 131072$ Identitäten, über einen CRC-64-Anker
+  statt über die materialisierte Liste verankert. Er ist von der Mächtigkeit des realen
+  Permutationsraums zu trennen, die der Planer je Profil und Plattform dynamisch aus den
+  freigeschalteten Katalogen rechnet (vgl.\ Abschnitt~\ref{sec:mess-chain}).
+  \item[H2-Akte] (\emph{H2 dossier}) Die werkzeug-berechnete Datenquelle der Evaluations-Hypothese
+  H2 (Code-Qualität je Quelle): eine gewichtete cppcheck-Befunddichte je kLOC über die vendorten
+  Originalquellen der Stand-der-Technik-Entwürfe; ohne vendorte Originalquelle trägt die Akte
+  \texttt{n/a} mit Grund. Nicht zu verwechseln mit den PRT-ART-Telemetrie-Metriken H1--H3.
+  \item[Haupt-Achse] (\emph{main axis}) Eine übersetzungsstatische Achse, deren Wahl fest in den
+  CEB bzw.\ die Tier-Binary einkompiliert wird und in der Bau-Legende erscheint: die achtzehn
+  Organ-Haupt-Achsen (identitätsbildend), die drei System-Haupt-Achsen und die
+  Mess-Tooling-Haupt-Achse. Ihre Unter-Achsen permutiert der Planer zur Laufzeit. Im
+  Stempel-Eintrag ist die Haupt-Achse die klammerlose Ebene~0.
   \item[HBM] High-Bandwidth Memory.
+  \item[HDR-Histogramm] (\emph{high dynamic range histogram}) Histogramm mit logarithmisch
+  gestuften Klassen und garantierter relativer Genauigkeit über viele
+  Größenordnungen~\cite{tene_hdrhistogram}; in der Auswertung die Verteilungssicht auf die
+  Latenzen, während die Perzentile nearest-rank aus den Rohwerten bestimmt werden (siehe
+  \emph{nearest-rank-Median}).
+  \item[header-only] Bibliotheksform, deren gesamter Code in Header-Dateien liegt und beim
+  Einbinden übersetzt wird; es entsteht kein eigenes Bibliotheks-Artefakt. Der Prüfling PRT-ART
+  und die Hybrid-Stufe liegen in dieser Form vor.
   \item[HOT] Height Optimized Trie~\cite{binna2018hot}.
-  \item[Komplex-Achse] Klammer über einer festen Rekombination mehrerer Haupt-Achsen, die gemeinsam
-  wie \emph{eine} Achse auftreten: die äußere Klammer über Ziel-ISA, Betriebssystem und
-  Erweiterungs-Hardware sowie die innere Komplex-Achse \texttt{target\_isa} (RAM-Frequenz,
-  CAS-Latenz, CPU-Fabrikation); im Identitäts-Stempel belegt eine Komplex-Achse genau ein Feld
-  (vgl.\ Abschnitt~\ref{sec:complex-axis}).
-  \item[Lebewesen] Ein vollständiger Such\-algorithmus als Komposition aller Achsen (metaphorischer
-  Code-Begriff; technischer Identifier: SearchAlgorithm-Instanz).
-  \item[LOUDS] Level-Ordered Unary Degree Sequence --- succinct Baum-Kodierung (Jacobson 1989).
+%% OWNER-VORLAGE: OV-02 --- Hybrid-Tier-Binary: Plan-Ist im Präsens (Owner-Kommentar führt),
+%% Durchführungs-Stand an dieser einen Stelle; Default gesetzt, Widerspruch genügt.
+  \item[Hybrid-Tier-Binary] (\emph{hybrid tier binary}) Die vierte Träger-Stufe: ein Modul der
+  Gattung HeuristikAdapter (Genus FunctionInterfaceReroute), das zur Übersetzungszeit die
+  Interfaces einer Gattung und eines Genus erbt und Aufrufe nach heuristischen Kriterien an
+  angeschlossene Tier-Binaries durchstellt; es exportiert dieselben Pflicht-Symbole wie ein Tier,
+  meldet nach außen das Ziel-Genus und wird ausschließlich mithilfe des CEB gebaut.
+  Durchführungs-Stand: Klassifikation, Dock-Schicht, XML-Parser und Binary-Proxy sind gebaut; der
+  Modul-Export als eigenes Kompilat, der Reroute-Router, die Verdrängung, die
+  Zustands-Synchronisation (Memento-Sidecar) und das Live-Ranking sind Bau-Gegenstand
+  (vgl.\ Abschnitt~\ref{sec:impl-hybrid-lager}).
+  \item[Instrumentierungs-Artefakt] (\emph{probe effect}) Die Veränderung des beobachteten
+  Verhaltens durch das Mess-Instrument selbst~\cite{gait1986probe}; in dieser Arbeit der
+  Unterschied zwischen der Tier-Binary mit und ohne Messfühler, der über die
+  Plausibilitäts-Invariante (mit Messfühler langsamer als ohne) geprüft und über die
+  Messfehler-Interpolation herausgerechnet wird. Ersetzt die frühere Metapher \enquote{Beschattung}.
+  \item[Interface-Fläche] (\emph{interface surface}) Eine der drei Vertragsflächen, die jede
+  Träger-Stufe bietet: Fläche~1 das Genus-Interface (Laufzeit, Abstract Factory), Fläche~2 der
+  Stempel (Übersetzungszeit, ABI-stabil), Fläche~3 der Mess-Durchstich (\texttt{IMessVisitor}), der
+  die Messung als eigene Naht quert, damit Gattungs- und Genus-Interfaces unverändert bleiben
+  (Abbildung~\ref{fig:traeger-flaechen}). Alias: Vertragsfläche, Träger-Fläche.
+  \item[IQR] Interquartilsabstand (\emph{interquartile range}) --- Differenz zwischen drittem und
+  erstem Quartil; das Streuungsmaß der Box-Plot-Darstellung der Latenzen im
+  Mess-Anhang~\cite{mcgill1978boxplots}.
+  \item[Komplex-Achse] (\emph{complex axis}) Klammer über einer festen Rekombination mehrerer
+  Haupt-Achsen, die gemeinsam wie \emph{eine} Achse auftreten: die äußere Klammer über Ziel-ISA,
+  Betriebssystem und Erweiterungs-Hardware sowie die innere Komplex-Achse \texttt{target\_isa}
+  (RAM-Frequenz, CAS-Latenz, CPU-Fabrikation); im Identitäts-Stempel belegt eine Komplex-Achse
+  genau ein Feld (vgl.\ Abschnitt~\ref{sec:complex-axis}). Ein nicht deklariertes Glied wird als
+  nicht deklariert gestempelt, nie geraten; die CAS-Latenz ist für keine Messmaschine erhoben (n/a:
+  die SMBIOS-Struktur Typ~17 führt sie nicht).
+  \item[Konsument] (\emph{consumer}) Die Rolle des Diplomarbeits-Codes gegenüber der Engine: Ein
+  Konsument linkt ausschließlich gegen die Cache-Engine und benutzt eine Tür
+  (\texttt{get\_cache\_engine()}); der Mess-Treiber ist zugleich ihr Treiber. Davon zu trennen ist
+  der Bediener --- der Mensch, der Planer und Anlage steuert. Alias: formaler Konsument und Treiber.
+%% OWNER-VORLAGE: OV-02 --- Lager: Plan-Ist im Präsens, Durchführungs-Stand (Bestand 1/2 gebaut, 3/4 =
+%% Lager-Vollausbau) an dieser einen Stelle, gleichlautend mit Kapitel 3; Widerspruch genügt.
+  \item[Lager] (\emph{repository}) Der persistente Bestand des Apparats, in dem Gebautes und
+  Gemessenes unter Stempel-Schlüsseln liegt (siehe \emph{Bestand}): Der Lager-Baum ist nach
+  Gattung, Genus und Realm gegliedert, eine Permutation wird über ihren Fingerprint wiedererkannt
+  statt neu gebaut, die Messung ist immer eingeschaltet und misst im Lager nur nach, was dort
+  fehlt. Jede Maschinen-Konfiguration hat ihren eigenen Messwert-Bestand; ein
+  Algorithmus-Versionswechsel löst den Neubau des betroffenen Lager-Stapels samt Neumessung aus.
+  Durchführungs-Stand: Bestand~1 und~2 sowie das Schlüssel-Schema aller vier Bestände sind gebaut;
+  die Mechanik von Bestand~3 und~4, die Kurven-Facette, der Ablage-Pfad des Hybrid-Tiers und die
+  Zielwahl über die XML sind der Lager-Vollausbau (Abbildung~\ref{fig:lager-bestaende},
+  Abschnitt~\ref{sec:lager}).
+  \item[Lastprofil-Selektionsverzerrung] (\emph{workload selection bias}) Die Verzerrung eines
+  Vergleichs dadurch, dass die Lastprofile so gewählt sind, dass ein Entwurf unter ihnen bevorzugt
+  gut abschneidet~\cite{blackburn2016truth}; ihr begegnet die Arbeit mit dem globalen
+  Standard-Workload als Permutation über alle verfügbaren Workloads und mit je Veröffentlichung
+  reproduzierten Profilen. Ersetzt die frühere Metapher \enquote{Heimspiel-Bias}.
+  \item[Lebewesen] (\emph{living being}) Ein vollständig komponiertes Tier-Modul einer Gattung ---
+  alle Gattungen sind Lebewesen; der SearchAlgorithm ist der Fall mit der vollen
+  Achtzehn-Achsen-Anatomie, und nur die ABI-Adapter-Sicht verengt den Begriff auf ihn (technischer
+  Identifier dort: SearchAlgorithm-Instanz). Die Anwender-XML führt ein Lebewesen mit einem oder
+  mehreren Tieren. Abgrenzung: Achsenlose Graph-Module sind Viren (siehe \emph{Virus}).
+  \item[LOUDS] Level-Ordered Unary Degree Sequence --- succincte (platzsparend nahe der
+  informationstheoretischen Schranke) Baum-Kodierung, die die Knotengrade ebenenweise unär
+  ablegt~\cite{jacobson1989louds}.
+%% OWNER-VORLAGE: OV-01 --- M0--M3: M3 = Meta-Meta-Achsen (Indirektion einer Beschreibung,
+%% owner-gesetzt); M2 = Meta-Achsen (literale Klassifizierung) und M1 = Konzeption/Laufzeit-
+%% Implementierung sind Lesart, keine Owner-Festlegung; gleichlautend mit Kapitel 4. Widerspruch genügt.
+  \item[M0--M3] (\emph{meta-levels M0--M3}) Die vier Abstraktionsstufen, nach denen diese Arbeit
+  ihre Achsen-Begriffe ordnet, in Anlehnung an die vierstufige Meta-Ebenen-Architektur der Object
+  Management Group (MOF)~\cite{omg2016mof}: M3 die Meta-Meta-Achsen als Indirektion einer
+  Beschreibung; M2 die Meta-Achsen als literale Klassifizierung der unter ihrem Begriff geführten
+  Haupt- und Unter-Achsen; M1 Konzeption und Laufzeit-Implementierung; M0 der Binärcode. Die
+  Zuordnung von M3 ist gesetzt, der Schnitt zwischen M2 und M1 ist Lesart
+  (Abbildung~\ref{fig:m0-m3}, Abschnitt~\ref{sec:impl-system-axes}).
   \item[MESI, MOESI, MESIF] Cache-Kohärenzprotokolle (Grund-Protokoll bzw.\ AMD-/Intel-Varianten).
-  \item[Mess-Realm] Der dritte Achsen-Realm neben Organ- und System-Achsen: die Belange des Messens
-  selbst, verwurzelt am Experiment-\emph{Planer}; erste Haupt-Achse ist das Last-Rahmenwerk, und
-  alle Mess-Realm-Achsen sind strikt binary-id-neutral (vgl.\ Abschnitt~\ref{sec:axis-triad}).
-  \item[NINE] Non-Inclusive-Non-Exclusive --- Inklusions-Politik des L3 in Intel-Server-Prozessoren.
+  \item[Mess-Ebene] (\emph{measurement level}) Eine der drei Ebenen der Mess-Tooling-Haupt-Achse,
+  in genau dieser Reihenfolge: \emph{wallclock} (w) --- die Wall-Clock der Gesamtläufe im
+  CacheEngineBuilder über die Last-Rahmenwerke; \emph{macro} (ma) --- die Zeit der
+  Genus-Interface-Funktionen der Tier-Binary; \emph{micro} (mi) --- Zeit und Erfolgs-Parameter je
+  Achsen-Interface. Teilmengen sind erlaubt, jede andere Reihenfolge ist syntaktisch falsch
+  (vgl.\ Abschnitt~\ref{sec:measurement-system}). Alias: w/ma/mi; Wallclock-, Makro-, Mikro-Ebene.
+  \item[Messfühler] (\emph{probe}) Die in eine Tier-Binary einkompilierte Messeinrichtung
+  (Mess-Durchstich, Beobachter, PMC-Zähler); ihre Belegung ist im Mess-Gates-Glied des Fingerprints
+  kodiert, sodass die Binary mit und die Binary ohne Messfühler verschiedene Identitäten tragen und
+  beide im Lager liegen. Der Unterschied ihrer Laufzeiten ist das Instrumentierungs-Artefakt.
+  \item[Mess-Realm] (\emph{measurement realm}) Der dritte Achsen-Realm neben Organ- und
+  System-Achsen: die Belange des Messens selbst, verwurzelt am Experiment-\emph{Planer}. Seine
+  Haupt-Achse ist das Mess-Tooling (wallclock/macro/micro), die Auffächerung des CEB-Typs; seine
+  Unter-Achsen sind die sechzehn Mess-Kategorien (CSV-Spalten), der Arbeitsmodus, Workloads und
+  Datensätze sowie die Rückschrieb-Methoden; das Last-Rahmenwerk ist seine Meta-Meta-Haupt-Achse.
+  Alle Mess-Realm-Achsen sind strikt binary-id-neutral (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+%% OWNER-VORLAGE: OV-01 --- Meta-Meta-Achse = Stufe M3 (owner-gesetzt); Default gesetzt, Widerspruch
+%% genügt.
+  \item[Meta-Meta-Achse] (\emph{meta-meta axis}) Eine Achse der Stufe M3: Sie beschreibt nicht
+  eine Belegung, sondern die Indirektion einer Beschreibung, und stempelt als Klammer-Anhang ihrer
+  Realm-Zeile; die Meta-Meta-Ebene eines Stempel-Eintrags ist seine Klammer-Tiefe. Je Realm gibt es
+  einen eigenen Diskriminator: \texttt{organ\_meta\_meta} (\texttt{disk\_io}),
+  \texttt{system\_meta\_meta} (die Familien-Achsen unter dem Hub der Erweiterungs-Hardware, etwa
+  die SIMD-Familie) und \texttt{measurement\_meta\_meta} (\texttt{load\_framework}); die
+  PMC-Erfassung zählt zu den Meta-Meta-Mess-Achsen.
+%% OWNER-VORLAGE: OV-AC-02 --- Blut-Metapher: die Owner-Definition (Blut = Verbindung aller
+%% Organ-Achsen) trägt; das Code-Etikett der Mess-Registry (Mess-Achsen als \enquote{Blut}) ist eine
+%% abweichende Beschriftung und kein Thesis-Gegenstand; Default Owner-Wort, Widerspruch genügt.
+  \item[Metapher-Kanon] Die biologische Lesart der Architektur, in dieser Arbeit einheitlich
+  gebraucht: Organ $=$ Achse; Anatomie $=$ der Körper eines Lebewesens; Tier $=$ ein Lebewesen
+  einer Gattung; Virus $=$ achsenloses Graph-Modul; Blut $=$ das flüssige Organ, das alle
+  Organ-Achsen verbindet und im Planer zu einer Übersetzungszeit-Konfiguration verdichtet wird;
+  Lebensraum $=$ die System-Achsen; Labor $=$ die Mess-Achsen
+  (vgl.\ Abschnitt~\ref{sec:anatomy-metaphor}). Wo der Text den Mess-Querschnitt des Hosts meint,
+  sagt er das ohne Metapher.
+  \item[MLP] Memory-Level Parallelism --- Anzahl gleichzeitig ausstehender Speicherzugriffe, die
+  ein Kern überlappen kann; begrenzt durch die Miss-Status-Holding-Register (siehe \emph{MSHR}).
+  \item[MPKI] Misses per Kilo-Instructions --- Cache- oder TLB-Fehlzugriffe je tausend
+  ausgeführter Instruktionen; normiert Fehlzugriffszahlen über Programme verschiedener Länge.
+  \item[MSHR] Miss Status Holding Register --- Puffer eines Caches, der ausstehende Fehlzugriffe
+  verwaltet und damit die maximale Zahl gleichzeitig offener Zugriffe (MLP) begrenzt.
+  \item[nearest-rank-Median] (\emph{nearest-rank median}) Perzentil-Definition ohne
+  Interpolation: Das $p$-Quantil ist der Wert an Rang $\lceil p \cdot n \rceil$ der sortierten
+  Stichprobe (Typ~1 nach Hyndman und Fan~\cite{hyndman1996quantiles}); alle Perzentile der
+  Auswertung werden so aus den Rohwerten bestimmt, die HDR-Verteilung ergänzt die Sicht.
+  \item[NINE] Non-Inclusive-Non-Exclusive --- Inklusions-Politik eines gemeinsamen
+  Last-Level-Cache, der gegenüber den privaten Caches weder Inklusion noch Exklusion garantiert.
   \item[NUMA] Non-Uniform Memory Access.
   \item[OLC] Optimistic Lock Coupling --- optimistische Nebenläufigkeits-Technik (ARTSync,
   P08)~\cite{leis2016olc}.
-  \item[Organ] Metaphorischer Begriff für eine \emph{Achse} (Ebene~3 des Drei-Ebenen-Modells); ein
-  Suchalgorithmus besitzt achtzehn Organ-Achsen.
+  \item[Organ] (\emph{organ}) Metaphorischer Begriff für eine \emph{Achse} (Ebene~3 des
+  Drei-Ebenen-Modells); ein Suchalgorithmus besitzt achtzehn Organ-Achsen. Neben den achtzehn
+  Organ-Haupt-Achsen führt der Organ-Realm eine optionale Organ-Meta-Meta-Achse
+  (\texttt{disk\_io}), die nur bei einem Platten-Rückschreibe-Ziel wirksam wird (siehe
+  \emph{Achse}, \emph{Meta-Meta-Achse}).
+  \item[Overlay-Quellmenge] (\emph{overlay source set}) Die eine Menge der Quelldateien, über die
+  das Overlay-Glied des Tier-Fingerprints hasht: je Achse die Dateien ihrer eigenen Implementierung
+  plus die gemeinsame Tier-Substanz, in fester Ordnung je Achsen-Kategorie konkateniert und einmal
+  per SHA-512 gehasht; dieselbe Menge ist die Grundgesamtheit des Versions-Locks.
+  \item[Pareto-Front] (\emph{Pareto front}) Menge der Konfigurationen, die in keiner Metrik
+  verbessert werden können, ohne sich in einer anderen zu verschlechtern
+  (Pareto-Dominanz)~\cite{emmerich2018multiobjective}; im Mess-Anhang die Sicht auf den
+  Latenz-Durchsatz-Speicher-Kompromiss der Permutationen.
+%% OWNER-VORLAGE: OV-02 --- Passungs-Stempel: Entwurf im Präsens, Durchführungs-Stand (nicht gebaut)
+%% an genau dieser einen Stelle; Default gesetzt, Widerspruch genügt.
   \item[Passungs-Stempel] \emph{Entwurf} eines Abgleichs, der die einkompilierte
   Plattform-\emph{Klasse} einer Tier-Binary bei jedem Mess-Lauf gegen das Laufzeit-Verdikt der
   Hardware-Erkennung prüft; im Stand dieser Arbeit nicht gebaut (vgl.\ Abschnitt~\ref{sec:answers}).
-  \item[Planer] Der Experiment-Planer (\texttt{ExperimentPlanDirector}): löst die Anwender-XML gegen
-  die drei Angebots-Kataloge auf, wählt die Mess-Achsen und steuert die Builder-Aufträge der Kette;
-  Wurzel des Mess-Realms (vgl.\ Abschnitt~\ref{sec:mess-chain}).
-  \item[PMC] (Hardware) Performance Monitoring Counter.
+  \item[P-Core, E-Core] (\emph{performance core, efficiency core}) Die zwei Kern-Sorten hybrider
+  Prozessoren (auf Intel seit Alder Lake); die Messung pinnt Threads je Kern-Sorte und erhebt die
+  PMC-Zähler getrennt. Die Kern-Zuteilung ist die Dimension \texttt{hetero\_core\_dispatch} der
+  Scheduling-Unter-Achse an \texttt{target\_isa}, die Kern-Klasse die Laufzeit-Unter-Achse
+  \texttt{core\_class}; die Verdrahtung in das Lauf-Profil ist Bau-Gegenstand
+  (vgl.\ Abschnitt~\ref{sec:axis-triad}).
+  \item[Pitchfork-Layout] (\emph{Pitchfork layout}) Konvention für die Verzeichnisstruktur nativer
+  C-/C++-Projekte (\texttt{apps/}, \texttt{libs/}, \texttt{tools/}, \texttt{tests/},
+  \texttt{docs/}, \texttt{external/} --- in der Engine als \texttt{ext/}), der die Engine
+  folgt~\cite{pike2018pitchfork}.
+  \item[Planer] (\emph{planner}) Der Experiment-Planer (\texttt{ExperimentPlanDirector}): löst die
+  Anwender-XML gegen die drei Angebots-Kataloge auf, wählt die Mess-Achsen und steuert die
+  Builder-Aufträge der Kette; Wurzel des Mess-Realms und erste der vier Träger-Stufen, als Werkzeug
+  ein Subkommando-Programm (\texttt{validate}, \texttt{plan}, \texttt{status}, \texttt{simulate},
+  \texttt{check-size}, \texttt{version}, \texttt{help}); sein Stempel trägt als einziger die
+  Versionszeile und einen SHA-256-Fingerprint (vgl.\ Abschnitt~\ref{sec:mess-chain}).
+  \item[PMC] (Hardware) Performance Monitoring Counter. Im Mess-Realm ist der Zählerpfad ein
+  Baustein der Kollektor-Achse (Regime PmcCounter); die modellgebundenen Roh-Ereignisse liefert ein
+  Katalog je Mikroarchitektur, und in der Achsen-Typologie zählt PMC zu den Meta-Meta-Mess-Achsen.
   \item[Provenienz-Stufe] Vertrauensstufe eines erhobenen Hardware-Werts --- konfiguriert-gemessen,
   SPD-JEDEC-Basiswert oder deklariert-nicht-gemessen ---, die jedes Ergebnis samt
   Erhebungszeitpunkt mitführt; eine niedrigere Stufe verdrängt eine höhere nur mit mitwandernder
   Kennzeichnung (vgl.\ Abschnitt~\ref{sec:hw-probe}).
-  \item[Prüf-Dock] Das nach außen sichtbare Mess-Interface einer Gattung, über das der Builder ein
-  Lebewesen lädt, durch die Interface-Operationen treibt, vermisst und persistiert
-  (vgl.\ Abschnitt~\ref{sec:anatomy-levels}).
+%% OWNER-VORLAGE: OV-05 --- Prüf-Dock je Genus (Führungsbegriff Genus; der Code nennt die Ebene 2 in
+%% diesem Kommentarbestand \enquote{Gattung}); Default gesetzt, Widerspruch genügt.
+  \item[Prüf-Dock] (\emph{probe dock}) Die builder-seitige Mess-Orchestrierung je Genus: Genau ein
+  Dock je Genus (SearchAlgorithm, Set, Sequence, Adapter, View) lädt ein Lebewesen, treibt es durch
+  die Interface-Operationen und vermisst es; Hybrid-Docks binden angeschlossene Tiere. Das Dock ist
+  keine ABI-Grenze --- die ABI-Grenze bleibt das genus-eigene Antriebs-Sub-Interface samt
+  POD-Snapshot; die Persistenz der Ergebnisse übernehmen der Ergebnis-Einzug in den
+  Experiment-Baum und der Rückschrieb (vgl.\ Abschnitt~\ref{sec:anatomy-levels}).
   \item[Prüfling] Der testweise einzugliedernde neue Suchalgorithmus (hier PRT-ART); wird vom
   Builder gegen die Kernbestandteile der Cache-Engine kompiliert.
   \item[PRT-ART] Probst-Redirect-Tree-/ART-Hybrid --- der Prüfling dieser Arbeit.
-  \item[Rang] Zentralitäts-Einordnung der Stand-der-Technik-Veröffentlichungen (Rang-1/2/3); erklärt
-  in Abschnitt~\ref{sec:rqs}.
+  \item[Punktseite, Kompaktseite] (\emph{array-indexed page, vector page}) Die zwei Seitenformen
+  des PRT-ART-B$^+$-Knotens nach Belegungsdichte: Die Punktseite adressiert Einträge direkt über
+  ein Feld (8- bzw.\ 16-Bit-Index, Dichte bis 50~\%), die Kompaktseite hält sortierte
+  Schlüssel-Wert-Vektoren (Dichte über 50~\%).
+  \item[Rang] (\emph{rank}) Zentralitäts-Einordnung der Stand-der-Technik-Veröffentlichungen
+  (Rang-1/2/3); erklärt in Abschnitt~\ref{sec:rqs}. Nicht zu verwechseln mit der Rangbildung der
+  Messung (siehe \emph{Rangbildung}).
+  \item[Rangbildung] (\emph{ranking}) Die Ordnung der vermessenen Permutationen nach einer Metrik
+  über die drei Benchmarking-Granularitäten (Aufgabenstellung, Teilaufgabe~7); das erste Inkrement
+  ist das Ranking je Metrik aus den Mess-CSVs mit Auslieferung der besten Binary
+  (\texttt{best\_binary\_selector}).
   \item[RCU] Read-Copy-Update --- Reklamations-Schema (McKenney, P29)~\cite{mckenney2001rcu}.
+  \item[Realm] (\emph{realm}) Eine der drei Heimaten der Achsen mit je eigener Registry,
+  Registry-XML und Stempel-Zeile: der Organ-Realm (Wurzel: die Anatomie des Tiers), der
+  System-Realm (Wurzel: der CEB) und der Mess-Realm (Wurzel: der Planer); die kanonische Ordnung
+  lautet Mess-, System-, Organ-Achsen. Alias: Achsen-Heimat, Achsen-Realm.
+  \item[Registry-XML] (\emph{registry XML}) Das je Realm per Übersetzungszeit-Reflexion generierte,
+  maschinenlesbare Abbild des Achsen-Bestands (Achsen, Bausteine, Unter-Achsen,
+  Maschinen-Signaturen); es wird nie von Hand editiert und ist das Angebot, gegen das der Planer
+  die Anwender-XML auflöst.
+  \item[REUSE, SPDX] REUSE-Spezifikation (Free Software Foundation Europe): Konvention, jede Datei
+  eines Repositoriums per SPDX-Lizenzbezeichner und \texttt{REUSE.toml} einer Lizenz zuzuordnen;
+  SPDX ist der standardisierte Bezeichner-Katalog für Lizenzen. Die Zuordnung lizenziert nichts um
+  --- maßgeblich bleiben die Lizenzdateien~\cite{fsfe2024reuse}.
   \item[RRIP, DRRIP] (Dynamic) Re-Reference Interval Prediction ---
   Cache-Ersetzungs-Heuristik~\cite{jaleel2010rrip}.
+  \item[Seitentyp] (\emph{page type}) Der Prüfling-Slot \texttt{page\_type} (prt-art
+  \texttt{axis\_01}): die Knotenform des PRT-ART-B$^+$-Baums; im Kanon der Engine entspricht er der
+  Organ-Haupt-Achse \texttt{node\_type} (Slot T04). Die Slot-Nummern des Prüflings folgen nicht der
+  Slot-Reihenfolge T00--T17 der Engine.
   \item[SIMD] Single Instruction, Multiple Data.
   \item[SOSD] Search On Sorted Data --- Index-Benchmark~\cite{kipf2019sosd}.
   \item[SOTA] State of the Art --- der Stand der Technik.
+  \item[SPD, JEDEC] Serial Presence Detect --- der von JEDEC (dem Normungsgremium der
+  Speicherindustrie) standardisierte Kennungsspeicher eines Speichermoduls, der u.\,a.\ die
+  JEDEC-Basisfrequenz trägt~\cite{jedec_jesd400_5}; in der Hardware-Erkennung die mittlere
+  Provenienz-Stufe (SPD-JEDEC-Basiswert) zwischen konfiguriert-gemessen und
+  deklariert-nicht-gemessen (siehe \emph{Provenienz-Stufe}).
+  \item[Stempel] (\emph{stamp}) Die einkompilierte, ABI-stabile Identitäts-Beschriftung eines
+  Trägers: je Realm eine Zeile aus Einträgen der Form \texttt{achse=algo@X.Y.Z} mit optionalen
+  Flags und rekursiven Klammer-Gruppen (\texttt{c\{p.e\}} ist \texttt{c} mit den Untergliedern
+  \texttt{p} und \texttt{e}, nie ein flaches Kürzel), dazu Versionszeile und Fingerprint. Vier
+  Träger-Stufen und sieben Stempel-Interfaces bilden eine dreiwertige Zulassungs-Matrix von 28
+  Zellen (Pflicht, Erlaubt, Verboten); der CEB trägt keine Organ-Zeile, nur der Planer eine
+  Versionszeile, nur der Hybrid angeschlossene Tiere. Der Stempel ist zugleich Identität,
+  Lager-Schlüssel und Wiedererkennungs-Kriterium; der Versions-Ausdruck des Treibers dient dagegen
+  nur der Einordnung (Abbildung~\ref{fig:traeger-flaechen}). Alias: Identitäts-Stempel,
+  Stempelsystem.
+  \item[Subsystem] (\emph{subsystem}) In dieser Arbeit die vier Träger-Subsysteme der Kette
+  (Mess-Treiber, CacheEngineBuilder, CacheEngine, Prüfling); im Code dagegen die zwölf
+  \texttt{ISubEngine}-Stufen der Empfehlungs-Pipeline hinter der Fassade \texttt{ICacheEngine}.
+  Die beiden Bedeutungen werden im Text nicht vermischt.
   \item[SuRF] Succinct Range Filter~\cite{zhang2018surf}.
   \item[SVE, NEON, RVV] ARM- (SVE, NEON) bzw.\ RISC-V- (RVV) SIMD-Erweiterungen.
+  \item[Teilmenge] (\emph{subset}) In dieser Arbeit in zwei festen Bedeutungen: die zulässige
+  Teilmenge der Mess-Ebenen (jede Teilmenge von wallclock/macro/micro in Kanon-Reihenfolge) und die
+  Konformitäts-Teilmenge der Interface-Operationen, die das Vergleichsgatter vor jeder Messung
+  prüft (Anhang~\ref{app:interfaces}).
+  \item[Tier-Binary] (\emph{tier binary}) Die dritte Träger-Stufe: das vom CEB je Permutation
+  gebaute, dynamisch ladbare Modul eines Tiers, das genau eine Organ-Belegung
+  (\texttt{binary\_id}) samt System- und Mess-Wahl fest einkompiliert trägt, über buchstabengleiche
+  C-Symbole (die vier Ur-Symbole, die Gattungs- und Genus-Abfrage und die Versionszeilen) geladen
+  wird und als Bestand~1 im Lager liegt. Alias: Tier, Permutations-Modul.
   \item[TLB] Translation Lookaside Buffer.
+  \item[Träger-Stufe] (\emph{carrier stage}) Eine der vier Stufen, die die Anatomie tragen, in
+  Reihenfolge der Kette: Planer, CacheEngineBuilder (CEB), Tier-Binary, Hybrid-Tier-Binary. Keine
+  Stufe durchläuft Schichten --- jede enthält ihre Schicht fest einkompiliert; nur die
+  Konfiguration wandert von der Anwender-XML bis zur fertigen Tier-Binary. Jede Stufe trägt einen
+  Stempel und bietet drei Interface-Flächen (Abbildung~\ref{fig:traeger-flaechen}).
+  \item[two\_phase\_valid] Gültigkeits-Flag einer Messzeile: Nur eine Messung, deren Workload über
+  das zweiphasige Lastprofil (Aufbau, dann Messphase) gefahren wurde, gilt als valide; Zeilen mit
+  \texttt{two\_phase\_valid} gleich \texttt{false} gehen nicht in Median, Matrix oder Diagramm ein.
+%% OWNER-VORLAGE: OV-05 --- Begriffs-Kanon Unter-Achse (sub-axis): \enquote{Unter-Achse} führt,
+%% \enquote{Sub-Achse} bleibt Alias; Unter-Achse und Permutations-Achse schließen sich nicht aus.
+%% Default gesetzt; Widerspruch genügt.
+  \item[Unter-Achse] (\emph{sub-axis}) Eine Achse unterhalb einer Haupt-Achse, im Regelfall
+  dynamisch und zur Laufzeit vom Planer permutiert: Ihre Werte reisen als Einstellungen über das
+  Prüf-Dock in die Tier-Binary, stehen in keiner Bau-Legende und nie in der \texttt{binary\_id}.
+  Beispiele: die Laufzeit-Parameter Prefetch-Distanz, Stapelgröße, Inline-Schwelle, Pool-Budget und
+  Thread-Zahl sowie die sechzehn Mess-Kategorien, der Workload und der Arbeitsmodus (Mess-Realm);
+  Optimierungsstufe, Atomik-Fähigkeit, SIMD-Familie, NUMA-Knoten, Seitengröße und Kern-Klasse
+  (System-Realm). Einzelne Unter-Achsen sind übersetzungsstatische Tupel ihrer Haupt-Achse (etwa
+  Scheduling und Compiler) und wirken über die Bau-Version. Registry-Token \texttt{sub\_axis}.
+  Alias: Sub-Achse. Unter-Achse und Permutations-Achse schließen sich nicht aus.
+  \item[Verbund-Strategie] (\emph{merge strategy}) Die per Achse deklarierte Art, wie ein
+  Prüfling-Slot mit der Engine-Achse verbunden wird: \texttt{Verbund1\_CeOnly} (nur die Engine,
+  keine Prüflings-Direktive), \texttt{Verbund2\_Replace} (die Prüfling-Achse ersetzt die
+  Engine-Achse, mit Rückfall; der Standard), \texttt{Verbund2\_Hybrid} (Engine und Prüfling hybrid
+  je Prüfling) und \texttt{Verbund3\_Union} (die nicht-redundante Vereinigung); die XML-Token
+  lauten \texttt{replace}, \texttt{merge} und \texttt{union}. Alias: Stufe~1 bis~3 (Altname), Full
+  Join (für \texttt{union}).
+  \item[Versions-Lock] (\emph{version lock}) Die eingecheckte Sperrdatei, die je Quelldatei der
+  Overlay-Quellmenge Kategorie, Achsen-Version und SHA-256 verzeichnet; jede Änderung an einer
+  verzeichneten Datei verlangt den bewussten Neu-Erzeugungs-Commit, eine Abweichung gegen die
+  Entdeckung ist rot, und ein CI-Gate prüft sie.
+  \item[Virus] (\emph{virus}) Ein achsenloses Graph- oder Rein-Mathematik-Modul an derselben
+  Wurzel wie die Lebewesen: ohne Achsen-System, ohne Komposition und außerhalb des
+  Permutationsbaums, aber mit eigenem flachem Mess-POD vermessbar (Latenz, Durchsatz, modul-eigene
+  Zähler). Plural: Viren.
+  \item[Vollprofil, abstraktes Profil] (\emph{full profile, abstract profile}) Die zwei Typen der
+  Stand-der-Technik-Profile: Ein Vollprofil beschreibt einen eigenständigen Suchentwurf
+  vollständig; ein abstraktes Profil stellt nur einzelne Organe (OLC als
+  Nebenläufigkeits-Organ~\cite{leis2016olc}, LOUDS als
+  Speicher-Layout-Organ~\cite{jacobson1989louds}, VAMPIR als
+  Mess-Technologie~\cite{berthold2023vampir}) und überlässt die übrigen dem Standard-Baukasten ---
+  derselbe Typ, dem der Prüfling PRT-ART entspricht. Von den 33 Profilen sind 30 Vollprofile und
+  3 abstrakte.
+  \item[working\_set\_n] Die Spalte der Arbeitsmengen-Größe (Anzahl Schlüssel) einer Messreihe;
+  sie ist die Abszisse der Sweep-Kurven des Kurvenladers, und die Zell-Token \texttt{n/a} und
+  \texttt{failed} sind keine Zahlen --- Stützpunkte werden nie erfunden.
+%% OWNER-VORLAGE: OV-02 --- XML-Lastprofil-Ergebnis: Format im Präsens, Durchführungs-Stand (Parser und
+%% Writer gebaut, ML-Klassifikation Ausblick) an dieser einen Stelle; Default gesetzt, Widerspruch genügt.
   \item[XML-Lastprofil-Ergebnis] (\emph{XML load-profile result}) Das in der Aufgabenstellung
-  (Teilaufgabe~7) geforderte Persistenz-Format, in dem die für einen Gesamtalgorithmus extrahierte,
-  je Architekturfokus wiederverwendbare Heuristik-Richtlinie unter Referenz der angewendeten
-  Lastprofile abgelegt wird; dient als Eingabe der autonomen Heuristik-Profil-Auswertung.
-  Import-Parser und Export-Writer samt Extraktor sind implementiert (round-trip-fähiges Schema
-  \texttt{comdare\_load\_profile}); als Ausblick verbleibt die darauf aufsetzende autonome
-  Heuristik-Auswertung (ML-Klassifikation).
+  (Teilaufgabe~8, Automatisierung der Systemerkennung und Binary-Auswahl) geforderte
+  Persistenz-Format, in dem die für einen Gesamtalgorithmus extrahierte, je Architekturfokus
+  wiederverwendbare Heuristik-Richtlinie unter Referenz der angewendeten Lastprofile abgelegt wird;
+  dient als Eingabe der autonomen Heuristik-Profil-Auswertung. Import-Parser und Export-Writer
+  samt Extraktor sind implementiert (round-trip-fähiges Schema \texttt{comdare\_load\_profile});
+  Ausblick ist die darauf aufsetzende autonome Heuristik-Auswertung (ML-Klassifikation).
   \item[YCSB] Yahoo!\ Cloud Serving Benchmark~\cite{cooper2010ycsb}.
-  \item[Zwei-Gate-Protokoll] Das Abnahme-Protokoll je Implementierungs-Paket: Gate~1 ist das
-  scharfe Doppellauf-Gate des Engine-Repositories (ausschließlich \enquote{0~failed}, ohne
-  Ausnahmeliste), Gate~2 das Integrations-Gate des Super-Repositories mit namentlich eingefrorener
-  Ausnahmemenge (vgl.\ Abschnitt~\ref{sec:impl-contracts}).
+  \item[Zen~5] AMD-Mikroarchitektur (CPUID-Familie 26); die erste Messplattform dieser Arbeit
+  (prod1, AMD Ryzen~9~9950X3D, Granite Ridge, zwei Kern-Komplexe) gehört ihr an, und ihr % chktex 29
+  Roh-Ereignis-Katalog ist am Objekt kreuzgeprobt. In der System-Registry ist sie die
+  Rekombination \texttt{prod1\_zen5}. Der Begriff bezeichnet in dieser Arbeit ausschließlich die
+  Mikroarchitektur.
+%% OWNER-VORLAGE: OV-K4-2 / OV-K4-9 --- keine Testzahl im Glossar; Gate 2 ohne Ausnahmemenge
+%% (Hausdoktrin, gleichlautend mit Kapitel 4); Default gesetzt, Widerspruch genügt.
+  \item[Zwei-Gate-Protokoll] (\emph{two-gate protocol}) Das Abnahme-Protokoll je
+  Implementierungs-Paket: Gate~1 ist das Doppellauf-Gate des Engine-Repositories --- die volle
+  Test-Suite läuft in vier Zellen (gcc und clang, jeweils als Release- und Debug-Bau) ohne
+  Änderungs-Skip, und abgenommen wird ausschließlich \enquote{0~failed}, ohne Ausnahmeliste;
+  Gate~2 ist das Integrations-Gate des Projekt-Repositories (Super-Repositorium), dessen Pipeline
+  grün ohne Ausnahmemenge baut (vgl.\ Abschnitt~\ref{sec:impl-contracts}).
 \end{description}
