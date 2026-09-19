@@ -1,41 +1,91 @@
 \chapter{Vergleichsinterfaces: \texttt{std::map} und \texttt{std::vector}}\label{app:interfaces}
 
-% [AP-G5-Anhang] Vollstaendige Standard-Interface-Tabellen (C++23) zu Abschnitt~\ref{sec:measurement-system}.
-% Funktionsdaten verifiziert (Enumerate -> adversariale Verify -> Decompose -> Completeness-Critic).
-% Quelle: ISO C++ / cppreference. Funktionstabellen folgen.
+% Anhang F: vollständige C++23-Schnittstellen der beiden Vergleichshüllen (std::map, std::vector) zu
+% Abschnitt sec:measurement-system; Semantik, Komplexität und Fassung nach ISO/IEC 14882:2024
+% (iso_cpp), Sekundärquelle cppreference (cppreference_map, cppreference_vector).
+% Dagger = Kern-Operationen, die das Konformitäts-Gatter der jeweiligen Gattung vor jeder Messung
+% prüft (Map-Gattung: std::map-Orakel, Blöcke RF1..RF13; Sequenz-Gattung: std::deque-Orakel,
+% Blöcke QRF1..QRF7).
+% Entwickler-Dokument der Cache-Engine: docs/ENTWICKLER-FUNCTION-HANDLE-HOPS.md (Sprungpfad je Funktion).
 Dieser Anhang führt --- ergänzend zu Abschnitt~\ref{sec:measurement-system} --- die vollständige
 Auflistung aller Standard-Interface-Funktionen der beiden Vergleichshüllen \texttt{std::map}
 (geordnet-assoziativ) und \texttt{std::vector} (Sequenz) nach dem Stand von C++23 mit ihrer
 offiziell erwarteten Semantik und ihrer Komplexitäts-Garantie gemäß dem
 ISO-C++-Standard~\cite{iso_cpp}. Er dient zugleich als zentrale Referenz für die Weiterentwicklung
-der Cache-Engine: Da die Suchalgorithmus-Hülle ihr Innenleben durch dynamisch austauschbare
-Achsen-Algorithmen ersetzt (Abschnitt~\ref{sec:measurement-system}), wird je Standard-Funktion
+der Cache-Engine: Da die Suchalgorithmus-Hülle ihr Innenleben zur Übersetzungszeit austauscht ---
+je Achsen-Wahl entsteht ein eigenes Kompilat ---, während zur Laufzeit nur die Parameter der
+dynamischen Unter-Achsen nachgestellt werden (die registrierten dynamischen Dimensionen des
+Mess-Realms, Abschnitt~\ref{sec:measurement-system}), wird je Standard-Funktion
 erklärungsbedürftig, welches Verhalten der äußere Vertrag garantiert.
 
-\emph{Variadische Abbildung.} Ein Template-Parameter stellt die \texttt{std::vector}-API bereit,
-zwei Parameter die \texttt{std::map}-API und $N>2$ eine \texttt{std::map<K,\,std::tuple<\ldots>>}
-(Abschnitt~\ref{sec:impl-architecture}); die geteilten Funktionen (Iteration,
-\texttt{size}/\texttt{empty}/\texttt{clear}, \texttt{swap}, \texttt{get\_allocator}) tragen in
-beiden Hüllen dieselbe Semantik.
+\emph{Variadische Abbildung.} Die hybride Such-Engine des Prüflings PRT-ART bindet die
+Parameterzahl an die Hülle: Ein Template-Parameter fordert alle Funktionsinterfaces eines
+\texttt{std::vector}, zwei die eines \texttt{std::map} und $N>2$ die einer
+\texttt{std::map<K,\,std::tuple<\ldots>>} (Abschnitt~\ref{sec:impl-architecture}). Die Cache-Engine
+leitet aus derselben Regel die Typen ab --- bei einem Parameter wird der Schlüssel implizit als
+monoton gezählter 64-Bit-Wert vergeben, bei $N>2$ wird der Wert zum Tupel ---; ihre beiden
+Vertrags-Hüllen sind als getrennte Gattungs-Adapter gebaut: die Map-Gattung über den funktionalen
+Antrieb der Modulgrenze mit den fünf Operationen \texttt{tier\_insert}, \texttt{tier\_lookup},
+\texttt{tier\_erase}, \texttt{tier\_clear} und \texttt{tier\_size}, die Sequenz-Gattung über den
+Sequenz-Antrieb mit \texttt{tier\_push\_back}, \texttt{tier\_at}, \texttt{tier\_size} und
+\texttt{tier\_clear}; ein Adapter quer zur Gattung ist im Typsystem ausgeschlossen. Der Fall $N>2$
+ist Typ-Ableitung ohne eigenen Adapter; die Modulgrenze führt Schlüssel und Wert durchgängig als
+64-Bit-Werte. Die geteilten Funktionen (Iteration, \texttt{size}/\texttt{empty}/\texttt{clear},
+\texttt{swap}, \texttt{get\_allocator}) tragen in beiden Hüllen denselben Namen und dieselbe Rolle;
+über die Modulgrenze reichen beide Hüllen davon \texttt{size} und \texttt{clear}, \texttt{empty} ist
+host-seitig abgeleitet, Iteration und \texttt{swap} queren die Grenze nicht, und
+\texttt{get\_allocator} ist auf der Map-Seite ein optionales Proxy-Sub-Interface außerhalb des
+Orakels (Abschnitt~\ref{asec:if-decomp}).
 
 \emph{Zusammengesetzte Funktionen.} Einige Funktionen ergeben sich \enquote{unter der Haube} als Komposition
 primitiverer Operationen --- etwa \texttt{operator[]} als \texttt{lower\_bound} mit anschließendem
 Default-Einfügen bei fehlendem Schlüssel oder \texttt{at} als \texttt{find} mit Wurf einer
 \texttt{std::out\_of\_range}-Ausnahme bei Fehlen ---; solche Fälle sind in der Spalte \enquote{Anmerkung}
-gekennzeichnet. Die Spalte \enquote{seit} nennt die einführende Standard-Fassung. Die exakten
-cache-engine-internen Funktions-Sprünge (\emph{function-handle-hops}) dokumentiert ein eigenes
-Entwickler-Dokument der Cache-Engine.
+gekennzeichnet. Die Spalte \enquote{seit} nennt die einführende Standard-Fassung. Drei Begriffe der
+Tafeln stammen aus der jüngeren Standard-Entwicklung: der Node-Handle\footnote{Seit C++17 kann ein
+Knoten eines assoziativen Containers mit \texttt{extract} ohne Kopie oder Move als Node-Handle gelöst
+und mit \texttt{insert} bzw.\ \texttt{merge} in einen anderen Container gespleißt
+werden~\cite{talbot2016splicing}.}, die Deduktions-Leitfäden (CTAD)\footnote{\emph{Class template
+argument deduction}, seit C++17: Die Template-Argumente eines Klassentemplates werden aus den
+Konstruktor-Argumenten abgeleitet, über implizit aus den Konstruktoren gebildete oder explizit
+angegebene Leitfäden~\cite{spertus2016ctad}.} und der transparente Schlüssel
+(Abschnitt~\ref{asec:if-map}). Die exakten cache-engine-internen Funktions-Sprünge
+(\emph{function-handle-hops}\footnote{Hausbegriff der Cache-Engine für die Folge der internen
+Funktions-Sprünge (Handles) vom Eintritt an der Modulgrenze über die Achsen-Organe bis zum Ergebnis;
+das Entwickler-Dokument verzeichnet sie je Standard-Funktion und markiert nicht verdrahtete
+Funktionen als solche.}) dokumentiert das Entwickler-Dokument
+\texttt{docs/\allowbreak{}ENTWICKLER-\allowbreak{}FUNCTION-\allowbreak{}HANDLE-\allowbreak{}HOPS.md}
+der Cache-Engine; es verzeichnet je Standard-Funktion den Sprungpfad und den Status an der
+Modulgrenze.
 
 \emph{Konformitäts-Teilmenge.} Das Konformitäts-Gatter (Abschnitt~\ref{sec:measurement-system})
-prüft vor jeder Messung eine Kern-Teilmenge der \texttt{std::map}-Operationen, damit nur
-Vergleichbares verglichen wird; sie ist in der \texttt{std::map}-Tabelle als solche gekennzeichnet.
+prüft vor jeder Messung je Gattung eine Kern-Teilmenge der Hüllen-Operationen gegen ein Orakel der
+Standardbibliothek --- \texttt{std::map} für die Map-Gattung, \texttt{std::deque} für die
+Sequenz-Gattung ---, damit nur Vergleichbares verglichen wird; die Teilmenge ist in beiden Tafeln
+mit $\dagger$ gekennzeichnet.
 
 \section{\texttt{std::map} (geordnet-assoziativ)}\label{asec:if-map}
 Tabelle~\ref{tab:if-map} listet die vollständige Schnittstelle von
 \texttt{std::map<Key,\,T,\,Compare,\,Allocator>} nach C++23. Ein $\dagger$ markiert die
 Kern-Operationen, die das Konformitäts-Gatter (Abschnitt~\ref{sec:measurement-system}) vor jeder
 Messung prüft, damit nur Vergleichbares verglichen wird. Komplexitäten beziehen sich auf
-$n=\texttt{size()}$; bei Bereichs-Operationen ist $N$ die Zahl der Eingabe-Elemente.
+$n=\texttt{size()}$; bei Bereichs-Operationen ist $N$ die Zahl der Eingabe-Elemente; Fassungs-Marker
+und Komplexitäten folgen dem Normtext~\cite{iso_cpp} und sind an der
+Online-Referenz~\cite{cppreference_map} gegengelesen. Die siebzehn markierten Operationen sind
+genau die Operationsmenge der zwölf Kern-Prüfblöcke des Gatters: Keine markierte Operation bleibt
+ungeprüft, keine geprüfte Operation ist unmarkiert (\texttt{size} wird in den Blöcken mitgeprüft,
+gehört aber zum Zufalls-Kernblock und ist deshalb nicht markiert). Vier der markierten Operationen
+entsprechen unmittelbar Operationen der Modulgrenze (\texttt{insert\_or\_assign} dem
+Einfüge-Antrieb, \texttt{find} der Punkt-Suche, \texttt{erase} und \texttt{clear} ihren Antrieben);
+\texttt{at}, \texttt{operator[]}, \texttt{count}, \texttt{contains}, \texttt{empty} sowie
+\texttt{insert}, \texttt{emplace} und \texttt{try\_emplace} werden host-seitig komponiert ---
+\texttt{empty} aus der Größe, die übrigen aus Punkt-Suche und Einfügen; die drei nicht
+überschreibenden Formen laufen über einen Pfad und werden gegen drei verschiedene Orakel-Aufrufe
+gestellt; \texttt{begin}/\texttt{end}, \texttt{lower\_bound}, \texttt{upper\_bound} und
+\texttt{equal\_range} synthetisiert der Host über die additive Scan-Fähigkeit der Modulgrenze
+geordnet, und fehlt sie einer geladenen Binary, protokolliert das Gatter diese Blöcke als
+übersprungen, nicht als bestanden; \texttt{key\_comp} wird am Orakel festgestellt (Schlüsselordnung
+kleiner-als auf 64-Bit-Werten), weil die Hülle keinen Komparator über die Grenze trägt.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
   \caption{Vollständige \texttt{std::map}-Schnittstelle (C++23)}\label{tab:if-map}\\
@@ -73,7 +123,7 @@ $n=\texttt{size()}$; bei Bereichs-Operationen ist $N$ die Zahl der Eingabe-Eleme
   \multicolumn{4}{@{}l}{\textbf{Modifikatoren}}\\
   \addlinespace[2pt]
   \texttt{clear}\,$\dagger$ & alle Elemente entfernen & $O(n)$ & C++98 \\
-  \texttt{insert}\,$\dagger$ & Element(e) ohne Überschreiben (Wert, \texttt{P\&\&}, Hint, Bereich, \texttt{initializer\_list}, Node-Handle ab C++17) & $O(\log n)$; Hint amort.\ $O(1)$ & C++98 \\
+  \texttt{insert}\,$\dagger$ & Element(e) ohne Überschreiben (Wert, \texttt{P\&\&}, Hint, Bereich, \texttt{initializer\_list}, Node-Handle ab C++17) & $O(\log n)$; Hint amort.\ $O(1)$; Bereich $O(N\log(n{+}N))$ & C++98 \\
   \texttt{insert\_range} & Eingabe-Bereich einfügen, keine Überschreibung & $O(N\log(n{+}N))$ & C++23 \\
   \texttt{insert\_\allowbreak{}or\_\allowbreak{}assign}\,$\dagger$ & einfügen oder vorhandenen Wert zuweisen; \texttt{bool} meldet Einfügung & $O(\log n)$ & C++17 \\
   \texttt{emplace}\,$\dagger$ & in-place konstruieren, nur falls Schlüssel fehlt (sonst verworfen) & $O(\log n)$ & C++11 \\
@@ -104,22 +154,45 @@ $n=\texttt{size()}$; bei Bereichs-Operationen ist $N$ die Zahl der Eingabe-Eleme
   \texttt{operator<=>} & lexikografischer Drei-Wege-Vergleich; synthetisiert \texttt{<\,<=\,>\,>=} & $O(n)$ & C++20 \\
   \texttt{std::swap} & Spezialisierung; ruft \texttt{lhs.swap(rhs)} & $O(1)$ & C++98 \\
   \texttt{std::erase\_if} & entfernt alle Elemente mit \texttt{pred==true}; gibt die Anzahl zurück & $O(n)$ & C++20 \\
-  Deduktions-Leitfäden & CTAD aus Bereich/\allowbreak\texttt{initializer\_list}/\allowbreak\texttt{from\_range} & --- (Compile-Zeit) & C++17 \\
+  Deduktions-Leitfäden & CTAD aus Bereich/\allowbreak\texttt{initializer\_list}/\allowbreak\texttt{from\_range} (\texttt{from\_range} ab C++23) & --- (Compile-Zeit) & C++17 \\
   \bottomrule
 \end{longtable}
 
 \noindent Die vor C++20 eigenständigen Vergleichsoperatoren \texttt{<\,<=\,>\,>=} werden seit C++20 aus
 \texttt{operator<=>} synthetisiert, \texttt{!=} aus \texttt{operator==} umgeschrieben. Die
 heterogenen Überladungen von \texttt{operator[]}, \texttt{at}, \texttt{try\_emplace} und
-\texttt{insert\_or\_assign} (transparenter Schlüssel) gehören erst zu C++26 und bleiben hier
-ausgeklammert; die C++23-Neuzugänge sind genau der \texttt{from\_range}-Konstruktor,
-\texttt{insert\_range} und die transparenten Schlüssel-Überladungen von
-\texttt{erase}/\texttt{extract}.
+\texttt{insert\_or\_assign} (transparenter Schlüssel\footnote{Heterogene Suche seit C++14: Trägt der
+Komparator den Typ \texttt{is\_transparent}, nehmen die Suchfunktionen Argumente eines anderen Typs
+als \texttt{key\_type} an, ohne ein temporäres Schlüsselobjekt zu
+bilden~\cite{wakely2013heterogeneous}; C++23 dehnt dies auf \texttt{erase}/\texttt{extract}
+aus~\cite{boyarinov2021erasure}, C++26 auf \texttt{operator[]}, \texttt{at}, \texttt{try\_emplace}
+und \texttt{insert\_or\_assign}~\cite{boyarinov2023heterogeneous}.}) gehören erst zu C++26 und
+bleiben hier ausgeklammert; die C++23-Neuzugänge sind der \texttt{from\_range}-Konstruktor,
+\texttt{insert\_range}, die transparenten Schlüssel-Überladungen von
+\texttt{erase}/\texttt{extract} sowie die zugehörigen
+\texttt{from\_range}-Deduktions-Leitfäden~\cite{jabot2022ranges,boyarinov2021erasure}. Auch die
+\texttt{constexpr}-Fähigkeit von \texttt{std::map} gehört erst zu C++26 und bleibt
+ausgeklammert~\cite{cppreference_map}.
 
 \section{\texttt{std::vector} (Sequenz)}\label{asec:if-vector}
 Tabelle~\ref{tab:if-vector} listet die vollständige Schnittstelle von
-\texttt{std::vector<T,\,Allocator>} nach C++23 ($n=\texttt{size()}$). Sämtliche Member sind seit
-C++20 \texttt{constexpr}.
+\texttt{std::vector<T,\,Allocator>} nach C++23 ($n=\texttt{size()}$, bei Bereichs-Operationen $N$
+die Zahl der Eingabe-Elemente; Fassungs-Marker und Komplexitäten folgen dem
+Normtext~\cite{iso_cpp} und sind an der Online-Referenz~\cite{cppreference_vector} gegengelesen).
+Sämtliche Member sind seit C++20 \texttt{constexpr}\footnote{Seit C++20 sind alle Elementfunktionen
+von \texttt{std::vector} \texttt{constexpr}; ein \texttt{constexpr}-Objekt selbst scheitert in der
+Regel am dynamischen Speicher~\cite{dionne2019constexprvector}.}. Ein $\dagger$ markiert die
+Kern-Operationen, die das Konformitäts-Gatter der Sequenz-Gattung vor jeder Messung gegen ein
+\texttt{std::deque}-Orakel prüft (Anhängen, Index-Zugriff, Größe, Leeren; für diese vier
+Operationen ist die \texttt{deque}-Semantik mit der des \texttt{std::vector} deckungsgleich): Die
+eigene Sequenz-Hülle bietet genau diese vier Funktionen über die Modulgrenze an, der Index-Zugriff
+ist dort geprüft statt undefiniert (Status-Rückgabe: Treffer-Flag und Ausgabewert an der
+Modulgrenze, \texttt{std::optional} im Organ). Alle übrigen Funktionen der Tafel ---
+Kapazitäts-Steuerung, Positions- und Bereichs-Operationen,
+\texttt{front}/\texttt{back}/\texttt{pop\_back}, \texttt{data}, Iteratoren, \texttt{swap} und die
+Nicht-Member --- queren die Modulgrenze nicht; das Wachstum am vorderen Ende
+(\texttt{push\_front}), das das \texttt{deque}-Orakel zusätzlich böte, ist als Ausbau der
+Modulgrenze geführt und wird im Gatter als übersprungen protokolliert, nicht als bestanden.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
   \caption{Vollständige \texttt{std::vector}-Schnittstelle (C++23)}\label{tab:if-vector}\\
@@ -142,7 +215,7 @@ C++20 \texttt{constexpr}.
   \addlinespace[3pt]
   \multicolumn{4}{@{}l}{\textbf{Elementzugriff}}\\
   \addlinespace[2pt]
-  \texttt{at} & geprüfter Zugriff; wirft \texttt{std::out\_of\_range} & $O(1)$ & C++98 \\
+  \texttt{at}\,$\dagger$ & geprüfter Zugriff; wirft \texttt{std::out\_of\_range} & $O(1)$ & C++98 \\
   \texttt{operator[]} & ungeprüfter Zugriff (UB außerhalb des Bereichs) & $O(1)$ & C++98 \\
   \texttt{front}/\texttt{back} & Referenz auf erstes/letztes Element (UB bei leer) & $O(1)$ & C++98 \\
   \texttt{data} & Zeiger auf den zusammenhängenden Speicher (nicht bei \texttt{vector<bool>}) & $O(1)$ & C++11 \\
@@ -153,21 +226,21 @@ C++20 \texttt{constexpr}.
   \addlinespace[3pt]
   \multicolumn{4}{@{}l}{\textbf{Kapazität}}\\
   \addlinespace[2pt]
-  \texttt{empty}/\allowbreak\texttt{size}/\allowbreak\texttt{max\_size} & leer-Test, Elementanzahl, Maximalgröße & $O(1)$ & C++98 \\
+  \texttt{empty}/\allowbreak\texttt{size}\,$\dagger$/\allowbreak\texttt{max\_size} & leer-Test, Elementanzahl, Maximalgröße & $O(1)$ & C++98 \\
   \texttt{reserve} & Kapazität $\ge n$; realloziert und invalidiert; wirft \texttt{length\_error} bei $n>$\texttt{max\_size()} & $O(n)$ & C++98 \\
   \texttt{capacity} & aktuell allozierte Kapazität & $O(1)$ & C++98 \\
   \texttt{shrink\_to\_fit} & nicht-bindende Reduktion der Kapazität auf \texttt{size()} & $O(n)$ & C++11 \\
   \addlinespace[3pt]
   \multicolumn{4}{@{}l}{\textbf{Modifikatoren}}\\
   \addlinespace[2pt]
-  \texttt{clear} & alle Elemente entfernen (Kapazität bleibt) & $O(n)$ & C++98 \\
-  \texttt{insert} & vor Position: Wert/$n\times$/Bereich/\allowbreak\texttt{initializer\_list}; verschiebt den Schwanz & $O(n)$ & C++98 \\
-  \texttt{insert\_range} & Eingabe-Bereich vor Position einfügen & $O(n)$ & C++23 \\
+  \texttt{clear}\,$\dagger$ & alle Elemente entfernen (Kapazität bleibt) & $O(n)$ & C++98 \\
+  \texttt{insert} & vor Position: Wert/$n\times$/Bereich/\allowbreak\texttt{initializer\_list}; verschiebt den Schwanz & $O(n)$; Bereichsformen $O(n{+}N)$ & C++98 \\
+  \texttt{insert\_range} & Eingabe-Bereich vor Position einfügen & $O(n{+}N)$ & C++23 \\
   \texttt{emplace} & Element in-place vor Position konstruieren & $O(n)$ & C++11 \\
   \texttt{erase} & Position/Bereich entfernen, Schwanz nachrücken & $O(n)$ & C++98 \\
-  \texttt{push\_back} & Element anhängen (Kopie/Move) & amort.\ $O(1)$ & C++98 \\
+  \texttt{push\_back}\,$\dagger$ & Element anhängen (Kopie/Move) & amort.\ $O(1)$ & C++98 \\
   \texttt{emplace\_back} & in-place anhängen; Referenz-Rückgabe ab C++17 & amort.\ $O(1)$ & C++11 \\
-  \texttt{append\_range} & Eingabe-Bereich anhängen & amort.\ $O(n)$ & C++23 \\
+  \texttt{append\_range} & Eingabe-Bereich anhängen & amort.\ $O(N)$ & C++23 \\
   \texttt{pop\_back} & letztes Element entfernen (UB bei leer) & $O(1)$ & C++98 \\
   \texttt{resize} & auf $n$ kürzen oder mit Default/Wert auffüllen & $O(n)$ & C++98 \\
   \texttt{swap} & Inhalt und Kapazität mit anderem Vektor tauschen & $O(1)$ & C++98 \\
@@ -179,13 +252,16 @@ C++20 \texttt{constexpr}.
   \texttt{std::swap} & Spezialisierung; ruft \texttt{lhs.swap(rhs)} & $O(1)$ & C++98 \\
   \texttt{std::erase} & entfernt alle Elemente gleich dem Wert; gibt die Anzahl zurück & $O(n)$ & C++20 \\
   \texttt{std::erase\_if} & entfernt alle Elemente mit \texttt{pred==true}; gibt die Anzahl zurück & $O(n)$ & C++20 \\
-  Deduktions-Leitfäden & CTAD aus Bereich/\texttt{from\_range} & --- (Compile-Zeit) & C++17 \\
+  Deduktions-Leitfäden & CTAD aus Bereich/\allowbreak\texttt{from\_range} (\texttt{from\_range} ab C++23) & --- (Compile-Zeit) & C++17 \\
   \bottomrule
 \end{longtable}
 
 \noindent Die Spezialisierung \texttt{std::vector<bool>} packt Wahrheitswerte bitweise: Sie besitzt kein
 \texttt{data()} und keine Zusammenhangs-Garantie, liefert über \texttt{operator[]}/\texttt{at}/\texttt{front}/%
-\texttt{back} einen Proxy-Typ \texttt{reference} statt \texttt{bool\&} und bietet zusätzlich \texttt{flip()}
+\texttt{back} einen Proxy-Typ\footnote{Stellvertreter-Objekt: \texttt{vector<bool>::reference}
+verhält sich im Ausdruck wie \texttt{bool\&}, bezeichnet aber ein einzelnes Bit statt eines
+adressierbaren Objekts, weshalb \texttt{data()} und die Zusammenhangs-Garantie
+entfallen~\cite{iso_cpp}.} \texttt{reference} statt \texttt{bool\&} und bietet zusätzlich \texttt{flip()}
 (auf Vektor- und auf \texttt{reference}-Ebene), ein statisches
 \texttt{swap(reference,\allowbreak\ reference)} sowie eine \texttt{std::hash}-Spezialisierung. Die
 Vergleichsoperatoren verhalten sich wie bei \texttt{std::map}.
@@ -194,16 +270,23 @@ Vergleichsoperatoren verhalten sich wie bei \texttt{std::map}.
 Mehrere Schnittstellen-Funktionen sind \enquote{unter der Haube} Kompositionen primitiverer Operationen
 (Tabelle~\ref{tab:if-decomp}); die Tabelle beschreibt den ISO-Standardvertrag. Die eigene Mess-Hülle
 weicht an zwei Stellen bewusst davon ab, weil der ABI-Konformitätsvertrag \texttt{noexcept} verlangt
-und eine werfende Hülle als nicht-konform gilt: \texttt{operator[]} ist dort ein nicht-mutierendes
-\texttt{std::optional}-Lesen (der Schreibpfad läuft über \texttt{set()}/\texttt{insert\_or\_assign}),
-und \texttt{at} wirft nicht (\texttt{optional}-/Status-Rückgabe). Für diese Arbeit ist das die zentrale
-Beobachtung: Sämtliche
-Map-Zugriffe und -Modifikatoren ruhen auf einem einzigen Ordnungs-Such-Primitiv
-(\texttt{lower\_bound}/\texttt{find}); eine Achsen-Implementierung muss daher nur eine korrekte
-Ordnungs-Suche samt Knoten-Verkettung bereitstellen, der Rest ergibt sich als feste Komposition ---
-genau die Austauschbarkeit, deren Vergleich der zentrale Mess-Akt ist
-(Abschnitt~\ref{sec:measurement-system}). Das Konformitäts-Gatter prüft die in
-Tabelle~\ref{tab:if-map} mit $\dagger$ markierte Kern-Teilmenge.
+und eine werfende Hülle als nicht-konform gilt: \texttt{at} liefert statt der Ausnahme eine
+Status-Rückgabe (Treffer-Flag und Ausgabewert an der Modulgrenze, \texttt{std::optional} im Organ),
+und \texttt{operator[]} ist an der Modulgrenze kein eigener Aufruf, sondern wird host-seitig aus
+Punkt-Suche und Default-Einfügen komponiert --- mit der ISO-Semantik (Einfügen bei Fehlen, wirft
+nie), aber ohne Referenz-Rückgabe über die binäre Grenze; der Schreibpfad läuft über
+\texttt{insert\_or\_assign}. In der Sequenz-Hülle ist \texttt{operator[]} zudem geprüft statt
+undefiniert (Abschnitt~\ref{asec:if-vector}). Für diese Arbeit ist das die zentrale Beobachtung:
+Sämtliche Map-Zugriffe und -Modifikatoren der Hülle ruhen auf einem einzigen Such-Primitiv der
+Modulgrenze --- der Punkt-Suche, flankiert von Einfügen und Löschen ---; eine Achsen-Implementierung
+muss daher nur eine korrekte Punkt-Suche samt Knoten-Verkettung bereitstellen, der Rest ergibt sich
+als feste Komposition. Die geordneten Operationen --- \texttt{begin}/\texttt{end},
+\texttt{lower\_bound}, \texttt{upper\_bound}, \texttt{equal\_range} --- setzen zusätzlich eine
+Ordnungs-Suche voraus und sind deshalb als eigene, additive Fähigkeit der Modulgrenze geführt;
+ungeordnete Achsen erfüllen dieselbe Hülle ohne sie und bezahlen die fehlende Ordnung beim
+geordneten Lesen mit linearem Aufwand. Genau diese Austauschbarkeit ist der zentrale Mess-Akt
+(Abschnitt~\ref{sec:measurement-system}). Das Konformitäts-Gatter prüft je Gattung die in den
+Tabellen~\ref{tab:if-map} und~\ref{tab:if-vector} mit $\dagger$ markierte Kern-Teilmenge.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{3.1cm}@{}}
   \caption{Zusammengesetzte Funktionen (\enquote{unter der Haube})}\label{tab:if-decomp}\\
@@ -228,10 +311,25 @@ Tabelle~\ref{tab:if-map} mit $\dagger$ markierte Kern-Teilmenge.
   \bottomrule
 \end{longtable}
 
+\noindent An der Modulgrenze ist die Primitivitäts-Ordnung dieser Tafel umgekehrt: Der eine
+Einfüge-Antrieb der Map-Gattung trägt die Semantik von \texttt{insert\_or\_assign} --- Einfügen oder
+Aktualisieren, die Rückgabe meldet, ob ein neuer Schlüssel entstand ---, sodass
+\texttt{insert\_or\_assign} die Durchreichung ist und die nicht überschreibenden Formen
+\texttt{insert}, \texttt{emplace} und \texttt{try\_emplace} host-seitig als Punkt-Suche mit
+anschließendem Einfügen nur bei fehlendem Schlüssel komponiert werden: ein Pfad für drei
+Standard-Funktionen, den das Gatter gegen drei Orakel-Aufrufe stellt. Der ISO-Vertrag führt es
+umgekehrt (\texttt{insert} als Grundform, \texttt{insert\_or\_assign} als Zusammensetzung); beide
+Sichten sind korrekt und beschreiben verschiedene Ebenen --- genau der Kontrast, der die
+Austauschbarkeit hinter einer festen Schnittstelle konkret macht.
+
 \noindent Funktionen, die beide Hüllen dem Namen nach \emph{teilen} --- \texttt{size}, \texttt{empty},
 \texttt{clear}, die Iterator-Familien, \texttt{swap}, \texttt{get\_allocator} sowie
-\texttt{insert}/\texttt{emplace}/\texttt{erase} ---, tragen in der Map Schlüssel- und im Vektor
-Positions-/Index-Semantik; \texttt{operator[]} etwa fügt in der Map ein, ist im Vektor hingegen ein
-ungeprüfter Indexzugriff. Die exakten cache-engine-internen Funktions-Sprünge
-(\emph{function-handle-hops}) hinter diesen Verträgen dokumentiert ein eigenes Entwickler-Dokument
-der Cache-Engine.
+\texttt{insert}/\texttt{emplace}/\texttt{erase} ---, tragen dieselbe Rolle, aber verschiedene
+Bezugsgrößen: in der Map Schlüssel-, im Vektor Positions-/Index-Semantik; \texttt{operator[]} etwa
+fügt in der Map ein, ist im Vektor hingegen ein ungeprüfter Indexzugriff --- in der eigenen
+Sequenz-Hülle geprüft (Abschnitt~\ref{asec:if-vector}), in der eigenen Map-Hülle host-seitig
+komponiert (siehe oben). Diese Trennung ist in der Cache-Engine strukturell erzwungen: Map- und
+Sequenz-Gattung besitzen getrennte Antriebs-Schnittstellen und getrennte Orakel, ein
+gattungsfremder Adapter ist im Typsystem ausgeschlossen. Welche dieser Funktionen die Modulgrenze
+trägt, welche der Host komponiert und welche nicht verdrahtet sind, verzeichnet das eingangs
+genannte Entwickler-Dokument je Funktion mit ihrem Sprungpfad.
