@@ -102,7 +102,9 @@ Anwender-XML mit der Wurzel \texttt{<comdare\_experiment>} deklariert, \emph{was
 sie vor jedem Lauf gegen die Registries (Achsen-Namen und -Werte, Verbund-Bindungen, Fairness-Modi,
 Akten). Aus der XML entsteht deterministisch der Plan --- der Director-Walk des Planers, der als reine
 Text-Emission auch ohne Bau abrufbar ist ---, daraus die Bau-Jobs des CacheEngineBuilders und die
-Tier-Binaries, deren Messung in der Mappe (xlsx) landet; die CSV ist die Projektion der Mappe, und die
+Tier-Binaries, deren Messung in der Mappe (xlsx) landet; die CSV-Form ist der aus der Mappe erzeugte,
+geordnete Baum aus CSV-Dateien (ein Ordner je Blatt, darin die Dateien der einzelnen Unter-Achsen-Fahrten;
+kein einzelnes Kind-Dokument), und die
 Generatoren des Werkzeug-Repositories (Binary-zu-CSV, CSV-zu-LaTeX, Diagramm-Generator,
 Anhang-Generator) rendern Steckbriefe, Tabellen und TikZ-Diagramme je Sprache in ein
 \texttt{tabellen}-Verzeichnis, das das Manuskript einbindet. Kein Schritt dieser Kette wird von Hand
@@ -125,7 +127,7 @@ Lager-Rückschrieb, der kommandozeilengeführte Erstellungsmodus der XML
   \node[st] (c) at (9.3,0){\textbf{CEB}\\Bau-Jobs je System-Permutation, Tier-Binaries};
   \node[st] (m) at (12.4,0){\textbf{Messung}\\wallclock / macro / micro, PMC-Zähler, ein Mess-Thread};
   \node[og] (xl) at (12.4,-2.6){\textbf{Mappe (xlsx)}\\Stamm: entsteht immer; ein Datenblatt (konstanter Blattschlüssel); Blatt je Unter-Achsen-Permutation: Soll};
-  \node[og] (cs) at (9.3,-2.6){\textbf{Projektion (csv)}\\Kind der Mappe; WIDE 189 Spalten, Pipeline-Sicht 16 + 16};
+  \node[og] (cs) at (9.3,-2.6){\textbf{CSV-Baum}\\Ordner je Blatt; WIDE 189 Spalten, Pipeline-Sicht 16 + 16};
   \node[og] (g) at (6.2,-2.6){\textbf{Generatoren}\\Binary-zu-CSV, CSV-zu-LaTeX, Diagramme, Anhang};
   \node[og] (t) at (3.1,-2.6){\textbf{tabellen/}\\je Sprache: Steckbriefe, booktabs-Tabellen, TikZ};
   \node[og] (ms) at (0,-2.6){\textbf{Manuskript}\\\textbackslash{}input im Anhang; jede Zahl mit ihrem Lauf};
@@ -143,8 +145,10 @@ Lager-Rückschrieb, der kommandozeilengeführte Erstellungsmodus der XML
 XML deklariert Was, Wo und Wann; der Validator prüft sie gegen die Registries; der Planer emittiert den
 deterministischen Plan; die CEB baut je System-Permutation die Tier-Binaries; die Messung erhebt die
 drei Mess-Ebenen und die Zähler mit einem Mess-Thread. Untere Reihe: Die Mappe ist der Stamm (ein Datenblatt
-unter konstantem Blattschlüssel; die Auffächerung in ein Blatt je Unter-Achsen-Permutation ist Soll), die CSV
-ihr Kind, die Generatoren rendern je Sprache in das \texttt{tabellen}-Verzeichnis, das Manuskript bindet die
+unter konstantem Blattschlüssel; die Auffächerung in ein Blatt je Unter-Achsen-Permutation ist Soll), die
+CSV-Form ihr aus ihr erzeugter, geordneter Baum aus CSV-Dateien (ein Ordner je Blatt; kein einzelnes
+Kind-Dokument; im Durchführungs-Stand eine flache Datei), die Generatoren rendern je Sprache in das
+\texttt{tabellen}-Verzeichnis, das Manuskript bindet die
 Dateien ein --- jede Zahl trägt ihren Lauf. Gestrichelt: Ausbaustufen (XML-Erstellungsmodus,
 \texttt{<publish>}-Sektion, dritte Factory).}\label{fig:eval-xml-kette}
 \end{figure}
@@ -453,7 +457,7 @@ rebuild-Flag und die XML-Sektion \texttt{<publish>} sind der Lager-Vollausbau.
   \node[dc] (skip) at (8.2,0){\textbf{Skip-Kriterium}\\Fingerprint bekannt \emph{und} Prüf-Testat grün inventarisiert?};
   \node[k]  (mess) at (12.3,0){\textbf{Messung}\\Prüf-Dock; ein Mess-Thread; die CEB erzeugt parallele Anfragen};
   \node[lg] (b2)   at (12.3,-2.6){\textbf{Bestand 2: Messwerte}\\Schlüssel: Fingerprint $+$ Hardware-Identität; Zelle daneben};
-  \node[lg] (mp)   at (8.2,-2.6){\textbf{Mappe (xlsx)}\\Projektion csv; Anhang-Generatoren};
+  \node[lg] (mp)   at (8.2,-2.6){\textbf{Mappe (xlsx)}\\CSV-Baum (Ordner je Blatt); Anhang-Generatoren};
   \node[k]  (ref)  at (4.1,-2.6){\textbf{Struktur des Lagers}\\Abbildung~\ref{fig:lager-bestaende}: Baum, Bestände 1--4, Schlüssel-Schema};
   \node[pl] (vp)   at (0,-2.6){Lager-Vollausbau: Bestand 3/4, Hybrid-Ablage, Commit-Skip, rebuild-Flag, \texttt{<publish>}};
   \draw[->] (bau)--(b1);
@@ -629,7 +633,8 @@ Durchführungs-Stand: Die Anhang-Tabellen konsumieren \texttt{permutation\_id} u
 
 \subsection{Datenfluss von der Messung zum Manuskript}\label{sec:eval-dataflow}
 Je Reihen-Lauf schreibt die Messstufe die eine offizielle \texttt{measurements.csv} als Projektion der
-Mappe; die \texttt{<output>}-Pfade der Anwender-XML (Muster \texttt{\_runs/<Datum>/<Reihe>/}) löst der
+Mappe (Durchführungs-Stand: eine flache Datei; Soll ist der CSV-Baum mit einem Ordner je Blatt, unten); die
+\texttt{<output>}-Pfade der Anwender-XML (Muster \texttt{\_runs/<Datum>/<Reihe>/}) löst der
 Laufeintrag als Lauf-Provenienz auf. Drei Spaltenlisten sind zu unterscheiden
 (Tabelle~\ref{tab:eval-schema-ebenen}): das WIDE-Schema mit 189 Spalten (Trenner Semikolon; die
 Schema-Hoheit der Mess-Ausgabe, deren Kopf zur Laufzeit aus vier Einzelquellen entsteht und deshalb als
@@ -662,11 +667,19 @@ Zyklen. F15-ALT trägt zwölf Spalten und, hinten angehängt, \texttt{degenerier
 \end{table}
 
 Die Mappe (xlsx) entsteht immer --- im Speicher, bedingungslos, auch wenn ein Profil nur CSV
-persistiert; die CSV ist ihr Kind: Eine Zeile erreicht die CSV nur, wenn die Mappe sie zuvor
-angenommen hat, und bricht die Mappen-Erzeugung, ist auch die CSV ungültig; was auf die Platte geht,
-entscheidet allein \texttt{<writeback\_methods>} --- xlsx, csv oder beide, als Strategie über den
+persistiert; sie ist die Ausgabe und der Standard, und die CSV-Form ist kein einzelnes Kind-Dokument,
+sondern ein geordneter Baum aus CSV-Dateien --- ein Gesamtordner je Mappe, darunter ein Ordner je Blatt,
+darin die CSV-Dateien der einzelnen Unter-Achsen-Fahrten ---, der immer aus der Mappe erzeugt wird (xlsx
+nach csv, als Strategie derselben Factory) und als Darstellung ihr analog gespiegeltes Gegenstück ist:
+Eine Zeile erreicht den CSV-Baum nur, wenn die Mappe sie zuvor
+angenommen hat, und bricht die Mappen-Erzeugung, ist auch der CSV-Baum ungültig; was auf die Platte geht,
+entscheidet allein \texttt{<writeback\_methods>} --- xlsx, csv oder beide (die Mappe, der CSV-Baum oder
+beides am selben Ziel), als Strategie über den
 Ausgabe-Formaten mit xlsx als Default (Abschnitt~\ref{sec:impl-system-axes}); der xlsx-Writer liegt in
-der Lager-Ablage und schreibt über libxlsxwriter. Die Auswertung reichert die Projektion über
+der Lager-Ablage und schreibt über libxlsxwriter. Durchführungs-Stand: Die Naht schreibt die
+CSV-Projektion als eine flache Datei (\texttt{projektion\_\allowbreak{}oeffnen} in
+\texttt{ergebnis\_\allowbreak{}mappe\_\allowbreak{}naht}); die Baumform ist ein offener Bauposten. Die
+Auswertung reichert die Projektion über
 Binary-zu-CSV um Profil-ID, Paper-Referenz und Achsen-Belegung an, rendert CSV-zu-LaTeX-Steckbriefe
 je Permutations-ID (eine leere Eingabe erzeugt keine Datei, nie einen leeren Plot) und
 Diagramm-Generator-Diagramme als TikZ-Balken, Scatter-Plots und Heatmaps samt den darauf aufbauenden
@@ -678,7 +691,8 @@ Dateien einbindet --- die deutsche Fassung bindet 38 erzeugte Dateien des Anhang
 
 %% OWNER-VORLAGE: OV-02 --- Mappen-Aufmachung: Writer und Projektion gebaut; Contract-Test an der
 %% Standard-xlsx (Owner-Soll) gegen die E1-Prüfung an der CSV (Ist); Export-Element, Chart-Features,
-%% dritte Factory LaTeX, Warnungs-Sektion des Info-Blatts und WIDE-Freeze-Nachzug als Ausbaustufen.
+%% dritte Factory LaTeX, Warnungs-Sektion des Info-Blatts, WIDE-Freeze-Nachzug und CSV-Baum (Ordner je
+%% Blatt statt einer flachen Projektion) als Ausbaustufen.
 %% Durchführungs-Stand an dieser einen Stelle; Widerspruch genügt.
 Die Mappe eines Laufs ist eine Datei mit einem Blatt je gewählter Unter-Achsen-Permutation und einem
 Info-Blatt (System-Informationen der messenden Maschine, verwendete Haupt-Achsen aller drei Realms,
@@ -691,7 +705,8 @@ eine dritte Factory LaTeX vorgesehen, die die Blatt-Ordnung der Mappe beim Ausro
 serialisiert und je Binary eine Tabellenzeile als zeitliche Messreihe führt. Durchführungs-Stand:
 Writer und Projektion sind gebaut; die Naht schreibt ein Datenblatt unter konstantem Blattschlüssel, die
 Auffächerung in ein Blatt je Unter-Achsen-Permutation plus Info-Blatt ist Soll
-(Abschnitt~\ref{sec:limitations}); die Persistenz-Prüfung liest die CSV-Ausgabe, die Prüfung an der
+(Abschnitt~\ref{sec:limitations}); die Projektion ist eine flache Datei, der CSV-Baum (ein Ordner je
+Blatt) ist Soll; die Persistenz-Prüfung liest die CSV-Ausgabe, die Prüfung an der
 je Binary erzeugten xlsx ist als Bau-Schritt benannt; das Export-Element mit Ziel-Filter und
 per-Binary-xlsx, die Chart-Features, die LaTeX-Factory, die Warnungs-Sektion des Info-Blatts und der
 Nachzug des WIDE-Freeze sind Ausbaustufen.

@@ -619,8 +619,14 @@ ABI-Version (\texttt{phase4b\_functional\_tests}). Die Messreihen-Modi \texttt{D
 \texttt{FullSampled} (deterministische 1:$n$-Teilmenge des Vollraums, Abschnitt~\ref{sec:mess-chain})
 wählen, welche Permutationen eine Reihe umfasst. Die nachgelagerte Auswertungs-Werkzeugkette
 (Abbildung~\ref{fig:toolchain}) ist eine Folge von neun numerierten Programmen von
-\texttt{sample\_data\_generator} bis \texttt{tex\_formatter}; ihre Ausgabe ist die xlsx-Mappe, die CSV ist
-deren Kind (vier registrierte Rückschreib-Methoden, Abschnitt~\ref{sec:impl-system-axes}). Die
+\texttt{sample\_data\_generator} bis \texttt{tex\_formatter}; ihre Ausgabe ist die xlsx-Mappe, der
+Standard; die CSV-Form ist kein einzelnes Kind-Dokument, sondern ein geordneter Baum aus CSV-Dateien ---
+ein Gesamtordner je Mappe, darunter ein Ordner je Blatt, darin die CSV-Dateien der einzelnen
+Unter-Achsen-Fahrten ---, der immer aus der Mappe erzeugt wird (xlsx nach csv, als Strategie derselben
+Factory) und per XML statt der Mappe oder zusätzlich zu ihr am selben Ziel liegt (vier registrierte
+Rückschreib-Methoden, Abschnitt~\ref{sec:impl-system-axes}). Durchführungs-Stand: Die Naht schreibt die
+CSV-Projektion als eine flache Datei (\texttt{projektion\_\allowbreak{}oeffnen} in
+\texttt{ergebnis\_\allowbreak{}mappe\_\allowbreak{}naht}); die Baumform ist ein offener Bauposten. Die
 Mess-Kopplungen sind über das \texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}-Gating vom
 Produktiv-Pfad getrennt (Abschnitt~\ref{sec:repos}), und Continuous Integration~\cite{fowler2006ci} läuft
 über alle vier Repositorien (GitLab CI\@; die Repositorien sind zusätzlich nach GitHub gespiegelt).
@@ -700,8 +706,10 @@ Observer-Detail-Tabelle), \texttt{latex\_to\_pdf}
 setzt das Manuskript, \texttt{tier\_binary\_report} rastert je Tier-Binary den Interface-Vertrag gegen die
 geplante Menge des Text-Plans, \texttt{appendix\_generator} erzeugt als In-Process-Fassade je Sprache die
 Kern- und Darstellungs-Dateien des Mess-Anhangs aus \emph{einer} WIDE-Matrix, und \texttt{tex\_formatter}
-normalisiert die erzeugten Dateien. Die Ausgabe der Kette ist die xlsx-Mappe; die CSV ist ihr Kind
-(Abschnitt~\ref{sec:impl-system-axes}).}\label{fig:toolchain}
+normalisiert die erzeugten Dateien. Die Ausgabe der Kette ist die xlsx-Mappe; die CSV-Form ist kein
+einzelnes Kind-Dokument, sondern der aus der Mappe erzeugte, geordnete Baum aus CSV-Dateien (ein Ordner je
+Blatt), im Durchführungs-Stand als eine flache Datei geschrieben (die Baumform ist ein offener Bauposten;
+Abschnitt~\ref{sec:impl-system-axes}).}\label{fig:toolchain}
 \end{figure}
 
 Die Ebenen E4--E0 aus Abschnitt~\ref{sec:anatomy-layers} haben im Code je einen Ort, und die Grenzen
@@ -828,12 +836,17 @@ unterhalb des lebenden Datenbestands als benannter Zustand behandelt statt still
 jede applizierte Stellgröße als benannte Spalte in der persistierten Ergebnis-Datei sichtbar ist, dazu der
 Erhalt der Zwei-Phasen-Operationsschleife (verworfener Warmlauf, Messlauf) als Invariante.
 %% OWNER-VORLAGE: OV-02 --- Persistenz-Prüfung: Führung ist die xlsx (Rückschreib-Registry, Default), die
-%% CSV ihr Kind; Durchführungs-Stand an dieser einen Stelle (E1-Prüfung an der CSV, xlsx-Prüfung als Posten).
+%% CSV-Form ihr aus ihr erzeugter Baum aus CSV-Dateien (kein einzelnes Kind-Dokument); Durchführungs-Stand
+%% an dieser einen Stelle (E1-Prüfung an der flachen CSV-Projektion, xlsx-Prüfung und Baumform als Posten).
 Geprüft wird die Persistenz an der Ergebnis-Datei, nicht am In-Process-Zustand; Führung ist dabei die
 Standard-xlsx --- die Rückschreib-Registry führt sie als vierte Methode und Default-Auswerteformat, der
-xlsx-Writer liegt in der Lager-Ablage ---, und die CSV ist ihr Kind. Durchführungs-Stand: Die E1-Prüfung
-liest die CSV-Ausgabe der Persist-Phase; die Prüfung an der je Binary erzeugten xlsx ist als Bau-Schritt
-benannt.
+xlsx-Writer liegt in der Lager-Ablage ---, und die CSV-Form ist kein einzelnes Kind-Dokument, sondern ein
+geordneter Baum aus CSV-Dateien (ein Gesamtordner je Mappe, darunter ein Ordner je Blatt, darin die
+CSV-Dateien der einzelnen Unter-Achsen-Fahrten), der immer aus der Mappe erzeugt wird und per XML statt
+der Mappe oder zusätzlich zu ihr am selben Ziel liegt. Durchführungs-Stand: Die E1-Prüfung liest die
+CSV-Ausgabe der Persist-Phase, die die Naht als eine flache Datei schreibt
+(\texttt{projektion\_\allowbreak{}oeffnen}); die Prüfung an der je Binary erzeugten xlsx und die Baumform
+der CSV-Ablage sind als Bau-Schritte benannt.
 
 Oberhalb der Schicht-Harnesse sichert ein \emph{Zwei-Gate-Protokoll} jedes Implementierungs-Paket ab.
 Sein Zweck ist die Trennung zweier Fragen: Gate~1 sichert das Engine-Repository gegen sich selbst --- die
@@ -1271,7 +1284,10 @@ Das Muster jeder Achse ist \emph{Strategy}: austauschbare Bausteine hinter einem
 CRTP~\cite{coplien1995crtp} statt über eine virtuelle Basis gebunden. Die Plan-Emission tragen
 \emph{Director} und \emph{Builder}: ein Walk, je Ausgabe-Syntax ein Builder, dazu die Legenden-Formen als
 Formatierungs-Single-Source. Eine \emph{Abstract Factory} konstruiert die Docks der Hybrid-Stufe an genau
-einem Ort und baut die Ergebnis-Mappen des Lagers (xlsx-Mappe; die CSV als Fallback derselben Factory).
+einem Ort und baut die Ergebnis-Mappen des Lagers (die xlsx-Mappe als Standard; der CSV-Baum --- ein
+Ordner je Blatt, immer aus der Mappe erzeugt --- als wählbare Strategie derselben Factory, statt der Mappe
+oder zusätzlich zu ihr; Durchführungs-Stand: die CSV-Projektion ist als eine flache Datei gebaut, die
+Baumform ist ein offener Bauposten).
 Die Mess-Naht \texttt{IMessVisitor} am \texttt{dlopen}-Übergang ist ein \emph{Visitor}: Der Host reicht die
 Senke hinein, das Tier ruft die passende \texttt{visit}-Methode (doppelter Dispatch). Die
 Hardware-Erhebungskette ist eine \emph{Chain of Responsibility} mit Typliste statt Handler-Zeigern, und
@@ -1289,7 +1305,7 @@ System-Rekombination. Eine \emph{Facade} schließlich bündelt die Anhang-Erzeug
   mu/.style={draw,rounded corners,fill=blue!7,minimum width=3.6cm,minimum height=2.55cm,text width=3.4cm,align=center,inner sep=2pt}]
   \node[mu] (m1) at (0,0){\textbf{Strategy $+$ CRTP}\\{\scriptsize je Achse}\\[2pt]{\tiny austauschbare Bausteine hinter einem Concept; \texttt{topics/axis}, \texttt{AxisBase<Derived>}; übersetzungszeitlich gebunden}};
   \node[mu] (m2) at (3.85,0){\textbf{Director $+$ Builder}\\{\scriptsize Plan-Emission}\\[2pt]{\tiny ein deterministischer Walk, je Syntax ein Builder (Text, CI-YAML, CMake); \texttt{experiment\_plan\_director}, \texttt{plan\_legend}}};
-  \node[mu] (m3) at (7.7,0){\textbf{Abstract Factory}\\{\scriptsize Hybrid-Docks, Ergebnis-Mappen}\\[2pt]{\tiny einziger Konstruktions-Ort der Docks (\texttt{hybrid\_dock\_factory}); xlsx-Mappe mit CSV-Fallback (\texttt{ergebnis\_mappe})}};
+  \node[mu] (m3) at (7.7,0){\textbf{Abstract Factory}\\{\scriptsize Hybrid-Docks, Ergebnis-Mappen}\\[2pt]{\tiny einziger Konstruktions-Ort der Docks (\texttt{hybrid\_dock\_factory}); xlsx-Mappe, CSV-Baum als wählbare Strategie (\texttt{ergebnis\_mappe})}};
   \node[mu] (m4) at (11.55,0){\textbf{Visitor}\\{\scriptsize Mess-Durchstich (Fläche 3)}\\[2pt]{\tiny \texttt{IMessVisitor} am \texttt{dlopen}-Übergang: Host reicht die Senke, das Tier ruft \texttt{visit}; doppelter Dispatch}};
   \node[mu] (m5) at (0,-3.0){\textbf{Chain of Responsibility}\\{\scriptsize Erhebung, Auswahl}\\[2pt]{\tiny Hardware-Kette Boot-Cache $\to$ SPD $\to$ Deklaration als Typliste (\texttt{ram\_probe\_chain}); Auswahl-Filterkette der CEB}};
   \node[mu] (m6) at (3.85,-3.0){\textbf{Memento}\\{\scriptsize Zustand je Tier}\\[2pt]{\tiny \texttt{memento\_all} rollt den Zustand statusbehafteter Achsen nach dem Warmlauf zurück; Plan: Zustands-Übernahme der Hybrid-Stufe}};
