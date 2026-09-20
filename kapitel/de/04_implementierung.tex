@@ -92,8 +92,8 @@ Abbildung~\ref{fig:traeger-stufen} zeigt sie mit ihren Binaries, Legenden-Formen
   st/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=3.9cm,text width=3.55cm,align=center,inner sep=3pt},
   fl/.style={draw,rounded corners,fill=orange!10,minimum width=3.75cm,minimum height=1.35cm,text width=3.55cm,align=center,inner sep=2pt,font=\tiny}]
   \node[st] (s1) at (0,0){\textbf{Stufe 1: Planer}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny löst die Anwender-XML gegen die drei Kataloge auf; Director-Walk; Legende \texttt{ceb:build:\allowbreak[a,b,c]}}};
-  \node[st] (s2) at (3.95,0){\textbf{Stufe 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny trägt die Mess-Wahl einkompiliert, permutiert System $\times$ Organ; Legende \texttt{tier:build:\allowbreak[d,e,f]\allowbreak[g,h,i]:\allowbreak chunk<k>}}};
-  \node[st] (s3) at (7.9,0){\textbf{Stufe 3: Tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny eine Organ-Permutation je Binary; sieben Pflicht-Symbole; Mess-Job \texttt{measure:\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[st] (s2) at (3.95,0){\textbf{Stufe 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny trägt die Mess-Wahl einkompiliert, permutiert System $\times$ Organ; Legende je Host \texttt{tier:build-batch:\allowbreak<host>}, Testate \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[st] (s3) at (7.9,0){\textbf{Stufe 3: Tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny eine Organ-Permutation je Binary; sieben Pflicht-Symbole; Mess-Batch je Host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, Mess-Testate \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
   \node[st] (s4) at (11.85,0){\textbf{Stufe 4: Hybrid}\\{\tiny Hybrid-\texttt{.so}}\\[2pt]{\tiny dieselben Pflicht-Symbole; Dock-Array mit angeschlossenen Tieren; \texttt{genus()} meldet den Ziel-Genus}};
   \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s3); \draw[->,thick] (s3)--(s4);
   \node[fl] (f1) at (0,-2.95){Fläche 2 (Stempel): Selbst-Version X.Y.Z, Fingerprint SHA-256, Gesamt-Stempel};
@@ -104,7 +104,7 @@ Abbildung~\ref{fig:traeger-stufen} zeigt sie mit ihren Binaries, Legenden-Formen
 \end{tikzpicture}
 \caption[Die Träger-Stufenkette im Code]{Die Träger-Stufenkette im Code: vier Träger in fester Reihenfolge (Stempel-Vertrag), je Stufe die
 Binary, ihre Legenden-Form in der emittierten Pipeline und die an ihr ausgeprägten Vertrags-Flächen.
-Stufe $N+1$ hängt nur an Stufe $N$; nur der Mess-Job trägt alle drei Achsen-Klammern. Die Flächen
+Stufe $N+1$ hängt nur an Stufe $N$; nur die Mess-Testate tragen alle drei Achsen-Klammern. Die Flächen
 zergliedern die Verträge (Abschnitt~\ref{sec:impl-pipeline}); die Unterprojekte unter \texttt{libs/traeger}
 sind ein Gerüst, die Implementierung liegt als Monolith unter \texttt{libs/cache\_engine}.}\label{fig:traeger-stufen}
 \end{figure}
@@ -564,11 +564,13 @@ ein an ihn gerichtetes Planer-Thema beantwortet sein Dispatcher mit dem Verweis 
 statt es still auszuführen. Der Planer steuert die CEB-Aufträge, die CEB steuert die Tier-Aufträge: Die
 Rollentrennung ist damit nicht nur Oberfläche, sondern zwei Module. Die emittierten Bau- und
 Prüf-Testate halten die Layer-Trennung der Kette sichtbar --- ihre Legenden tragen drei Formen:
-\texttt{ceb:build:[a,b,c]} auf Stufe~1, \texttt{tier:build:[d,e,f][g,h,i]:chunk<k>} auf Stufe~2 mit
-getrennter System- und Organ-Klammer und gebündelten Organ-Bau-Volumina, und
-\texttt{measure:[a,b,c][d,e,f][g,h,i]} für den Mess-Job, der als einziger alle drei Klammern trägt
-(Abbildung~\ref{fig:traeger-stufen}); die Klammern nennen nur Haupt-Achsen, Unter-Achsen sind reine
-Laufzeit-Permutation und stehen in keiner Bau-Legende.
+\texttt{ceb:build:[a,b,c]} auf Stufe~1; auf Stufe~2 je Host ein Bau- und Prüf-Batch
+\texttt{tier:build-batch:<host>}, dessen Testate je Schritt die getrennte System- und Organ-Klammer
+\texttt{zelle=[d,e,f][g,h,i]} tragen und der die Organ-Bau-Volumina intern in Scheiben zu je 4096 Binaries
+bündelt (die Meilenstein-Batches in Abschnitt~\ref{sec:fairness}); und je Host ein Mess-Batch
+\texttt{measure:[a,b,c]:batch:<host>}, dessen Mess-Testate als einzige alle drei Klammern
+\texttt{zelle=[a,b,c][d,e,f][g,h,i]} tragen (Abbildung~\ref{fig:traeger-stufen}); die Klammern nennen nur
+Haupt-Achsen, Unter-Achsen sind reine Laufzeit-Permutation und stehen in keiner Bau-Legende.
 
 %% OWNER-VORLAGE: OV-02 --- Zwei Steuerpfade und XML-Erstellungsmodus: Verfahren als Plan-Ist-Stand im
 %% Präsens, Durchführungs-Stand an dieser einen Stelle (Shell gebaut; Dienst und Modus als Posten benannt).
