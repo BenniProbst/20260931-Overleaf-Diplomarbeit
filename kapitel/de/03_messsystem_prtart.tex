@@ -250,8 +250,10 @@ Hazard-Pointer~\cite{michael2004hazard}, QSBR); der Code stellt 26 Allokator-Imp
 23-Arbeiten-Korpus bereit (einzelne Arbeiten steuern mehrere Varianten bei); die 23 Allokator-Profile
 mit Lizenz und Workload-Affinität listet Tabelle~\ref{tab:allocator-profiles}, zehn davon sind mit
 Adapter und Original-Code angebunden. Die \emph{Wert-Achse} (T10) unterscheidet Inline-Wert~\cite{leis2013art}, externen
-Pool~\cite{wu2019wormhole}, versionierten Zeiger~\cite{mao2012masstree} und immutable
-Shared-Ref~\cite{mckenney2001rcu}, die \emph{Serialisierungs-Achse} (T9) Raw-Binary, succinct LOUDS/FST und
+Pool~\cite{wu2019wormhole}, versionierten Zeiger~\cite{mao2012masstree}, immutable
+Shared-Ref~\cite{mckenney2001rcu} und die verkettete externe Referenz (ChainRef, lokale Re-Implementierung
+ohne Paper-Vorlage) --- fünf von fünf Bausteinen der Registry ---, die \emph{Serialisierungs-Achse} (T9)
+Raw-Binary, succinct LOUDS/FST und
 Varint~\cite{leis2013art}.
 
 \begin{table}[!htbp]
@@ -365,7 +367,9 @@ Hazard-Pointer-Verfahren~\cite{michael2004hazard}; ein Sperr-Modus innerhalb ein
 read-write, upgradeable, optimistische Validierung) ist ein im Code konservierter, konsumentenloser
 Achsen-Entwurf (\texttt{locking\_\allowbreak{}mode.hpp}) und kein Baustein: gebaut sind die Muster als
 Unter-Achse CC1 und die Reklamation als CC2 (Anhang~\ref{app:blocks}). Die \emph{I/O-Achse} (T12) instanziiert
-gepufferte~\cite{stonebraker1981os}, direkte und memory-mapped Ein-/Ausgabe~\cite{crotty2022mmap}. Die Achse
+den RAM-only-Nullpunkt der Achse (InMemoryOnly, Mess-Baseline ohne I/O-Latenz) sowie
+gepufferte~\cite{stonebraker1981os}, direkte und memory-mapped Ein-/Ausgabe~\cite{crotty2022mmap} --- vier
+von vier Bausteinen der Registry. Die Achse
 setzt dabei auf dem Blocktransfer-Denken der External-Memory-Tradition auf
 (Abschnitt~\ref{sec:hardware-history}): Für das I/O-effiziente Datenstruktur-Engineering stellt TPIE eine
 Referenz-Bibliothek der External-Memory-Linie bereit (ESA 2002)~\cite{arge2002tpie}; die Lehrbuch-Grundlage liefern
@@ -376,7 +380,9 @@ Code; die NVM-Stufe der Paper-Vorlage~\cite{vanrenen2018nvm} ist im Code nicht g
 Bw-Tree-Delta-Kette~\cite{levandoski2013bwtree}, den Copy-on-Write-Puffer~\cite{driscoll1989persistent} und
 den Tombstone-Puffer~\cite{oneil1996lsm} bis zu lock-freien SPSC-~\cite{lamport_spsc, lamport1983specifying} und
 MPMC-Queues~\cite{michael1996queue}. Die \emph{Index-Organisations-Achse} (T11) unterscheidet geclusterte
-Anordnung~\cite{bayer1972btree}, Heap-Ablage und nicht-geclusterten Sekundärindex~\cite{comer1979btree},
+Anordnung~\cite{bayer1972btree}, Heap-Ablage, nicht-geclusterten Sekundärindex~\cite{comer1979btree} und die
+indexorganisierte Tabelle (IOT, Daten in den Blatt-Seiten des Index eingebettet) --- vier von vier
+Bausteinen der Registry ---,
 die \emph{Filter-Achse} (T14) den Bloom-~\cite{bloom1970}, Cuckoo-~\cite{fan2014cuckoo},
 SuRF-~\cite{zhang2018surf} und Xor-Filter~\cite{graf2020xor}. Die \emph{Persistenz-Ziel-Achse}
 (T17) schließlich macht das Ablage-Ziel explizit --- In-Memory als Standard, ein
