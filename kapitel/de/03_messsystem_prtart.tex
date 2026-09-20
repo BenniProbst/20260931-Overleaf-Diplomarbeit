@@ -340,13 +340,19 @@ Zähler in allen (auch inneren) Knoten als \emph{Anti-Pattern} (Cache-Line-Ping-
 %% OWNER-VORLAGE: OV-K3-01 --- $2^{17}$ ist die Rolle des golden-Referenzkatalogs (fester Regressions-
 %% Detektor); die Mächtigkeit des Entwurfsraums ist dynamisch und nie ein statischer Nenner. Beide Absichten
 %% werden getrennt benannt (hier und in Abschnitt sec:mess-chain). Widerspruch genügt.
+%% OWNER-VORLAGE: OV-02 --- T8 Sperr-Modus-Satz: die Vierteilung read-only/read-write/upgradeable/optimistische
+%% Validierung ist im Code nur der deprecierte, konsumentenlose Entwurf locking_mode.hpp (Lens-r16 M-1); gebaut
+%% sind CC1/CC2. Default: Entwurf benannt und von den Bausteinen getrennt; Alternative: Satz entfällt.
+%% Widerspruch genügt.
 Die \emph{Nebenläufigkeits-Achse} (T8) gliedert sich in die zwei Unter-Achsen Muster und Reklamation
 (Pattern $\perp$ Reclamation, Tabelle~\ref{tab:dialectic}): Die Muster reichen vom seriellen Nullpunkt
 über grobes Sperren~\cite{dijkstra1965concurrent}, Leser-/Schreiber-Sperren~\cite{courtois1971readers} und
 optimistisches Lock-Coupling~\cite{leis2016olc} zu lock-freien~\cite{michael1996queue},
 wait-freien~\cite{herlihy1991waitfree} sowie RCU-~\cite{mckenney2001rcu} und
-Hazard-Pointer-Verfahren~\cite{michael2004hazard}; der Sperr-Modus innerhalb eines Musters
-unterscheidet read-only, read-write, upgradeable und optimistische Validierung. Die \emph{I/O-Achse} (T12) instanziiert
+Hazard-Pointer-Verfahren~\cite{michael2004hazard}; ein Sperr-Modus innerhalb eines Musters (read-only,
+read-write, upgradeable, optimistische Validierung) ist ein im Code konservierter, konsumentenloser
+Achsen-Entwurf (\texttt{locking\_\allowbreak{}mode.hpp}) und kein Baustein: gebaut sind die Muster als
+Unter-Achse CC1 und die Reklamation als CC2 (Anhang~\ref{app:blocks}). Die \emph{I/O-Achse} (T12) instanziiert
 gepufferte~\cite{stonebraker1981os}, direkte und memory-mapped Ein-/Ausgabe~\cite{crotty2022mmap}. Die Achse
 setzt dabei auf dem Blocktransfer-Denken der External-Memory-Tradition auf
 (Abschnitt~\ref{sec:hardware-history}): Für das I/O-effiziente Datenstruktur-Engineering stellt TPIE eine
