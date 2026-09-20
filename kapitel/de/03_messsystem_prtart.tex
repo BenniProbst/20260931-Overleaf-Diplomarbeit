@@ -217,23 +217,32 @@ Wormhole~\cite{wu2019wormhole}, dazu generische Such-Methoden wie k-äre Suche~\
 Interpolationssuche~\cite{perl1978interpolation}, Eytzinger-Layout-Suche~\cite{khuong2017eytzinger},
 Skip-Liste~\cite{pugh1990skiplist}, B-Baum~\cite{bayer1972btree} und
 Open-Addressing-Hashing~\cite{knuth1998taocp3}. Die Traversierungs-Achsen trennen
-Algorithmus- und Cache-Sicht: T1 reicht von der Cache-Line-Wanderung über Stride-Prefetch~\cite{chen2001prefetch}
-und HBM-Nähe~\cite{schmidt2025hbm} bis zur cache-oblivious-Rekursion~\cite{frigo1999cache}, während T2
-(Mapping) über lineare 1:1-Abbildung, Hash-Redirect~\cite{wu2019wormhole} und
-Permutations-Index~\cite{mao2012masstree} eine dünn besetzte Achse bleibt. Die \emph{Pfadkompression} (T3)
+Algorithmus- und Cache-Sicht: T1 trägt im Code die drei Traversal-Bausteine
+\texttt{Linear\allowbreak{}Fanout}, \texttt{Hash\allowbreak{}Lookup} und
+\texttt{Binary\allowbreak{}Search\allowbreak{}Fanout}; die verwandte Literatur spannt die Achse von der
+Cache-Line-Wanderung über Stride-Prefetch~\cite{chen2001prefetch} und HBM-Nähe~\cite{schmidt2025hbm} bis
+zur cache-oblivious-Rekursion~\cite{frigo1999cache} (Anhang~\ref{app:blocks}), während T2 (Mapping)
+mit der linearen 1:1-Abbildung (\texttt{Direct\allowbreak{}Placement}) und dem pool-relativen
+Offset-Mapping (\texttt{Pool\allowbreak{}Relative}) eine dünn besetzte Achse bleibt ---
+Hash-Redirect~\cite{wu2019wormhole} (MP04) und Permutations-Index~\cite{mao2012masstree} (MP03) führt
+der Code als Roadmap-Werte ohne Registry-Eintrag. Die \emph{Pfadkompression} (T3)
 instanziiert die byte-weise Variante~\cite{leis2013art}, den Patricia-Split~\cite{morrison1968patricia,binna2018hot}
 und die Durchreich-Variante \texttt{None}; die Macro-Node~\cite{boffa2024coco} und das
 Multi-Byte-Rewiring~\cite{fent2020start} sind verwandte Literatur der Achse ohne eigenen Baustein (die
 Unter-Achse PC1 führt die Granularität \texttt{multi-byte} als Tag), und die
-\emph{Knotentyp-Achse} (T4) bündelt die adaptiven Layouts von Node4/16/48/256~\cite{leis2013art} über
-HOT-Compound~\cite{binna2018hot}, Internal/Border~\cite{mao2012masstree},
+\emph{Knotentyp-Achse} (T4) bündelt im Code die vier adaptiven ART-Knotenformate
+Node4/16/48/256~\cite{leis2013art}; HOT-Compound~\cite{binna2018hot}, Internal/Border~\cite{mao2012masstree},
 Decision/Span~\cite{schmeisser2022b2tree}, LOUDS-Dense/Sparse~\cite{zhang2018surf} und die
-CSS-/CSB\textsuperscript{+}-/Hankins-Knoten bis zur
-PRT-ART-Familie.
+CSS-/CSB\textsuperscript{+}-/Hankins-Knoten sind Paper-Knotenformate (Rekonstruktions-Ziele dieser
+Arbeit, keine CE-Baseline), die PRT-ART-Familie bringt der Prüfling über seine Build-Achse Seitentyp ein.
 
-Die \emph{Speicher-Layout-Achse} (T5) reicht vom cache-line-ausgerichteten AoS über zeigerfreie
-Anordnung~\cite{rao1999css}, Geschwister-Cluster~\cite{rao2000csb} und eingebetteten
-Baum~\cite{schmeisser2022b2tree} bis zum bit-gepackten LOUDS~\cite{jacobson1989louds}. Die
+Die \emph{Speicher-Layout-Achse} (T5) reicht im Code vom cache-line-ausgerichteten AoS
+(\texttt{AoS\allowbreak{}Strict\allowbreak{}Memory\allowbreak{}Layout},
+\texttt{Cache\allowbreak{}Line\allowbreak{}Aligned\allowbreak{}Memory\allowbreak{}Layout}) über SoA und AoSoA bis zum
+bit-gepackten LOUDS-Layout
+(\texttt{Packed\allowbreak{}Bitmap\allowbreak{}Memory\allowbreak{}Layout})~\cite{jacobson1989louds}; zeigerfreie
+Anordnung~\cite{rao1999css}, Geschwister-Cluster~\cite{rao2000csb} und eingebetteter
+Baum~\cite{schmeisser2022b2tree} sind verwandte Literatur der Achse (Anhang~\ref{app:blocks}). Die
 \emph{Allokator-Achse} (T6) ist mit dem Korpus A01--A23 am dichtesten besetzt und in sieben Unter-Achsen
 verfeinert --- von der Free-List-Topologie über Thread-Lokalität/NUMA-Affinität~\cite{ungethuem2017survey}
 und die Allokationsstrategie bis zur Reklamation (Epoch, RCU~\cite{mckenney2001rcu},
