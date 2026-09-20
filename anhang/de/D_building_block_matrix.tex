@@ -636,7 +636,12 @@ MG3 & Migrations-Granularität (MG3) & Spezifiziert die Skalierungseinheit für 
 \end{longtable}
 \end{scriptsize}
 
+%% OWNER-VORLAGE: OV-02 --- T13 dynamische Unter-Achsen D1--D3: Entwurfs-Parameter im Präsens (Plan), im Code
+%% Übersetzungszeit-Konstanten w_freq = 3 / w_rec = 1 / kTiers = 3 und kein Schwellwert-Parameter, Registry ohne
+%% Laufzeit-Unter-Achse (Lens-r13 S-1); Default Plan-Kennzeichnung je Zeile, Widerspruch genügt.
 \subsection*{Dynamische Unter-Achsen}
+
+Die drei Größen sind Entwurfs-Parameter der Achse; der Code trägt sie als Übersetzungszeit-Konstanten innerhalb der Entscheidungs-Scans (\texttt{w\_\allowbreak{}freq} = 3 und \texttt{w\_\allowbreak{}rec} = 1 in \texttt{axis\_\allowbreak{}migration\_\allowbreak{}adaptive.hpp}, \texttt{k\allowbreak{}Tiers} = 3 in \texttt{axis\_\allowbreak{}migration\_\allowbreak{}tier\_\allowbreak{}based.hpp}; der Hot/\allowbreak{}Cold-Scan entscheidet per Recency-Vergleich ohne Schwellwert), ein Laufzeit- oder Benutzer-Parameter ist für keine der drei gebaut, und die generierte Registry führt für T13 keine Laufzeit-Unter-Achse.
 
 \begin{scriptsize}
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
@@ -644,9 +649,9 @@ MG3 & Migrations-Granularität (MG3) & Spezifiziert die Skalierungseinheit für 
 ID & Parameter & Beschreibung \\
 \midrule
 \endhead%
-D1 & Entscheidungs-Schwellwert (Decision Threshold) & Laufzeit-Parameter: Hot/\allowbreak{}Cold-Klassifikations-Grenzwert (z.B. Recency-Counter-Limit für LRU-basierte Promotions/\allowbreak{}Demotions). Benutzer-konfigurierbar. \\
-D2 & Gewichtungen für Feature-Scoring & Laufzeit-Parameter für Adaptive\allowbreak{}Migration: Gewichte (w\_\allowbreak{}freq, w\_\allowbreak{}rec) für Häufigkeits- und Recency-Features in der ML-Linearkombination. Self-tuning möglich. \\
-D3 & Tier-Konfiguration & Laufzeit: Anzahl Speicher-Tiers (z.B. k\allowbreak{}Tiers=3 für RAM/\allowbreak{}SSD/\allowbreak{}HDD in Tier\allowbreak{}Based\allowbreak{}Migration), Kapazitäten pro Tier, Promotions/\allowbreak{}Demotion-Schwellen. \\
+D1 & Entscheidungs-Schwellwert (Decision Threshold) & Laufzeit-Parameter (Plan; kein Code-Parameter): Hot/\allowbreak{}Cold-Klassifikations-Grenzwert (z.B. Recency-Counter-Limit für LRU-basierte Promotions/\allowbreak{}Demotions), Benutzer-konfigurierbar; der Hot/\allowbreak{}Cold-Scan im Code entscheidet je Record per Recency-Vergleich mit dem zuletzt gesehenen Feldwert ohne Grenzwert. \\
+D2 & Gewichtungen für Feature-Scoring & Laufzeit-Parameter (Plan; im Code Konstante) für Adaptive\allowbreak{}Migration: Gewichte (w\_\allowbreak{}freq, w\_\allowbreak{}rec) für Häufigkeits- und Recency-Features in der ML-Linearkombination, im Code fest als \texttt{w\_\allowbreak{}freq} = 3 und \texttt{w\_\allowbreak{}rec} = 1. Self-tuning der Gewichte geplant; gebaut ist ein gleitender Score-Akkumulator bei festen Gewichten. \\
+D3 & Tier-Konfiguration & Laufzeit (Plan; im Code Konstante): Anzahl Speicher-Tiers (z.B. k\allowbreak{}Tiers=3 für RAM/\allowbreak{}SSD/\allowbreak{}HDD in Tier\allowbreak{}Based\allowbreak{}Migration; im Code die Übersetzungszeit-Konstante \texttt{k\allowbreak{}Tiers} = 3), Kapazitäten pro Tier und Promotions/\allowbreak{}Demotion-Schwellen (Plan; ohne Code-Objekt). \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
