@@ -47,7 +47,7 @@ ADR & Entscheidung (Kurztitel) & Beleg (Abschnitt) & Vollzugsstand \\
 ADR-1 & C-stabile Modulgrenze statt C++-Modul-ABI & Abschn.~\ref{sec:impl-architecture} & vollzogen \\
 ADR-2 & Compile-Time-Permutation über Typlisten & Abschn.~\ref{sec:axes-impl} & teilweise (Aufschaltung der achtzehnten Achse) \\
 ADR-3 & Drei-Ebenen-Modell als die eine Architektur & Abschn.~\ref{sec:anatomy-levels} & vollzogen \\
-ADR-4 & Durchreich-Doktrin und erzwungene Vollbelegung & Abschn.~\ref{sec:axes-impl} & vollzogen \\
+ADR-4 & Durchreich-Doktrin und erzwungene Vollbelegung & Abschn.~\ref{sec:axes-impl} & teilweise (Durchreich-Baustein des Knotentyps) \\
 ADR-5 & Schichtenmodell E4--E0 mit eingefrorenen Verträgen & Abschn.~\ref{sec:anatomy-layers} & vollzogen \\
 ADR-6 & Explizit kodierte Nicht-Erhebung statt Phantomwert & Abschn.~\ref{sec:measurement-system} & vollzogen \\
 ADR-7 & Vier-Repository-Architektur mit orthogonalen Träger-Stufen & Abschn.~\ref{sec:repos} & vollzogen \\
@@ -145,11 +145,20 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-model},~\ref{sec:anatomy-levels}
   und~\ref{sec:impl-architecture}; Abbildungen~\ref{fig:three-levels} und~\ref{fig:genera}.
 
+  %% OWNER-VORLAGE: OV-02 --- ADR-4 Durchreich-Doktrin 'None je baum-/trie-spezifischer Achse' (Plan) gegen
+  %% den Code: None-Baustein nur für die Pfadkompression (path_compression_none), der Knotentyp trägt keine
+  %% None-Variante (Registry node_type = node4/16/48/256; Lens-r15 M-2). Als Plan halten (Knotentyp-None =
+  %% Code-Posten, Vollzugsstand teilweise) oder als Ist-Stand-Präzisierung schließen; Default Plan-Kennzeichnung
+  %% + 'teilweise', Widerspruch genügt.
   \item[ADR-4 --- Durchreich-Doktrin und erzwungene Vollbelegung]\hfill\\
   \textbf{Kontext:} Nicht-baumartige Verfahren (etwa die Hash-Gegenprobe) tragen baum- und
   trie-spezifische Achsen wie Pfadkompression oder Knotentyp nicht sinnvoll.
   \textbf{Entscheidung:} Solche Achsen fallen nicht weg, sondern werden als Durchreich-Varianten
   (\texttt{None}) belegt --- ein Durchreich-Wert ist ein Algorithmus mit leerem Pfad, kein Weglassen;
+  gebaut ist der Durchreich-Baustein für die Pfadkompression
+  (\texttt{Path\allowbreak{}Compression\allowbreak{}None}), der Knotentyp trägt keine None-Variante und wird
+  regulär mit einem der vier ART-Knotenformate belegt, die ein nicht-baumartiger Baustein nicht nutzt
+  (Plan; ohne Code-Baustein);
   das Pflicht-Concept \texttt{IsComposition} des Genus \texttt{SearchAlgorithm} erzwingt
   übersetzungszeitlich die Belegung aller achtzehn Organe (achtzehn Typ-Forderungen und ein
   Organ-Zähler von achtzehn mit ABI-Bruch-Wache), sodass keine Komposition dieses Genus mit offener

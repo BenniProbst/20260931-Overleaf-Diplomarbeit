@@ -217,21 +217,32 @@ Wormhole~\cite{wu2019wormhole}, dazu generische Such-Methoden wie k-äre Suche~\
 Interpolationssuche~\cite{perl1978interpolation}, Eytzinger-Layout-Suche~\cite{khuong2017eytzinger},
 Skip-Liste~\cite{pugh1990skiplist}, B-Baum~\cite{bayer1972btree} und
 Open-Addressing-Hashing~\cite{knuth1998taocp3}. Die Traversierungs-Achsen trennen
-Algorithmus- und Cache-Sicht: T1 reicht von der Cache-Line-Wanderung über Stride-Prefetch~\cite{chen2001prefetch}
-und HBM-Nähe~\cite{schmidt2025hbm} bis zur cache-oblivious-Rekursion~\cite{frigo1999cache}, während T2
-(Mapping) über lineare 1:1-Abbildung, Hash-Redirect~\cite{wu2019wormhole} und
-Permutations-Index~\cite{mao2012masstree} eine dünn besetzte Achse bleibt. Die \emph{Pfadkompression} (T3)
-instanziiert die byte-weise Variante~\cite{leis2013art}, den Patricia-Split~\cite{morrison1968patricia,binna2018hot},
-die Macro-Node~\cite{boffa2024coco} und das Multi-Byte-Rewiring~\cite{fent2020start}, und die
-\emph{Knotentyp-Achse} (T4) bündelt die adaptiven Layouts von Node4/16/48/256~\cite{leis2013art} über
-HOT-Compound~\cite{binna2018hot}, Internal/Border~\cite{mao2012masstree},
+Algorithmus- und Cache-Sicht: T1 trägt im Code die drei Traversal-Bausteine
+\texttt{Linear\allowbreak{}Fanout}, \texttt{Hash\allowbreak{}Lookup} und
+\texttt{Binary\allowbreak{}Search\allowbreak{}Fanout}; die verwandte Literatur spannt die Achse von der
+Cache-Line-Wanderung über Stride-Prefetch~\cite{chen2001prefetch} und HBM-Nähe~\cite{schmidt2025hbm} bis
+zur cache-oblivious-Rekursion~\cite{frigo1999cache} (Anhang~\ref{app:blocks}), während T2 (Mapping)
+mit der linearen 1:1-Abbildung (\texttt{Direct\allowbreak{}Placement}) und dem pool-relativen
+Offset-Mapping (\texttt{Pool\allowbreak{}Relative}) eine dünn besetzte Achse bleibt ---
+Hash-Redirect~\cite{wu2019wormhole} (MP04) und Permutations-Index~\cite{mao2012masstree} (MP03) führt
+der Code als Roadmap-Werte ohne Registry-Eintrag. Die \emph{Pfadkompression} (T3)
+instanziiert die byte-weise Variante~\cite{leis2013art}, den Patricia-Split~\cite{morrison1968patricia,binna2018hot}
+und die Durchreich-Variante \texttt{None}; die Macro-Node~\cite{boffa2024coco} und das
+Multi-Byte-Rewiring~\cite{fent2020start} sind verwandte Literatur der Achse ohne eigenen Baustein (die
+Unter-Achse PC1 führt die Granularität \texttt{multi-byte} als Tag), und die
+\emph{Knotentyp-Achse} (T4) bündelt im Code die vier adaptiven ART-Knotenformate
+Node4/16/48/256~\cite{leis2013art}; HOT-Compound~\cite{binna2018hot}, Internal/Border~\cite{mao2012masstree},
 Decision/Span~\cite{schmeisser2022b2tree}, LOUDS-Dense/Sparse~\cite{zhang2018surf} und die
-CSS-/CSB\textsuperscript{+}-/Hankins-Knoten bis zur
-PRT-ART-Familie.
+CSS-/CSB\textsuperscript{+}-/Hankins-Knoten sind Paper-Knotenformate (Rekonstruktions-Ziele dieser
+Arbeit, keine CE-Baseline), die PRT-ART-Familie bringt der Prüfling über seine Build-Achse Seitentyp ein.
 
-Die \emph{Speicher-Layout-Achse} (T5) reicht vom cache-line-ausgerichteten AoS über zeigerfreie
-Anordnung~\cite{rao1999css}, Geschwister-Cluster~\cite{rao2000csb} und eingebetteten
-Baum~\cite{schmeisser2022b2tree} bis zum bit-gepackten LOUDS~\cite{jacobson1989louds}. Die
+Die \emph{Speicher-Layout-Achse} (T5) reicht im Code vom cache-line-ausgerichteten AoS
+(\texttt{AoS\allowbreak{}Strict\allowbreak{}Memory\allowbreak{}Layout},
+\texttt{Cache\allowbreak{}Line\allowbreak{}Aligned\allowbreak{}Memory\allowbreak{}Layout}) über SoA und AoSoA bis zum
+bit-gepackten LOUDS-Layout
+(\texttt{Packed\allowbreak{}Bitmap\allowbreak{}Memory\allowbreak{}Layout})~\cite{jacobson1989louds}; zeigerfreie
+Anordnung~\cite{rao1999css}, Geschwister-Cluster~\cite{rao2000csb} und eingebetteter
+Baum~\cite{schmeisser2022b2tree} sind verwandte Literatur der Achse (Anhang~\ref{app:blocks}). Die
 \emph{Allokator-Achse} (T6) ist mit dem Korpus A01--A23 am dichtesten besetzt und in sieben Unter-Achsen
 verfeinert --- von der Free-List-Topologie über Thread-Lokalität/NUMA-Affinität~\cite{ungethuem2017survey}
 und die Allokationsstrategie bis zur Reklamation (Epoch, RCU~\cite{mckenney2001rcu},
@@ -239,8 +250,10 @@ Hazard-Pointer~\cite{michael2004hazard}, QSBR); der Code stellt 26 Allokator-Imp
 23-Arbeiten-Korpus bereit (einzelne Arbeiten steuern mehrere Varianten bei); die 23 Allokator-Profile
 mit Lizenz und Workload-Affinität listet Tabelle~\ref{tab:allocator-profiles}, zehn davon sind mit
 Adapter und Original-Code angebunden. Die \emph{Wert-Achse} (T10) unterscheidet Inline-Wert~\cite{leis2013art}, externen
-Pool~\cite{wu2019wormhole}, versionierten Zeiger~\cite{mao2012masstree} und immutable
-Shared-Ref~\cite{mckenney2001rcu}, die \emph{Serialisierungs-Achse} (T9) Raw-Binary, succinct LOUDS/FST und
+Pool~\cite{wu2019wormhole}, versionierten Zeiger~\cite{mao2012masstree}, immutable
+Shared-Ref~\cite{mckenney2001rcu} und die verkettete externe Referenz (ChainRef, lokale Re-Implementierung
+ohne Paper-Vorlage) --- fünf von fünf Bausteinen der Registry ---, die \emph{Serialisierungs-Achse} (T9)
+Raw-Binary, succinct LOUDS/FST und
 Varint~\cite{leis2013art}.
 
 \begin{table}[!htbp]
@@ -279,14 +292,22 @@ Varint~\cite{leis2013art}.
   \smallskip
   {\footnotesize \texttt{expected\_workload} = YCSB-Workload-Klasse (A/B/C/E); Lizenz wortgleich aus dem Profil
   (none = kein OSS-Code, unknown = im Profil nicht belegt); Code = Adapter und Original-Code im Repository
-  vorhanden (ja) oder Dokumentations-Akte ohne Adapter (---).\par}
+  vorhanden (ja) oder Dokumentations-Akte ohne Adapter (---). Zwei Nenner: 23 Profile A01--A23
+  (Profil-Zählung dieser Tabelle) gegenüber 26 Allokator-Wrappern des Codes (Wrapper-Zählung,
+  Anhang~\ref{app:blocks}): A22 zerfällt dort in die drei Standardbibliotheks-Baselines A22a--A22c
+  (\texttt{std\_malloc}, \texttt{pmr\_resource}, \texttt{pool\_resource}), und die aus dem SOTA-Profil P33
+  rekonstruierte Allokator-Front A24 tritt ohne eigenes Allokator-Profil hinzu.\par}
 \end{table}
 
-Auf der hardware-nahen Seite reicht die \emph{Prefetch-Achse} (T7) von keinem Prefetch über
-software-festes~\cite{chen2001prefetch}, adaptiv-distanziertes~\cite{khan2010adaptive} und
-fill-buffer-bewusstes~\cite{mahling2025hotpath} bis zu pfadorientiertem~\cite{zhang2024pathprefix} und
-hierarchischem Bündel-Prefetch~\cite{zhang2025hierarchical}; die explizite Hardware-Prefetch-Instruktion
-stammt aus Wormhole~\cite{wu2019wormhole}. Die System-Achse \emph{Ziel-ISA} und die SIMD-Erweiterung
+Auf der hardware-nahen Seite trägt die \emph{Prefetch-Achse} (T7) im Code vier Bausteine --- keinen
+Prefetch (\texttt{None\allowbreak{}Prefetch}, Mess-Baseline), den distanzgeschätzten Software-Prefetch nach
+ART~\cite{leis2013art} (\texttt{Distance\allowbreak{}Estimator\allowbreak{}Prefetch}), die explizite
+Hardware-Prefetch-Instruktion aus Wormhole~\cite{wu2019wormhole} (\texttt{Hardware\allowbreak{}Prefetch}) und
+den pfadorientierten Bündel-Prefetch des Prüflings (\texttt{Path\allowbreak{}Oriented\allowbreak{}Prefetch},
+diese Arbeit); die verwandte Literatur spannt die Achse von software-festem~\cite{chen2001prefetch} über
+adaptiv-distanziertes~\cite{khan2010adaptive} und fill-buffer-bewusstes~\cite{mahling2025hotpath} bis zu
+pfadorientiertem~\cite{zhang2024pathprefix} und hierarchischem Bündel-Prefetch~\cite{zhang2025hierarchical}
+(Anhang~\ref{app:blocks}). Die System-Achse \emph{Ziel-ISA} und die SIMD-Erweiterung
 des Erweiterungs-Hardware-Hubs (beide System-Sphäre, Abschnitt~\ref{sec:axis-triad}) führen
 die Vendor-Spezifikationen (x86-64, AArch64, Power, RISC-V mit SSE2/AVX2/AVX-512, NEON/SVE2, RVV). Zwei
 übergreifende Strategie-Achsen halten fest, was ein Algorithmus aktiv \emph{nutzt} bzw.\ wie er Arbeit
@@ -298,7 +319,11 @@ je Paper zuordnet. Die \emph{Telemetrie} --- in der Dreiteilung dieser Arbeit ke
 sondern zweigeteilt in Mess-Tooling-Unter-Achse und Bau-Größe der System-Sphäre
 (Abschnitt~\ref{sec:axis-triad}) --- instanziiert Density-Tracker~\cite{leis2013art},
 Insert-Zähler~\cite{binna2018hot}, HdrHistogram, Pfad-Lese-Zähler~\cite{zhang2024pathprefix} und die
-Probability-Hints (P16/P17 Bender~\cite{bender2000cobtree,bender2005coboblivious}); die
+Probability-Hints (P16/P17 Bender~\cite{bender2000cobtree,bender2005coboblivious}) --- im Code in zwei
+Familien: der CRTP-Organ-Registry \texttt{All\allowbreak{}Telemetries} mit vier Strategien (Leaf-Only-Zähler,
+Density-Tracker, Insert-Zähler, Latenz-Histogramm) und der vtable-Familie
+\texttt{ITelemetry\allowbreak{}Strategy} mit sechs Arten, darunter Pfad-Lese-Zähler und Probability-Hints
+(Anhang~\ref{app:blocks}) ---; die
 kohärenz-schonenden Leaf-Only-Varianten gehen auf Kuehn zurück (P28~\cite{kuehn2023bplustree};
 persönliche Kommunikation 2023, über den publizierten DaMoN-2023-Stand zum cache- und
 verteilungsbewussten B\textsuperscript{+}-Layout hinaus), während der
@@ -329,14 +354,22 @@ Zähler in allen (auch inneren) Knoten als \emph{Anti-Pattern} (Cache-Line-Ping-
 %% OWNER-VORLAGE: OV-K3-01 --- $2^{17}$ ist die Rolle des golden-Referenzkatalogs (fester Regressions-
 %% Detektor); die Mächtigkeit des Entwurfsraums ist dynamisch und nie ein statischer Nenner. Beide Absichten
 %% werden getrennt benannt (hier und in Abschnitt sec:mess-chain). Widerspruch genügt.
+%% OWNER-VORLAGE: OV-02 --- T8 Sperr-Modus-Satz: die Vierteilung read-only/read-write/upgradeable/optimistische
+%% Validierung ist im Code nur der deprecierte, konsumentenlose Entwurf locking_mode.hpp (Lens-r16 M-1); gebaut
+%% sind CC1/CC2. Default: Entwurf benannt und von den Bausteinen getrennt; Alternative: Satz entfällt.
+%% Widerspruch genügt.
 Die \emph{Nebenläufigkeits-Achse} (T8) gliedert sich in die zwei Unter-Achsen Muster und Reklamation
 (Pattern $\perp$ Reclamation, Tabelle~\ref{tab:dialectic}): Die Muster reichen vom seriellen Nullpunkt
 über grobes Sperren~\cite{dijkstra1965concurrent}, Leser-/Schreiber-Sperren~\cite{courtois1971readers} und
 optimistisches Lock-Coupling~\cite{leis2016olc} zu lock-freien~\cite{michael1996queue},
 wait-freien~\cite{herlihy1991waitfree} sowie RCU-~\cite{mckenney2001rcu} und
-Hazard-Pointer-Verfahren~\cite{michael2004hazard}; der Sperr-Modus innerhalb eines Musters
-unterscheidet read-only, read-write, upgradeable und optimistische Validierung. Die \emph{I/O-Achse} (T12) instanziiert
-gepufferte~\cite{stonebraker1981os}, direkte und memory-mapped Ein-/Ausgabe~\cite{crotty2022mmap}. Die Achse
+Hazard-Pointer-Verfahren~\cite{michael2004hazard}; ein Sperr-Modus innerhalb eines Musters (read-only,
+read-write, upgradeable, optimistische Validierung) ist ein im Code konservierter, konsumentenloser
+Achsen-Entwurf (\texttt{locking\_\allowbreak{}mode.hpp}) und kein Baustein: gebaut sind die Muster als
+Unter-Achse CC1 und die Reklamation als CC2 (Anhang~\ref{app:blocks}). Die \emph{I/O-Achse} (T12) instanziiert
+den RAM-only-Nullpunkt der Achse (InMemoryOnly, Mess-Baseline ohne I/O-Latenz) sowie
+gepufferte~\cite{stonebraker1981os}, direkte und memory-mapped Ein-/Ausgabe~\cite{crotty2022mmap} --- vier
+von vier Bausteinen der Registry. Die Achse
 setzt dabei auf dem Blocktransfer-Denken der External-Memory-Tradition auf
 (Abschnitt~\ref{sec:hardware-history}): Für das I/O-effiziente Datenstruktur-Engineering stellt TPIE eine
 Referenz-Bibliothek der External-Memory-Linie bereit (ESA 2002)~\cite{arge2002tpie}; die Lehrbuch-Grundlage liefern
@@ -345,9 +378,11 @@ Hot/Cold-Trennung und mehrstufige Tier-Migration über die Stufen RAM$\to$SSD$\t
 Code; die NVM-Stufe der Paper-Vorlage~\cite{vanrenen2018nvm} ist im Code nicht gebaut), und die
 \emph{Pufferungs-Achsen} (T15/T16) reichen vom Disruptor-Ringpuffer~\cite{thompson2011disruptor} über die
 Bw-Tree-Delta-Kette~\cite{levandoski2013bwtree}, den Copy-on-Write-Puffer~\cite{driscoll1989persistent} und
-den Tombstone-Puffer~\cite{oneil1996lsm} bis zu lock-freien SPSC-~\cite{lamport_spsc} und
+den Tombstone-Puffer~\cite{oneil1996lsm} bis zu lock-freien SPSC-~\cite{lamport_spsc, lamport1983specifying} und
 MPMC-Queues~\cite{michael1996queue}. Die \emph{Index-Organisations-Achse} (T11) unterscheidet geclusterte
-Anordnung~\cite{bayer1972btree}, Heap-Ablage und nicht-geclusterten Sekundärindex~\cite{comer1979btree},
+Anordnung~\cite{bayer1972btree}, Heap-Ablage, nicht-geclusterten Sekundärindex~\cite{comer1979btree} und die
+indexorganisierte Tabelle (IOT, Daten in den Blatt-Seiten des Index eingebettet) --- vier von vier
+Bausteinen der Registry ---,
 die \emph{Filter-Achse} (T14) den Bloom-~\cite{bloom1970}, Cuckoo-~\cite{fan2014cuckoo},
 SuRF-~\cite{zhang2018surf} und Xor-Filter~\cite{graf2020xor}. Die \emph{Persistenz-Ziel-Achse}
 (T17) schließlich macht das Ablage-Ziel explizit --- In-Memory als Standard, ein
@@ -449,9 +484,12 @@ ein limitiertes Achsen-Subset: Allokation, Prefetch, Nebenläufigkeit und Speich
 geteilt --- und auf der System-Seite ist das SIMD-Gruppen-Lookup der
 Vorlage~\cite{abseil_swisstable} an der SIMD-Erweiterung vorgesehen, die Nachbildung prüft die
 Control-Byte-Gruppen skalar ---,
-während die baum- und trie-spezifischen Achsen (Pfadkompression, Knotentyp, Bereichs-Index) nicht
-wegfallen, sondern als Durchreich-Varianten (\texttt{None}) belegt werden; die Gegenprobe erfordert so
-keine eigene Gattung.
+während die baum- und trie-spezifischen Achsen nicht wegfallen: die Pfadkompression (T3) führt dafür
+die Durchreich-Variante (\texttt{None}), der Knotentyp (T4) trägt im Code keine None-Variante und wird
+regulär mit einem der vier ART-Knotenformate belegt, das der Hash-Baustein für seine Suche nicht nutzt,
+und die geordnete Bereichsiteration ist keine Organ-Achse, sondern die additive Scan-Fähigkeit der
+Modulgrenze (Anhang~\ref{app:interfaces}), die der Hash-Baustein nicht anbietet; die Gegenprobe
+erfordert so keine eigene Gattung.
 
 Die Veröffentlichungen entstammen sechs thematischen \emph{Herkunfts-Clustern}, die hier nur der
 ganzheitlichen Einordnung jedes Lebewesens dienen, bevor es in seine Organe zerlegt wird. Die
@@ -1875,7 +1913,10 @@ Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
 % Wir verwenden hauptsächlich xlsx statt CSV
 \emph{Die volle Schleife ist ein Ausblick-Mechanismus; realisiert sind davon die automatische Auswahl
 und der Binary-Versand (Abschnitt~\ref{sec:contributions}).} Der Selektor liest die Messwert-Mappe ---
-die xlsx-Mappe ist die Ausgabe des Apparats, die CSV ihr Kind mit denselben Spalten ---, rankt je
+die xlsx-Mappe ist die Ausgabe und der Standard des Apparats; die CSV-Form ist kein einzelnes
+Kind-Dokument, sondern ein aus der Mappe erzeugter, geordneter Baum aus CSV-Dateien mit denselben Spalten
+(ein Gesamtordner je Mappe, darunter ein Ordner je Blatt, darin die CSV-Dateien der einzelnen
+Unter-Achsen-Fahrten) ---, rankt je
 Interface-Funktion und Metrik über die gültigen Zwei-Phasen-Zeilen (Median, Nearest-Rank), bestimmt bei
 konkurrierenden Zielgrößen die Pareto-Front der nicht-dominierten Kandidaten statt eines Einzelsiegers,
 löst die \texttt{binary\_id} zur Binary im Lager auf und liefert Binary, Versions-Sidecar und Manifest
