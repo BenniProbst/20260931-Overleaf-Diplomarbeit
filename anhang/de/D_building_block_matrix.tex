@@ -88,7 +88,7 @@ Swiss\allowbreak{}Table\allowbreak{}Search\allowbreak{}Algo (S22) & CE-native Re
 
 Diese Achse ist das \emph{Cache-Traversierungs-Organ} (T1) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
-Die Achse \texttt{axis\_\allowbreak{}03b} definiert drei distinkte Strategien zur Schlüssel-Auflösung in kleinen Fanout-Arrays (typisch: B+-Tree oder Trie Inner Nodes). Sie spannt ein Spektrum von linearer Suche (O(N), cache-freundlich, klein), über multiplikatives Hashing mit Open-Addressing (O(1) amortisiert, Knuth-Fibonacci), bis zur sortierten Binärsuche (O(log N), geordnete Traversierung, B+-Tree-Standard). Alle drei sind Lehrbuch-Baselines ohne Original-Code-Linking, implementiert als reine C++23-Re-Implementierungen.
+Die Achse \texttt{axis\_\allowbreak{}03b} definiert drei distinkte Strategien zur Schlüssel-Auflösung in kleinen Fanout-Arrays (typisch: innere B+-Tree- oder Trie-Knoten). Sie spannt ein Spektrum von linearer Suche (O(N), cache-freundlich, klein), über multiplikatives Hashing mit Open-Addressing (O(1) amortisiert, Knuth-Fibonacci), bis zur sortierten Binärsuche (O(log N), geordnete Traversierung, B+-Tree-Standard). Alle drei sind Lehrbuch-Baselines ohne Original-Code-Linking, implementiert als reine C++23-Re-Implementierungen.
 
 \subsection*{Statische Unter-Achsen}
 \begin{scriptsize}
@@ -97,7 +97,7 @@ Die Achse \texttt{axis\_\allowbreak{}03b} definiert drei distinkte Strategien zu
 ID & Name & Beschreibung \\
 \midrule
 \endhead%
-CT1 & Lineare Zugriffe & Linear-scan-basierte Lookup-Methoden auf kleinen, unsortierten Fanout-Arrays. Charakterisiert durch O(N)-Auflösung mit einfachen Vergleichen, typisch für Nodes mit Fanout $<$ 32 in B+-Trees. Unter-Achse für \texttt{Linear\allowbreak{}Fanout} und \texttt{Binary\allowbreak{}Search\allowbreak{}Fanout} (beide: \texttt{axis\_\allowbreak{}tag} = \texttt{linear\_\allowbreak{}access\_\allowbreak{}tag}). \\
+CT1 & Lineare Zugriffe & Linear-scan-basierte Lookup-Methoden auf kleinen, unsortierten Fanout-Arrays. Charakterisiert durch O(N)-Auflösung mit einfachen Vergleichen, typisch für Knoten mit Fanout $<$ 32 in B+-Trees. Unter-Achse für \texttt{Linear\allowbreak{}Fanout} und \texttt{Binary\allowbreak{}Search\allowbreak{}Fanout} (beide: \texttt{axis\_\allowbreak{}tag} = \texttt{linear\_\allowbreak{}access\_\allowbreak{}tag}). \\
 CT2 & Hash-basierte Zugriffe & Hash-Lookup mit Open-Addressing und linearem Probing. O(1) amortisierte Auflösung, charakterisiert durch Fibonacci-Multiplikator (11400714819323198485 $\approx$ $2^{64}/\allowbreak{}\varphi$), Power-of-2 Bucket-Count, dynamisches Rehashing bei Load-Factor $>$ 0.7. Nur \texttt{Hash\allowbreak{}Lookup}-Wrapper. Unter-Achse: \texttt{axis\_\allowbreak{}tag} = \texttt{hash\_\allowbreak{}access\_\allowbreak{}tag}. \\
 \bottomrule
 \end{longtable}
@@ -125,7 +125,7 @@ Variante & Beschreibung & Quelle \\
 
 Diese Achse ist das \emph{Mapping-Organ} (T2) des Lebewesens \texttt{SearchAlgorithm} (vgl.\ Abschnitt~\ref{sec:sota-instances}).
 
-Vermittlung zwischen logischen Slot-Indizes und physischen Speicher-Offsets in Trie-Inner-Nodes und Speicher-Pools. Die Achse bietet zwei grundsätzlich verschiedene Zuordnungsstrategien: direkte absolute Offsets (lineare Packing) oder pool-relative Offsets mit automatischem Rebase-Mechanismus zur Unterstützung von Speicher-Umallokation und Persistent-Data-Structures.
+Vermittlung zwischen logischen Slot-Indizes und physischen Speicher-Offsets in inneren Trie-Knoten und Speicher-Pools. Die Achse bietet zwei grundsätzlich verschiedene Zuordnungsstrategien: direkte absolute Offsets (lineare Packing) oder pool-relative Offsets mit automatischem Rebase-Mechanismus zur Unterstützung von Speicher-Umallokation und Persistent-Data-Structures.
 
 \subsection*{Statische Unter-Achsen}
 \begin{scriptsize}
@@ -134,7 +134,7 @@ Vermittlung zwischen logischen Slot-Indizes und physischen Speicher-Offsets in T
 ID & Name & Beschreibung \\
 \midrule
 \endhead%
-MP1 & Direct-Access-Mapping (MP1) & Direkter Slot-zu-Absolute-Offset-Mapping ohne Indirection. Wrapper-Familie für klassisches Array-of-Pointers-Layout wie in B-Tree Inner-Nodes (Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972). Einfache Cache-Locality, O(N) Lookup per \texttt{std::find\_\allowbreak{}if}. \\
+MP1 & Direct-Access-Mapping (MP1) & Direkter Slot-zu-Absolute-Offset-Mapping ohne Indirection. Wrapper-Familie für klassisches Array-of-Pointers-Layout wie in inneren B-Tree-Knoten (Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972). Einfache Cache-Locality, O(N) Lookup per \texttt{std::find\_\allowbreak{}if}. \\
 MP2 & Pool-Relative-Mapping (MP2) & Slot-zu-Pool-Relativem-Offset-Mapping mit Based-Pointer-Arena-Pattern. Alle Offsets relativ zu dynamischem \texttt{pool\_\allowbreak{}base\_\allowbreak{}address} gespeichert. Ermöglicht O(1) Rebase bei Speicher-Umallokation --- zentrale Eigenschaft für Persistent-Data-Structures (Driscoll et al. 1989) und Custom\allowbreak{}Aligned\allowbreak{}Structure-Pattern in prt-art. \\
 \bottomrule
 \end{longtable}
@@ -404,7 +404,7 @@ Variante & Beschreibung & Quelle \\
 \midrule
 \endhead%
 \texttt{None\allowbreak{}Prefetch} & Keine Prefetch-Strategie (Baseline). Dient als Vergleichs-Referenz für Mess-Reihen. Trigger: keine; Heuristik: keine; Granularität: N/\allowbreak{}A. \texttt{is\_\allowbreak{}active()} gibt false zurück. & Code/\allowbreak{}Baseline \\
-\texttt{Distance\allowbreak{}Estimator\allowbreak{}Prefetch} & Distanzgeschätzte Software-Prefetch (ART-Standard nach Leis ICDE 2013). Schätzt Cache-Distance zur nächsten Node basierend auf Knoten-Dichte [\%] und Tier-Latenz [cycles] mit Heuristik: estimate = clamp(1 + sparseness*8 + latency\_\allowbreak{}factor, [1,16]). Trigger: Compiler-Hinweise via \texttt{\_\allowbreak{}\_\allowbreak{}builtin\_\allowbreak{}prefetch}; Heuristik: adaptiv (Dichte + Latenz); Granularität: Cache-Line. Setzt auf ART-Pattern (unodb/\allowbreak{}libart). & P01 (ART/\allowbreak{}unodb, Leis ICDE 2013) \\
+\texttt{Distance\allowbreak{}Estimator\allowbreak{}Prefetch} & Distanzgeschätzte Software-Prefetch (ART-Standard nach Leis ICDE 2013). Schätzt Cache-Distance zum nächsten Knoten basierend auf Knoten-Dichte [\%] und Tier-Latenz [cycles] mit Heuristik: estimate = clamp(1 + sparseness*8 + latency\_\allowbreak{}factor, [1,16]). Trigger: Compiler-Hinweise via \texttt{\_\allowbreak{}\_\allowbreak{}builtin\_\allowbreak{}prefetch}; Heuristik: adaptiv (Dichte + Latenz); Granularität: Cache-Line. Setzt auf ART-Pattern (unodb/\allowbreak{}libart). & P01 (ART/\allowbreak{}unodb, Leis ICDE 2013) \\
 \texttt{Hardware\allowbreak{}Prefetch} & Explizite Hardware-Prefetch-Instruktionen (Wormhole-Standard nach Wu Euro\allowbreak{}Sys 2019). Nutzt PREFETCHT0/\allowbreak{}T1/\allowbreak{}T2/\allowbreak{}NTA auf Hash-Anchor-Chain ohne Software-Heuristik; CPU schätzt Distance autonom. Trigger: explizite Hardware-Instruktion; Heuristik: Hardware-managed; Granularität: Hardware-bestimmt. Lizenz GPL-3.0 blockiert \texttt{is\_\allowbreak{}original}-Linking. & P07 (Wormhole, Wu Euro\allowbreak{}Sys 2019) \\
 \texttt{Path\allowbreak{}Oriented\allowbreak{}Prefetch} & Pfadorientierte Prefetch-Heuristik (prt-art, diese Arbeit). Pre-loadet alle Knoten entlang vorhergesagtem Trie-Pfad bevor Suche startet. Tracker verfolgt Suchpfad und empfiehlt nächste Adresse via linearer Schritt-Extrapolation. Hot-Path-Hints: interpretiert erste 8 Byte eines Schlüssels als uint64-Adresse. Trigger: pfadorientierte Vorhersage; Heuristik: linear (Schritt-Extrapolation); Granularität: Bundle (mehrere Cache-Lines). Verwandte Literatur: Chen/\allowbreak{}Gibbons/\allowbreak{}Mowry SIGMOD 2001 (p\allowbreak{}B+-Trees Prefetching) + Mowry 1994. & P21 (verwandt: Chen/\allowbreak{}Gibbons/\allowbreak{}Mowry SIGMOD 2001); diese Arbeit \\
 \bottomrule
@@ -508,7 +508,7 @@ Die Wert-Handle-Achse definiert, wie Datenwerte (Values) im Cache-Index gespeich
 ID & Name & Beschreibung \\
 \midrule
 \endhead%
-VH1 & Speicherort (Storage-Location) & Compile-Time Varianten für die physische Platzierung des Value: inline im Node-Slot (kombiniert Key/\allowbreak{}Value in einem Slot ohne Indirektion) oder extern in einem separaten Pool (Node hält nur Offset/\allowbreak{}Pointer). \\
+VH1 & Speicherort (Storage-Location) & Compile-Time Varianten für die physische Platzierung des Value: inline im Node-Slot (kombiniert Key/\allowbreak{}Value in einem Slot ohne Indirektion) oder extern in einem separaten Pool (der Knoten hält nur Offset/\allowbreak{}Pointer). \\
 VH2 & Eigentümer-Semantik (Ownership) & Compile-Time Varianten für Ownership und Sharing-Strategie: owned (exclusive per Key), shared (immutable reference-counted via RCU-style), weak (borrowing ohne Increment). \\
 VH3 & Versionierung (Versioning) & Compile-Time Varianten für Concurrency-Kontrolle: keine Versionierung (simple Ownership), Version-Tags in Pointer (MVCC für Reader-Snapshot-Isolierung). \\
 \bottomrule
@@ -523,10 +523,10 @@ Variante & Beschreibung & Quelle \\
 \midrule
 \endhead%
 \texttt{Inline\allowbreak{}Value\allowbreak{}Handle} & Value wird direkt im Node-Slot eingebettet (keine Indirektion). Standard für kleine Values wie uint64\_\allowbreak{}t. Minimale Zugriffslatenz (1 direkter Read), aber Node-Speicher wird durch größere Values beansprucht. Quelle: ART (Leis ICDE 2013, P01). & P01 \\
-\texttt{External\allowbreak{}Pool\allowbreak{}Value\allowbreak{}Handle} & Value extern in Pool gespeichert; Node hält nur Pool-Offset. Ermöglicht variable Value-Größen und kompaktere Nodes, kostet aber 1 zusätzlichen Cache-Miss pro Lookup (Pointer-Chasing). Quelle: Wormhole (Wu Euro\allowbreak{}Sys 2019, P07). & P07 \\
+\texttt{External\allowbreak{}Pool\allowbreak{}Value\allowbreak{}Handle} & Value extern in Pool gespeichert; der Knoten hält nur den Pool-Offset. Ermöglicht variable Value-Größen und kompaktere Knoten, kostet aber 1 zusätzlichen Cache-Miss pro Lookup (Pointer-Chasing). Quelle: Wormhole (Wu Euro\allowbreak{}Sys 2019, P07). & P07 \\
 \texttt{Immutable\allowbreak{}Shared\allowbreak{}Ref\allowbreak{}Value\allowbreak{}Handle} & Value via reference-counted Pointer (RCU-Style Snapshot-Sharing). Optimal für Reader-Concurrency: Leser sehen stabile Snapshots, Writer erstellen neue immutable Snapshots. Requires Ref\allowbreak{}Count-Acquire/\allowbreak{}Release pro Zugriff. Quelle: RCU (Mc\allowbreak{}Kenney OLS 2001, P29). & P29 \\
 \texttt{Versioned\allowbreak{}Pointer\allowbreak{}Value\allowbreak{}Handle} & Pointer mit Version-Tag im oberen Byte (MVCC). Ermöglicht Multi-Version-Concurrency-Control: Reader bekommt Snapshot-Version zur Sichtbarkeitskontrolle, Writer erstellt neue Version. Tombstone-Erkennung via Versions-Bit. Quelle: Masstree (Mao Euro\allowbreak{}Sys 2012, P03) und SMART (OSDI 2023). & P03 \\
-\texttt{Chain\allowbreak{}Ref\allowbreak{}Value\allowbreak{}Handle} & Multi-Value verkettete externe Referenz (Linked-List). Node hält Offset zum Chain-Head im Pool; jeder Chain-Knoten hält (value\_\allowbreak{}offset, next\_\allowbreak{}offset). Teuerste Variante mit 2 abhängigen Derefs pro Value-Zugriff. Quelle: prt-art (lokale Re-Implementierung). & Code/\allowbreak{}Baseline \\
+\texttt{Chain\allowbreak{}Ref\allowbreak{}Value\allowbreak{}Handle} & Multi-Value verkettete externe Referenz (Linked-List). Der Knoten hält den Offset zum Chain-Head im Pool; jeder Chain-Knoten hält (value\_\allowbreak{}offset, next\_\allowbreak{}offset). Teuerste Variante mit 2 abhängigen Derefs pro Value-Zugriff. Quelle: prt-art (lokale Re-Implementierung). & Code/\allowbreak{}Baseline \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
