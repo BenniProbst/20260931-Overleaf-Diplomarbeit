@@ -12,7 +12,8 @@ als \emph{beantwortet}, wenn ein Beleg am Objekt oder eine Messung sie trägt; a
 beantwortet}, wenn der Apparat, der die Antwort liefert, gebaut und getestet ist, die Messung aber
 aussteht; als \emph{offen}, wenn weder Struktur noch Messung vorliegen. Drei Belegarten kommen vor: die
 Struktur (ein Code-Gegenstand, der die Antwort trägt), der Test (eine übersetzungszeitliche Wache oder ein
-Vertrags-Test, der sie sichert) und die Messung (eine Zahl mit ihrem Lauf). Ein \enquote{strukturell
+Vertrags-Test, der sie sichert) und die Messung (eine Zahl mit ihrem Lauf); für die Frage nach dem
+Stand der Technik der Workloads (FF2.d) tritt der Literaturbeleg hinzu. Ein \enquote{strukturell
 beantwortet} ersetzt die Zahl nicht: Ohne Messwerte bleibt die Hauptfrage unbeantwortet, auch wenn ihre
 Struktur trägt. Tabelle~\ref{tab:ff-beweiskette} führt Status, Beweis und Rest je Haupt- und Teilfrage;
 die Berichtsform folgt den Regeln der empirischen Software- und
@@ -23,7 +24,7 @@ Plattform und nicht erhobene Werte an jedem Ergebnis auszuweisen~\cite{blackburn
 %% übersetzungszeitliche Rückkehr-Sperre, \enquote{datierbare Umzüge} -> Ist-Stand ohne Umzugs-Erzählung,
 %% \enquote{Heimspiel-Bias} -> Lastprofil-Selektionsverzerrung, \enquote{Beschattung} -> Instrumentierungs-
 %% Artefakt, honest-0 -> explizit kodierte Nicht-Erhebung. Default gesetzt; Widerspruch genügt.
-Quer zu allen fünf Fragen hatte die Einleitung eine Kategorien-Frage offen gehalten: ob sich die Achsen
+Quer zu allen fünf Fragen hat die Einleitung eine Kategorisierungs-Frage als Frage ausgelegt: ob sich die Achsen
 des Entwurfsraums sauber in Organ-, System- und Mess-Achsen trennen lassen --- und wie eine solche
 Trennung zu bewerkstelligen ist, wo sie in einem Entwurf nicht angelegt ist. Beides ist beantwortet
 (Abschnitt~\ref{sec:axis-triad}): Die Achsen trennen sich entlang der drei Belange in drei \emph{Realms}
@@ -78,7 +79,8 @@ Mess-Kurven gezogen (Abschnitt~\ref{sec:heuristics-curves}).
 %% Widerspruch genügt.
 \paragraph{FF1 (Komposition).} Gefragt ist, wie sich ein Suchalgorithmus-Entwurf kanonisch in
 orthogonale Achsen zerlegen und in einer Permutationsmatrix systematisieren lässt, sodass
-Stand-der-Technik-Verfahren als Profil-Konfigurationen rekonstruierbar und permutierbar werden; FF1.a
+Stand-der-Technik-Verfahren möglichst aus ihrem Originalcode bias-frei als Profile rekonstruierbar
+und beliebig permutierbar werden; FF1.a
 fragt nach dem Kategorien-Schnitt der Zerlegung, FF1.b nach den Organ-Kopplungen und dem Verhalten unter
 allein variierter ISA-/SIMD-Achse. Der \emph{Status}: FF1 ist strukturell beantwortet, FF1.a beantwortet,
 FF1.b in seinem empirischen Teil offen. Die kanonische Zerlegung trägt: \emph{Achtzehn}
@@ -130,9 +132,11 @@ Die \emph{Folge}: FF1 strukturell beantwortet; FF1.b (Füllverhalten) folgt dem 
 \paragraph{FF2 (Mess-Methodik).} Gefragt ist, wie eine reproduzierbare Mess-Pipeline mit
 Hardware-Zähler-Erhebung gestaltet sein muss, damit jede Achsen-Permutation fair --- unter gleicher
 Compiler- und Flag-Basis --- in drei Messreihen über drei Granularitäten gemessen wird, und unter welchen
-Kriterien eine Plattform als verifiziert gilt; FF2.a fragt, ob die Mess-Instrumente selbst eigene Achsen
-sein müssen, FF2.b nach der Nachmessung widersprüchlicher Literaturbefunde, FF2.c nach der
-Erweiterbarkeit. Der \emph{Status}: FF2 ist strukturell beantwortet, FF2.a beantwortet. Die Messung ist in
+plattform-kalibrierten Kriterien eine Plattform als verifiziert gilt; FF2.a fragt, ob die
+Mess-Instrumente selbst eigene Achsen sein müssen, FF2.b nach der Nachmessung widersprüchlicher
+Literaturbefunde, FF2.c nach der Erweiterbarkeit, FF2.d nach den Workloads, die gerade für
+Suchalgorithmen zum Stand der Technik gehören. Der \emph{Status}: FF2 ist strukturell beantwortet,
+FF2.a und FF2.d beantwortet. Die Messung ist in
 einen Produktiv- und einen Experiment-Modus geteilt, geschaltet über den Master-Schalter der
 Mess-Übersetzung (\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}): Der Experiment-Modus
 misst stets --- ein Release-Bau ohne Messfühler ist ein eigenes, auslieferbares Artefakt, das den
@@ -173,7 +177,7 @@ Zu FF2.b (Organ-Achsen): Die widersprüchlichen Literaturbefunde zur optimalen K
 --- eine Cache-Line je Knoten bei CSS- und CSB\textsuperscript{+}-Bäumen~\cite{rao1999css,rao2000csb}
 gegenüber sechzehn und mehr Cache-Lines bei Hankins und Patel~\cite{hankins2003nodesize} (Knoten von
 512 Byte und größer bei 32-Byte-Cache-Lines) sowie mehreren je Knoten bei den
-Prefetching-B\textsuperscript{+}-Bäumen von Chen et~al.~\cite{chen2001prefetch} --- werden nicht aus
+Prefetching-B\textsuperscript{+}-Bäumen von Chen, Gibbons und Mowry~\cite{chen2001prefetch} --- werden nicht aus
 ihren Original-Setups übernommen, sondern achsen-isoliert unter sonst gleichen Bedingungen
 nachgemessen: Knotentyp, Speicher-Layout und Prefetch sind Organ-Achsen, die einzeln variiert werden,
 während System- und Mess-Achsen konstant bleiben; die Zahl ist eine Messung und steht aus. Zu FF2.c
@@ -190,12 +194,28 @@ Abschnitt~\ref{sec:eval-series}). An der Binary bleibt der Verbund über die hie
 Algorithmus-Namen und Flags der Organ-Zeile unterscheidbar --- ein Prüflings-Organ trägt sein
 Namensraum-Präfix im Eintrag ---; eine eigene Stempel-Zeile braucht es nicht, und ein Versions-Suffix
 trägt die Mischung nicht: Das Flag \texttt{e} bezeichnet einen Efficiency-Core-Algorithmus
-(Abschnitt~\ref{sec:stamp-model}). Ob der Prüfling eine bestehende Kategorie trifft, eine neue
+(Abschnitt~\ref{sec:stamp-model}). Ob der Prüfling eine bestehende Gattung trifft, eine neue
 begründet oder eine Mischform darstellt, entscheidet der Gattungs-Schnitt
 (Abschnitt~\ref{sec:anatomy-levels}); eine eigene Gattung entstünde erst bei grundlegend anderem
 Basis-Achsen-Satz. Der in FF2.c erfragte Betriebsmodus, der die Entwurfsbestandteile genau einer
 Veröffentlichung als geschlossenes Achsen-Set isoliert anbietet, ist nicht gebaut und bleibt Ausblick
-(Abschnitt~\ref{sec:outlook}). Zur Plattform-Verifikation: Eine Plattform gilt als verifiziert, wenn
+(Abschnitt~\ref{sec:outlook}). Zu FF2.d (Workload-Stand der Technik): Den Stand der Technik der
+Workloads für Suchalgorithmen bilden die Schlüssel-Wert-Konvention YCSB mit ihren sechs Lastprofilen
+A--F (je ein Operations-Mix über einer Schlüssel-Zugriffsverteilung, von 50/50 Lesen/Aktualisieren
+Zipf-verteilt bis zu kurzen Bereichs-Scans und Read-Modify-Write), der Index-Benchmark SOSD, die
+TPC-Familie (TPC-C, TPC-DS), die Integration in reale Systeme (SuRF in RocksDB), reale String-Korpora
+(URLs, DNA, Wörterbuch-Terme) sowie SPEC~CPU und CloudSuite bei den hardware-nahen Arbeiten
+(Abschnitt~\ref{sec:workload-basics-known}); diese Rahmenwerke erzeugen untereinander nicht unmittelbar
+vergleichbare Lasten, und jede Veröffentlichung wählt typischerweise das Lastprofil, unter dem ihr
+eigener Entwurf am besten abschneidet. Die Arbeit übernimmt daraus YCSB als das registrierte
+Last-Rahmenwerk (die Meta-Meta-Achse \texttt{load\_framework} des Mess-Realms) mit der
+Laufzeit-Dimension \texttt{workload} über die sechs Token \texttt{YCSB\_A} bis \texttt{YCSB\_F},
+geroutet je Permutation aus dem Traversal-Tag des Profils oder seinem
+\texttt{<expected\_workload>}-Tag, und fährt sie über reale String-Datensätze mit
+Reproduzierbarkeits-Akte (\texttt{url}, \texttt{protein}, \texttt{tpcds-id}, \texttt{trec-terms},
+\texttt{dna}, \texttt{xml}; Abschnitt~\ref{sec:eval-workloads}); die übrigen Konventionen sind als
+Last-Rahmenwerk nicht registriert (n/a). Durchführungs-Stand: Der Treiber fährt je Lauf einen
+Workload; die Voll-Permutation über alle Lastprofile ist Plan-Ist. Zur Plattform-Verifikation: Eine Plattform gilt als verifiziert, wenn
 das Konformitäts-Gatter je geladener Tier-Binary die siebzehn in Anhang~\ref{app:interfaces}
 markierten \texttt{std::map}-Operationen --- die Operationsmenge seiner zwölf Kern-Prüfblöcke,
 darunter \texttt{at}, \texttt{contains}, \texttt{count}, \texttt{insert\_or\_assign}, \texttt{erase},
@@ -207,14 +227,18 @@ der Vollausbau auf die volle \texttt{std::map}-Schnittstelle ist Folgeschritt; d
 plattform-kalibrierten Schwellwerte werden mit den realen Läufen
 festgelegt. Als \emph{Beweis} tragen Abschnitt~\ref{sec:mess-chain} (Drei-Stufen-Prüfung und
 Verbund; Struktur), Abschnitt~\ref{sec:measurement-system} (Mess-Ebenen und Realm; Struktur),
-Abschnitt~\ref{sec:anatomy-levels} (Gattungs-Schnitt; Struktur) und Anhang~\ref{app:interfaces}
-(Vertrags-Teilmenge; Test). Die \emph{Folge}: FF2 strukturell beantwortet, FF2.c konzeptionell beantwortet;
-der Isolations-Modus und die Zahl zu FF2.b sind offen.
+Abschnitt~\ref{sec:anatomy-levels} (Gattungs-Schnitt; Struktur), Anhang~\ref{app:interfaces}
+(Vertrags-Teilmenge; Test) sowie für FF2.d Abschnitt~\ref{sec:workload-basics-known}
+(Workload-Konventionen; Literatur) und Abschnitt~\ref{sec:eval-workloads} (Workload-Routing und Akten;
+Struktur). Die \emph{Folge}: FF2 strukturell beantwortet, FF2.c konzeptionell beantwortet, FF2.d
+beantwortet; der Isolations-Modus, die Zahl zu FF2.b und die Voll-Permutation der Workloads sind offen.
 
 \paragraph{FF3 (Prüfling-Vergleich).} Gefragt ist, ob der Prüfling PRT-ART gegenüber den acht
 Rang-1-Entwürfen --- ART~\cite{leis2013art}, HOT~\cite{binna2018hot}, Masstree, CoCo-Trie, START,
-B\textsuperscript{2}-Baum, Wormhole, SuRF --- und der Rang-2/3-SOTA durch bessere
-Mikroarchitektur-Eigenschaften gewinnt, gemessen in den Pflicht-Messreihen A, B und C\@; FF3.a fragt nach
+B\textsuperscript{2}-Baum, Wormhole, SuRF --- und der Rang-2/3-SOTA \emph{nicht} durch asymptotische
+Neuheit, sondern durch bessere Mikroarchitektur-Eigenschaften gewinnt --- höhere Cache-Line-Auslastung,
+weniger LLC- und dTLB-Misses, geringere Branch-Kosten, kleinere heiße Suchpfade --- bei Punktsuche,
+Prefix-Lookup und Prefix-Enumeration, gemessen in den Pflicht-Messreihen A, B und C\@; FF3.a fragt nach
 der günstigsten lokalen Seitendarstellung je Verzweigungspunkt, FF3.b nach dem Compile-Time-Zwang.
 Der \emph{Status}: FF3 ist offen, FF3.b beantwortet, FF3.a strukturell beantwortet als Plan-Setzung. Der
 Vergleich steht nach den ersten Mess-Läufen aus; der Apparat dafür ist gebaut: das PRT-ART-Profil, die
@@ -231,18 +255,18 @@ Benachrichtigungs-Haken der Mess-Schicht ist
 ein Single-Slot-Hook je Achse, standardmäßig nicht einkompiliert (Opt-in), und kein Teil des Vertrags.
 Zu FF3.a: Punktseite --- die Direktindex-Seiten Array$_{256}$ und Array$_{65535}$ --- gegenüber
 Kompaktseite --- die Vektor-Seiten Vector$\langle$u8,u8$\rangle$ und Vector$\langle$u16,u16$\rangle$
---- je Verzweigungspunkt und die Umschaltregeln nach Füllstand und Suchtyp sind Teil des
+--- je Verzweigungspunkt und die Umschaltregeln nach Belegungsdichte und Zugriffsart sind Teil des
 PRT-ART-Profils; der Prüfling schaltet nach festen Dichte-Schwellen von 25, 50 und 75~Prozent um
 (Abschnitt~\ref{sec:prtart-demo}), und die plattform-kalibrierten Regeln sind Plan-Setzung, bis die
 Läufe sie belegen. FF3.b ist bejaht und zur Bauform geworden: Jede Achse gliedert sich in eine
-übersetzungszeit-fixierte \emph{Haupt}-Entscheidung und laufzeit-variable \emph{Unter}-Entscheidungen
+übersetzungszeit-fixierte \emph{Haupt-Achse} und laufzeit-variable \emph{Unter-Achsen}
 --- die Haupt-Achsen sind statisch einkompiliert, bei Organ-Achsen als \texttt{binary\_id}-Segment, bei
 System-Achsen als Stempel samt Bau-Versionskennung, während Unter-Achsen mit der Stufe
 \texttt{runtime} ihre Parameter ohne Neuübersetzung variieren; die Organ-Registry führt die Stufe je
 Unter-Achse, die System-Registry die Unter-Achsen-Gruppe \texttt{build\_toolchain} der Komplex-Klammer
 (Abschnitt~\ref{sec:measurement-system}). Als \emph{Beweis} tragen Abschnitt~\ref{sec:prtart-demo} (Prüfling
 und Seitendarstellung; Struktur), Abschnitt~\ref{sec:sota-instances} (33 Profile; Struktur),
-Abschnitt~\ref{sec:measurement-system} (Haupt- und Unter-Entscheidung; Struktur) und
+Abschnitt~\ref{sec:measurement-system} (Haupt- und Unter-Achse; Struktur) und
 Anhang~\ref{app:interfaces} (Kernvertrag; Test). Die \emph{Folge}: Die Zahl folgt der Reihe~A\@; die
 Hypothesen H1--H3 liefern die Auswerte-Kriterien.
 
@@ -272,9 +296,16 @@ Abbruchkriterium für H2.
 
 \paragraph{FF4 (Compile-Time vs.\ Laufzeit).} Gefragt ist, welche Achsen-Eigenschaften zur
 Übersetzungszeit fixiert werden müssen, um plattform-optimierte, provenienz-nachweisbare Binaries je
-Permutation zu erzeugen, und welche zur Laufzeit gewählt werden können, ohne die Vergleichbarkeit zu
-verletzen; die Erweiterung FF4.E fragt, ob die Grenze entlang der Achsen-Kategorien verläuft.
-Der \emph{Status}: FF4 ist strukturell beantwortet, FF4.E beantwortet. Die Grenze verläuft entlang der
+Permutation zu erzeugen, und welche zur Laufzeit gewählt werden können bzw.\ müssen (bit-codierte
+Binary-Identität je Permutation, laufzeit-adaptive Layout-Wahl), ohne die Vergleichbarkeit (gleiche
+Compiler- und Flag-Basis) zu verletzen --- und ob es durch die Messung möglich wird, ISA+OS-optimierte
+Binaries für eine Suchalgorithmus-Rekombination zu erzeugen, deren heuristische Optimierung perfekt
+auf ihre Laufzeitumgebung zugeschnitten ist; FF4.a fragt, ob sich der gesamte Ablauf --- vom
+plattformbezogenen Bau aller Binary-Permutationen über den Messlauf und die Auswahl der besten
+gemessenen Binary oder Binary-Rekombination bis zur Auswertung in CSV-/xlsx-Dateien, LaTeX und
+Diagrammen --- durchgehend aus einer XML-Beschreibung des Experiments erzeugen lässt; die Erweiterung
+FF4.E fragt, ob die Grenze entlang der Achsen-Kategorien verläuft.
+Der \emph{Status}: FF4 ist strukturell beantwortet, FF4.a strukturell beantwortet, FF4.E beantwortet. Die Grenze verläuft entlang der
 Kategorien: Die drei System-Haupt-Achsen \texttt{target\_isa}, \texttt{operating\_system} und
 \texttt{external\_utils} samt ihrer Komplex-Klammer \texttt{build\_target\_complex}
 (Abschnitt~\ref{sec:complex-axis}; keine vierte Haupt-Achse) gehören zur Übersetzungszeit-Identität
@@ -301,11 +332,31 @@ selbst ISA- und betriebssystem-optimierte Binaries für eine Rekombination zusch
 Ausblick als Heuristik-Automation auf; die Betriebssystem-Dimension ist mit drei deklarierten Werten
 der System-Achse (\texttt{linux}, \texttt{windows}, \texttt{macos}, je mit eigener Probe) und den zwei
 Mess-Regimes im Messplan angelegt --- das zweite Regime, ein immutables Betriebssystem, ist entworfen,
-nicht vollzogen (Abschnitt~\ref{sec:eval-platforms}). Als \emph{Beweis} tragen Abschnitt~\ref{sec:complex-axis}
-(Komplex-Klammer; Struktur), Abschnitt~\ref{sec:hw-probe} (zweigeteilte Erkennung; Struktur),
-Abschnitt~\ref{sec:stamp-model} (Stempel-Zeilen; Struktur) und Abschnitt~\ref{sec:impl-system-axes}
-(Rückkehr-Sperren und Ordnungs-Wachen; Test). Die \emph{Folge}: FF4 strukturell beantwortet;
-Heuristik-Automation und Passungs-Stempel offen.
+nicht vollzogen (Abschnitt~\ref{sec:eval-platforms}). Zu FF4.a (deklarative Kette): Die Kette ist
+durchgehend deklarativ angelegt und als zwei Binaries gebaut. Der Planer
+\texttt{comdare-experiment-planner} prüft die Anwender-XML rein lesend gegen die einkompilierten
+Registry-Kataloge und emittiert aus dem einen Director-Walk den deterministischen Plan --- zwei Läufe
+sind byte-gleich, der Plan-Kopf annotiert das Registry-Trio, und jeder Bau-Schritt weist den real
+gebauten Datei-Stamm aus derselben Orchestrator-Funktion aus, die auch der Bau ruft ---; der
+Mess-Treiber \texttt{comdare-messung-driver} emittiert die System-Permutationen und
+Tier-Bau-Aufträge seines freigegebenen Bau-Raums und fährt die Sieben-Phasen-Mess-Pipeline von
+\textsc{Enumerate} bis \textsc{Persist} (CSV und JSON); die nachgelagerte Neun-Stufen-Werkzeugkette
+rendert daraus die xlsx-Mappe, die booktabs-Tabellen, die TikZ-Diagramme und die Anhang-Dateien, die
+das Manuskript einbindet --- eine XML-Quelle, ein Bau-Kanal, kein Schritt von Hand
+(Abschnitt~\ref{sec:impl-pipeline}, Abbildung~\ref{fig:eval-xml-kette}). Die Auswahl der besten
+Binary oder Rekombination ist als Arbeitsmodus \texttt{compare} der Ablauf-Kette registriert und
+validierbar; sein modus-spezifischer Ablauf und der \texttt{release} sind als Paket nach dem ersten
+vollständigen Messlauf geschnitten, nicht gebaut (Abschnitt~\ref{sec:anatomy-levels}).
+Durchführungs-Stand: Die Kette ist am Durchstich real gelaufen --- die Smoke-Messreihe über 43
+Permutationen im Anhang ist ihr Erzeugnis ---; der headless Dienst, der XML-Erstellungsmodus, die
+\texttt{<publish>}-Sektion und die CSV-Baumform sind Ausbaustufen. Als \emph{Beweis} tragen
+Abschnitt~\ref{sec:complex-axis} (Komplex-Klammer; Struktur), Abschnitt~\ref{sec:hw-probe}
+(zweigeteilte Erkennung; Struktur), Abschnitt~\ref{sec:stamp-model} (Stempel-Zeilen; Struktur),
+Abschnitt~\ref{sec:impl-system-axes} (Rückkehr-Sperren und Ordnungs-Wachen; Test) sowie für FF4.a
+Abschnitt~\ref{sec:impl-pipeline} (Planer, Treiber und Mess-Pipeline; Struktur) und
+Abschnitt~\ref{sec:mess-chain} (Kette von der XML zur Tier-Binary; Struktur). Die \emph{Folge}: FF4
+und FF4.a strukturell beantwortet; Heuristik-Automation, Passungs-Stempel sowie der Ablauf von
+\texttt{compare} und \texttt{release} offen.
 
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.9cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{4.8cm}>{\raggedright\arraybackslash}p{3.3cm}@{}}
@@ -321,16 +372,18 @@ FF2 & Mess-Pipeline, drei Reihen, drei Ebenen, Verifikation & strukturell beantw
 FF2.a & Mess-Achsen als eigener Realm & beantwortet & {\ref{sec:axis-triad}} (Struktur), {\ref{sec:impl-system-axes}} (Test) & Katalog der Erfolgs-Parameter je Achse \\
 FF2.b & Knoten-/Cache-Line-Größe achsen-isoliert & strukturell beantwortet & {\ref{sec:measurement-system}} (Struktur) & Messung über Knotentyp, Layout, Prefetch \\
 FF2.c & Erweiterbarkeit, Eingliederung neuer Prüflinge & beantwortet (konzeptionell) & {\ref{sec:anatomy-levels}}, {\ref{sec:mess-chain}} (Struktur), {\ref{app:interfaces}} (Test) & Paper-Isolations-Modus; Materialisierung von \texttt{Verbund2\_Hybrid} \\
+FF2.d & Workload-Stand der Technik & beantwortet & {\ref{sec:workload-basics-known}} (Literatur), {\ref{sec:eval-workloads}} (Struktur) & Voll-Permutation der Workloads; nur YCSB als Last-Rahmenwerk registriert \\
 FF3 & PRT-ART gegen SOTA in den Reihen A--C & offen & {\ref{sec:prtart-demo}}, {\ref{sec:sota-instances}} (Struktur) & Reihe~A\@; Vollausbau des Vertrags \\
 FF3.a & Seitendarstellung, Umschaltregeln & strukturell beantwortet (Plan-Setzung) & {\ref{sec:prtart-demo}} (Struktur) & plattform-kalibrierte Regeln aus den Läufen \\
 FF3.b & Compile-Time-Zwang & beantwortet & {\ref{sec:measurement-system}} (Struktur), {\ref{sec:impl-contracts}} (Test) & --- \\
 FF4 & Übersetzungszeit gegen Laufzeit, Provenienz & strukturell beantwortet & {\ref{sec:stamp-model}}, {\ref{sec:hw-probe}} (Struktur), {\ref{sec:impl-system-axes}} (Test) & Passungs-Stempel; Heuristik-Automation \\
+FF4.a & deklarative Kette von der XML bis zur Auswertung & strukturell beantwortet & {\ref{sec:impl-pipeline}}, {\ref{sec:mess-chain}} (Struktur) & Ablauf von \texttt{compare} und \texttt{release}; Dienst, Erstellungsmodus, CSV-Baum \\
 FF4.E & Grenze entlang der Achsen-Kategorien & beantwortet & {\ref{sec:complex-axis}}, {\ref{sec:stamp-model}} (Struktur) & --- \\
 \bottomrule
 \end{tabular}
 \caption{Die Beweiskette je Haupt- und Teilfrage: Status in drei Stufen (beantwortet, strukturell
-beantwortet, offen), die tragenden Abschnitte mit ihrer Belegart (Struktur, Test, Messung) und der
-offene Rest ohne Zahl.}\label{tab:ff-beweiskette}
+beantwortet, offen), die tragenden Abschnitte mit ihrer Belegart (Struktur, Test, Messung; für FF2.d der
+Literaturbeleg) und der offene Rest ohne Zahl.}\label{tab:ff-beweiskette}
 \end{table}
 
 %% OWNER-VORLAGE: OV-K6-03 --- Bau-Soll je System-Permutation als Katalog-Nenner ($2^{17}$), Voll-Bau-Umfang
