@@ -74,12 +74,12 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   geladen; C++23-Module strukturieren zwar die Übersetzungseinheiten, garantieren für sich genommen
   aber keine portable ABI-Stabilität~\cite{wg21_modules_abi}.
   \textbf{Entscheidung:} Eine einheitliche C-Modulgrenze exportiert je Permutation genau ein Lebewesen
-  --- eine \texttt{IAnatomyBase}-Instanz --- über sieben gattungs-agnostisch benannte Pflicht-Symbole:
+  --- eine \texttt{IAnatomyBase}-Instanz --- über sieben gattungsunabhängig benannte Pflicht-Symbole:
   die vier Ur-Symbole ABI-Version, Magic, Factory (\texttt{comdare\_create\_anatomy()}) und Destroy,
   die zwei Identitäts-Symbole Gattung und Genus, wobei die Gattung nicht als zweites Datum gepflegt,
   sondern übersetzungsstatisch aus dem Genus abgeleitet wird, und das Stempel-Zeilen-Symbol. Die
   Namensgleichheit über alle Gattungen ist das Stabilitäts-Argument: Der Lader kann die Gattung
-  erfragen, bevor er sie kennt. Dahinter liegen zwei Engine-Begriffe: die \texttt{CacheEngine} als
+  über ein gattungsunabhängiges Symbol ermitteln, ohne sie vorab zu kennen. Dahinter liegen zwei Engine-Begriffe: die \texttt{CacheEngine} als
   Bibliothek der Achsen-Bausteine und die \texttt{ExecutionEngine} als Ausführungs- und
   Mess-Infrastruktur mit der Wurzel \texttt{IExecutionEngine}, unter der \texttt{IAnatomyBase} steht;
   die API-Fassade ist \texttt{ICacheEngine}; der Name \enquote{SearchEngine} bezeichnet die ABI-Laufzeit-Sicht
@@ -196,7 +196,7 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   %% Widerspruch genügt.
   \item[ADR-6 --- Explizit kodierte Nicht-Erhebung statt Phantomwert]\hfill\\
   \textbf{Kontext:} Nicht wirklich erhebbare Werte (Zähler ohne Hardware-Zugriff, Achsen ohne
-  echten Laufzeit-Parameter) laden zu plausiblen Phantomwerten ein, die die Heuristik-Ableitung
+  tatsächlichen Laufzeit-Parameter) laden zu plausiblen Phantomwerten ein, die die Heuristik-Ableitung
   systematisch vergiften würden.
   \textbf{Entscheidung:} Das System meldet explizit ungültig oder leer statt eines Phantomwerts und
   unterscheidet je Messwert drei Zustände: gültiger Messwert, explizit kodierte Nicht-Erhebung (nicht
@@ -205,7 +205,7 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   Grundsatzes (Anhang~\ref{app:glossary});
   methodisch ist die Nicht-Erhebung eine ausgewiesene Klasse fehlender Werte im Sinne der
   Missing-Data-Literatur~\cite{graham2009missing}, nie ein imputierter Wert.}. Je Ereignis reist ein
-  Gültigkeits-Flag mit, sodass eine echte Null ein Messergebnis bleibt; die Wall-Clock-Quelle bietet nur
+  Gültigkeits-Flag mit, sodass eine gemessene Null ein Messergebnis bleibt; die Wall-Clock-Quelle bietet nur
   Mittelwert und Durchsatz an und verweigert es, ihren Mittelwert als Perzentil zu etikettieren, und
   eine negative Dauer ist ein Messfehler, kein Nullwert; ein PMC-Katalog ohne Modell-Eintrag liefert
   \enquote{nicht anwendbar}, nie eine geratene Kodierung; die Generatoren erzeugen für eine Messreihe
@@ -250,7 +250,7 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   Allokator-Adapter ersetzen den fehlenden Vendor in \texttt{if constexpr}-Zweigen durch die portable
   ausgerichtete Allokation (\texttt{portable\_aligned\_alloc}), der Vendor-Shim liefert für den nie
   ausgeführten Zweig nur Forward-Stubs, und der Achsen-Wert \texttt{StdMalloc} ist ein eigener
-  Baustein, kein Notnagel; Datenstruktur-Adapter fremder Suchverfahren schalten über einen
+  Baustein, keine Notlösung; Datenstruktur-Adapter fremder Suchverfahren schalten über einen
   Familien-Schalter und besitzen eine eigenständige Re-Implementierung als Körper, während die Bindung an
   den Original-Code über den Bibliotheks-Bau mit dem Original-Compiler läuft.
   \textbf{Konsequenz:} Der Build bleibt ohne jede Fremd-Aktivierung eigenständig lauffähig.
@@ -261,8 +261,8 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   \item[ADR-9 --- Mess-Gating in drei Schichten und vier Arbeitsmodi]\hfill\\
   \textbf{Kontext:} Mess- und Observer-Kopplungen kosten Zeit und dürfen den Produktiv-Pfad
   nicht belasten.
-  \textbf{Entscheidung:} Die Mess-Kopplungen des Laufzeit-Adapters sind über die Master-Option
-  \texttt{COMDARE\_MEASUREMENT\_MODE} gegated, die \texttt{COMDARE\_MEASUREMENT\_ON} definiert und die
+  \textbf{Entscheidung:} Die Mess-Kopplungen des Laufzeit-Adapters werden über die Master-Option
+  \texttt{COMDARE\_MEASUREMENT\_MODE} geschaltet, die \texttt{COMDARE\_MEASUREMENT\_ON} definiert und die
   der Release-Modus erzwungen abschaltet; die schaltbare Fläche zerfällt in drei trennbare Schichten
   --- Basis-Zeit, Observer-Zähler und Feinkorn-Segment-Timer je Achse ---, die Abschaltungsstufen der
   Messung. Die Ablaufmethodik kennt vier Arbeitsmodi derselben Permutation, als Registry und nicht als
@@ -377,7 +377,7 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   über elf Glieder (Format~6), darunter die drei Realm-Zeilen, das Werkzeugketten-Glied und den Hash
   der Overlay-Quellmenge (Konkatenation in fester Ordnung, einmal SHA-512); der CEB führt einen
   SHA-512-Provenienz-Fingerprint, der kein Wiederverwendungs-Kriterium ist. Die Klammer-Grammatik der
-  Stempel-Einträge lebt einmal (\texttt{c\{p.e\}} ist \texttt{c} mit den Untergliedern \texttt{p} und
+  Stempel-Einträge ist an einer Stelle definiert (\texttt{c\{p.e\}} ist \texttt{c} mit den Untergliedern \texttt{p} und
   \texttt{e}, nie flach), und die Klammer-Tiefe ist die Meta-Meta-Ebene des Eintrags.
   \textbf{Konsequenz:} Der Stempel erfüllt fünf Rollen --- Identität, Cache-Schlüssel, Lager-Schlüssel,
   Wiedererkennungs-Kriterium und Einordnung; der Selbst-Stempel des Treiber-Binaries (\texttt{--version}) führt nur
@@ -395,7 +395,7 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   generierter XML\@; gingen Mess- oder System-Werte in die Identität ein, entstünden Doppel-Binaries
   derselben Permutation und ein Lager, das dieselbe Binary mehrfach hält.
   \textbf{Entscheidung:} Die \texttt{binary\_id} ist der Pfad aus achtzehn \texttt{achse=wert}-Segmenten
-  in kanonischer Slot-Reihenfolge (die Organ-Zahl achtzehn lebt an genau einem Ort); alle Mess-Achsen
+  in kanonischer Slot-Reihenfolge (die Organ-Zahl achtzehn ist an genau einer Stelle definiert); alle Mess-Achsen
   und alle System-Achsen führen in ihren Registries \texttt{binary\_id = never}; Unter-Achsen sind
   Laufzeit-Permutation und stehen in keiner Bau-Job-Legende; der Arbeitsmodus ist identitätsneutral.
   Die Bau-Welt reist stattdessen als Fingerprint-Glied mit --- die System-Zeile und das
@@ -437,7 +437,7 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   nachmessen, was dort nicht zu finden ist.
   \textbf{Entscheidung:} Bestand~1 hält die Binary unter ihrem SHA-512-Fingerprint; Bestand~2 hält
   die Messwerte unter dem Paar aus Fingerprint der vermessenen Binary und Hardware-Identität der
-  messenden Maschine, die Mess-Zelle steht daneben und wird nie in den Digest gefaltet; eine
+  messenden Maschine, die Mess-Zelle steht daneben und wird nie in den Digest fusioniert; eine
   vorgefundene Binary wird übersprungen, wenn ihr bestandenes Prüf-Testat inventarisiert ist, sonst gebaut
   oder gemessen; ein Versions-Lock über die Overlay-Quellmenge macht unbemerkte Quelländerungen zum
   CI-Fehler.
@@ -479,17 +479,17 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   \emph{\texttt{configure.sh}, \texttt{make}, \texttt{make check} und \texttt{make install}.}\hfill\\
   \textbf{Kontext:} Das einzige unter Linux offizielle Verfahren ist \texttt{configure.sh},
   \texttt{make} und \texttt{make install} beziehungsweise \texttt{make check}, und diese drei müssen
-  im Wurzelordner liegen; eine Konfiguration darf nur eine Wahrheit haben.
+  im Wurzelordner liegen; eine Konfiguration darf nur eine Quelle haben.
   \textbf{Entscheidung:} \texttt{configure.sh} ist ein POSIX-sh-Vorbau ohne Python, gebaut wird
   weiterhin mit CMake; das \texttt{Makefile} ist statisch eingecheckt und reicht nur an CMake weiter,
   mit den GNU-Standardzielen~\cite{gnu2026standards} \texttt{all}, \texttt{install}, \texttt{check},
   \texttt{installcheck}, \texttt{uninstall}, \texttt{clean}, \texttt{distclean},
   \texttt{mostlyclean} und \texttt{maintainer-clean} (das Test-Ziel heißt \texttt{check}); die
-  Konfiguration lebt ausschließlich in \texttt{config.status} und im CMake-Cache, und das Makefile
-  enthält bewusst keine Vorgabewerte --- ein generiertes Makefile wäre eine zweite Wahrheit ohne
-  Gegenwert.
+  Konfiguration ist ausschließlich in \texttt{config.status} und im CMake-Cache abgelegt, und das Makefile
+  enthält bewusst keine Vorgabewerte --- ein generiertes Makefile wäre eine zweite Konfigurationsquelle ohne
+  Nutzen.
   \textbf{Konsequenz:} Es gibt keinen zweiten Bauweg neben CMake und keine zweite
-  Konfigurations-Wahrheit; der Vorbau ist mit \texttt{sh -n} prüfbar.
+  Konfigurationsquelle; der Vorbau ist mit \texttt{sh -n} prüfbar.
   \textbf{Umsetzungsstand:} \texttt{configure.sh} und \texttt{Makefile} liegen im Repositorium; der
   Framework-Export für Konsumenten (\texttt{install(EXPORT)}, \texttt{find\_package}) und die
   Nachlauf-Prüfungen sind nicht implementiert.
@@ -509,7 +509,7 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   Übersetzer und Bautyp gibt es einen Objekt-Cache-Schlüssel mit genau einem Schreiber; der
   Übersetzer-Mindeststand ist g++~15.3; der golden-Referenzkatalog $2^{17}$ mit CRC-64-Prüfsumme ist
   der Regressions-Detektor mit festgeschriebener Kardinalität.
-  \textbf{Konsequenz:} Abgenommen wird nur \enquote{0~failed} in allen vier Zellen ohne
+  \textbf{Konsequenz:} Akzeptiert wird nur ein Lauf ohne fehlgeschlagene Tests in allen vier Zellen ohne
   Ausnahmeliste --- ein Gate im Sinne der Continuous Delivery~\cite{humble2010cd} ---, und eine
   Test-Zahl wird nur mit dem Lauf genannt, der sie erzeugt hat.
   \textbf{Umsetzungsstand:} Die Mini-Pipeline je Träger-Stufe (vier Stufen mal gcc und clang mal Release

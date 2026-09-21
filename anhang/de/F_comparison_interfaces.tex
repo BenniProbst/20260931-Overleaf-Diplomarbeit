@@ -38,7 +38,7 @@ host-seitig abgeleitet, Iteration und \texttt{swap} queren die Grenze nicht, und
 \texttt{get\_allocator} ist auf der Map-Seite ein optionales Proxy-Sub-Interface außerhalb des
 Orakels (Abschnitt~\ref{asec:if-decomp}).
 
-\emph{Zusammengesetzte Funktionen.} Einige Funktionen ergeben sich \enquote{unter der Haube} als Komposition
+\emph{Zusammengesetzte Funktionen.} Einige Funktionen ergeben sich intern als Komposition
 primitiverer Operationen --- etwa \texttt{operator[]} als \texttt{lower\_bound} mit anschließendem
 Default-Einfügen bei fehlendem Schlüssel oder \texttt{at} als \texttt{find} mit Wurf einer
 \texttt{std::out\_of\_range}-Ausnahme bei Fehlen ---; solche Fälle sind in der Spalte \enquote{Anmerkung}
@@ -51,7 +51,7 @@ argument deduction}, seit C++17: Die Template-Argumente eines Klassentemplates w
 Konstruktor-Argumenten abgeleitet, über implizit aus den Konstruktoren gebildete oder explizit
 angegebene Leitfäden~\cite{spertus2016ctad}.} und der transparente Schlüssel
 (Abschnitt~\ref{asec:if-map}). Die exakten cache-engine-internen Funktions-Sprünge
-(\emph{function-handle-hops}\footnote{Hausbegriff der Cache-Engine für die Folge der internen
+(\emph{function-handle-hops}\footnote{Projektinterner Begriff der Cache-Engine für die Folge der internen
 Funktions-Sprünge (Handles) vom Eintritt an der Modulgrenze über die Achsen-Organe bis zum Ergebnis;
 das Entwickler-Dokument verzeichnet sie je Standard-Funktion und markiert nicht angebundene
 Funktionen als solche.}) dokumentiert das Entwickler-Dokument
@@ -268,7 +268,7 @@ entfallen~\cite{iso_cpp}.} \texttt{reference} statt \texttt{bool\&} und bietet z
 Vergleichsoperatoren verhalten sich wie bei \texttt{std::map}.
 
 \section{Zusammengesetzte Funktionen und Konformitäts-Teilmenge}\label{asec:if-decomp}
-Mehrere Schnittstellen-Funktionen sind \enquote{unter der Haube} Kompositionen primitiverer Operationen
+Mehrere Schnittstellen-Funktionen sind intern Kompositionen primitiverer Operationen derselben Schnittstelle
 (Tabelle~\ref{tab:if-decomp}); die Tabelle beschreibt den ISO-Standardvertrag. Die eigene Mess-Hülle
 weicht an zwei Stellen bewusst davon ab, weil der ABI-Konformitätsvertrag \texttt{noexcept} verlangt
 und eine werfende Hülle als nicht-konform gilt: \texttt{at} liefert statt der Ausnahme eine
@@ -285,12 +285,12 @@ als feste Komposition. Die geordneten Operationen --- \texttt{begin}/\texttt{end
 \texttt{lower\_bound}, \texttt{upper\_bound}, \texttt{equal\_range} --- setzen zusätzlich eine
 Ordnungs-Suche voraus und sind deshalb als eigene, additive Fähigkeit der Modulgrenze geführt;
 ungeordnete Achsen erfüllen dieselbe Hülle ohne sie und bezahlen die fehlende Ordnung beim
-geordneten Lesen mit linearem Aufwand. Genau diese Austauschbarkeit ist der zentrale Mess-Akt
+geordneten Lesen mit linearem Aufwand. Genau diese Austauschbarkeit ist der Gegenstand der Messung
 (Abschnitt~\ref{sec:measurement-system}). Das Konformitäts-Gatter prüft je Gattung die in den
 Tabellen~\ref{tab:if-map} und~\ref{tab:if-vector} mit $\dagger$ markierte Kern-Teilmenge.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{3.1cm}@{}}
-  \caption{Zusammengesetzte Funktionen (\enquote{unter der Haube})}\label{tab:if-decomp}\\
+  \caption{Zusammengesetzte Funktionen (interne Komposition primitiver Operationen)}\label{tab:if-decomp}\\
   \toprule
   \textbf{Funktion} & \textbf{Zusammensetzung} & \textbf{Anmerkung} \\
   \midrule
