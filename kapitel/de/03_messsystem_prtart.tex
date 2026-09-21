@@ -803,13 +803,13 @@ eine statische Feature-Set-Definition. Die Anatomie ist die Verdrahtung zwischen
 Achse welche nutzt, zeigt der Inter-Organ-Nutzungs-Graph (Abbildung~\ref{fig:usage}).
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
-  organ/.style={draw,circle,minimum size=1.05cm,fill=green!7,inner sep=0pt}]
+  organ/.style={draw,circle,minimum size=1.05cm,fill=green!7,inner sep=1pt}]
   \node[organ,fill=blue!12,minimum size=1.3cm] (store) at (0,0){Speicher-\\organ};
-  \node[organ] (alloc) at (-3.0,1.15){Allokator};
+  \node[organ] (alloc) at (-3.0,1.5){Allokator};
   \node[organ] (node) at (-3.0,0){Knotentyp};
-  \node[organ] (layout) at (-3.0,-1.15){Layout};
+  \node[organ] (layout) at (-3.0,-1.5){Layout};
   \node[organ] (search) at (3.0,0){Suche};
-  \node[organ,fill=gray!8] (obs) at (2.0,-1.95){Telemetrie};
+  \node[organ,fill=gray!8] (obs) at (2.8,-2.3){Telemetrie};
   \draw[->,thick,blue] (alloc)--(store);
   \draw[->,thick,blue] (node)--(store);
   \draw[->,thick,blue] (layout)--(store);
@@ -914,7 +914,7 @@ Abbildung~\ref{fig:three-levels}; die Code-Trennung der beiden Interfaces vertie
 Nicht-baumartige Verfahren erfordern so keine eigene Gattung, sondern belegen ein eingeschränktes
 Achsen-Subset derselben Gattung.
 \begin{figure}[htbp]\centering
-% Kein \resizebox: die Zeichnung ist ~14.8cm breit und passt nativ in \textwidth (16cm); die Ebenen 3-5
+% Kein \resizebox: die Zeichnung ist ~15.1cm breit und passt nativ in \textwidth (16cm); die Ebenen 3-5
 % laufen als breite Bänder unter der Hierarchie, damit ihre Schrift lesbar bleibt (Owner-Sichtprüfung).
 % Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
@@ -926,18 +926,22 @@ Achsen-Subset derselben Gattung.
   % Ebene 1 --- vier Gattungen (Außen-Interface, Feature-Kern-Komposition)
   \node[gen] (g1) at (-4.0,0){Map};
   \node[gen] (g2) at (0.6,0){Container};
-  \node[gen] (g3) at (3.7,0){Graph};
-  \node[gen,minimum width=2.9cm] (g4) at (6.7,0){HeuristikAdapter};
+  \node[gen] (g3) at (4.3,0){Graph};
+  \node[gen,minimum width=2.9cm] (g4) at (7.4,0){HeuristikAdapter};
   \draw[->] (root)--(g1); \draw[->] (root)--(g2); \draw[->] (root)--(g3); \draw[->] (root)--(g4);
   % Ebene 2 --- Genera (reales Tier-Interface, Feature-Spezial-Komposition)
   \node[sub,fill=green!18] (s1) at (-4.0,-1.3){\textbf{Säugetier} $=$ \texttt{SearchAlgorithm}\\{\scriptsize \texttt{map}-Hülle $\cdot$ 18 Organ-Achsen}};
-  \node[sub] (c1) at (0.6,-1.05){Vogel $=$ Set {\scriptsize(\texttt{set})}};
-  \node[sub] (c2) at (0.6,-1.85){Reptil $=$ Sequence {\scriptsize(\texttt{vector})}};
-  \node[sub] (c3) at (0.6,-2.65){Wirbelloses $=$ Adapter {\scriptsize(\texttt{stack})}};
-  \node[sub] (c4) at (0.6,-3.45){Pflanze $=$ View {\scriptsize(\texttt{span})}};
-  \node[tbd] (gr1) at (3.7,-1.3){Interface angelegt,\\{\scriptsize kein Genus implementiert}};
-  \node[sub,minimum width=2.9cm] (h1) at (6.7,-1.3){\texttt{FunctionInterfaceReroute}\\{\scriptsize Hybrid-Tier: geerbtes Ziel-Genus}};
-  \draw[->] (g1)--(s1); \draw[->] (g2)--(c1); \draw[->] (g2)--(c2); \draw[->] (g2)--(c3); \draw[->] (g2)--(c4); \draw[->,dashed] (g3)--(gr1); \draw[->] (g4)--(h1);
+  \node[sub,anchor=west] (c1) at (-1.2,-1.15){Vogel $=$ Set {\scriptsize(\texttt{set})}};
+  \node[sub,anchor=west] (c2) at (-1.2,-1.95){Reptil $=$ Sequence {\scriptsize(\texttt{vector})}};
+  \node[sub,anchor=west] (c3) at (-1.2,-2.75){Wirbelloses $=$ Adapter {\scriptsize(\texttt{stack})}};
+  \node[sub,anchor=west] (c4) at (-1.2,-3.55){Pflanze $=$ View {\scriptsize(\texttt{span})}};
+  \node[tbd,text width=2.4cm,anchor=north] (gr1) at (4.3,-0.7){Interface angelegt,\\{\scriptsize kein Genus}\\{\scriptsize implementiert}};
+  \node[sub,minimum width=2.9cm,text width=2.9cm,anchor=north] (h1) at (7.4,-0.7){\texttt{FunctionInterface}\\\texttt{Reroute}\\{\scriptsize Hybrid-Tier:}\\{\scriptsize geerbtes Ziel-Genus}};
+  \draw[->] (g1)--(s1); \draw[->,dashed] (g3)--(gr1); \draw[->] (g4)--(h1);
+  % Container-Ast als Kamm: Stamm links neben den Genus-Kaesten, je Genus ein Zahn auf den West-Anker
+  \draw (g2.south) -- ++(0,-0.3) -| (-1.5,-3.55);
+  \draw[->] (-1.5,0 |- c1.west) -- (c1.west); \draw[->] (-1.5,0 |- c2.west) -- (c2.west);
+  \draw[->] (-1.5,0 |- c3.west) -- (c3.west); \draw[->] (-1.5,0 |- c4.west) -- (c4.west);
   % Ebenen 3--5 --- der Säugetier-Ast bis zum kompilierten Individuum, als lesbare Bänder
   \node[band] (l3) at (1.3,-4.75){\textbf{Ebene 3 --- Organe:} die 18 Organ-Achsen (Knotentyp, Layout, Allokator, Prefetch, \dots) \emph{permutieren}; die Container-Genera bilden sich aus demselben Achsen-Pool.};
   \node[band] (l4) at (1.3,-6.15){\textbf{Ebene 4 --- konkretes Tier:} eine Belegung \emph{aller} Achsen $=$ ein Individuum (ART, HOT, Masstree, SuRF, START, Wormhole, \dots; 30 Vollprofile) --- ein abstraktes Profil (PRT-ART, OLC, LOUDS, VAMPIR) belegt nur einige Achsen selbst.};
@@ -972,40 +976,40 @@ Gesamt-Stempel tragen alle vier, und die angeschlossenen Tiere trägt nur der Hy
 (Abbildung~\ref{fig:traeger-flaechen}).
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\scriptsize,>=Stealth,align=center,
-  tr/.style={draw,rounded corners,fill=blue!10,minimum width=2.1cm,minimum height=0.6cm,font=\bfseries\scriptsize},
-  p/.style={draw,fill=green!18,minimum width=2.1cm,minimum height=0.48cm,font=\tiny},
-  v/.style={draw,fill=gray!10,minimum width=2.1cm,minimum height=0.48cm,text=gray,font=\tiny},
+  tr/.style={draw,rounded corners,fill=blue!10,minimum width=2.1cm,minimum height=0.6cm,text width=1.9cm,font=\bfseries\scriptsize},
+  p/.style={draw,fill=green!18,minimum width=2.1cm,minimum height=0.48cm,text width=1.95cm,font=\tiny},
+  v/.style={draw,fill=gray!10,minimum width=2.1cm,minimum height=0.48cm,text width=1.95cm,text=gray,font=\tiny},
   fl/.style={draw,rounded corners,fill=orange!10,minimum width=2.1cm,minimum height=1.25cm,text width=1.95cm,font=\tiny},
   lab/.style={anchor=east,font=\scriptsize}]
   % Spaltenkoepfe: die vier Traeger-Stufen; die Konfiguration wandert von links nach rechts
   \node[tr] (t0) at (0,0){Planer};
-  \node[tr] (t1) at (2.3,0){CEB};
-  \node[tr] (t2) at (4.6,0){Tier-Binary};
-  \node[tr] (t3) at (6.9,0){Hybrid-Tier};
+  \node[tr] (t1) at (2.5,0){CEB};
+  \node[tr] (t2) at (5.0,0){Tier-Binary};
+  \node[tr] (t3) at (7.5,0){Hybrid-Tier};
   \draw[->,thick] (t0)--(t1); \draw[->,thick] (t1)--(t2); \draw[->,thick] (t2)--(t3);
-  \node[font=\tiny,anchor=south] at (3.45,0.38){Konfiguration wandert: XML $\to$ Planer $\to$ CEB $\to$ Tier $\to$ Hybrid (keine Stufe durchläuft Schichten)};
+  \node[font=\tiny,anchor=south] at (3.75,0.38){Konfiguration wandert: XML $\to$ Planer $\to$ CEB $\to$ Tier $\to$ Hybrid (keine Stufe durchläuft Schichten)};
   % Zeilen: die sieben Stempel-Interfaces (28 Zellen; gruen = Pflicht, grau = verboten)
   \node[lab] at (-1.2,-0.75){\texttt{version\_xyz}};
-  \node[p] at (0,-0.75){Pflicht}; \node[v] at (2.3,-0.75){verboten}; \node[v] at (4.6,-0.75){verboten}; \node[v] at (6.9,-0.75){verboten};
+  \node[p] at (0,-0.75){Pflicht}; \node[v] at (2.5,-0.75){verboten}; \node[v] at (5.0,-0.75){verboten}; \node[v] at (7.5,-0.75){verboten};
   \node[lab] at (-1.2,-1.32){\texttt{mess\_zeile}};
-  \node[v] at (0,-1.32){verboten}; \node[p] at (2.3,-1.32){Pflicht}; \node[p] at (4.6,-1.32){Pflicht}; \node[p] at (6.9,-1.32){Pflicht};
+  \node[v] at (0,-1.32){verboten}; \node[p] at (2.5,-1.32){Pflicht}; \node[p] at (5.0,-1.32){Pflicht}; \node[p] at (7.5,-1.32){Pflicht};
   \node[lab] at (-1.2,-1.89){\texttt{system\_zeile}};
-  \node[v] at (0,-1.89){verboten}; \node[p] at (2.3,-1.89){Pflicht}; \node[p] at (4.6,-1.89){Pflicht}; \node[p] at (6.9,-1.89){Pflicht};
+  \node[v] at (0,-1.89){verboten}; \node[p] at (2.5,-1.89){Pflicht}; \node[p] at (5.0,-1.89){Pflicht}; \node[p] at (7.5,-1.89){Pflicht};
   \node[lab] at (-1.2,-2.46){\texttt{organ\_zeile}};
-  \node[v] at (0,-2.46){verboten}; \node[v,draw=red!70!black,very thick] at (2.3,-2.46){verboten (Riegel)}; \node[p] at (4.6,-2.46){Pflicht}; \node[p] at (6.9,-2.46){Pflicht};
+  \node[v] at (0,-2.46){verboten}; \node[v,draw=red!70!black,very thick] at (2.5,-2.46){verboten (Riegel)}; \node[p] at (5.0,-2.46){Pflicht}; \node[p] at (7.5,-2.46){Pflicht};
   \node[lab] at (-1.2,-3.03){\texttt{fingerprint\_sha}};
-  \node[p] at (0,-3.03){Pflicht (SHA-256)}; \node[p] at (2.3,-3.03){Pflicht (SHA-512)}; \node[p] at (4.6,-3.03){Pflicht (SHA-512)}; \node[p] at (6.9,-3.03){Pflicht (SHA-512)};
+  \node[p] at (0,-3.03){Pflicht (SHA-256)}; \node[p] at (2.5,-3.03){Pflicht (SHA-512)}; \node[p] at (5.0,-3.03){Pflicht (SHA-512)}; \node[p] at (7.5,-3.03){Pflicht (SHA-512)};
   \node[lab] at (-1.2,-3.60){\texttt{gesamt\_stempel}};
-  \node[p] at (0,-3.60){Pflicht}; \node[p] at (2.3,-3.60){Pflicht}; \node[p] at (4.6,-3.60){Pflicht}; \node[p] at (6.9,-3.60){Pflicht};
+  \node[p] at (0,-3.60){Pflicht}; \node[p] at (2.5,-3.60){Pflicht}; \node[p] at (5.0,-3.60){Pflicht}; \node[p] at (7.5,-3.60){Pflicht};
   \node[lab] at (-1.2,-4.17){\texttt{angeschlossene}};
-  \node[v] at (0,-4.17){verboten}; \node[v] at (2.3,-4.17){verboten}; \node[v] at (4.6,-4.17){verboten}; \node[p] at (6.9,-4.17){Pflicht (RT-Hook)};
+  \node[v] at (0,-4.17){verboten}; \node[v] at (2.5,-4.17){verboten}; \node[v] at (5.0,-4.17){verboten}; \node[p] at (7.5,-4.17){Pflicht (RT-Hook)};
   % Die Interface-Flaechen je Stufe
   \node[lab,font=\bfseries\scriptsize] at (-1.2,-5.25){Flächen};
   \node[fl] at (0,-5.25){2 Stempel\\{(Version, ISA, OS $+$ SHA-256)}};
-  \node[fl] at (2.3,-5.25){2 Stempel (Mess-Wahl)\\3 eigene Mess-Gates\\{(CEB aus / Tier an)}};
-  \node[fl] at (4.6,-5.25){1 Genus-Interface\\2 Stempel\\3 Mess-Durchstich \texttt{IMessVisitor}};
-  \node[fl] at (6.9,-5.25){1 geerbtes Ziel-Genus\\2 Stempel $+$ angeschlossene\\3 Mess-Durchstich};
-  \node[font=\tiny,anchor=north] at (2.85,-6.25){Realm-Zeilen in der Metapher: Mess-Zeile $=$ Labor, System-Zeile $=$ Lebensraum, Organ-Zeile $=$ die vom Blut verbundenen Organe};
+  \node[fl] at (2.5,-5.25){2 Stempel (Mess-Wahl)\\3 eigene Mess-Gates\\{(CEB aus / Tier an)}};
+  \node[fl] at (5.0,-5.25){1 Genus-Interface\\2 Stempel\\3 Mess-Durchstich \texttt{IMessVisitor}};
+  \node[fl] at (7.5,-5.25){1 geerbtes Ziel-Genus\\2 Stempel $+$ angeschlossene\\3 Mess-Durchstich};
+  \node[font=\tiny,anchor=north] at (3.15,-6.25){Realm-Zeilen in der Metapher: Mess-Zeile $=$ Labor, System-Zeile $=$ Lebensraum, Organ-Zeile $=$ die vom Blut verbundenen Organe};
 \end{tikzpicture}
 \caption{Träger-Stufen und Interface-Flächen: die dreiwertige Zulassungsmatrix der sieben Stempel-Interfaces über die vier Träger-Stufen Planer, CacheEngineBuilder (CEB), Tier-Binary und Hybrid-Tier-Binary (28 Zellen; grün $=$ Pflicht, grau $=$ verboten; die Zelle Organ-Zeile/CEB ist der maschinelle Riegel \enquote{der CEB trägt keine Organ-Achsen}) und darunter die Interface-Flächen je Stufe --- Fläche~1 Genus-Interface (Laufzeit), Fläche~2 Stempel (Übersetzungszeit, ABI-stabil), Fläche~3 Mess-Durchstich. Die Konfiguration wandert von der XML über Planer und CEB bis zur Tier-Binary; keine Stufe durchläuft Schichten, jede enthält ihre Schicht einkompiliert.}\label{fig:traeger-flaechen}
 \end{figure}
