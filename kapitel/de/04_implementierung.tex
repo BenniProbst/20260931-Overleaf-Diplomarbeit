@@ -789,12 +789,11 @@ werden je Erbin per \texttt{static\_assert} geprüft.}\label{tab:stempel-matrix}
 \section{Qualitätssicherung: Contract-Tests je Schicht}\label{sec:impl-contracts}
 Das Schichtenmodell E4--E0 mit seinen festgeschriebenen Interface-Verträgen hat
 Abschnitt~\ref{sec:anatomy-layers} als Konzept entwickelt; dieser Abschnitt beschreibt seine Umsetzung
-als Prüf-Infrastruktur. Der Anlass ist eine konkrete Projekterfahrung: Zwei Implementierungs-Inkremente,
-die mehrere Schichten gleichzeitig veränderten, mussten vollständig zurückgenommen werden, weil ihre
-Fehler aus Wechselwirkungen zwischen den Ebenen stammten, die weder lokale Tests noch zeilenweises
-Review sichtbar machten. Für ein System, dessen Produktraum jede vollständige Materialisierung
-ausschließt (Abschnitt~\ref{sec:mess-chain}), sind
-Mehr-Ebenen-Änderungen damit praktisch nicht abnehmbar; die Konsequenz ist, jede Schicht einzeln
+als Prüf-Infrastruktur. Der Grund liegt in der Schichtung selbst: Änderungen, die mehrere Schichten
+zugleich verändern, erzeugen Fehler aus Wechselwirkungen zwischen den Ebenen, die weder lokale Tests
+noch zeilenweises Review sichtbar machen (ADR-5, Anhang~\ref{app:adr}). Für ein System, dessen
+Produktraum jede vollständige Materialisierung ausschließt (Abschnitt~\ref{sec:mess-chain}), sind
+Änderungen über mehrere Ebenen zugleich damit praktisch nicht abnehmbar; die Konsequenz ist, jede Schicht einzeln
 fertigzustellen --- mit explizit festgeschriebenem Interface-Vertrag zur Nachbar-Ebene, eigenem
 Test-Harness und eigener Abnahme-Definition.
 
@@ -859,8 +858,8 @@ Paket den Apparat nicht bricht (Continuous Integration und Delivery als
 Sicherungsstufen~\cite{fowler2006ci,humble2010cd}).
 %% OWNER-VORLAGE: OV-K4-2 --- Testzahl nur mit erzeugendem Lauf: 551 registrierte Tests (ctest -N,
 %% gcc-Release-Baubaum vom 17.09.2026); Alternative: Zahl ganz weglassen. Widerspruch genügt.
-\emph{Gate~1} ist das scharfe Gate des Engine-Repositories: Die volle Test-Suite --- 551 registrierte
-Tests im Release-Baubaum vom 17.~September 2026 --- läuft in vier Zellen, gcc und clang jeweils als
+\emph{Gate~1} ist das scharfe Gate des Engine-Repositories: Die volle Test-Suite\footnote{Umfang der Test-Suite: 551 registrierte Tests (\texttt{ctest -N}) im
+  gcc-Release-Baubaum vom 17.~September 2026.} läuft in vier Zellen, gcc und clang jeweils als
 Release- und Debug-Bau, ohne Änderungs-Skip, und abgenommen wird ausschließlich \enquote{0~failed}, ohne
 Ausnahmeliste. Der Doppellauf hat zwei Gründe: Die Compiler-Matrix zwingt jede statische Prüfung
 durch zwei Übersetzer, und die Wiederholung des Messlaufs --- die Zwei-Phasen-Operationsschleife aus
