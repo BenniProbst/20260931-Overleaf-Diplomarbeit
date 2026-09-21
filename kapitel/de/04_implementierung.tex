@@ -26,7 +26,7 @@ Die Implementierung verteilt sich auf vier Git-Repositorien mit klar getrennten 
   Permutations-Schleife, Modul-Loader, der siebenphasige \texttt{ExperimentDriver} mit den Phasen
   \texttt{phase1\_enumerate} bis \texttt{phase7\_export} und der Experiment-Planer
   \texttt{ExperimentPlanDirector}, Abschnitt~\ref{sec:impl-pipeline}); die ABI-Header unter \texttt{abi/}
-  --- der lebende ABI-Kern \texttt{module\_\allowbreak{}abi\_\allowbreak{}v1} sowie der quarantänierte
+  --- der lebende ABI-Kern \texttt{module\_\allowbreak{}abi\_\allowbreak{}v1} sowie der vom Bau isolierte
   Test-Cluster aus \texttt{baustein\_\allowbreak{}variants} und \texttt{resolve\_\allowbreak{}baustein}
   (Abschnitt~\ref{sec:axes-impl}) ---; die 33~SOTA-Profile unter
   \texttt{algorithm\_\allowbreak{}profiles/\allowbreak{}sota} als ausführbare XML --- 30~Vollprofile und
@@ -289,7 +289,7 @@ Eine Design-Entscheidung grenzt diesen Live-Weg von einer verworfenen Alternativ
 variant-basierte Baustein-Auflösung --- \texttt{resolve\_baustein} über \texttt{baustein\_variants}, ein
 Concept-geprüftes \texttt{if constexpr} über Tag-Spezialisierungen --- ist für statische Organ-Achsen
 ausdrücklich verboten, weil sie Laufzeit-Overhead und Code-Bloat erzeugt; sie lebt nur als
-quarantänierter Test-Cluster mit einem Test als Konsument seines Auflösungs-Pfads (ein zweiter Test liest aus
+vom Bau isolierter Test-Cluster mit einem Test als Konsument seines Auflösungs-Pfads (ein zweiter Test liest aus
 ihm nur eine Baustein-Kennung) und einer Striktheits-Prüfung, die jede
 Verdrahtung in den Codegen-Pfad bricht. Der Grund ist die Sparsamkeit des Kompilats: Eine Tier-Binary
 bildet genau die eine gefahrene Permutation ab; \texttt{std::variant}, \texttt{virtual} und
@@ -545,7 +545,7 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(all); \draw[->] (all)--(filt); \draw[->] (filt)--(en); \draw[->] (en)--(slot);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{komponiert 18 Achsen} (topic.west);
 \end{tikzpicture}
-\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase}, den vier Gattungen und sechs Genera und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der achtzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird und deren Messung als Fläche~3 durch den Visitor \texttt{IMessVisitor} quert; rechts der je Achse wiederholte Live-Weg --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die vollständige \texttt{mp\_list}-Baustein-Familie, der Übersetzungszeit-Filter über das Enable-Flag und der Composition-Slot, der genau einen Typ enthält. Die variant-basierte Auflösung \texttt{resolve\_baustein} ist eine verworfene, quarantänierte Alternative (gestrichelt).}\label{fig:uml-interfaces}
+\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase}, den vier Gattungen und sechs Genera und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der achtzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird und deren Messung als Fläche~3 durch den Visitor \texttt{IMessVisitor} quert; rechts der je Achse wiederholte Live-Weg --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die vollständige \texttt{mp\_list}-Baustein-Familie, der Übersetzungszeit-Filter über das Enable-Flag und der Composition-Slot, der genau einen Typ enthält. Die variant-basierte Auflösung \texttt{resolve\_baustein} ist eine verworfene, vom Bau isolierte Alternative (gestrichelt).}\label{fig:uml-interfaces}
 \end{figure}
 
 \subsection{Vom Profil zur Tier-Binary: Planer, Builder und Mess-Pipeline}\label{sec:impl-pipeline}
