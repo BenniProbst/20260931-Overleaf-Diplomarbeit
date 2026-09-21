@@ -204,7 +204,7 @@ in ihren Organ-Beiträgen.
     \midrule
     Sys.\ target\_isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (Vendor-Spec) \\
     Sys.\ external\_utils: SIMD & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV\@; GPU\@: CUDA \\
-    Sys.\ external\_utils: Erw.-HW & HW1--HW4 & HW-Strategie je Paper (Tab.~\ref{tab:hw-sched}) \\
+    Sys.\ external\_utils: Erw.-HW & HW1--HW4 & HW-Strategie je Veröffentlichung (Tab.~\ref{tab:hw-sched}) \\
     Sys./Mess telemetry & TM1--TM3 & P01,P02,P16,P17,P26,P28; HdrHistogram (Gil Tene) \\
     Build (Prüfling) page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (2026) \\
     Organ-Meta-Meta disk\_io & staging (Laufzeit) & CE-Baseline; optional, abgeschaltet (Abschnitt~\ref{sec:axis-triad}) \\
@@ -320,7 +320,7 @@ die Vendor-Spezifikationen (x86-64, AArch64, Power, RISC-V mit SSE2/AVX2/AVX-512
 Prefetch-Hardware, Atomic-Familie) und die \emph{Scheduling-Strategie} (Worker-Pool-Layout,
 SIMD-Worker-Limit --- hardwarebedingt typisch zwei von $N$ Kernen ---, heterogener P-/E-Kern-Dispatch,
 Co-Routinen und Batch-Granularität) ---, die Tabelle~\ref{tab:hw-sched}
-je Paper zuordnet. Die \emph{Telemetrie} --- in der Dreiteilung dieser Arbeit keine Organ-Achse,
+je Veröffentlichung zuordnet. Die \emph{Telemetrie} --- in der Dreiteilung dieser Arbeit keine Organ-Achse,
 sondern zweigeteilt in Mess-Tooling-Unter-Achse und Bau-Größe der System-Sphäre
 (Abschnitt~\ref{sec:axis-triad}) --- instanziiert Density-Tracker~\cite{leis2013art},
 Insert-Zähler~\cite{binna2018hot}, HdrHistogram, Pfad-Lese-Zähler~\cite{zhang2024pathprefix} und die
@@ -339,7 +339,7 @@ Zähler in allen (auch inneren) Knoten als \emph{Anti-Pattern} (Cache-Line-Ping-
   \caption{In dieser Arbeit zugewiesene Ziel-Hardware- und Scheduling-Profile je rekonstruiertem SOTA-Verfahren (Auswahl; die Profile sind Rekonstruktions-Ziele dieser Arbeit, nicht zwingend Original-Paper-Eigenschaften; die Spalte Hardware-Strategie folgt dem Vokabular des im Code konservierten, konsumentenlosen Achsen-Entwurfs \texttt{hardware\_strategy.hpp}, die Ziel-ISA jeder Rekonstruktion steht im Feld \texttt{<isa>} ihres SOTA-Profils (System-Sphäre, im Code eine Build-Konstante; P03 und P31: \texttt{X86\_AVX2}, P27 und P32: \texttt{X86\_AVX512}); der Achsen-Katalog HW1--HW4 mit den Plattform-Profilen folgt in Anhang~\ref{app:blocks}, Abschnitt \enquote{Build-HW}, eine Paper-für-Paper-Liste gibt es nicht).}\label{tab:hw-sched}
   \begin{tabular}{@{}l p{4.6cm} p{5.6cm}@{}}
     \toprule
-    \textbf{Paper} & \textbf{Hardware-Strategie} & \textbf{Scheduling-Strategie} \\
+    \textbf{Veröffentlichung} & \textbf{Hardware-Strategie} & \textbf{Scheduling-Strategie} \\
     \midrule
     P01 ART & AVX2, L1-aware, none, CAS & thread-per-core \\
     P02 HOT & AVX2 (Bit-Vektor), L1-aware, CAS & thread-per-core \\
@@ -429,7 +429,7 @@ einzigen aktivierten Baustein, während TPC, SOSD, SPEC~CPU, CloudSuite und die 
     Larson / threadtest / shbench & Allokator-Klassiker & A01, A03, P08, P30 \\
     LADDIS & Kernel-Allokator & A02 \\
     AggSum / Memory-Stream & Bandbreite & P32 \\
-    Custom-Microbenchmarks & per Paper (Zipf/Uniform) & P01, P04, P06, P11--P14, P21, P28 \\
+    Custom-Microbenchmarks & je Veröffentlichung (Zipf/Uniform) & P01, P04, P06, P11--P14, P21, P28 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -668,7 +668,7 @@ Sequenz-Zugriffe auf HBM mit dTLB- und L2/L3-Zählern, und VAMPIR~\cite{berthold
 heterogener Speicher. Aus all diesen Technologien ergibt sich der Satz der Mess-Kategorien ---
 Cache-Line-Auslastung, Cache-Misses (L1/L2/L3), dTLB-Misses, Speicher-Fußabdruck, Branch-Misses,
 IPC/CPI, Latenz (Mittel und Perzentile p50--p999), Durchsatz, Energie und Fill-Buffer-Auslastung ---,
-deren zeit- und observer-basierte Teilmenge die eigene Apparatur bereits auflöst (Wall-Clock,
+deren zeit- und observer-basierte Teilmenge der eigene Apparat bereits auflöst (Wall-Clock,
 HdrHistogram in der nachgelagerten Auswertung, Per-Achsen-Observer, die Statistik-Triade aus
 Median/Perzentilen, Signifikanztest und Effektmaß, die Zwei-Phasen-Operationsschleife und das
 Konformitäts-Gatter gegen \texttt{std::map}),
@@ -693,11 +693,11 @@ isoliert untersuchen --- ihr Effekt je Achse \emph{und} für den ganzen Algorith
 übrigen neu zu implementieren; genau das löst das Trennbarkeits-Problem, da der Beitrag jedes Bestandteils
 bei sonst fixierten Achsen isoliert messbar wird. Dass diese Austauschbarkeit modular ist, zeigt sich im
 Code: Die Referenz-Kompositionen von ART und PRT-ART unterscheiden sich in genau einer Achse, der
-Pfadkompression (Abschnitt~\ref{sec:prtart-demo}). Diese Zerlegung beruht auf der Beobachtung gemeinsamer Belange unterschiedlicher Suchalgorithmen und Paper, sowie der Vergleichbarkeit der Ziele unterschiedlicher Suchalgorithmen und kann daher durch eine Metapher getragen werden. Erstens
+Pfadkompression (Abschnitt~\ref{sec:prtart-demo}). Diese Zerlegung beruht auf der Beobachtung gemeinsamer Belange unterschiedlicher Suchalgorithmen und Veröffentlichungen, sowie der Vergleichbarkeit der Ziele unterschiedlicher Suchalgorithmen und kann daher durch eine Metapher getragen werden. Erstens
 teilen Suchalgorithmen im großen Bild dieselbe \emph{Baum-Anatomie} in unterschiedlicher Ausprägung ---
 von ausgewogenen Suchbäumen über Tries und Radix-Bäume bis zu eigenentwickelten Konstrukten; selbst eine
 sortierte Schlüssel-Wert-Liste ist streng genommen ein einzelnes Blatt eines Baumes, dessen Werte über
-Verweise weiter auf Daten-Blätter zeigen. Die Haupt-Differenzen zwischen den Algorithmus-Ausprägungen belaufen sich dadurch auf die Auffächerung der Nodes, die Baum-Tiefe, die Baum-Filter und Regelwerke, und die Implementierungs-Details der Serialisierung von Speicherseiten, Such-Seiten und Baum-Nodes. Die Baum-Struktur ist damit universell über alle Suchalgorithmus-Architekturen hinweg und bildet die Leinwand, auf der die Achsen platziert werden.
+Verweise weiter auf Daten-Blätter zeigen. Die Haupt-Differenzen zwischen den Algorithmus-Ausprägungen belaufen sich dadurch auf die Auffächerung der Knoten, die Baum-Tiefe, die Baum-Filter und Regelwerke, und die Implementierungs-Details der Serialisierung von Speicherseiten, Such-Seiten und Baum-Knoten. Die Baum-Struktur ist damit universell über alle Suchalgorithmus-Architekturen hinweg und bildet die Zeichenfläche, auf der die Achsen platziert werden.
 
 % Selbst beim Hashing finden wir einen Baum vor der von der Wurzel seines Interfaces gezielt über eine Auffächerung an Hashes sucht. Daher ist das auch ein Baum, nur ist der Kern-Algorithmus für die node anders, ich hoffe das wird in den Achsen so repräsentiert. Die Hülle std::map umfasst damit alle Achsen, die einen key in eine value übersetzen können - egal wie. Diese gehören damit alle zu Gattung+Genus von SearchAlgorithm. Bezüglich der drei Achsen Mess/System/Organ benötigt es eine Anpassung an den Code der weiter fortgeschritten ist. Ich habe bereits ein wenig ergänzt. Bitte ziehe die Abbildungen nach und ergänze stichhaltige Prinzipien visuell wo möglich.
 Nicht-baumartige Suchverfahren --- etwa die Hash-Gegenprobe aus Abschnitt~\ref{sec:sota-instances} ---
@@ -712,7 +712,7 @@ Organ, das alle Organ-Achsen verbindet und im Planer zu einer Übersetzungszeit-
 wird; die System-Achsen sind der \emph{Lebensraum} (der Planet) des Tiers mit den Möglichkeiten und
 Ressourcen, die sich dort finden; die Mess-Achsen sind die Ausstattung des \emph{Labors}, in dem das
 Tier untersucht wird (Abbildung~\ref{fig:anatomy-bridge}). Ein Tier kann ohne Messung sehr gut leben,
-aber nur das gesündeste Tier soll in die freie Wildbahn entlassen werden --- und jedes Tier soll
+aber nur das gesündeste Tier soll in den produktiven Einsatz gegeben werden --- und jedes Tier soll
 bestmöglich an seinen Lebensraum angepasst sein: Besitzt es eine Eigenschaft nicht, kann es diesen Teil
 seines Lebensraums (die Hardware) nicht zu seinem Vorteil nutzen; oder die Messung ergründet, dass seine
 Spezialisierung gar nicht auf diesen Lebensraum ausgelegt sein sollte, weil sie die Qualität des Tiers
@@ -750,7 +750,7 @@ Bildhaftigkeit vereinfachen; ab hier arbeitet die Arbeit durchgängig mit diesem
 \caption{Die Anatomie-Brücke: wie ein Lebewesen aus zusammenwirkenden Organen besteht, ist ein Suchalgorithmus eine Komposition von Achsen-Organen; das Blut verbindet die Organ-Achsen, der Lebensraum (die System-Achsen) trägt das Tier, und das Mess-System übernimmt die Rolle des Labors, das jedes Organ einzeln vermisst.}\label{fig:anatomy-bridge}
 \end{figure}
 
-Die Permutation der Achsen gleicht dann einem genetischen Experiment: Der Austausch von Organen zwischen
+Die Permutation der Achsen ist in dieser Lesart ein Organ-Austausch: Der Austausch von Organen zwischen
 Lebewesen erzeugt neue Komposit-Algorithmen mit bisher unbekanntem Cache-Line-Verhalten. Die Organe selbst
 werden aus dem Stand der Technik gewonnen --- die Entwurfsbausteine der bekannten Verfahren
 (Abschnitt~\ref{sec:overview}) werden in orthogonale Achsen zerlegt und in einer gemeinsamen
@@ -868,8 +868,8 @@ Algorithmus-Interface (das \emph{Prüf-Dock}), darunter das \emph{Genus} (Alias:
 mit festem Achsensatz, darunter die \emph{Organe} selbst (Abbildung~\ref{fig:three-levels})\@. Die
 Ebenen-Trennung ist an der ABI-Grenze ablesbar: Jede Tier-Binary exportiert zwei buchstabengleiche
 C-Symbole, die Gattung und Genus ohne Instanz beantworten, wobei die Gattung nicht als zweites Datum
-gepflegt, sondern aus dem Genus abgeleitet wird --- der Lader erfragt so die Gattung, bevor er sie
-kennt\@. \enquote{Lebewesen} und \texttt{SearchAlgorithm} bezeichnen denselben
+gepflegt, sondern aus dem Genus abgeleitet wird --- der Lader ermittelt die Gattung so über ein
+gattungsunabhängiges Symbol, ohne sie vorab zu kennen\@. \enquote{Lebewesen} und \texttt{SearchAlgorithm} bezeichnen denselben
 Gegenstand --- Metapher und technischer Begriff ---; die Anatomie ist kein zweites Modell, sondern der
 \emph{Körper} dieses Lebewesens: die feste Komposition seiner achtzehn Achsen-Organe.
 \begin{figure}[htbp]\centering
@@ -950,7 +950,7 @@ Achsen-Subset derselben Gattung.
   \draw[->,thick] (s1.south) -- (s1.south |- l3.north);
   \draw[->,thick] (l3.south) -- (l4.north); \draw[->,thick] (l4.south) -- (l5.north);
 \end{tikzpicture}
-\caption[Die vier Gattungen und die Tier-Hierarchie bis zum kompilierten Binary]{Die Gattungs-/Tier-Hierarchie über fünf Ebenen. \texttt{Map}, \texttt{Container}, \texttt{Graph} und \texttt{HeuristikAdapter} sind die vier \emph{Gattungen} (Ebene~1, Außen-Interface). Jede Gattung beherbergt ihre \emph{eigenen} Genera (Ebene~2, Alias Tier-Unterklassen): \texttt{Map} ausschließlich das \enquote{Säugetier} (Genus \texttt{SearchAlgorithm}, volle Achtzehn-Achsen-Anatomie), \texttt{Container} jedes \emph{nicht}-Säugetier-Genus (Vogel/Reptil/Wirbelloses/Pflanze $=$ Set/Sequence/Adapter/View), \texttt{Graph} ein angelegtes Interface ohne implementiertes Genus, \texttt{HeuristikAdapter} das Reroute-Genus des Hybrid-Tiers. Der Säugetier-Ast ist bis zum Individuum ausgezogen: die achtzehn Achsen-Organe (Ebene~3) permutieren zu einer konkreten Achsen-Komposition $=$ einem konkreten Tier (Ebene~4, z.\,B.\ ART, HOT, Masstree), das je Permutation als eigenständige Tier-Binary kompiliert wird (Ebene~5, die Träger-Stufe der Tier-Binary, zusätzlich verfeinert um die Prüfling-Build-Achse Seitentyp und plattform-gestempelt durch die drei System-Achsen, Abschnitt~\ref{sec:axis-triad})\@. \emph{Jede Tier-Binary ist damit ein eigenes Tier mit einem echten Binary-Genus-Interface und drei Interface-Flächen}; die Hierarchie reicht von der Gattung bis zur einzelnen kompilierten Permutation. Vgl.\ das verdichtete Modell in Abbildung~\ref{fig:three-levels}.}\label{fig:genera}
+\caption[Die vier Gattungen und die Tier-Hierarchie bis zum kompilierten Binary]{Die Gattungs-/Tier-Hierarchie über fünf Ebenen. \texttt{Map}, \texttt{Container}, \texttt{Graph} und \texttt{HeuristikAdapter} sind die vier \emph{Gattungen} (Ebene~1, Außen-Interface). Jede Gattung beherbergt ihre \emph{eigenen} Genera (Ebene~2, Alias Tier-Unterklassen): \texttt{Map} ausschließlich das \enquote{Säugetier} (Genus \texttt{SearchAlgorithm}, volle Achtzehn-Achsen-Anatomie), \texttt{Container} jedes \emph{nicht}-Säugetier-Genus (Vogel/Reptil/Wirbelloses/Pflanze $=$ Set/Sequence/Adapter/View), \texttt{Graph} ein angelegtes Interface ohne implementiertes Genus, \texttt{HeuristikAdapter} das Reroute-Genus des Hybrid-Tiers. Der Säugetier-Ast ist bis zum Individuum ausgezogen: die achtzehn Achsen-Organe (Ebene~3) permutieren zu einer konkreten Achsen-Komposition $=$ einem konkreten Tier (Ebene~4, z.\,B.\ ART, HOT, Masstree), das je Permutation als eigenständige Tier-Binary kompiliert wird (Ebene~5, die Träger-Stufe der Tier-Binary, zusätzlich verfeinert um die Prüfling-Build-Achse Seitentyp und plattform-gestempelt durch die drei System-Achsen, Abschnitt~\ref{sec:axis-triad})\@. \emph{Jede Tier-Binary ist damit ein eigenes Tier mit einem tatsächlichen Binary-Genus-Interface und drei Interface-Flächen}; die Hierarchie reicht von der Gattung bis zur einzelnen kompilierten Permutation. Vgl.\ das verdichtete Modell in Abbildung~\ref{fig:three-levels}.}\label{fig:genera}
 \end{figure}
 
 Die Anatomie wird von vier \emph{Träger-Stufen} (carrier stages) getragen: dem Planer, dem
@@ -1054,8 +1054,8 @@ wählbare, validierbare Etiketten mit release-gleicher Bausemantik.
 
 \subsection{Entwurfsmuster und Übersetzungszeit-Muster}\label{sec:anatomy-patterns}
 Der eigentliche Beitrag liegt damit weniger in einer einzelnen Struktur als in einem \emph{Werkzeug}:
-Statt das Vergleichsproblem direkt zu lösen, baut diese Arbeit zuerst die \enquote{Schaufel} --- den
-Permutations- und Mess-Apparat ---, mit der sich beliebige Achsen-Kombinationen erzeugen und fair
+Statt das Vergleichsproblem direkt zu lösen, baut diese Arbeit zuerst dieses Werkzeug --- den
+Permutations- und Mess-Apparat ---, mit dem sich beliebige Achsen-Kombinationen erzeugen und fair
 vermessen lassen. Wissenschaftlich ordnet sich dieser Apparat in das Software-Engineering der
 \emph{Komposition} ein: die invasive Software-Komposition aus Gray-Box-Komponenten~\cite{assmann2003invasive},
 die generative Programmierung~\cite{czarnecki2000generative} und die feature-orientierten
@@ -1225,7 +1225,7 @@ auf eine einzige, gut verstandene Schnittstelle ab: den C++-Vertrag der geordnet
 \texttt{emplace}), Löschen (\texttt{erase}) und ordnungsbasierter Navigation
 (\texttt{lower\_bound}/\texttt{upper\_bound}, Bereichs-Iteration)~\cite{iso_cpp}. Die Achsen beschreiben das
 \emph{innere} Verhalten hinter dieser festen Schnittstelle, sodass der Vergleich zweier konformer
-\texttt{std::map}-Implementierungen der zentrale Mess-Akt wird; parallel dient die Sequenz-Hülle
+\texttt{std::map}-Implementierungen der Gegenstand der Messung wird; parallel dient die Sequenz-Hülle
 \texttt{std::vector} (indizierter Zugriff, Größenänderung, zusammenhängender Speicher) als
 Container-Vergleichsfall, um zu prüfen, ob ein Achsen-Komposit auch die Container- und nicht nur die
 Suchsemantik erfüllt. Hinter der festen Außen-Schnittstelle unterscheidet das System mehrere \emph{Ebenen
@@ -1331,7 +1331,7 @@ und Messwerten, aus dem der Apparat Vorhandenes wiedererkennt, statt es neu zu b
 (Abschnitte~\ref{sec:stamp-model} und~\ref{sec:lager}). Diese Dreiteilung ist die zweite Gestalt des
 Trennbarkeits-Problems: Nicht nur die Entwurfsentscheidungen untereinander, auch das Gemessene, die
 Plattform und das Mess-Instrument müssen getrennt bleiben, damit ein gemessener Effekt eindeutig
-zuzuordnen ist. Die Mess-Achsen klären auch weiterhin die Problemfrage, ob überhaupt ein Messapparat in die Cache Engine und die Tier-Binaries eingebaut werden soll. % Hier fehlt der Unterschied zwischen DREIPHASIG und ZWEIPHASIG
+zuzuordnen ist. Die Mess-Achsen klären die Frage, ob überhaupt ein Messapparat in die Cache Engine und die Tier-Binaries eingebaut werden soll. % Hier fehlt der Unterschied zwischen DREIPHASIG und ZWEIPHASIG
 
 % Debug ist ein Flag und kein Zustand
 Die \emph{Mess-Achsen} sind die Belange des Messens selbst --- in der Metapher die Ausstattung des
@@ -1353,7 +1353,7 @@ neun Kategorien, darunter Latenz, Durchsatz, Speicher-Fußabdruck und Fill-Buffe
 zählerbasierte PMC-Regime (Hardware-Performance-Zähler; sieben Kategorien, darunter Cache-, dTLB- und
 Branch-Misses, IPC/CPI und Energie). Das Regime ist ein Merkmal der Mess-Achse, nicht des gemessenen
 Organs: Dieselbe Organ-Achse kann von beiden Regimen beleuchtet werden. Die observer-basierte
-Teilmenge löst die Apparatur auf, die PMC-Kategorien sind im Mess-Pfad verbindlich eingebaut, und die
+Teilmenge löst der Apparat auf, die PMC-Kategorien sind im Mess-Pfad verbindlich eingebaut, und die
 getrennte Messung von P- und E-Kernen auf Intel und AMD ist als Scheduling-Dimension der Ziel-ISA
 angelegt. Nicht implementiert sind an dieser Stelle die Erhebungsquelle je
 Achsen-Interface-Parametersatz und die Anbindung der P-/E-Kern-Messung an das Lauf-Profil.
@@ -1440,13 +1440,13 @@ Gate-Kombination CEB aus, Tier an gedeckt ist, ist durch einen eigenen Test bele
 Alle drei Achsen-Realms bindet ein methodisches Prinzip, der \emph{Grundsatz der ausgewiesenen
 Nichterhebung}: Ein nicht erhobener Wert ist ein fehlender Wert (NA-Semantik im Sinn der Statistik
 fehlender Daten~\cite{rubin1976missing}), nie eine Null und nie ein Phantomwert. Wo ein Wert nicht
-wirklich erhoben werden kann --- eine Organ-Achse ohne echten Laufzeit-Parameter, ein Zähler ohne
+wirklich erhoben werden kann --- eine Organ-Achse ohne tatsächlichen Laufzeit-Parameter, ein Zähler ohne
 Hardware-Zugriff, eine Mess-Quelle, die auf der Plattform nicht existiert ---, meldet das System
 \emph{explizit ungültig oder leer} statt eines plausiblen Phantomwerts. Lieber eine als ungültig
-markierte Messung als ein erfundener Effekt: Ein Phantomwert würde die Heuristik-Ableitung
+markierte Messung als ein synthetischer Effekt: Ein Phantomwert würde die Heuristik-Ableitung
 (Abschnitt~\ref{sec:heuristics}) systematisch vergiften, während eine ausgewiesene Lücke sichtbar bleibt
 und gezielt geschlossen werden kann. Das Prinzip gilt durchgängig --- von der Achsen-Verdrahtung (nur
-Achsen mit real messbarem Laufzeit-Knopf melden Laufzeit-Effekte; die übrigen gelten als
+Achsen mit tatsächlich messbarem Laufzeit-Knopf melden Laufzeit-Effekte; die übrigen gelten als
 übersetzungsstatisch) über die Verfügbarkeits-Meldung der Zähler-Quellen bis zur Auswertung, die aus
 einer leeren Eingabe keinen leeren Plot erzeugt.
 
@@ -1587,7 +1587,7 @@ die Meta-Meta-Haupt-Achse des Mess-Realms --- als Klammer-Anhang an ihr \emph{En
 \emph{leere} Mess-Zeile ist dabei eine explizit ausgewiesene Aussage --- kein Mess-Tooling einkompiliert --- und
 bleibt auch ohne diesen Anhang leer. Eine
 Komplex-Achse belegt in ihrer Zeile genau ein Feld (Abschnitt~\ref{sec:complex-axis}). Die
-Eintrags-Grammatik lebt einmal für alle Zeilen: \texttt{achse=algo@X.Y.Z[.flag]*} mit rekursiven
+Eintrags-Grammatik ist einmal für alle Zeilen definiert: \texttt{achse=algo@X.Y.Z[.flag]*} mit rekursiven
 Komposit-Klammern --- \texttt{c\{p.e\}} ist die Basis \texttt{c} mit den Untergliedern \texttt{p} und
 \texttt{e} und wird nie flach als \texttt{cpe} gelesen; die Klammer-Tiefe eines Eintrags ist seine
 Meta-Meta-Ebene, null die Haupt-Achse. Das Flag \texttt{e} bezeichnet einen Efficiency-Core-Algorithmus.
@@ -1604,11 +1604,11 @@ Identität die Rollen Cache-, Lager- und Wiedererkennungs-Schlüssel sowie Einor
 SHA-512 über ein Preimage aus elf Gliedern in fester Reihenfolge: die Format-Kennung
 (\texttt{fingerprint\_format=6}), die Mess-, System- und Organ-Zeile in dieser Ordnung, das
 Unter-Achsen-Werteset, das Werkzeugketten-Glied, die Enabled-Mengen der Bau-Achsen, den
-Overlay-Quell-Hash, den real wirksamen Mess-Gate-Zustand der Übersetzungseinheit, die
+Overlay-Quell-Hash, den tatsächlich wirksamen Mess-Gate-Zustand der Übersetzungseinheit, die
 Hybrid-Komposit-Zeile und die Basis der Bau-Version; an diesem einen vergleichbaren Wert hängt die
 Wiedererkennung einer bereits gebauten Permutation im Lager (Abschnitt~\ref{sec:lager}), und die
-Format-Kennung als erstes Glied lässt jede Layout-Evolution deterministisch mismatchen statt still
-kollidieren. Der Planer führt einen SHA-256 über seine Version, die Ziel-ISA und das Betriebssystem;
+Format-Kennung als erstes Glied führt bei jeder Layout-Evolution deterministisch zur Nichtübereinstimmung
+statt zur stillen Kollision. Der Planer führt einen SHA-256 über seine Version, die Ziel-ISA und das Betriebssystem;
 der CacheEngineBuilder führt einen SHA-512 als Provenienz seiner einkompilierten Mess-Wahl, der
 ausdrücklich kein Wiederverwendungs-Kriterium ist, weil er Werkzeugkette und Zelle absichtlich nicht
 enthält. Gemessene \emph{Werte} --- etwa eine erhobene RAM-Rate --- erscheinen niemals in Stempel oder
@@ -1695,7 +1695,7 @@ autonomes Plattform-Ausmess-System, das die Sieben-Phasen-Pipeline aus Abschnitt
 mit den Standard-Implementierungen je Achse) und der \texttt{Prüfling} PRT-ART (der einige Achsen-Organe
 selbst stellt und für die übrigen Cache-Engine-Dienste konsumiert); Cache-Engine, Prüfling und diese
 Arbeit liegen in je eigenen Repositories --- vier Repositories insgesamt ---, und die Planer-Rolle der
-Kette lebt als eigene Binary (\texttt{comdare-experiment-planner}), die Builder-Rolle als Mess-Treiber
+Kette ist als eigene Binary realisiert (\texttt{comdare-experiment-planner}), die Builder-Rolle als Mess-Treiber
 (\texttt{comdare-messung-driver}); der Selbst-Stempel des Mess-Treibers (\texttt{--version}) gibt die
 Zeilen beider Rollen --- die Planer-Zeile und die Zeile der CEB-Vertragsversion --- aus einem
 Treiber-Binary aus (Kapitel~\ref{ch:impl}). Die \texttt{ExecutionEngine} ist dabei kein
@@ -1853,7 +1853,7 @@ Vorgabe ist vorgesehen, aber nicht implementiert (Abschnitt~\ref{sec:eval-worklo
 Maschinen-Signaturen --- prod1 (AMD Zen~5), prod2 (Intel Core i9-12900K, Alder Lake) und ein
 ODROID-Board mit Intel-Gracemont-Kernen --- unter Beachtung der vom Plattform-Probe gemeldeten
 Achsen-Kompatibilität; die Zugehörigkeit zum ZIH-Cluster der TU Dresden ist als Unter-Achse der
-Ziel-ISA deklariert, ein Lauf dort ist nicht vermessen (n/a).
+Ziel-ISA deklariert, ein Lauf dort ist nicht gemessen (n/a).
 
 \section{PRT-ART als Demonstrator}\label{sec:prtart-demo}
 PRT-ART ist der \emph{Prüfling}, an dem sich die Tragfähigkeit des Systems zeigt: ein abstraktes Lebewesen, das einige
@@ -1996,7 +1996,8 @@ deren Kette sich auf der Hybrid-Ebene wiederholt. Der erste Modus ist der Betrie
 zwei bis vier sind das erklärte Ziel dieser Arbeit und werden hier als Konzept festgehalten. Der
 Hybrid-Modus ist dabei ein erweitertes, optionales Konstrukt: Der Kern der Arbeit ist das Durchmessen
 und Erstellen der Tier-Binaries samt Break-Even-Analyse vor jeder Anwendung des Hybriden, und die Arbeit
-geht in der Kette nicht über den hybrid-compare nach dem single-release hinaus. Von diesen vier
+geht in der Kette nicht über die Vergleichsstufe der Hybrid-Ebene (\texttt{hybrid-compare}) nach der
+Auslieferungsstufe der Einzel-Binary (\texttt{single-release}) hinaus. Von diesen vier
 Betriebsmodi zu unterscheiden ist der in Teilfrage FF2.c (Abschnitt~\ref{sec:rqs}) erfragte
 \emph{Paper-Isolations-Modus}: ein Betriebsmodus, der die Entwurfsbestandteile genau einer
 Veröffentlichung als \emph{Achsen-Set} --- die geschlossene Achsenmenge dieses einen Referenzentwurfs,
@@ -2026,8 +2027,8 @@ vierte Auswertungs-Komponente des Hybrid-Tiers (Abschnitt~\ref{sec:heuristics-cu
 
 % Nun die Kette war formal build->measure->compare->release und sie wird auf der Hybrid ebene synchron nochmal wiederholt, wie im Plan des Codes beschrieben. Aber was dem Code auch ausnahmsweise wieder fehlt und was ich weiß: Beim Wechsel eines Tier-Binaries zu einem anderen muss ein Tier-Binary eine weitere State-Fläche einkompilieren, die den Zustand im Hybrid Modus lesen und wieder setzen kann, dabei sparse (jedes Tier-Binary behält seinen state und zieht nur die Punkte nach, die versioniert geändert wurden, also ein checkpoint Verfahren das die Interfaces umgeht und den Speicher direkt in Blöcken sparse nur für geänderte Bereiche nachzieht und das Memento Pattern verwendet), was den verbrauchten RAM vervielfacht weil alle Tier-Binaries den gesamten Zustand halten müssen, dabei nur immer eines "vorn" und aktuell wie bei git. Die Tier-Binaries tragen die State-Fläche im Einzelzustand nicht, es ist also eine einkompilierte metaprogrammierte sidecar binary-Bibliothek die nur im Hybrid-Pattern auftaucht, weshalb ein release für single mode ohne sidecar und ein release für hybrid-mode beide als eingelagerte Komponenten veröffentlicht werden. Das Hybrid-Binary hat die Aufgabe die states im Protokoll des Wechsels zu organisieren und das Memento checkpointing für alle seine metaprogrammiert angebundenen Tier-binaries durchzusetzen und zu verwalten. Der berechnete Wechsel je Hybrid-Interface-Anfrage erzeugt also einen RAM sync zwischen Tier-Binaries und final das Durchleiten der eigentlichen Anfrage an das Tier-Binary.
 Der \emph{Arbeits-Modus} ist das Produktions-Ziel: Das Builder-Interface hält alle für die aktuell
-stochastisch häufig auftretende Workload-Last und Interface-Funktion relevanten Tier-Binaries hot im
-Arbeitsspeicher und wechselt unter der Haube die Tier-Binary mit ihren speziell optimalen
+stochastisch häufig auftretende Workload-Last und Interface-Funktion relevanten Tier-Binaries vorgeladen im
+Arbeitsspeicher und wechselt intern die Tier-Binary mit ihren speziell optimalen
 Achsen-Permutationen am ABI-stabilen Interface --- derselbe Mechanismus des Binary-Wechsels, den der
 Mess-Modus nutzt, nur last-getrieben statt mess-getrieben. Ebenen-richtig bleibt dabei der
 Übersetzungszeit-Grundsatz gewahrt: Es gibt keinen Laufzeit-Umschalter \emph{im} Tier --- die Binaries
@@ -2060,12 +2061,12 @@ Kernstück ist, dass der Heuristik-Adapter eine eigene \emph{Gattung} mit eigene
 Gattung \texttt{HeuristikAdapter} mit dem Reroute-Genus \texttt{FunctionInterfaceReroute}
 (Abschnitt~\ref{sec:anatomy-levels}): Er übernimmt per Metaprogrammierung die Gattungs- und
 Genus-Interfaces seiner Tier-Binaries, wird selbst zu einer Tier-Binary kompiliert und dockt am
-Prüf-Dock des Builders an wie jedes echte Tier; Befehle reicht er über das
-\emph{Command}-Muster~\cite{gamma1994patterns} an die ihm statisch zugewiesenen echten Tier-Binaries
+Prüf-Dock des Builders an wie jedes einzelne Tier; Befehle reicht er über das
+\emph{Command}-Muster~\cite{gamma1994patterns} an die ihm statisch zugewiesenen einzelnen Tier-Binaries
 weiter. Nach außen ist er von einer einzelnen Binary nicht zu unterscheiden, weil seine Binary dieselben
 Pflicht-Symbole exportiert wie jede andere und als Genus das geerbte Ziel-Genus meldet --- Klassifikation
 (die Art des Reroutes) und Durchstellung liegen auf getrennten Ebenen. Die Rekombination der zu
-verwendenden Heuristik-Tier-Binaries ist dabei selbst permutierbar gegen die existierenden echten
+verwendenden Heuristik-Tier-Binaries ist dabei selbst permutierbar gegen die existierenden einzelnen
 Tier-Binaries; der Heuristik-Adapter kann daher die Mess-Funktionskurven für Schätzungen verwenden und
 eine optimale mehrdimensionale Rekombination kompilieren, die durch ihr ABI-stabiles Gattungs-Interface
 eindeutig als Suchalgorithmus-Hülle verwendbar ist --- nach außen ein \emph{virtuelles ganzes
@@ -2077,21 +2078,21 @@ Rekombination werden die kombinierte Wall-Clock-Zeit sowie Makro- und Mikro-Benc
 Damit erbringt der Hybrid-Modus den \emph{heuristischen Gegenbeweis}: Nach Eintritt des Arbeitsmodus wird
 das Heuristik-Tier-Binary erneut vermessen --- sein Wall-Clock-Verhalten im Vergleich gegen die besten
 Einzel-Binaries und gegen die rekonstruierten Paper-Algorithmen entscheidet, ob die heuristische
-Rekombination hält, was die Kurven versprechen. Die Kurven, die der Gegenbeweis verspricht, sind die
+Rekombination die von den Kurven vorhergesagte Leistung erreicht. Die Kurven, die der Gegenbeweis prüft, sind die
 Spline-Kurven je Achse und $x$-Dimension mit ihren Break-Even-Schnittpunkten
 (Abschnitt~\ref{sec:heuristics-loop}); in der Stufe compare wird aus dem Messwertlager errechnet, welche
 Tier-Binary oder Hybrid-Rekombination laut Vermessung die beste sein muss, und in der Stufe release
 wird die maximal optimiert kompilierte Binary ohne einkompilierte Messfühler nochmals durchgemessen ---
 ob ihre Wall-Clock ohne Mess-Einblick die zuvor vermessene Gesamtzeit sogar noch unterbietet. Der
-Vergleich gegen die rekonstruierten Paper-Algorithmen setzt je Paper eine Wall-Clock-Referenz voraus,
-die als Datenquelle fehlt und je Paper aus der Veröffentlichung zu ermitteln ist; der Paper-Vergleich
+Vergleich gegen die rekonstruierten Paper-Algorithmen setzt je Veröffentlichung eine Wall-Clock-Referenz voraus,
+die als Datenquelle fehlt und je Verfahren aus der jeweiligen Veröffentlichung zu ermitteln ist; der Paper-Vergleich
 hat Vorrang vor der Pareto-Auswahl. Das Ziel der Arbeit ist damit doppelt formuliert: die
 beste Rekombination beziehungsweise das beste einzelne Binary gegenüber allen Achsen-Eigenschaften ---
 besonders der Cache-Line-Bewusstheit --- zu bestimmen und am Ende beides produktionsfähig
-bereitzustellen, die beste einzelne Binary \emph{und} das Heuristik-Tier-Binary bestehend aus den besten gemischten cache aware binaries für die vermessenen Lasten. Alle vier Modi sollen
+bereitzustellen, die beste einzelne Binary \emph{und} das Heuristik-Tier-Binary bestehend aus den besten gemischten cache-bewussten Binaries für die vermessenen Lasten. Alle vier Modi sollen
 dabei über die Auswertungs-Kette der Definitions-Schicht (Abschnitt~\ref{sec:anatomy-layers})
-automatisch dokumentiert werden; die Messwerttabellen und Diagramme dieser Arbeit selbst sind das compare
-Erzeugnis dieser Kette, und die Bewertung des Gegenbeweises definiert Kapitel~\ref{ch:eval}.
+automatisch dokumentiert werden; die Messwerttabellen und Diagramme dieser Arbeit selbst sind das Erzeugnis
+der compare-Stufe dieser Kette, und die Bewertung des Gegenbeweises definiert Kapitel~\ref{ch:eval}.
 % Hier sollten wir den Soll-Zustand definieren. Weiterhin ist das Ledger zusammen mit einer vielschichtigen Lagerhaltung für synthetisierte Mess-Kurven und einer Definition der w/ma/mi Schichten weitergewandert, wir müssen an Plan und code hier diesen Text nachziehen.
 \subsection{Messkurven-Typsystem, Filterkette und Messfehler-Erkennung}\label{sec:heuristics-curves}
 Damit der Auswertungs- und der Hybrid-Modus tragfähig sind, braucht die Auswertung mehr als flache
@@ -2118,7 +2119,7 @@ Die compare-Stufe setzt sich aus fünf Auswertungs-Komponenten zusammen, die Stu
 nicht Alternativen: erstens das Ranking je Metrik mit Pareto-Front und Versand (implementiert,
 Abschnitt~\ref{sec:heuristics-loop}); zweitens die Spline-Kurven mit der Break-Even-Entscheidung (als
 erster Ansatz implementiert); drittens die Filterkette über die Permutations-Familien (Mechanismus implementiert,
-Auswerte-Glieder nicht implementiert, nächster Absatz); viertens das Live-Ranking der hot geladenen Tier-Binaries im
+Auswerte-Glieder nicht implementiert, nächster Absatz); viertens das Live-Ranking der vorgeladenen Tier-Binaries im
 Hybrid-Tier aus den zur Laufzeit mitgeschnittenen Interface-Zugriffen und ihren
 Übergangswahrscheinlichkeiten --- dasselbe Cluster-Verfahren wie bei der Mess-Reihenfolge
 (Abschnitt~\ref{sec:heuristics-modes}), das die bekannten Interface-Eignungen einer Tier-Binary gegen die
