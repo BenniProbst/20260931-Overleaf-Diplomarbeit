@@ -25,14 +25,14 @@ Parameterzahl an die Hülle: Ein Template-Parameter fordert alle Funktionsinterf
 \texttt{std::map<K,\,std::tuple<\ldots>>} (Abschnitt~\ref{sec:impl-architecture}). Die Cache-Engine
 leitet aus derselben Regel die Typen ab --- bei einem Parameter wird der Schlüssel implizit als
 monoton gezählter 64-Bit-Wert vergeben, bei $N>2$ wird der Wert zum Tupel ---; ihre beiden
-Vertrags-Hüllen sind als getrennte Gattungs-Adapter gebaut: die Map-Gattung über den funktionalen
+Vertrags-Hüllen sind als getrennte Gattungs-Adapter implementiert: die Map-Gattung über den funktionalen
 Antrieb der Modulgrenze mit den fünf Operationen \texttt{tier\_insert}, \texttt{tier\_lookup},
 \texttt{tier\_erase}, \texttt{tier\_clear} und \texttt{tier\_size}, die Sequenz-Gattung über den
 Sequenz-Antrieb mit \texttt{tier\_push\_back}, \texttt{tier\_at}, \texttt{tier\_size} und
 \texttt{tier\_clear}; ein Adapter quer zur Gattung ist im Typsystem ausgeschlossen. Der Fall $N>2$
 ist Typ-Ableitung ohne eigenen Adapter; die Modulgrenze führt Schlüssel und Wert durchgängig als
 64-Bit-Werte. Die geteilten Funktionen (Iteration, \texttt{size}/\texttt{empty}/\texttt{clear},
-\texttt{swap}, \texttt{get\_allocator}) tragen in beiden Hüllen denselben Namen und dieselbe Rolle;
+\texttt{swap}, \texttt{get\_allocator}) besitzen in beiden Hüllen denselben Namen und dieselbe Rolle;
 über die Modulgrenze reichen beide Hüllen davon \texttt{size} und \texttt{clear}, \texttt{empty} ist
 host-seitig abgeleitet, Iteration und \texttt{swap} queren die Grenze nicht, und
 \texttt{get\_allocator} ist auf der Map-Seite ein optionales Proxy-Sub-Interface außerhalb des
@@ -53,7 +53,7 @@ angegebene Leitfäden~\cite{spertus2016ctad}.} und der transparente Schlüssel
 (Abschnitt~\ref{asec:if-map}). Die exakten cache-engine-internen Funktions-Sprünge
 (\emph{function-handle-hops}\footnote{Hausbegriff der Cache-Engine für die Folge der internen
 Funktions-Sprünge (Handles) vom Eintritt an der Modulgrenze über die Achsen-Organe bis zum Ergebnis;
-das Entwickler-Dokument verzeichnet sie je Standard-Funktion und markiert nicht verdrahtete
+das Entwickler-Dokument verzeichnet sie je Standard-Funktion und markiert nicht angebundene
 Funktionen als solche.}) dokumentiert das Entwickler-Dokument
 \texttt{docs/\allowbreak{}ENTWICKLER-\allowbreak{}FUNCTION-\allowbreak{}HANDLE-\allowbreak{}HOPS.md}
 der Cache-Engine; es verzeichnet je Standard-Funktion den Sprungpfad und den Status an der
@@ -192,8 +192,8 @@ Modulgrenze, \texttt{std::optional} im Organ). Alle übrigen Funktionen der Tafe
 Kapazitäts-Steuerung, Positions- und Bereichs-Operationen,
 \texttt{front}/\texttt{back}/\texttt{pop\_back}, \texttt{data}, Iteratoren, \texttt{swap} und die
 Nicht-Member --- queren die Modulgrenze nicht; das Wachstum am vorderen Ende
-(\texttt{push\_front}), das das \texttt{deque}-Orakel zusätzlich böte, ist als Ausbau der
-Modulgrenze geführt und wird im Gatter als übersprungen protokolliert, nicht als bestanden.
+(\texttt{push\_front}), das das \texttt{deque}-Orakel zusätzlich böte, ist als Erweiterung der
+Modulgrenze vorgesehen, aber nicht implementiert, und wird im Gatter als übersprungen protokolliert, nicht als bestanden.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
   \caption{Vollständige \texttt{std::vector}-Schnittstelle (C++23)}\label{tab:if-vector}\\
@@ -325,12 +325,12 @@ Austauschbarkeit hinter einer festen Schnittstelle konkret macht.
 
 \noindent Funktionen, die beide Hüllen dem Namen nach \emph{teilen} --- \texttt{size}, \texttt{empty},
 \texttt{clear}, die Iterator-Familien, \texttt{swap}, \texttt{get\_allocator} sowie
-\texttt{insert}/\texttt{emplace}/\texttt{erase} ---, tragen dieselbe Rolle, aber verschiedene
+\texttt{insert}/\texttt{emplace}/\texttt{erase} ---, besitzen dieselbe Rolle, aber verschiedene
 Bezugsgrößen: in der Map Schlüssel-, im Vektor Positions-/Index-Semantik; \texttt{operator[]} etwa
 fügt in der Map ein, ist im Vektor hingegen ein ungeprüfter Indexzugriff --- in der eigenen
 Sequenz-Hülle geprüft (Abschnitt~\ref{asec:if-vector}), in der eigenen Map-Hülle host-seitig
 komponiert (siehe oben). Diese Trennung ist in der Cache-Engine strukturell erzwungen: Map- und
 Sequenz-Gattung besitzen getrennte Antriebs-Schnittstellen und getrennte Orakel, ein
 gattungsfremder Adapter ist im Typsystem ausgeschlossen. Welche dieser Funktionen die Modulgrenze
-trägt, welche der Host komponiert und welche nicht verdrahtet sind, verzeichnet das eingangs
+bereitstellt, welche der Host komponiert und welche nicht angebunden sind, verzeichnet das eingangs
 genannte Entwickler-Dokument je Funktion mit ihrem Sprungpfad.
