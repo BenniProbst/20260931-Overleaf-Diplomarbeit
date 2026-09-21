@@ -74,7 +74,7 @@ Stand-der-Technik-Algorithmus ist ein Punkt im kartesischen Produkt dieser Achse
   \node[draw,rounded corners,fill=blue!5,align=left,font=\scriptsize] at (3.5,2.95){\textbf{Legende:} 3 von\\18 Organ-Achsen (T0--T17)};
   \node[align=center,font=\scriptsize] at (1.6,-2.2){Jeder Stand-der-Technik-Algorithmus\\$=$ ein Punkt im kartesischen Produkt der Achsen};
 \end{tikzpicture}
-\caption{Der Entwurfsraum: die Achsen spannen ein multidimensionales kartesisches Produkt auf; ein konkreter Algorithmus ist ein Punkt darin. Zur Veranschaulichung sind drei der achtzehn Organ-Achsen gewählt --- das reale Speicherorgan aus Knotentyp~(T4), Speicher-Layout~(T5) und Allokator~(T6); der volle Entwurfsraum hat achtzehn Organ-Dimensionen; dazu tritt eine optionale Organ-Meta-Meta-Achse (Abschnitt~\ref{sec:axis-triad}).}\label{fig:design-space}
+\caption{Der Entwurfsraum: die Achsen spannen ein multidimensionales kartesisches Produkt auf; ein konkreter Algorithmus ist ein Punkt darin. Zur Veranschaulichung sind drei der achtzehn Organ-Achsen gewählt --- das reale Speicherorgan aus Knotentyp~(T4), Speicher-Layout~(T5) und Allokator~(T6); der volle Entwurfsraum hat achtzehn Organ-Dimensionen; dazu tritt eine optionale neunzehnte Organ-Achse für die Festplatten-Ein-/Ausgabe, deren Beschreibung selbst beschrieben wird (Abschnitt~\ref{sec:axis-triad}).}\label{fig:design-space}
 \end{figure}
 
 Ist der Entwurfsraum so aufgespannt, wird das Trennbarkeits-Problem lösbar: Eine Entwurfsentscheidung zu
@@ -157,11 +157,16 @@ Herkunfts-Lebewesen. Das Framework führt \emph{achtzehn Organ-Kompositions-Achs
 Slot-Reihenfolge (T0--T17); daneben stehen die Größen der System-Sphäre --- Ziel-ISA, SIMD- und
 Erweiterungs-Hardware sowie die zweigeteilte Telemetrie (die Dreiteilung der Achsen ordnet
 Abschnitt~\ref{sec:axis-triad}) --- und die Prüfling-Build-Achse Seitentyp. Neben den achtzehn
-kanonischen Organ-Haupt-Achsen führt der Organ-Katalog eine optionale \emph{Organ-Meta-Meta-Achse} für
-die Festplatten-Ein-/Ausgabe, die nur bei einem Platten-Rückschreibe-Ziel wirksam wird und
-übersetzungsstatisch verbaut ist (Abschnitt~\ref{sec:axis-triad}). Viele Achsen sind in
-\emph{Unter-Achsen} (sub-axes) verfeinert (etwa SA1--SA4 oder AA1--AA7) und liefern anderen Achsen
-verteilte Interfaces für deren Detail-Operationen --- genau diese \emph{Achsen-Interfaces} trägt das
+kanonischen Organ-Haupt-Achsen --- \emph{Haupt-Achse} heißt eine Achse, deren gewählte Belegung
+übersetzungsstatisch in die Binary einkompiliert wird --- führt der Organ-Katalog eine optionale
+\emph{Organ-Meta-Meta-Achse} für die Festplatten-Ein-/Ausgabe (\emph{Meta-Meta} heißt: Die Achse
+beschreibt nicht eine Belegung, sondern beschreibt, wie andere Achsen beschrieben werden; die
+Kurzdefinition samt Ebenen-Ordnung gibt Abschnitt~\ref{sec:axis-triad}), die nur bei einem
+Platten-Rückschreibe-Ziel wirksam wird und übersetzungsstatisch verbaut ist. Viele Achsen sind in
+\emph{Unter-Achsen} (sub-axes) verfeinert --- Achsen unterhalb einer Haupt-Achse: als statische
+Unter-Achsen eine übersetzungszeitliche Auswahl unter Teil-Algorithmen (etwa SA1--SA4 oder AA1--AA7),
+als dynamische Unter-Achsen Laufzeit-Parameter, die ohne Neuübersetzung variiert werden --- und liefern
+anderen Achsen verteilte Interfaces für deren Detail-Operationen --- genau diese \emph{Achsen-Interfaces} trägt das
 Mikro-Benchmarking (Abschnitt~\ref{sec:mess-chain}), das je Interface-Aufruf Laufzeit und
 Erfolgs-Parameter erhebt (Abschnitt~\ref{sec:measurement-system}).
 Tabelle~\ref{tab:axes-overview} gibt den Überblick, welche Veröffentlichungen je Achse
@@ -477,7 +482,7 @@ eine reine Hash-Tabelle als Gegenprobe innerhalb der Map-Gattung --- als zwei w�
 T0-Bausteine, von denen je Permutation genau einer gewählt wird und die beide permutiert werden: ein
 Open-Addressing-Hash nach Knuth (S14, implementiert) und die SwissTable~\cite{abseil_swisstable}
 (S22, als skalare Re-Implementierung des Swiss-Table-Prinzips vorhanden, standardmäßig
-abgeschaltet). Die Gegenprobe erfüllt das Punktanfrage-Subset des
+abgeschaltet). Die Gegenprobe erfüllt das Punktsuche-Subset des
 \texttt{std::map}-Interface (\texttt{find}/\texttt{insert}/\texttt{erase}) als gewählte Hülle über die kartesisch konstruierbaren Gesamt-Suchalgorithmen; die ordnungsbasierten
 Operationen entfallen prinzipbedingt, da eine Hash-Tabelle ungeordnet ist. Über dieses Subset belegt sie
 ein limitiertes Achsen-Subset: Allokation, Prefetch, Nebenläufigkeit und Speicher-Layout bleiben
@@ -815,8 +820,11 @@ Achse welche nutzt, zeigt der Inter-Organ-Nutzungs-Graph (Abbildung~\ref{fig:usa
 \caption{Achse $=$ Organ, Anatomie $=$ Verdrahtung: das Speicher-Organ (Komposition aus Knotentyp, Layout und Allokator) exportiert ein generalisiertes Speicher-Organ-Interface (im Code \texttt{LayoutAwareChunkedStore}), über das die Suche läuft (durchgezogen, \emph{verpflichtend}); weitere Organe wie die Telemetrie \emph{können} es über optionale Beobachter-Hooks nutzen (gestrichelt, \emph{optional}), müssen aber nicht.}\label{fig:axis-organ}
 \end{figure}
 
-Setzt man diese paarweisen Kopplungen über alle Organe zusammen, entsteht ein gerichteter
-Inter-Organ-Nutzungs-Graph.
+Setzt man diese paarweisen \emph{Organ-Kopplungen} --- eine Organ-Kopplung ist die wechselseitige
+Abhängigkeit zweier Achsen, bei der die eine das Interface der anderen nutzt (verpflichtend oder
+optional) oder deren zulässige Belegungen einschränkt; Teilfrage FF1.b (Abschnitt~\ref{sec:rqs})
+spricht sie für Knotentyp, SIMD und Pfadkompression an --- über alle Organe zusammen, entsteht ein
+gerichteter Inter-Organ-Nutzungs-Graph.
 \begin{figure}[htbp]\centering
 % Kein \resizebox: die Zeichnung ist ~10.3cm schmal; ein Aufblasen auf \linewidth (x1.55) vergroesserte
 % die \scriptsize-Schrift ueber den Fliesstext hinaus. Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
@@ -1208,7 +1216,7 @@ komponierten Lebewesen fair vermessen lassen.
 \section{Das Mess-System}\label{sec:measurement-system}
 Damit strukturell verschiedene Suchalgorithmen \emph{fair} verglichen werden, bildet die Arbeit sie alle
 auf eine einzige, gut verstandene Schnittstelle ab: den C++-Vertrag der geordneten Map-Hülle
-\texttt{std::map<Key,\,Value>} mit Punktanfrage (\texttt{find}), Einfügen/Aktualisieren (\texttt{insert},
+\texttt{std::map<Key,\,Value>} mit Punktsuche (\texttt{find}), Einfügen/Aktualisieren (\texttt{insert},
 \texttt{emplace}), Löschen (\texttt{erase}) und ordnungsbasierter Navigation
 (\texttt{lower\_bound}/\texttt{upper\_bound}, Bereichs-Iteration)~\cite{iso_cpp}. Die Achsen beschreiben das
 \emph{innere} Verhalten hinter dieser festen Schnittstelle, sodass der Vergleich zweier konformer
@@ -1222,7 +1230,14 @@ der Dynamik}, die festlegen, \emph{wann} eine Achsen-Entscheidung fällt: die ob
 dynamischen Unter-Achsen, deren Laufzeit-Parameter --- die registrierten dynamischen Dimensionen
 Prefetch-Distanz, Pool-Budget, Stapelgröße, Inline-Schwelle, Thread-Zahl und Workload --- ohne
 Neuübersetzung variiert werden; und die statischen Unter-Achsen als übersetzungszeitliche
-Auswahl unter Teil-Algorithmen unterschiedlicher Komplexität. Die Idee, Datenstrukturen nicht einzeln,
+Auswahl unter Teil-Algorithmen unterschiedlicher Komplexität. Darin liegt die Gliederung jeder Achse,
+die Teilfrage FF3.b (Abschnitt~\ref{sec:rqs}) anspricht: Die \emph{Haupt-Achse} ist die
+übersetzungszeit-fixierte Wahl --- bei Organ-Achsen ein Segment der \texttt{binary\_id}, bei
+System-Achsen ein Stempel-Eintrag samt Bau-Versionskennung ---, die \emph{Unter-Achsen} sind ihre
+Verfeinerung, dynamisch als laufzeit-variable Parameter, die die Mess-Registry als dynamische
+Dimensionen der Stufe \texttt{runtime} führt, oder statisch als übersetzungszeitliche Tupel ihrer
+Haupt-Achse. Die Idee,
+Datenstrukturen nicht einzeln,
 sondern als Entwurfsraum zu betrachten, prägt Idreos' \emph{Periodic Table of Data
 Structures}~\cite{idreos2018periodic} und den \emph{Data Calculator}~\cite{idreos2018datacalculator}:
 Strukturen entstehen aus der Kombination weniger Entwurfs-Primitive, deren Kosten sich synthetisieren
@@ -1273,7 +1288,10 @@ erzielt; nur Zeilen mit gültiger zweiter Phase gehen in die Auswertung ein ---;
 zentral über eine ABI-stabile Per-Achsen-Beobachter-Schnittstelle ---; ein \emph{Konformitäts-Gatter}
 prüft vor jeder Messung den \texttt{std::map}-Vertrag, damit nur Vergleichbares verglichen wird; und ein
 Plausibilitäts-Kriterium verwirft jeden Lauf, in dem eine Messung mit Messfühlern nicht langsamer ist als
-dieselbe ohne. Diese Konzepte bilden die
+dieselbe ohne. Wo ein solches Kriterium eine Schwelle braucht, ist sie \emph{plattform-kalibriert} ---
+je Maschinen-Signatur aus Messläufen auf der jeweiligen Plattform bestimmt, nicht als feste
+Modellannahme gesetzt ---; Durchführungs-Stand: Die plattform-kalibrierten Schwellwerte werden mit den
+realen Läufen festgelegt (Abschnitt~\ref{sec:answers}). Diese Konzepte bilden die
 \emph{Definitions-Klassen} des Messens; ihre technischen \emph{Instanzen} --- Hardware-Performance-Zähler,
 OTF2-/VAMPIR-Profiling, die TU-Dresden-Hardware-Messmethodik --- hat Abschnitt~\ref{sec:sota-instances}
 bereits als konkrete Technologien eingeführt.
@@ -1294,8 +1312,8 @@ Verdrahtung des Checkpoints in die Mess-Schleife steht aus, und die Kollektor-Me
 Parameter einsammelt, ist geschnitten, nicht gebaut.
 
 \subsection{Die Dreiteilung: Mess-, System- und Organ-Achsen}\label{sec:axis-triad}
-Innerhalb dieser Definitions-Klassen beantwortet das Mess-System die in der Einleitung bewusst
-offen gehaltene Kategorien-Frage (Abschnitt~\ref{sec:rqs}): Die Achsen des Entwurfsraums trennen
+Innerhalb dieser Definitions-Klassen beantwortet das Mess-System die in der Einleitung als
+Frage ausgelegte Kategorisierungs-Frage (Abschnitt~\ref{sec:rqs}): Die Achsen des Entwurfsraums trennen
 sich entlang der drei dort benannten Belange --- das Messen selbst, die Bau- und Ziel-Plattform, das
 Gemessene --- in \emph{drei} Achsen-Kategorien, die im Folgenden als eigenständige \emph{Realms}
 mit je eigener Klassen-Wurzel, je eigenem Angebots-Katalog und je eigener Stempel-Zeile
@@ -1348,7 +1366,9 @@ ist. Daraus folgen drei Invarianten. Erstens berühren System-Achsen niemals die
 (in der Registry: \texttt{binary\_id} $=$ \texttt{never}) --- kein Mess-Instrument und keine Plattform-Größe
 verändert, \emph{was} an Organen gebaut wird; umgekehrt dürfen die Effekte der Organ-Achsen nie mit den
 Effekten der Plattform und der Mess-Instrumente vermengt werden. Zweitens sind sie gleichwohl
-permutierbar: Der Planer gibt frei, welche System-Achsen-Belegungen der CacheEngineBuilder baut, und
+permutierbar: Der Planer gibt frei, welche System-Achsen-Belegungen der CacheEngineBuilder baut ---
+das ist die Freigabe einer Zielplattform zum Bau, die Teilfrage FF1.b (Abschnitt~\ref{sec:rqs})
+voraussetzt ---, und
 der Bau-Raum des CEB permutiert System- und Organ-Achsen gemeinsam zu Tier-Binaries; auch die
 System-Unter-Achsen permutieren --- das Scheduling mit seinen fünf Dimensionen am Wrapper der Ziel-ISA
 (Abschnitt~\ref{sec:sota-instances}). Drittens sind verschiedene Bau-Welten derselben
@@ -1364,8 +1384,16 @@ permutierbar --- jede Belegung verändert die Identität der Tier-Binary. Kanoni
 (Tabelle~\ref{tab:axes-overview}); die T-Nummern bezeichnen die Slots der Komposition, keine
 Implementierungs-Nummerierung. Das Persistenz-Ziel ist die achtzehnte Organ-Achse; Telemetrie und
 Ziel-ISA gehören nicht zu den Organen, sondern zum Mess-Tooling bzw.\ zur System-Sphäre. Dazu tritt
-eine optionale \emph{Organ-Meta-Meta-Achse} --- Meta-Meta im Sinn der Indirektion einer Beschreibung
----, die Festplatten-Ein-/Ausgabe \texttt{disk\_io}: Sie stempelt im Klammer-Anhang der Organ-Zeile,
+eine optionale \emph{Organ-Meta-Meta-Achse} --- \emph{Meta-Meta} im Sinn der Indirektion einer
+Beschreibung: eine Achse, die nicht eine Belegung beschreibt, sondern beschreibt, wie andere Achsen
+beschrieben werden. In der vierstufigen Ebenen-Ordnung dieser Arbeit (M0 der Binärcode, M1 Konzeption
+und Laufzeit-Implementierung der Haupt- und Unter-Achsen, M2 die literale Klassifizierung der unter
+ihrem Begriff geführten Haupt- und Unter-Achsen --- im Code die Registry-Zeile ---, M3 die
+Meta-Meta-Achsen; die Zuordnung von M3 ist gesetzt, der Schnitt zwischen M2 und M1 ist Lesart) ist
+Meta-Meta die oberste Stufe M3; im Stempel ist die Meta-Meta-Ebene eines Eintrags seine Klammer-Tiefe --- eine Haupt-Achse
+ist klammerlos, eine Meta-Meta hängt als Klammer-Anhang an ihrer Realm-Zeile
+(Abschnitt~\ref{sec:stamp-model}) ---, und die Bit-Codierung dieser Ebene im Eintrag beschreibt
+Abschnitt~\ref{sec:impl-system-axes} ---, die Festplatten-Ein-/Ausgabe \texttt{disk\_io}: Sie stempelt im Klammer-Anhang der Organ-Zeile,
 berührt die \texttt{binary\_id} nicht, wird nur bei einem Platten-Rückschreibe-Ziel wirksam und ist
 abgeschaltet; im golden-Referenzkatalog bleibt ihr Anhang leer.
 
@@ -1963,7 +1991,12 @@ deren Kette sich auf der Hybrid-Ebene wiederholt. Der erste Modus ist der Betrie
 zwei bis vier sind das erklärte Ziel dieser Arbeit und werden hier als Konzept festgehalten. Der
 Hybrid-Modus ist dabei ein erweitertes, optionales Konstrukt: Der Kern der Arbeit ist das Durchmessen
 und Erstellen der Tier-Binaries samt Break-Even-Analyse vor jeder Anwendung des Hybriden, und die Arbeit
-geht in der Kette nicht über den hybrid-compare nach dem single-release hinaus.
+geht in der Kette nicht über den hybrid-compare nach dem single-release hinaus. Von diesen vier
+Betriebsmodi zu unterscheiden ist der in Teilfrage FF2.c (Abschnitt~\ref{sec:rqs}) erfragte
+\emph{Paper-Isolations-Modus}: ein Betriebsmodus, der die Entwurfsbestandteile genau einer
+Veröffentlichung als \emph{Achsen-Set} --- die geschlossene Achsenmenge dieses einen Referenzentwurfs,
+bei weiterhin freistehenden Mess- und System-Achsen --- isoliert anbietet, um die Veröffentlichung
+originalgetreu durchzumessen; er ist nicht gebaut und bleibt Ausblick (Abschnitt~\ref{sec:outlook}).
 
 % Die Clusterung von workloads ist ein wichtiger Bestandteil der Organisation und Orchestration des Messverfahrens und wir Clustern es nach möglichst ähnlichen Abfolgen gleicher Zugriffsmuster auf die Gattung+Genus Interfaces der Tier-Binaries, indem jedes Last-Framework seine geplante Strategie für uns einmal trocken durchläuft, wir die Abfolge, Häufigkeit und Anforderungen der Interface-calls notieren, was jeder Durlauf eines Frameworks also statisch von sich gibt, und zum Schluss verwenden wir den EM Algorithmus, um die Zugriffscluster-Gruppen-Ähnlichkeit zwischen den Last-Profilen der Last-Framewors durch eine lexikografische Sortierung aus der 2D Nähe ihrer ähnlichen EM-Algorithmus Cluster zu sortieren. Es ergeben sich also voraussichtlich Wahrscheinlichkeiten für den Zugriff von Interfaces auf den Tier-Binaries, und deren absolute und relative Folgewahrscheinlichkeiten, die als eindirektionaler Graph beschrieben werden können, Abbildung auf sich selbst ist als Kante freigegeben. Dann lassen sich alle Kanten mit ihren Übergabgswahrscheinlichkeiten als 2D Matrix mit dem EM Algorithmus auswerten und die Abstände der Mittelpunkte aller Wahrscheinlichkeits-Punktwolken zueinander auswerten, was eine geordnete Liste an Parametern für die Distanzen ergibt, was dann als "Punkt-Wolken-Wörter" variabler Länge (kürzer wenn einige Interfaces nicht aufgerufen wurden, null gefiltert) sortiert werden kann. Die Punkt-Wolken-Wörter die nebeneinander liegen sind ähnliche Verfahre und sollten in der sortierten Reihenfolge als Last-Profil aus der Quelle eines beliebigen Frameworks gefahren werden, weil sie ähnlich sind. Dieses Feature fehlt noch im Code, also anders als die anderen Anmerkungen führt hier der Kommentar für diesen Absatz und nicht der Code. Der Algorithmus ist weiterhin eine Erweiterung des Hybrid-Tier-Binaries und wird auch dort wiederverwendet (nicht nur zur Einordnung der Eingangslasten zu geordneter Mess-Profil Ausführung), um die dynamische Belegung anhand von live gemessener Hybrid-Tier-Binary Interface-Verwendung und den Übergangswahrscheinlichkeiten zwischen verwendeten Interfaces und den Last-Arten, zur Laufzeit die Tier-Binary Interface Zugriffe mitzuschneiden, um das ranking der hot geladenen Tier-Binaries in den Hybrid-Prüf-Docks dynamisch neu zu bewerten, ist also eine vierte neue Komponente der multiplen Stufungen der Auswertungs-Komponenten, um die dann bekannten Interface Eignungen eines Bestimmten Tier-Binaries gegen die gemessenen Interface-Anforderungen zu vergleichen und die Anfrage an das beste Tier-Binary durchzureichen. Deine übrigen Ausführungen hier sind perfekt korrekt aber unvollständig. Existiert kein Kommentar ist der Text wahrscheinlich korrekt, muss also nur gegen den Code reviewed werden, ob er wirklich stimmt oder beides gegeneinander ergänzt werden muss. Ansonsten heißt ein Kommentar in anderen Absätzen, dass der Code führt und Details nachformuliert werden müssen.
 Im \emph{Mess-Modus} --- dem Betrieb, den Abschnitt~\ref{sec:measurement-system} beschreibt --- fährt
