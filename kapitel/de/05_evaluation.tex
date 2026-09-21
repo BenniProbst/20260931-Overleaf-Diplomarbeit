@@ -66,7 +66,7 @@ der Messung:
   dokumentierte Hand-Audit je Quell-Repository über sieben Bewertungs-Achsen (Stil, Tests,
   Dokumentation, Wartbarkeit, Pflege-Status, Lizenz, Build-System; Skala 1--5) für 22 bewertete
   Quellen --- eine Akte unter den Audits des Cache-Engine-Repositories ---, zweitens das
-  tool-berechnete Instrument, das real in die Mess-Zeile eingeht: die gewichtete
+  tool-berechnete Instrument, das tatsächlich in die Mess-Zeile eingeht: die gewichtete
   \texttt{cppcheck}-Befunddichte je tausend physischer Zeilen (Gewichte error~3, warning~2,
   performance~1, portability~1, style~0,5) über die vendorten Original-Quellen; die Akte führt 33
   Einträge, davon 22 als n/a, weil die Rekonstruktion keine vendorte Original-Quelle besitzt, und der
@@ -172,10 +172,10 @@ Datengrundlage dienen reale String-Datensätze unterschiedlicher Charakteristik
 (Tabelle~\ref{tab:datasets}), jeder mit einer Reproduzierbarkeits-Akte aus Quelle, Prüfsumme,
 Zeilenzahl, Vorverarbeitung und Seed-Regel für die synthetischen Miss-, Update- und Delete-Schlüssel;
 vier der sechs Datensätze (\texttt{url}, \texttt{protein}, \texttt{tpcds-id}, \texttt{trec-terms})
-besitzen eine gegen die vorverarbeiteten Dateien berechnete reale Akte, \texttt{dna} die Akte der
+besitzen eine gegen die vorverarbeiteten Dateien tatsächlich berechnete Akte, \texttt{dna} die Akte der
 Pizza\&Chili-Quelle, und \texttt{xml} besitzt eine Spezifikation ohne Prüfsumme, weil die Datei nicht
-lokal vorliegt --- eine erfundene Prüfsumme gibt es nicht (n/a). Die Akten liegen als XML-Dateien je
-Datensatz im Werkzeug-Repository, und ein Kanon-Test prüft die realen Akten gegen den Sechser-Kanon
+lokal vorliegt --- eine synthetische Prüfsumme gibt es nicht (n/a). Die Akten liegen als XML-Dateien je
+Datensatz im Werkzeug-Repository, und ein Kanon-Test prüft die berechneten Akten gegen den Sechser-Kanon
 der Tabelle.
 
 \begin{table}[!htbp]
@@ -223,7 +223,7 @@ neun Merkmale). Der ZIH-Cluster der TU Dresden ist als Unter-Achse IS3 der Ziel-
 (Barnard, Capella, GraceHopper, N/A); der Barnard-Knoten besitzt Intel-Sapphire-Rapids-CPUs, zwei Xeon
 Platinum 8470 je Knoten~\cite{zih_hpc_compendium_hardware}, und Capella ist der GPU-Cluster mit
 AMD-Genoa-CPUs und NVIDIA H100. In keiner Maschinen-Signatur ist ein ZIH-Knoten registriert, und ein
-Lauf dort ist nicht vermessen (n/a) --- gleichlautend mit Abschnitt~\ref{sec:measurement-system}. Eine
+Lauf dort ist nicht gemessen (n/a) --- gleichlautend mit Abschnitt~\ref{sec:measurement-system}. Eine
 HBM-Plattform ist in keiner Signatur und in keiner Achse als Plattform registriert; die Plattform-Sonde
 führt ein HBM-Merkmal und die Allokator-Achse kennt PIM-Sonderfälle, mehr nicht --- sie ist
 vorgesehen, aber nicht registriert. Eine \texttt{IPlatformProbe} (Phase~1) meldet je Plattform die lauffähige
@@ -288,7 +288,7 @@ Powercap-Schnittstelle in Mikrojoule ausliest~\cite{david2010rapl,khan2018rapl};
 die Zone bleibt der Wert leer.} gelesen und bleibt ohne Zonen-Leserecht leer. Der Grundsatz der ausgewiesenen Nichterhebung
 ist als Feld-Flag realisiert: Je Zähler führt der Zähler-Verbund ein
 \texttt{*\_source\_available}-Flag, sieben Flags für sieben Zähler; eine Zahl bedeutet, dass die
-Quelle geliefert hat --- auch eine echte Null ---, n/a bedeutet, dass die Quelle fehlt, und diese
+Quelle geliefert hat --- auch eine gemessene Null ---, n/a bedeutet, dass die Quelle fehlt, und diese
 Unterscheidung reist Ende-zu-Ende bis in Mappe, Tabellen und Diagramme. Hardware-Zähler gelten dabei
 nur nach Gegenprüfung als vertrauenswürdig~\cite{weaver2008counters}; die Gegenprüfung für Zen~5 ist durch
 Messung belegt, die für Intel liegt nicht vor.
@@ -353,7 +353,7 @@ System-Registry als IEEE-754-deterministisch deklariert; die Registry führt fü
 Ofast), und ausgeschlossen aus dem Profil ist allein Ofast, weil es den Gleitkomma-Determinismus nach
 IEEE~754 und den Run-to-Run-Determinismus des Apparats sowie die CRC-64-Prüfsumme des golden-Referenzkatalogs
 bräche --- die Registry markiert genau diese Stufe als nicht deterministisch. Die maximale
-Optimierung bleibt damit wählbar: Der Haus-Standard ist global O2, O3 wird auf XML-Eingangswunsch
+Optimierung bleibt damit wählbar: Der Standard des Baus ist global O2, O3 wird über die XML gewählt und
 mitgebaut, und die gewählte Stufe ist über das Werkzeugketten-Glied des Fingerprints
 identitätswirksam, sodass O2- und O3-Bestände nie stillschweigend als Cache-Treffer verwechselt
 werden; O0 bis O3 als Anwender-Wahl in der XML und die Durchreichung weiterer Compiler-Flags sind
@@ -398,7 +398,7 @@ der Host-Exporte geschrieben; der Allokator ist als Organ-Achse Teil jeder \text
 Provenienz je einzelner Fremdbibliothek --- ihr eigener Compiler, ihre Flags, ihr Commit-Hash --- wird
 nicht protokolliert (nicht implementiert). Die Latenz-Perzentile bestimmt der Auswertungs-Baum der Cache-Engine
 nearest-rank aus den Rohwerten --- Hyndman und Fan, Typ~1: Rang $k = \lceil q \cdot n \rceil - 1$,
-ohne Interpolation~\cite{hyndman1996quantiles} ---, sodass jedes Perzentil ein real gemessener Wert
+ohne Interpolation~\cite{hyndman1996quantiles} ---, sodass jedes Perzentil ein tatsächlich gemessener Wert
 ist\footnote{Nearest-Rank: Das $q$-Quantil ist der kleinste Stichprobenwert, unter dem mindestens der
 Anteil $q$ der Stichprobe liegt; interpolierende Verfahren (Typ~7) erzeugen dagegen Werte, die nie
 gemessen wurden.}; die Darstellungs-Werkzeuge des Werkzeug-Repositories besitzen eigene Kopien der
@@ -513,7 +513,7 @@ die Messfehler-Erkennung formuliert Abschnitt~\ref{sec:heuristics-curves}. Die B
 Dimension lautet: \enquote{Ist die heuristisch geschätzte Rekombination der Tier-Binaries schneller
 als die existierenden Paper-Algorithmen?} Anders als H1--H3, die Aussagen über den Entwurfsraum
 prüfen, prüft der Gegenbeweis den Apparat der Arbeit selbst: ob die aus den Messkurven geschätzte
-Rekombination im realen Wall-Clock-Verhalten hält, was die Kurven versprechen; er steht deshalb
+Rekombination im tatsächlichen Wall-Clock-Verhalten die von den Kurven vorhergesagte Leistung erreicht; er steht deshalb
 \emph{neben} der Rangbildung der Sensitivitätsanalyse (Abschnitt~\ref{sec:eval-sensitivity}), nicht
 in ihr. Umsetzungsstand: Klassifikations-Schicht, Dock-Schicht, XML-Parser und Binary-Proxy der
 Hybrid-Stufe sind implementiert (sechs der neun vorgesehenen Dateien, Abschnitt~\ref{sec:impl-hybrid-lager});
@@ -650,7 +650,7 @@ LaTeX-Stufen (Trenner Komma) und die dreizehnspaltige Altform des Ergebnis-Aggre
 (\texttt{search\_\allowbreak{}insert} bis \texttt{search\_\allowbreak{}peak\_\allowbreak{}occupancy}), \texttt{pmc\_\allowbreak{}available},
 \texttt{branch\_\allowbreak{}misses}, \texttt{throughput\_\allowbreak{}ops\_\allowbreak{}per\_\allowbreak{}sec} und die sieben
 \texttt{*\_source\_available}-Flags. \texttt{total\_cycles} führt --- unter seinem Legacy-Namen ---
-die repräsentative p50-Latenz in Nanosekunden, keine Zyklen; die Umbenennung oder ein echter
+die repräsentative p50-Latenz in Nanosekunden, keine Zyklen; die Umbenennung oder ein tatsächlicher
 Zyklen-Kanal ist eine dokumentierte Entwurfsentscheidung. Nicht erhobene Werte stehen als n/a, nie als Null.
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}l>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{4.0cm}@{}}
@@ -755,7 +755,7 @@ der Zuordnung aus Tabelle~\ref{tab:stage-series}.}\label{tab:eval-verbund-modi}
 
 \subsection{Vorliegende Messungen}\label{sec:eval-available}
 Methodik und Auswertungs-Pipeline sind vorhanden und an realen Daten verifiziert: Eine Smoke-Messreihe
-über 43 Permutationen --- echte DLL-Messung; 27 kartesische Kombinationen aus SIMD, Speicherlayout
+über 43 Permutationen --- DLL-Messung; 27 kartesische Kombinationen aus SIMD, Speicherlayout
 und Allokator plus 16 weitere über vier zweiwertige Größen --- dokumentiert
 Anhang~\ref{app:measurements} samt ihren Limitierungen
 (Abschnitt~\ref{sec:measurements:limitations}); sie variiert sieben Größen (SIMD ist eine
@@ -808,7 +808,7 @@ Umgebungs-Bias~\cite{mytkowicz2009wrongdata,curtsinger2013stabilizer} begegnen i
 identische Bau-Matrix und Wiederholungen, eine Layout-Randomisierung fehlt; Warmup und
 Wiederholungen folgen Abschnitt~\ref{sec:fairness}~\cite{kalibera2013rigorous}. Externe Validität: Die
 registrierten Messmaschinen umfassen zwei x86-64-Mikroarchitekturen und einen Gracemont-Knoten; ZIH und HBM
-sind deklariert, nicht vermessen (Abschnitt~\ref{sec:eval-platforms}), die Intel-RAW-Belegung fehlt,
+sind deklariert, nicht gemessen (Abschnitt~\ref{sec:eval-platforms}), die Intel-RAW-Belegung fehlt,
 und ein einseitig gefahrener Pfad gilt als Teil-Messung. Schluss-Validität: Perzentile nearest-rank ohne
 Interpolation, geometrische Aggregation, n/a statt Null. Die Limitierungen des Mess-Anhangs
 (Tabelle~\ref{tab:le:limitierung}, Abschnitt~\ref{sec:measurements:limitations}) und des Fazits
@@ -825,15 +825,15 @@ Konstrukt & Zeit-Kategorie als Zyklen fehlgelesen & \texttt{total\_cycles} als p
 Intern & Beobachter-Overhead verfälscht die Kurven & drei Bau-Varianten, Unsicherheitsband, Gültigkeitskriterium $t_1 \ge t_2 \ge t_3$ & Gate-Felder implementiert; Prüfung: nicht implementiert \\
 Intern & Layout-/Umgebungs-Bias, Wechsel des L3-Komplexes & identische Schlüssel und Bau-Matrix; Wiederholungs-Dimension; Pinning als vorgesehen ausgewiesen & Aktuator implementiert, Anbindung: nicht implementiert; keine Layout-Randomisierung \\
 Intern & Warmup- und Kaltstart-Effekte & Zwei-Phasen-Treiber (sichern, aufwärmen, zurückrollen, messen) & implementiert \\
-Extern & Messmaschinen decken die Zielplattformen nicht ab & registrierte Signaturen prod1, prod2, ODROID\@; ZIH als IS3 deklariert & ZIH und HBM\@: deklariert, nicht vermessen (n/a) \\
+Extern & Messmaschinen decken die Zielplattformen nicht ab & registrierte Signaturen prod1, prod2, ODROID\@; ZIH als IS3 deklariert & ZIH und HBM\@: deklariert, nicht gemessen (n/a) \\
 Extern & einseitiger Hersteller-Pfad & Vollständigkeits-Regel der Auswertung; Teil-Messung wird ausgewiesen & Regel gesetzt; Intel-Pfad: Gegenprüfung nicht durchgeführt \\
-Schluss & Perzentile erfunden, Mittelwerte verzerrt & Nearest-Rank ohne Interpolation; geometrische Aggregation & implementiert (Auswertungs-Baum); Kopien in den Werkzeugen: ausgewiesene Lücke \\
+Schluss & Perzentile synthetisch statt gemessen, Mittelwerte verzerrt & Nearest-Rank ohne Interpolation; geometrische Aggregation & implementiert (Auswertungs-Baum); Kopien in den Werkzeugen: ausgewiesene Lücke \\
 Schluss & Null statt Nichterhebung & Feld-Flags je Zähler, n/a Ende-zu-Ende & implementiert \\
 \bottomrule
 \end{tabular}
 \caption{Gültigkeit der Evaluation nach den vier Klassen der Bedrohungen (Konstrukt, intern, extern,
 Schluss): je Bedrohung die Gegenmaßnahme im Apparat und ihr Umsetzungsstand --- implementiert,
-deklariert und nicht vermessen (n/a) oder nicht implementiert. Keine Zeile nennt eine Zahl ohne
+deklariert und nicht gemessen (n/a) oder nicht implementiert. Keine Zeile nennt eine Zahl ohne
 Lauf.}\label{tab:eval-gueltigkeit}
 \end{table}
 
