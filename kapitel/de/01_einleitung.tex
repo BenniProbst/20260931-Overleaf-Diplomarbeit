@@ -4,7 +4,7 @@
 % suchbaum-first.
 
 \section{Motivation}\label{sec:motivation}
-Suchbäume und Indexstrukturen tragen moderne datenintensive Systeme --- von In-Memory-Datenbanken über
+Suchbäume und Indexstrukturen bilden das Fundament moderner datenintensiver Systeme --- von In-Memory-Datenbanken über
 Dateisysteme bis zur Sprachverarbeitung. Zugleich werden Prozessoren von der Speicher-Hierarchie
 dominiert: nicht die Zahl der Operationen, sondern ihr Cache-Verhalten bestimmt die
 Laufzeit~\cite{hennessy2019architecture, drepper2007memory, wulf1995memorywall}. Aus diesem
@@ -279,17 +279,17 @@ zentralen Beiträge sind:
   (\texttt{comdare\_\allowbreak{}create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exportiert je
   Permutation genau ein Lebewesen; dahinter liegt eine dreischichtige Abstraktionskette --- eine
   Vermittlungs-Fassade (\texttt{ICacheEngine}) über der Laufzeit-ABI-Schicht
-  (\texttt{IAnatomyBase} $\to$ \texttt{IExecutionEngine}) über den Achsen-Organen. Der Schnitt des
-  Suchmaschinen-Moduls ist konzeptionell festgelegt, als eigenes Modul aber noch nicht vollzogen; sein
-  Provider ist ausdrücklich zurückgestellt, und das Suchmaschinen-Modul lebt derzeit als
-  Topic-Namensraum innerhalb der Cache-Engine. Der Prüfling-Suchkern spezialisiert seine Hybrid-API variadisch nach
+  (\texttt{IAnatomyBase} $\to$ \texttt{IExecutionEngine}) über den Achsen-Organen. Die Abgrenzung des
+  Suchmaschinen-Moduls ist konzeptionell festgelegt, als eigenes Modul aber nicht implementiert; sein
+  Provider ist ausdrücklich zurückgestellt, und das Suchmaschinen-Modul ist als
+  Topic-Namensraum innerhalb der Cache-Engine realisiert. Der Prüfling-Suchkern spezialisiert seine Hybrid-API variadisch nach
   Parameterzahl (1~Parameter $\Rightarrow$ \texttt{std::vector}-API\@;
   2~Parameter $\Rightarrow$ \texttt{std::map}-API\@; $N>2 \Rightarrow$
   \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}), wie es die Aufgabenstellung über alle Varianten
   der bekannten \texttt{std::map}- und \texttt{std::vector}-Container-Hüllen fordert; die Cache-Engine
-  trägt dazu die Gattungs-Aritäten ihrer Gattungs-Unterklassen.
+  stellt dazu die Gattungs-Aritäten ihrer Gattungs-Unterklassen bereit.
   \item Eine Achsen-Permutationsmatrix in dreigeteilter Ordnung: achtzehn Organ-Haupt-Achsen in fester
-  Slot-Reihenfolge (T00--T17) tragen die Binary-Permutation; drei System-Haupt-Achsen --- Ziel-ISA,
+  Slot-Reihenfolge (T00--T17) bilden die Binary-Permutation; drei System-Haupt-Achsen --- Ziel-ISA,
   Betriebssystem und Erweiterungs-Hardware --- beschreiben die Bau- und Ziel-Plattform, wobei ihre
   Komplex-Klammer \texttt{build\_target\_complex} ausdrücklich keine vierte Haupt-Achse ist; und ein
   eigenständiger Mess-Achsen-Realm hält die Mess-Belange von beidem getrennt, denn weder System- noch
@@ -298,7 +298,7 @@ zentralen Beiträge sind:
   Achsen beschrieben werden, tritt hinzu, sobald Platten-IO in den Algorithmus-Entwurf eingebunden
   wird; sie stempelt im Klammer-Anhang der Organ-Zeile und bleibt außerhalb der
   Permutations-Identität. Umgesetzt ist die Matrix mit Boost.MP11-Compile-Time-Typlisten-Bausteinen ---
-  Laufzeit-Tags und \texttt{std::variant} sind in den Tier-Binaries als Doktrin verboten
+  Laufzeit-Tags und \texttt{std::variant} sind in den Tier-Binaries als Grundsatz dieser Arbeit ausgeschlossen
   (\texttt{[[no-runtime-switch]]}) --- samt Compile-Time-Fallback zwischen Prüfling-Stack und
   Stand-der-Technik-Stack, der sechzehn der achtzehn Achsen aus dem Cache-Engine-Rahmen übernimmt und
   zwei durch Prüfling-Slots ersetzt.
@@ -318,17 +318,17 @@ zentralen Beiträge sind:
   Signaling-Bit-Serialisierung). Im Mess-Apparat meldet der Prüfling vier Prüfling-Slots an --- Seitentyp
   (\texttt{page\_type}, in der Cache-Engine die Achse \texttt{node\_type}), Prefetch, Telemetrie und den
   ChainRef-Value-Handle --- sowie ein Merge-Organ für die Pfadkompression, das die Cache-Engine-eigene
-  Patricia-Strategie trägt; im codegen-fähigen Mess-Pfad wirken davon derzeit zwei (Prefetch und
+  Patricia-Strategie enthält; im codegen-fähigen Mess-Pfad wirken davon zwei (Prefetch und
   Value-Handle), während MultiLevel-Layout, Pool-Allokator und Serialisierung über den
   Cache-Engine-Standard laufen (Abschnitt~\ref{sec:prtart-demo}). Die Telemetrie ist in der Cache-Engine
   eine System-Achse und kein Kompositions-Slot; der gleichnamige Prüfling-Slot ist ein
-  Bestandsrest. Die OLC-Nebenläufigkeit ist eine Bausteinschicht des Prüflings, kein angemeldeter Slot.
+  verbleibender Bestand. Die OLC-Nebenläufigkeit ist eine Bausteinschicht des Prüflings, kein angemeldeter Slot.
   Zu beachten ist, dass die Slot-Nummern des Prüflings nicht der Slot-Reihenfolge T00--T17 der
   Cache-Engine folgen. Der Einsatz des Prüflings zeigt die Erweiterbarkeit des Systems am Beispiel ---
   zur effizienten Weiterentwicklung neuartiger Ansätze im Umgang mit cache-aware Algorithmen und
   beschleunigter Suche.
   \item Ein Mess-Treiber mit Defined-/Full-Modus-Unterscheidung (ergänzt um eine deterministisch
-  gestichprobte Full-Variante), profilbewusstem Workload-Routing --- im Standard die Voll-Permutation über alle registrierten Workloads, deren Durchführungsstand
+  gestichprobte Full-Variante), profilbewusstem Workload-Routing --- im Standard die Voll-Permutation über alle registrierten Workloads, deren Umsetzungsstand
   Kapitel~\ref{ch:eval} ausweist --- und drei Granularitäten: Mikro-, Makro- und Gesamt-Benchmarking
   (einzelne Bestandteile, Interface-Operationen, ganze Algorithmen).
   \item Eine durchgehend deklarativ gesteuerte Bau- und Mess-Kette hinter diesem Treiber: ein
@@ -348,10 +348,10 @@ zentralen Beiträge sind:
   Line-Größe und Größen je Hierarchie-Ebene aus sysfs und CPUID --- und als feste Größen in eine
   systemoptimierte Binary einfließen lässt. Die Kern-Topologie (P-/E-Kern-Trennung, Pinning) ist als
   Plattform-Belang derselben Probe vorgesehen und für die Cache-Line-Messung auf Hybrid-CPUs Pflicht,
-  ihre Erfassung ist im vorliegenden Stand jedoch bewusst ungesetzt --- der Durchführungsstand steht in
-  Kapitel~\ref{ch:eval}. Die beiden Produktionsmaschinen sollen unter zwei Betriebssystemen
-  (immutables Talos und root-Linux mit vollem Hardware-Zähler-Zugriff) vermessen werden --- zur
-  Abgabe liegt das root-Linux-Regime vor, der Talos-Spiegel steht aus.
+  ihre Erfassung durch die Probe ist jedoch nicht implementiert --- der Umsetzungsstand steht in
+  Kapitel~\ref{ch:eval}. Der Messplan sieht für die beiden Produktionsmaschinen zwei Betriebssystem-Regimes
+  vor (immutables Talos und root-Linux mit vollem Hardware-Zähler-Zugriff); gemessen ist das
+  root-Linux-Regime, das Talos-Regime nicht.
   \item \emph{Als Zielsetzung und Ausblick:} die Auslieferung und begründete Auswertung des besten
   Gesamtalgorithmus --- automatisch ausgewählt aus den feingliedrigen Messergebnissen unter dem
   Messaspekt des besten cache-bewussten Verhaltens und der Beschleunigung durch Cache-Line-Anpassung, im
