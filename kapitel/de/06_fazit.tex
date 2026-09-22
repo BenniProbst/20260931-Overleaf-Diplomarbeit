@@ -44,7 +44,8 @@ folgenden Teilfragen.
 \begin{nurkurz}
 %% INTERN-272: KA-112
 Quer zu allen fünf Fragen hat die Einleitung die Kategorisierungs-Frage ausgelegt, ob sich die Achsen des
-Entwurfsraums sauber in Organ-, System- und Mess-Achsen trennen lassen. Sie ist beantwortet
+Entwurfsraums sauber in Organ-, System- und Mess-Achsen trennen lassen --- und wie eine solche Trennung zu
+bewerkstelligen ist, wo sie in einem Entwurf nicht angelegt ist. Beides ist beantwortet
 (Abschnitt~\ref{sec:axis-triad}): Die Achsen trennen sich in drei \emph{Realms} --- Organ, System, Mess ---
 mit je eigener Klassen-Wurzel, generierter Registry und Stempel-Zeile an der Binary
 (Abschnitt~\ref{sec:stamp-model}); die drei Zeilen-Träger des Fingerprints sind als Typen paarweise
@@ -537,8 +538,10 @@ beantwortet.
 Die Grenze verläuft entlang der Kategorien: Die drei System-Haupt-Achsen samt Komplex-Klammer
 \texttt{build\_target\_complex} (Abschnitt~\ref{sec:complex-axis}) gehören zur Übersetzungszeit-Identität
 der Binary und erscheinen als System-Stempel-Zeile, nie als \texttt{binary\_id}-Segment. Die Provenienz
-sichert der Tier-Fingerprint
-(SHA-512, elf Glieder samt Overlay- und Toolchain-Glied, Format~6); der Planer-Fingerprint ist ein SHA-256,
+sichert der Tier-Fingerprint (SHA-512, elf Glieder, Format~6; das Overlay-Glied hasht die Quelldateien
+des Overlay-Schnitts --- je Achse die Dateien ihrer eigenen Implementierung plus die gemeinsame
+Anatomie-Substanz ---, das Toolchain-Glied trägt Bau-Compiler-Kennung und Optimierungs-Identität); der
+Planer-Fingerprint ist ein SHA-256,
 und \texttt{get\_compiler()}
 liefert den Original-Compiler der Veröffentlichung --- Herkunftsangabe, keine Bau-Kennung. Mess-Wahlen sowie
 die Layout- und Seiten-Selektion über \texttt{binary\_id} und Cache-Line-Politik bleiben laufzeit-variabel.
@@ -546,7 +549,9 @@ Zweigeteilt (Planer-Laufzeit und Builder-Übersetzungszeit) sind Last-Rahmenwerk
 Hardware-Erkennung (Abschnitte~\ref{sec:axis-triad} und~\ref{sec:hw-probe}).
 Gestempelt wird stets die Plattform-\emph{Klasse}, nie ein Messwert; der \emph{Passungs-Stempel}, der die
 gestempelte Klasse bei jedem Mess-Lauf gegen das Laufzeit-Verdikt der Hardware-Erkennung prüft, ist
-entworfen, nicht implementiert (Abschnitt~\ref{sec:outlook}); die Betriebssystem-Dimension ist mit drei
+entworfen, nicht implementiert (Abschnitt~\ref{sec:outlook}); die vorwärtsgerichtete Teilfrage, ob die
+Messung selbst ISA- und betriebssystem-optimierte Binaries für eine Rekombination zuschneiden kann, greift
+der Ausblick als Heuristik-Automation auf; die Betriebssystem-Dimension ist mit drei
 Werten und zwei Mess-Regimes angelegt, das zweite Regime nicht umgesetzt
 (Abschnitt~\ref{sec:eval-platforms}).
 Zu FF4.a: Die Kette ist durchgehend deklarativ und als zwei Binaries gebaut: Der Planer prüft die
@@ -763,7 +768,9 @@ Kapitel~\ref{ch:impl}, den Umsetzungsstand von Bau und Smoke-Reihe Abschnitt~\re
 Maschinenspezifische empirische Optimierung
 ist der Wesenszug cache-bewusster Verfahren (ATLAS~\cite{whaley2001atlas}, FFTW~\cite{frigo1998fftw};
 cache-oblivious Verfahren~\cite{frigo1999cache} als Gegenpol), und ein Apparat, der sie zum Prinzip macht,
-erbt ihre Kosten; die Modul-Bodies sind keine Grenze (Abschnitt~\ref{sec:impl-pipeline}).
+erbt ihre Kosten; die Modul-Bodies sind keine Grenze (der Codegenerator des Mess-Pfads emittiert je
+Permutation die achtzehn voll qualifizierten Achsen-Typen samt Umbrella-Include,
+Abschnitt~\ref{sec:impl-pipeline}).
 \begin{itemize}
   \item \textbf{Versionswechsel eines Achsen-Algorithmus:} Jede Tier-Binary, deren Overlay-Schnitt die
   geänderte Datei enthält, wird zu einer neuen Identität (Versions-Lock,
@@ -781,10 +788,11 @@ erbt ihre Kosten; die Modul-Bodies sind keine Grenze (Abschnitt~\ref{sec:impl-pi
   modell-gebundene Rohzähler (L2-Demand-Misses, Fills aus einem fremden CCX als Kohärenz-Beobachtbare) nur
   mit gegengeprüfter Kodierung (AMD Zen~5); sonst tragen die Felder eine explizit kodierte Nicht-Erhebung
   (n/a mit Grund, nie eine Null: geplant fehlende Daten verzerren
-  nicht~\cite{graham2006planned,graham2009missing}); Last-Level-Ereignis, RAPL-Energiezähler und IPC sind
-  nicht erhoben, in der Smoke-Reihe sind die Hardware-Spalten n/a (Tabelle~\ref{tab:le:limitierung},
-  Zeile~1). Was der Anwender nicht kann: L2- und Kohärenz-Zähler auf anderen Modellen als Zen~5 erhalten
-  (Abbildung~\ref{fig:measurement-triangle}).
+  nicht~\cite{graham2006planned,graham2009missing}); das Last-Level-Ereignis scheitert auf Zen~5 beim Öffnen
+  (keine generische Abbildung), RAPL ist best-effort und ohne Zonen-Leserecht leer, IPC ist als Kategorie
+  deklariert, nicht erhoben; in der Smoke-Reihe sind die Hardware-Spalten n/a
+  (Tabelle~\ref{tab:le:limitierung}, Zeile~1). Was der Anwender nicht kann: L2- und Kohärenz-Zähler auf
+  anderen Modellen als Zen~5 erhalten (Abbildung~\ref{fig:measurement-triangle}).
   \item \textbf{Hardware-Passung ohne automatische Prüfung:} Die Hardware-Erkennung liegt in drei
   Funktionen vor: der Erhebung, der Übersetzungszeit-Factory und dem Laufzeit-Verdikt; Runner-Anbindung,
   Rückschrieb, Provenienz-Roundtrip und Passungs-Stempel fehlen. Was der Anwender nicht kann: die Passung
@@ -794,8 +802,10 @@ erbt ihre Kosten; die Modul-Bodies sind keine Grenze (Abschnitt~\ref{sec:impl-pi
   Gegenstück (Abschnitt~\ref{sec:eval-identity}); Blatt-Auffächerung und CSV-Baumform sind vorgesehen, nicht
   implementiert. Was der Anwender nicht kann: Ergebnisse je Unter-Achsen-Permutation als eigene Blätter
   erhalten oder die CSV-Ablage als Baum erhalten.
-  \item \textbf{Permutationsraum und Budget:} Ein vollständiger Bau des golden-Referenzkatalogs sprengt je
-  System-Permutation Zeit- und Lager-Budget (Abschnitt~\ref{sec:answers}). Was der Anwender nicht kann: den
+  \item \textbf{Permutationsraum und Budget:} Ein vollständiger Bau des golden-Referenzkatalogs kostet je
+  System-Permutation Lager und Zeit in dem Umfang, den der Umsetzungsstand beziffert
+  (Abschnitt~\ref{sec:answers}); der Planer rechnet die Mächtigkeit je Profil und bietet im Subkommando
+  \texttt{simulate} Budget-Eingänge. Was der Anwender nicht kann: den
   vollen Produktraum aller Achsen-Kataloge materialisieren --- er wählt Kataloge oder Teilmengen, und die
   Wiederholungszahl je Messung bleibt eine Abwägung von Aufwand und Konfidenz~\cite{kalibera2013rigorous}.
   \item \textbf{Kein Laufzeit-Wechsel zwischen Tier-Binaries:} Die Hybrid-Stufe ist als Klassifikation,
