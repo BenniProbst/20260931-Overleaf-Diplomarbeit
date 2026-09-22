@@ -329,7 +329,7 @@ Veröffentlichungen je Achse ein Organ beitragen.
     \midrule
     Sys.\ target\_isa & IS1--IS3 & x86-64/AArch64/Power/RISC-V (Vendor-Spec) \\
     Sys.\ external\_utils: SIMD & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV\@; GPU\@: CUDA \\
-    Sys.\ external\_utils: Erw.-HW & HW1--HW4 & HW-Strategie je Veröffentlichung (Anhang~\ref{app:blocks}, Abschnitt \enquote{Build-HW}) \\
+    Sys.\ external\_utils: Erw.-HW & HW1--HW4 & Plattform-Profile als Code/Baseline (Anhang~\ref{app:blocks}, Abschnitt \enquote{Build-HW}) \\
     Sys./Mess telemetry & TM1--TM3 & P01,P02,P16,P17,P26,P28; HdrHistogram (Gil Tene) \\
     Build (Prüfling) page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (2026) \\
     Organ-Meta-Meta disk\_io & staging (Laufzeit) & CE-Baseline; optional, abgeschaltet (Abschnitt~\ref{sec:axis-triad}) \\
@@ -378,7 +378,8 @@ trennen Algorithmus- und Cache-Sicht: T1 enthält die drei Traversal-Bausteine
 \texttt{Linear\allowbreak{}Fanout}, \texttt{Hash\allowbreak{}Lookup} und
 \texttt{Binary\allowbreak{}Search\allowbreak{}Fanout} (Literatur in Anhang~\ref{app:blocks}), T2 (Mapping) die
 lineare 1:1-Abbildung (\texttt{Direct\allowbreak{}Placement}) und das pool-relative Offset-Mapping
-(\texttt{Pool\allowbreak{}Relative}); Hash-Redirect (MP04) und Permutations-Index (MP03) sind Roadmap-Werte.
+(\texttt{Pool\allowbreak{}Relative}); Hash-Redirect~\cite{wu2019wormhole} (MP04) und
+Permutations-Index~\cite{mao2012masstree} (MP03) sind Roadmap-Werte.
 Die \emph{Pfadkompression} (T3) instanziiert die byte-weise Variante~\cite{leis2013art}, den
 Patricia-Split~\cite{morrison1968patricia,binna2018hot} und die Durchreich-Variante \texttt{None}; die
 \emph{Knotentyp-Achse} (T4) bündelt die vier adaptiven ART-Knotenformate Node4/16/48/256~\cite{leis2013art},
@@ -421,9 +422,10 @@ Baum~\cite{schmeisser2022b2tree} sind verwandte Literatur (Anhang~\ref{app:block
 Free-List-Topologie über Thread-Lokalität/NUMA-Affinität~\cite{ungethuem2017survey} bis zur Reklamation (Epoch,
 RCU~\cite{mckenney2001rcu}, Hazard-Pointer~\cite{michael2004hazard}, QSBR); der Code stellt 26 Allokator-Wrapper
 bereit, die 23 Profile mit Lizenz und Workload-Affinität listet Tabelle~\ref{tab:allocator-profiles}. Die
-\emph{Wert-Achse} (T10) unterscheidet Inline-Wert, externen Pool, versionierten Zeiger, immutable Shared-Ref
-und die verkettete externe Referenz (ChainRef), die \emph{Serialisierungs-Achse} (T9) Raw-Binary, succinct
-LOUDS/FST und Varint~\cite{leis2013art}.
+\emph{Wert-Achse} (T10) unterscheidet Inline-Wert~\cite{leis2013art}, externen Pool~\cite{wu2019wormhole},
+versionierten Zeiger~\cite{mao2012masstree}, immutable Shared-Ref~\cite{mckenney2001rcu} und die verkettete
+externe Referenz (ChainRef), die \emph{Serialisierungs-Achse} (T9) Raw-Binary, succinct LOUDS/FST und
+Varint~\cite{leis2013art}.
 \end{nurkurz}
 
 \begin{table}[!htbp]
@@ -744,9 +746,10 @@ Achsen (Abbildung~\ref{fig:design-space}). Dass das Achsen-Gerüst auch nicht-ba
 belegt eine reine Hash-Tabelle als Gegenprobe innerhalb der Map-Gattung: ein Open-Addressing-Hash nach Knuth
 (S14, implementiert) und die skalare SwissTable-Nachbildung~\cite{abseil_swisstable} (S22, standardmäßig
 abgeschaltet; Legende der S-Nummern in Anhang~\ref{app:blocks}). Baum- und trie-spezifische Achsen fallen dabei
-nicht weg, sondern werden als Durchreich-Varianten belegt; die geordnete Bereichsiteration ist keine Organ-Achse,
-sondern Scan-Fähigkeit der Modulgrenze (Anhang~\ref{app:interfaces}), und die Gegenprobe erfordert keine eigene
-Gattung.
+nicht weg: die Pfadkompression (T3) führt die Durchreich-Variante \texttt{None}, der Knotentyp (T4) bleibt
+regulär mit einem ART-Knotenformat belegt, das der Hash-Baustein nicht nutzt; die geordnete Bereichsiteration
+ist keine Organ-Achse, sondern Scan-Fähigkeit der Modulgrenze (Anhang~\ref{app:interfaces}), und die Gegenprobe
+erfordert keine eigene Gattung.
 \end{nurkurz}
 
 \begin{nurlang}
@@ -2460,20 +2463,19 @@ Mechanik von Bestand~3 und~4, die Kurven-Facette, der Ablage-Pfad des Hybrid-Tie
 \end{figure}
 \end{nurlang}
 \begin{nurkurz}
-Was diese Mess-Muster konkret erheben, sind drei gegenläufige Komponenten --- \emph{Latenz}, \emph{Durchsatz}
-und \emph{Speicherverbrauch} ---, gegen die sich jede Achsen-Permutation als Trade-off-Profil aufspannen lässt
+Was diese Mess-Muster erheben, sind drei gegenläufige Komponenten --- \emph{Latenz}, \emph{Durchsatz} und
+\emph{Speicherverbrauch} ---, gegen die sich jede Achsen-Permutation als Trade-off-Profil aufspannt
 (Abbildung~\ref{fig:measurement-triangle}); bei konkurrierenden Zielgrößen ist die \enquote{beste} Permutation
-kein Einzelsieger, sondern ein Element der Pareto-Front der nicht-dominierten
-Kandidaten~\cite{ehrgott2005multicriteria} (Abschnitt~\ref{sec:heuristics-loop}). Die vierte, zentrale
-Komponente --- das cache-bewusste Verhalten auf Knoten-, Daten- und Index-Ebene --- erheben
-Hardware-Performance-Zähler, in jedem offiziellen Mess-Lauf verbindlich eingebaut: Für AMD Zen~5 (prod1) ist der
-Ereignis-Katalog gegengeprüft, für Intel liegt kein Eintrag vor, der Last-Level-Zähler scheitert auf Zen~5;
-jede Lücke erscheint als fehlender Wert, nie als Null. Die getrennte Messung der P- und E-Kerne ist als
-Scheduling-Dimension \texttt{hetero\_core\_dispatch} der Ziel-ISA angelegt; das Mess-Modell führt sechs
-Kern-Modi --- vier Pinning-Modi je Kern-Sorte, den ungepinnten Referenzlauf und \emph{HybridAware}, der seine
-Threads zur Laufzeit auf ausgewählte Kerne beider Sorten pinnt und dort mit dem zur Sorte gehörenden
-Zähler-Satz misst. Die Cache-Line-Awareness-Messung setzt HybridAware voraus, der Modus ist deshalb Pflicht;
-implementiert ist der Pinning-Aktuator, die Anbindung der Kern-Modi an das Lauf-Profil (prod2) fehlt.
+kein Einzelsieger, sondern ein Element der Pareto-Front~\cite{ehrgott2005multicriteria}
+(Abschnitt~\ref{sec:heuristics-loop}). Die vierte, zentrale Komponente --- das cache-bewusste Verhalten auf
+Knoten-, Daten- und Index-Ebene --- erheben verbindlich eingebaute Hardware-Performance-Zähler: Für AMD Zen~5
+(prod1) ist der Ereignis-Katalog gegengeprüft, für Intel liegt kein Eintrag vor, der Last-Level-Zähler
+scheitert auf Zen~5; jede Lücke erscheint als fehlender Wert, nie als Null. Die getrennte Messung der P- und
+E-Kerne führt die Scheduling-Dimension \texttt{hetero\_core\_dispatch} der Ziel-ISA als Sechs-Modus-Modell:
+vier Pinning-Modi je Kern-Sorte, der ungepinnte Referenzlauf und \emph{HybridAware}, der seine Threads zur
+Laufzeit auf Kerne beider Sorten pinnt und mit dem Zähler-Satz der jeweiligen Sorte misst; die
+Cache-Line-Awareness-Messung setzt HybridAware voraus, der Modus ist deshalb Pflicht. Implementiert ist der
+Pinning-Aktuator, die Anbindung der Kern-Modi an das Lauf-Profil (prod2) fehlt.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center]
   \coordinate (lat) at (0,3.0);
@@ -2506,14 +2508,13 @@ Nach außen verhalten sich die drei System-Haupt-Achsen wie \emph{eine}: Eine \e
 Klammer über einer festen Rekombination mehrerer Haupt-Achsen, die gemeinsam als eine auftreten (im Sinne des
 \emph{Command}-Musters). Die \emph{äußere} Komplex-Klammer spannt
 $\texttt{target\_isa} \times \texttt{operating\_system} \times \texttt{external\_utils}$ und enthält als
-Unter-Achsen-Gruppe die Bau-Werkzeugkette \texttt{build\_toolchain} (Compiler, Optimierungsstufe,
-Atomik-Fähigkeit); die Ziel-ISA ist \emph{in sich} eine innere Komplex-Achse aus den Identitäts-Gliedern
-RAM-Frequenz, CAS-Latenz und CPU-Fabrikation, an deren Wrapper die Unter-System-Achsen Scheduling, NUMA-Knoten
-und Speicherseiten-Größe hängen. Die Glieder werden je Maschine in derselben Anwender-XML \emph{deklariert}, die
-auch das Experiment anzeigt (Abschnitt~\ref{sec:mess-chain}); die Klassen-Identität ist das Eigenschafts-Tupel,
-der Rechnername dient nur dem Instanz-Lookup. Im Identitäts-Stempel (Abschnitt~\ref{sec:stamp-model}) belegt
-eine Komplex-Achse genau \emph{ein} Feld ihrer Typ-Zeile; die CAS-Latenz ist ein rein deklariertes Glied
-(Provenienz-Stufe \enquote{deklariert, nicht gemessen}, Abschnitt~\ref{sec:hw-probe}).
+Unter-Achsen-Gruppe die Bau-Werkzeugkette \texttt{build\_toolchain}; die Ziel-ISA ist \emph{in sich} eine
+innere Komplex-Achse aus den Identitäts-Gliedern RAM-Frequenz, CAS-Latenz und CPU-Fabrikation, an deren Wrapper
+die Unter-System-Achsen Scheduling, NUMA-Knoten und Speicherseiten-Größe hängen. Die Glieder werden je Maschine
+in derselben Anwender-XML \emph{deklariert}, die auch das Experiment anzeigt (Abschnitt~\ref{sec:mess-chain}).
+Im Identitäts-Stempel (Abschnitt~\ref{sec:stamp-model}) belegt eine Komplex-Achse genau \emph{ein} Feld ihrer
+Typ-Zeile; die CAS-Latenz ist ein rein deklariertes Glied (Provenienz-Stufe \enquote{deklariert, nicht
+gemessen}, Abschnitt~\ref{sec:hw-probe}).
 %% INTERN-272: KA-041
 \subsection{Hardware-Erkennung als zweigeteilte Mess-Achse}\label{sec:hw-probe}
 Damit die deklarierten Plattform-Glieder keine still veraltenden Konstanten werden, führt das Konzept die
@@ -2548,8 +2549,8 @@ Algorithmus samt Algorithmus-Version; die \emph{System-Zeile} die drei System-Ha
 Bau-Steuergrößen); die \emph{Mess-Zeile} die einkompilierten Mess-Toolings als klammerlose Segmente mit dem
 Last-Rahmenwerk als Klammer-Anhang an ihrem Ende (Muster
 \texttt{measurement\_tooling=wallclock@1.0.0.c;\allowbreak{}[load\_framework=ycsb@1.0.0.c]}); eine leere
-Mess-Zeile ist eine explizit ausgewiesene Aussage. Die Eintrags-Grammatik ist einmal für alle Zeilen definiert:
-\texttt{achse=algo@X.Y.Z[.flag]*} mit rekursiven Komposit-Klammern --- \texttt{c\{p.e\}} ist die Basis
+Mess-Zeile ist eine explizit ausgewiesene Aussage (kein Mess-Tooling einkompiliert). Die Eintrags-Grammatik ist
+einmal für alle Zeilen definiert: \texttt{achse=algo@X.Y.Z[.flag]*} mit rekursiven Komposit-Klammern ---
 \texttt{c} mit den Untergliedern \texttt{p} und \texttt{e} und wird nie flach als \texttt{cpe} gelesen; die
 Klammer-Tiefe eines Eintrags ist seine Meta-Meta-Ebene, das Flag \texttt{e} bezeichnet einen
 Efficiency-Core-Algorithmus. Eine vierte Realm-Zeile für die Misch-Strategie eines Prüflings gibt es nicht: Der
@@ -2577,14 +2578,13 @@ Rechnername) --- ein Messwert geht nie in seinen eigenen Schlüssel ein; Bestand
 synthetisierten Mess-Kurven als Dateien; Bestand~4 die Lösungen je Anwender-XML\@. Die Messung ist immer
 eingeschaltet; im Lager wird nur nachgemessen, was dort fehlt, und eine Permutation wird über ihren Fingerprint
 wiedererkannt statt neu gebaut. Weil der Mess-Gate-Zustand ein Fingerprint-Glied ist, liegen je Permutation die
-Binary mit und die ohne Messfühler als zwei Einträge nebeneinander --- die Vorbedingung dafür, dass ein Release
-ohne Messfühler gegen die vermessene Fassung nachgemessen werden kann (Abschnitt~\ref{sec:heuristics-modes}).
-Zwei Konsequenzen sind Eigenschaften des Lagers: Ein Algorithmus-Versionswechsel ändert die Organ-Zeile und
-damit den Fingerprint und löst den Neubau des betroffenen Stapels samt Neumessung aus; und weil die
-Hardware-Identität Teil des Messwert-Schlüssels ist, hat jede Maschinen-Konfiguration ihren eigenen
-Messwert-Bestand. Umsetzungsstand: Bestand~1 und~2 sowie das Schlüssel-Schema aller vier Bestände sind
-implementiert; die Mechanik von Bestand~3 und~4, die Kurven-Facette, der Ablage-Pfad des Hybrid-Tiers und die
-Zielwahl über die XML bilden den Lager-Vollausbau und sind nicht implementiert.
+Binary mit und die ohne Messfühler als zwei Einträge nebeneinander --- Vorbedingung des Nachmessens eines
+Release ohne Messfühler gegen die vermessene Fassung (Abschnitt~\ref{sec:heuristics-modes}). Zwei Konsequenzen:
+Ein Algorithmus-Versionswechsel ändert die Organ-Zeile und damit den Fingerprint und löst den Neubau des
+betroffenen Stapels samt Neumessung aus; und weil die Hardware-Identität Teil des Messwert-Schlüssels ist, hat
+jede Maschinen-Konfiguration ihren eigenen Messwert-Bestand. Implementiert sind Bestand~1 und~2 sowie das
+Schlüssel-Schema aller vier Bestände; die Mechanik von Bestand~3 und~4, die Kurven-Facette, der Ablage-Pfad des
+Hybrid-Tiers und die Zielwahl über die XML bilden den nicht implementierten Lager-Vollausbau.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\scriptsize,>=Stealth,thick,align=center,
   lvl/.style={draw,rounded corners,fill=blue!8,minimum width=2.6cm,minimum height=0.62cm},
@@ -2801,63 +2801,31 @@ Ziel-ISA deklariert, ein Lauf dort ist nicht gemessen (n/a).
 Organisiert ist der Apparat als \emph{ein} Hauptkanal: \emph{Eine} Anwender-XML ist die einzige Quelle des
 gesamten Prozesses. Sie \emph{zeigt an}, welche Experimente, Achsen, Einstellungen und Abläufe durchzuführen
 sind, während je Realm ein \emph{Registry}-Katalog das \emph{Angebot} des Existierenden hält --- das deklarative
-Konfigurationsmodell aus Abschnitt~\ref{sec:software-means}, nach dem Vorbild des Java-POM\@: ein Manifest, das
-gegen ein Repository aufgelöst wird; eine unregistrierte Referenz ist ein harter Validierungsfehler. Der
-Experiment-\emph{Planer} löst die XML gegen die drei Angebots-Kataloge auf und baut je Ziel-Plattform und
-Mess-Aufgabe \emph{einen} \texttt{CacheEngineBuilder} (CEB), in den die gewählten Mess-Achsen einkompiliert
-werden; dieser orchestriert den Bau der Tier-Binaries und stempelt sie mit seiner Plattform
-(Abschnitt~\ref{sec:stamp-model}); die Tier-Binary enthält die Organ-Permutation. Jede Stufe speist sich aus
-ihrem art-eigenen Angebot (Mess-Katalog $\to$ Planer, System-Katalog $\to$ Builder, Organ-Katalog $\to$
-Tier-Binary), und die Tier-Binary bleibt in zwei strikt getrennten Schichten lesbar: dem Hardware- und
-Umgebungs-Layer der System-Achsen und dem Anwendungs-Logik-Layer der Organ-Achsen. Gesteuert wird die Anlage
-als Planer per Shell direkt oder per API-Kommandozeile mit einem headless Server; ein optionaler
-Erstellungsmodus deklariert die verfügbaren XML-Einstellungen aus der erkannten Hardware. Implementiert ist die
-Planer-Shell; headless Dienst und Erstellungsmodus sind nicht implementiert.
+Konfigurationsmodell aus Abschnitt~\ref{sec:software-means} nach dem Vorbild des Java-POM\@; eine
+unregistrierte Referenz ist ein harter Validierungsfehler. Der Experiment-\emph{Planer} löst die XML gegen die
+drei Angebots-Kataloge auf und baut je Ziel-Plattform und Mess-Aufgabe \emph{einen} \texttt{CacheEngineBuilder}
+(CEB), in den die gewählten Mess-Achsen einkompiliert werden; dieser orchestriert den Bau der Tier-Binaries und
+stempelt sie mit seiner Plattform (Abschnitt~\ref{sec:stamp-model}); die Tier-Binary enthält die
+Organ-Permutation. Jede Stufe speist sich aus ihrem art-eigenen Angebot (Mess-Katalog $\to$ Planer,
+System-Katalog $\to$ Builder, Organ-Katalog $\to$ Tier-Binary), und die Tier-Binary bleibt in zwei strikt
+getrennten Schichten lesbar: dem Hardware- und Umgebungs-Layer der System-Achsen und dem Anwendungs-Logik-Layer
+der Organ-Achsen. Gesteuert wird die Anlage per Planer-Shell (implementiert) oder per API-Kommandozeile mit
+einem headless Server; ein optionaler Erstellungsmodus deklariert die verfügbaren XML-Einstellungen aus der
+erkannten Hardware; headless Dienst und Erstellungsmodus sind nicht implementiert.
 
 Auf dieser Kette aufbauend trennt das Mess-System vier formal getrennte Subsysteme: den
-\texttt{messung\_driver} (der Auswertungs-Orchestrator, der je Pflicht-Messreihe A/B/C die Pipeline durchläuft;
-im übergeordneten Projekt-Repository), den \texttt{CacheEngineBuilder} (ein autonomes Plattform-Ausmess-System,
-das die Sieben-Phasen-Pipeline aus Abschnitt~\ref{sec:impl-pipeline} über seinen \texttt{ExperimentDriver}
-ausführt), die \texttt{CacheEngine} (die Achsen-Bausteine-Bibliothek) und den \texttt{Prüfling} PRT-ART (der
-einige Organe selbst stellt und die übrigen Cache-Engine-Dienste konsumiert); Cache-Engine, Prüfling und diese
-Arbeit liegen in je eigenen Repositories, die Planer-Rolle ist als eigene Binary realisiert
-(\texttt{comdare-experiment-planner}), die Builder-Rolle als Mess-Treiber (\texttt{comdare-messung-driver}).
-Die \texttt{ExecutionEngine} ist kein fünftes Subsystem, sondern die gemeinsame messbare Wurzel
-(\texttt{IExecutionEngine}), unter der sich Prüfling und Engines registrieren. Definierend ist die
-\emph{bidirektionale} Cache-Engine\,$\leftrightarrow$\,Prüfling-Beziehung: Die Cache-Engine instantiiert den
-Prüfling je Permutations-Konfiguration, und der Prüfling ruft zur Laufzeit Cache-Engine-Dienste auf; diese
-Symmetrie begründet die \emph{Multi-Prüfling}-Fähigkeit, mit der Messreihe~A den Prüfling gegen viele
-SOTA-Adapter in einer Pipeline vergleicht (Abbildung~\ref{fig:m-model}).
-
-\begin{figure}[!htbp]
-  \centering
-  %% INTERN-272: KA-044
-  \begin{tikzpicture}[comp/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt, minimum width=3.3cm},
-    bm/.style={draw, rounded corners, align=center, font=\scriptsize, inner sep=3pt, text width=3.7cm, minimum height=1.6cm, fill=orange!13}]
-    \node[comp,fill=blue!7,text width=4.7cm] (driver) at (0,0.6) {\texttt{messung\_driver} --- \textbf{Was}\\{\scriptsize Diplomarbeit-Code: Konfigs A/B/C $\cdot$ Mikro-Bench $\cdot$ Signifikanz-Statistik}};
-    \node[draw,thick,rounded corners,minimum width=9.8cm,minimum height=2.4cm,fill=gray!4] (bbox) at (0,-2.5){};
-    \node[font=\bfseries\scriptsize,anchor=north] at ([yshift=-2pt]bbox.north){\texttt{CacheEngineBuilder} --- \textbf{Wie}: baut $+$ misst Tier-Binaries je Konfiguration};
-    \node[bm] (build) at (-2.5,-2.75) {\textbf{build}\\{\scriptsize \texttt{Build\-Orchestrator} $+$ \texttt{Experiment\-Tree}: baut alle Tier-Binaries je Konfig (resumierbar, RAM-gewahr)}};
-    \node[bm] (measure) at (2.5,-2.75) {\textbf{measure}\\{\scriptsize \texttt{perm\_runner} über \texttt{IObservableTier}: misst jede Tier-Binary einzeln (1 DLL / Prozess)}};
-    \draw[->,very thick] (build) -- node[above,font=\scriptsize]{Binaries} (measure);
-    \node[comp] (engine) at (-2.9,-5.3) {\texttt{CacheEngine}\\{\scriptsize Achsen-Bausteine (Wie)}};
-    \node[comp] (probe) at (2.9,-5.3) {Prüfling (PRT-ART)\\{\scriptsize eigene Achsen-Organe}};
-    \draw[->] (driver) -- node[right,font=\scriptsize]{Konfigs} (bbox.north);
-    \draw[->] (engine) -- node[left,font=\scriptsize]{Bausteine} (build);
-    \draw[->] (measure) -- node[right,font=\scriptsize]{misst} (probe);
-    \draw[<->] (engine) -- node[below, font=\scriptsize, align=center] {(a)~instantiiert\\(b)~ruft Dienste} (probe);
-  \end{tikzpicture}
-  \caption{Das M-Modell mit Fokus auf die Build- und Mess-Phasen. Die äußere
-  \texttt{messung\_\-driver}-Schleife (\emph{Was}, Diplomarbeit-Code) speist die Konfigurationen der drei
-  Messreihen A/B/C ein; der \texttt{CacheEngineBuilder} (\emph{Wie}, Bibliothek) zerfällt in die beiden
-  eigentlich interessanten Phasen: \textbf{build} (\texttt{BuildOrchestrator}/\texttt{ExperimentTree} baut
-  je Konfiguration eine eigenständige Tier-Binary, resumierbar und RAM-gewahr) und \textbf{measure}
-  (\texttt{perm\_runner} treibt und misst jede Tier-Binary einzeln über die Beobachter-Schnittstelle
-  \texttt{IObservableTier}). Die
-  \texttt{CacheEngine} liefert die Standard-Achsen-Bausteine, der Prüfling PRT-ART seine eigenen Organe;
-  ihre bidirektionale Beziehung ((a)~instantiiert, (b)~ruft Dienste) begründet die Multi-Prüfling-Fähigkeit. Die
-  \texttt{ExecutionEngine} bleibt die gemeinsame messbare Wurzel.}\label{fig:m-model}
-\end{figure}
+\texttt{messung\_driver} (der Auswertungs-Orchestrator, der je Pflicht-Messreihe A/B/C die Pipeline durchläuft),
+den \texttt{CacheEngineBuilder} (ein autonomes Plattform-Ausmess-System mit der Sieben-Phasen-Pipeline aus
+Abschnitt~\ref{sec:impl-pipeline}), die \texttt{CacheEngine} (die Achsen-Bausteine-Bibliothek) und den
+\texttt{Prüfling} PRT-ART (der einige Organe selbst stellt und die übrigen Cache-Engine-Dienste konsumiert);
+Cache-Engine, Prüfling und diese Arbeit liegen in je eigenen Repositories, die Planer-Rolle ist als eigene
+Binary realisiert (\texttt{comdare-experiment-planner}), die Builder-Rolle als Mess-Treiber
+(\texttt{comdare-messung-driver}). Die \texttt{ExecutionEngine} ist kein fünftes Subsystem, sondern die
+gemeinsame messbare Wurzel (\texttt{IExecutionEngine}), unter der sich Prüfling und Engines registrieren.
+Definierend ist die \emph{bidirektionale} Cache-Engine\,$\leftrightarrow$\,Prüfling-Beziehung: Die Cache-Engine
+instantiiert den Prüfling je Permutations-Konfiguration, und der Prüfling ruft zur Laufzeit
+Cache-Engine-Dienste auf; diese Symmetrie begründet die \emph{Multi-Prüfling}-Fähigkeit, mit der Messreihe~A
+den Prüfling gegen viele SOTA-Adapter in einer Pipeline vergleicht.
 
 Der Builder orchestriert eine \emph{Drei-Stufen-Prüfung}: \textbf{Stufe~1} (nur Cache-Engine) nutzt die
 Standard-Variante je Achse, \textbf{Stufe~2} (nur Prüfling) ersetzt die überschriebenen Achsen durch die
@@ -2866,7 +2834,7 @@ Prüfling-Varianten; im Code sind es die Verbund-Strategien des Merge-Plans --- 
 \texttt{Verbund1\_CeOnly}, Stufe~2 zerfällt in Ersetzen (\texttt{Verbund2\_Replace}) und Hybrid-Mischung
 (\texttt{Verbund2\_Hybrid}), Stufe~3 ist \texttt{Verbund3\_Union}. Jede Stufe kann tausende nicht-redundante
 Permutations-Binaries erzeugen, die zur Laufzeit über die C-stabile Modulgrenze als C++23-Module geladen
-werden; materialisiert wird stets eine spärliche, gedeckelte Teilmenge, der volle Produktraum wird nur gezählt.
+werden; materialisiert wird stets eine gedeckelte Teilmenge, der volle Produktraum nur gezählt.
 
 Diese Stufen bilden \emph{nicht} eins-zu-eins auf die drei Pflicht-Messreihen ab, sondern speisen sie: Die
 Standard-Binaries der Stufe~1 (samt der rekonstruierten SOTA-Profile) und die Prüfling-Binaries der
@@ -2896,26 +2864,24 @@ aufeinanderfolgende Stände derselben Konfiguration ebenso wie über konkrete Me
   Prüfstufe gebunden).\par}
 \end{table}
 
-Die drei Messreihen --- alle vom \texttt{messung\_driver} über die \texttt{ExperimentDriver}-Bibliothek
-ausgeführt --- sind damit: \emph{Reihe~A} (PRT-ART vs.\ Stand der Technik) mit den Modi A\_defined (schnelle
-Verifikation gegen die 8 Rang-1-Vollprofile) und A\_full (alle 33 Profile; der Standard, da erst der Voll-Lauf
-die bias-reduzierte Vermessung aller Lastprofile gegen alle Verfahren einlöst,
-Abschnitt~\ref{sec:task-concerns}); \emph{Reihe~B} (systematische Variation der Achsen-Entscheidungen unter
-sonst gleichen Bedingungen, um den Beitrag jeder Achse zu isolieren); und \emph{Reihe~C} (Merge/Regression alt
-gegen neu über konkrete Merge-Punkte zwischen PRT-ART-Bausteinen und Cache-Engine-Permutationen,
-build-übergreifend gefahren). Jede Reihe wird in drei Granularitäten erhoben, die den drei Mess-Ebenen
-entsprechen (Abschnitt~\ref{sec:measurement-system}): \emph{Mikro-Benchmarking} (micro) vermisst jede Achse
-über ihr \emph{Achsen-Interface} --- die Funktionsmenge, die \emph{alle} Algorithmen dieser Achse liefern
-müssen ---, \emph{Makro-Benchmarking} (macro) misst die einzelnen \texttt{std::map}-Interface-Operationen
-gegen Beispiel-Lasten, und \emph{Gesamt-Benchmarking} (wallclock, im CacheEngineBuilder über die
-Last-Rahmenwerke) fährt die YCSB-Lastprofile über jede Rekombination --- w/ma/mi, in dieser Reihenfolge; als
-Gegenprobe misst der Apparat zusätzlich drei Wallclock-Ebenen (Achsen-Interfaces, Gattungs-Interface-Funktionen,
-Test-Last aus den Last-Rahmenwerken). Architektur-Auflage dieses Schnitts ist, dass alle Achsen-Algorithmen
-ausschließlich Achsen-Interfaces statt generischer Betriebssystem-Aufrufe verwenden --- inline einkompiliert,
-ohne \texttt{std::variant} ---, damit die Mikro-Messung einer Achse tatsächlich die Achse misst. Genau diese
-Methodik ist die Antwort auf das Trennbarkeits-Problem: Indem jeder Bestandteil zunächst isoliert über sein
-Achsen-Interface vermessen wird, bevor er im Operations- und Gesamt-Kontext erscheint, werden die Beiträge
-getrennt messbar, statt im Gesamtdurchsatz vermengt zu bleiben.
+Die drei Messreihen sind damit: \emph{Reihe~A} (PRT-ART vs.\ Stand der Technik) mit den Modi A\_defined
+(schnelle Verifikation gegen die 8 Rang-1-Vollprofile) und A\_full (alle 33 Profile; der Standard, da erst der
+Voll-Lauf die bias-reduzierte Vermessung aller Lastprofile gegen alle Verfahren einlöst,
+Abschnitt~\ref{sec:task-concerns}); \emph{Reihe~B} (Variation der Achsen-Entscheidungen unter sonst gleichen
+Bedingungen, um den Beitrag jeder Achse zu isolieren); und \emph{Reihe~C} (Merge/Regression alt gegen neu über
+konkrete Merge-Punkte, build-übergreifend gefahren). Jede Reihe wird in drei Granularitäten erhoben, die den
+drei Mess-Ebenen entsprechen (Abschnitt~\ref{sec:measurement-system}): \emph{Mikro-Benchmarking} (micro)
+vermisst jede Achse über ihr \emph{Achsen-Interface} --- die Funktionsmenge, die \emph{alle} Algorithmen dieser
+Achse liefern müssen ---, \emph{Makro-Benchmarking} (macro) die einzelnen \texttt{std::map}-Interface-Operationen
+gegen Beispiel-Lasten und \emph{Gesamt-Benchmarking} (wallclock, über die Last-Rahmenwerke) die YCSB-Lastprofile
+über jede Rekombination --- w/ma/mi, in dieser Reihenfolge; als Gegenprobe misst der Apparat zusätzlich drei
+Wallclock-Ebenen (Achsen-Interfaces, Gattungs-Interface-Funktionen, Test-Last aus den Last-Rahmenwerken).
+Architektur-Auflage dieses Schnitts: alle Achsen-Algorithmen verwenden ausschließlich Achsen-Interfaces statt
+generischer Betriebssystem-Aufrufe --- inline einkompiliert, ohne \texttt{std::variant} ---, damit die
+Mikro-Messung einer Achse tatsächlich die Achse misst. Genau diese Methodik ist die Antwort auf das
+Trennbarkeits-Problem: Jeder Bestandteil wird zunächst isoliert über sein Achsen-Interface vermessen, bevor er
+im Operations- und Gesamt-Kontext erscheint; die Beiträge bleiben getrennt messbar, statt im Gesamtdurchsatz
+vermengt zu bleiben.
 
 Den so aufgespannten Raum reduziert das System gezielt. Der golden-Referenzkatalog --- je Organ-Achse zwei
 aktivierte Vertreter, die Persistenz-Achse auf ihren In-Memory-Vertreter festgelegt --- zählt $2^{17} = 131072$
@@ -2923,13 +2889,13 @@ Binary-Identitäten je System-Permutation (Abschnitt~\ref{sec:axis-triad}), jede
 Achtzehn-Segment-Pfad (Abschnitt~\ref{sec:stamp-model}), und dient als Regressions-Detektor mit einer
 festgeschriebenen CRC-64-Prüfsumme; die Mächtigkeit des realen Permutationsraums rechnet der Planer dagegen
 dynamisch aus seinen Eingängen (Subkommando \texttt{simulate}) --- sie liegt Größenordnungen darüber und ist nie
-eine feste Anzahl. Drei Mechanismen dämpfen die Explosion: der \texttt{<expected\_workload>}-Profil-Filter, der
-nur kompatible Workloads routet; der \texttt{Defined}-Modus, der nur die deklarierten Tupel ausführt; und der
-\texttt{Full}- bzw.\ \texttt{Full-Sampled}-Modus, der den Vollraum oder eine seed-stabile 1:$n$-Teilmenge
-fährt. Der Default-Workload ist die Voll-Permutation über alle verfügbaren Workloads; das Routing dieser Vorgabe
-ist nicht implementiert (Abschnitt~\ref{sec:eval-workloads}). Voll- und Sampled-Läufe fahren auf den
-registrierten Maschinen-Signaturen prod1 (AMD Zen~5), prod2 (Intel Core i9\mbox{-}12900K, Alder Lake) und einem
-ODROID-Board mit Intel-Gracemont-Kernen; ein Lauf auf dem ZIH-Cluster der TU Dresden ist nicht gemessen (n/a).
+eine feste Anzahl. Drei Mechanismen dämpfen die Explosion: der \texttt{<expected\_workload>}-Profil-Filter (nur
+kompatible Workloads), der \texttt{Defined}-Modus (nur die deklarierten Tupel) und der \texttt{Full}- bzw.\
+\texttt{Full-Sampled}-Modus (Vollraum oder seed-stabile 1:$n$-Teilmenge). Der Default-Workload ist die
+Voll-Permutation über alle verfügbaren Workloads; das Routing dieser Vorgabe ist nicht implementiert
+(Abschnitt~\ref{sec:eval-workloads}). Voll- und Sampled-Läufe fahren auf den registrierten Maschinen-Signaturen
+prod1 (AMD Zen~5), prod2 (Intel Core i9\mbox{-}12900K, Alder Lake) und einem ODROID-Board mit
+Intel-Gracemont-Kernen; ein Lauf auf dem ZIH-Cluster der TU Dresden ist nicht gemessen (n/a).
 \end{nurkurz}
 
 \begin{nurlang}
@@ -3008,46 +2974,16 @@ registrierte Fähigkeit: die Prüflings-Slots), denn Anwesenheit darf nur widerl
 angeforderter, aber nicht deklarierender Prüfling bricht die Konfiguration mit Fehlermeldung ab. Was PRT-ART
 beiträgt, liegt auf drei Ebenen. Erstens die \emph{Prüflings-Slots} im eigenen Repository: die Build-Achse
 Page-Type, der Prefetch, das Wert-Handle (ChainRef) und das Telemetrie-Tooling mit den Hypothesen-Metriken
-H1/H2/H3 (eine Mess-Tooling-Unter-Achse, Abschnitt~\ref{sec:axis-triad}); die Bewertung der Hypothesen-Metriken
-enthalten die Kapitel~\ref{ch:eval} und~\ref{ch:conclusion}. Zweitens die Referenz-Komposition der Cache-Engine,
+H1/H2/H3 (eine Mess-Tooling-Unter-Achse, Abschnitt~\ref{sec:axis-triad}); ihre Bewertung enthalten die
+Kapitel~\ref{ch:eval} und~\ref{ch:conclusion}. Zweitens die Referenz-Komposition der Cache-Engine,
 \texttt{PrtArtComposition}, die sich von der ART-Komposition in genau einer Achse unterscheidet --- der
 Pfadkompression als Redirect-Organ, dem \emph{R} in PRT-ART\@; das optimistische Lock-Coupling ist von ART
 geerbt. Drittens die codegen-fähige Prüflings-Komposition, die sechzehn von achtzehn Achsen aus der
 ART-Komposition übernimmt und Prefetch sowie Wert-Handle durch die Prüflings-Slots ersetzt. Seine weiteren
 eigenen Bausteine, der 4+1+2-Pool-Allokator und das MultiLevel-Layout, laufen im Mess-Pfad über den
 Cache-Engine-Standard (Anbindung vorgesehen, nicht implementiert). So belegt der Prüfling, dass das Mess-System
-tragfähig ist: Ein neuartiges Lebewesen entsteht aus wenigen eigenen Organen plus dem Standard-Baukasten
-(Abbildung~\ref{fig:prtart-demo}) und ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte
-SOTA-Verfahren.
-
-%% INTERN-272: KA-046
-\begin{figure}[htbp]\centering
-%% INTERN-272: KA-047
-\begin{tikzpicture}[font=\footnotesize,align=center,
-  prt/.style={draw,rounded corners,fill=orange!15,very thick,minimum width=2.6cm,minimum height=0.62cm,font=\scriptsize},
-  ce/.style={draw,rounded corners,fill=green!8,minimum width=2.6cm,minimum height=0.62cm,font=\scriptsize},
-  rd/.style={draw,rounded corners,fill=red!10,very thick,draw=red!70!black,minimum width=2.6cm,minimum height=0.62cm,font=\scriptsize},
-  row/.style={font=\scriptsize,anchor=east,text=gray,align=right}]
-  \node[font=\bfseries\footnotesize] at (2.9,2.55){PRT-ART (Prüfling): 18 Achsen-Organe $+$ Build-Achse Page-Type auf drei Ebenen};
-  \node[row] at (-3.0,1.6){Prüflings-Slots\\{\tiny (prt-art-Repo)}};
-  \node[prt] at (-1.3,1.6){Page-Type\\{\tiny Build-Achse}};
-  \node[prt] at (1.5,1.6){Prefetch\\{\tiny Redirect-Prefetch}};
-  \node[prt] at (4.3,1.6){Value-Handle\\{\tiny ChainRef}};
-  \node[prt] at (7.1,1.6){Telemetrie\\{\tiny Mess-Tooling, H1/H2/H3}};
-  \node[row] at (-3.0,0.5){ce-Komposition\\{\tiny PrtArtComposition}};
-  \node[rd] at (-1.3,0.5){Path-Compr.\\{\tiny Redirect $=$ das R}};
-  \node[ce] at (1.5,0.5){Concurrency\\{\tiny OLC, von ART geerbt}};
-  \node[ce] at (4.3,0.5){Search-Algo\\{\tiny ART-Trie}};
-  \node[ce] at (7.1,0.5){Node-Type\\{\tiny Node256}};
-  \node[row] at (-3.0,-0.6){Standard-Organe\\{\tiny (Cache-Engine)}};
-  \node[ce] at (-1.3,-0.6){Layout};
-  \node[ce] at (1.5,-0.6){Allocator};
-  \node[ce] at (4.3,-0.6){Serialization};
-  \node[ce] at (7.1,-0.6){$\ldots$ übrige};
-  \node[font=\scriptsize,align=center,text width=13.2cm] at (2.0,-1.85){\textcolor{orange}{\textbf{orange}} $=$ Prüflings-Slot im eigenen Repository; \textcolor{red!70!black}{\textbf{rot}} $=$ einziger Unterschied der ce-Komposition zu ART; \textcolor{green!50!black}{\textbf{grün}} $=$ von ART geerbt bzw.\ Cache-Engine-Standard (Verbund-Strategie des Merge-Plans). Die codegen-fähige Prüflings-Komposition übernimmt 16 von 18 Achsen aus ArtComposition und ersetzt Prefetch und Value-Handle.};
-\end{tikzpicture}
-\caption{PRT-ART als Demonstrator im M-Modell auf drei Ebenen: die vier Prüflings-Slots im eigenen Repository (Page-Type als Build-Achse, Prefetch, Wert-Handle, Telemetrie als Mess-Tooling-Unter-Achse, Abschnitt~\ref{sec:axis-triad}); die Referenz-Komposition der Cache-Engine, die sich von ART in genau einer Achse --- der Pfadkompression als Redirect-Organ --- unterscheidet, während das optimistische Lock-Coupling von ART geerbt ist; und die codegen-fähige Prüflings-Komposition, die sechzehn von achtzehn Achsen aus der ART-Komposition übernimmt und Prefetch sowie Wert-Handle ersetzt. Die weiteren eigenen Bausteine (4+1+2-Pool-Allokator, MultiLevel-Layout) laufen im Mess-Pfad über den Cache-Engine-Standard (Anbindung: nachfolgender Umsetzungsschritt, nicht implementiert). So entsteht ein vollständiges, mess-fähiges Lebewesen aus wenigen eigenen plus vielen Standard-Organen.}\label{fig:prtart-demo}
-\end{figure}
+tragfähig ist: Ein neuartiges Lebewesen entsteht aus wenigen eigenen Organen plus dem Standard-Baukasten und
+ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte SOTA-Verfahren.
 \end{nurkurz}
 
 \section{Schärfung durch Heuristiken}\label{sec:heuristics}
@@ -3123,19 +3059,18 @@ Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
 Binary-Versand (Abschnitt~\ref{sec:contributions}).} Der Selektor liest die Messwert-Mappe --- die xlsx-Mappe
 ist die Ausgabe des Apparats, die CSV-Form ihr aus ihr erzeugter Baum-Abzug (Abschnitt~\ref{sec:eval-dataflow})
 ---, rankt je Interface-Funktion und Metrik über die gültigen Zwei-Phasen-Zeilen (Median, Nearest-Rank),
-bestimmt bei konkurrierenden Zielgrößen die Pareto-Front der nicht-dominierten Kandidaten, löst die
-\texttt{binary\_id} zur Binary im Lager auf und liefert Binary, Versions-Sidecar und Manifest als eigenständiges
-Artefakt aus. Die Heuristik-Kurven entstehen als natürliche kubische Splines über die Stützstellen je Achse und
-$x$-Dimension; ein Entscheidungs-Lambda-Baum liest die Break-Even-Schwellen aus den Spline-Schnittpunkten und
-wählt an einer Anfrage-Koordinate die führende Binary. Über die reine Rangbildung hinaus ist eine
-\emph{Heuristik-Extraktion} als Folge-Phase nach \textbf{Persist}, der letzten Phase der Sieben-Phasen-Pipeline
-(Abschnitt~\ref{sec:impl-pipeline}), als ML-Klassifikation in drei Schritten vorgesehen: Aus der Messwert-Mappe
-werden je Permutation Lastprofil-, Datensatz- und Achsen-Merkmale mit der je Lastmuster gemessenen Bestleistung
-als Zielgröße gewonnen; ein \emph{ML-Klassifikator} lernt darüber die Abbildung auf die beste Konfiguration; und
-dieser liefert je Workload-/Datensatz-Klasse die empfohlene Achsen-Komposition, ohne den Permutationsraum erneut
-zu fahren. Das Ergebnis wird als wiederverwendbares \emph{XML-Lastprofil} persistiert und in den
-\texttt{<expected\_workload>}-Filter zurückgespeist; dieser \emph{measure $\to$ profile $\to$ config $\to$
-filter}-Kreislauf ist die etablierte Form des empirischen, messgetriebenen Autotunings in der Linie von
+bestimmt bei konkurrierenden Zielgrößen die Pareto-Front, löst die \texttt{binary\_id} zur Binary im Lager auf
+und liefert Binary, Versions-Sidecar und Manifest aus. Die Heuristik-Kurven entstehen als natürliche kubische
+Splines über die Stützstellen je Achse und $x$-Dimension; ein Entscheidungs-Lambda-Baum liest die
+Break-Even-Schwellen aus den Spline-Schnittpunkten und wählt an einer Anfrage-Koordinate die führende Binary.
+Über die reine Rangbildung hinaus ist eine \emph{Heuristik-Extraktion} als Folge-Phase nach \textbf{Persist},
+der letzten Phase der Sieben-Phasen-Pipeline (Abschnitt~\ref{sec:impl-pipeline}), als ML-Klassifikation in drei
+Schritten vorgesehen: Aus der Messwert-Mappe werden je Permutation Lastprofil-, Datensatz- und Achsen-Merkmale
+mit der gemessenen Bestleistung als Zielgröße gewonnen; ein \emph{ML-Klassifikator} lernt darüber die Abbildung
+auf die beste Konfiguration; und er liefert je Workload-/Datensatz-Klasse die empfohlene Achsen-Komposition,
+ohne den Permutationsraum erneut zu fahren. Das Ergebnis wird als wiederverwendbares \emph{XML-Lastprofil}
+persistiert und in den \texttt{<expected\_workload>}-Filter zurückgespeist; dieser \emph{measure $\to$ profile
+$\to$ config $\to$ filter}-Kreislauf ist messgetriebenes Autotuning in der Linie von
 OpenTuner~\cite{ansel2014opentuner}, FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}, mit der
 Datenbank-Entsprechung in OtterTune~\cite{vanaken2017ottertune} und dem Database Tuning
 Advisor~\cite{agrawal2005autoadmin}, der online-laufzeitnahen Variante in Active
@@ -3417,13 +3352,12 @@ konkrete Implementierung der hier eingeführten Bausteine.
 Damit erbringt der Hybrid-Modus den \emph{heuristischen Gegenbeweis}: Nach Eintritt des Arbeitsmodus wird das
 Heuristik-Tier-Binary erneut vermessen --- sein Wall-Clock-Verhalten gegen die besten Einzel-Binaries und gegen
 die rekonstruierten Paper-Algorithmen entscheidet, ob die heuristische Rekombination die von den Spline-Kurven
-(Abschnitt~\ref{sec:heuristics-loop}) vorhergesagte Leistung erreicht; in der Stufe compare wird aus dem
-Messwertlager die laut Vermessung beste Tier-Binary oder Rekombination errechnet, in der Stufe release die
-maximal optimiert kompilierte Binary ohne Messfühler nochmals durchgemessen. Der Vergleich gegen die
-Paper-Algorithmen setzt je Veröffentlichung eine Wall-Clock-Referenz voraus, die als Datenquelle fehlt; der
-Paper-Vergleich hat Vorrang vor der Pareto-Auswahl. Das Ziel der Arbeit ist damit doppelt formuliert: die beste
-einzelne Binary \emph{und} das Heuristik-Tier-Binary aus den besten gemischten cache-bewussten Binaries für die
-vermessenen Lasten produktionsfähig bereitzustellen. Alle vier Modi sollen über die Auswertungs-Kette der
+(Abschnitt~\ref{sec:heuristics-loop}) vorhergesagte Leistung erreicht; die Stufe compare errechnet aus dem
+Messwertlager die laut Vermessung beste Tier-Binary oder Rekombination, die Stufe release misst die maximal
+optimiert kompilierte Binary ohne Messfühler nochmals durch. Der Vergleich gegen die Paper-Algorithmen setzt je
+Veröffentlichung eine Wall-Clock-Referenz voraus, die als Datenquelle fehlt. Das Ziel der Arbeit ist damit
+doppelt formuliert: die beste einzelne Binary \emph{und} das Heuristik-Tier-Binary aus den besten gemischten
+cache-bewussten Binaries produktionsfähig bereitzustellen. Alle vier Modi sollen über die Auswertungs-Kette der
 Definitions-Schicht (Abschnitt~\ref{sec:anatomy-layers}) automatisch dokumentiert werden; die Bewertung des
 Gegenbeweises definiert Kapitel~\ref{ch:eval}.
 %% INTERN-272: KA-053
@@ -3432,26 +3366,24 @@ Damit der Auswertungs- und der Hybrid-Modus tragfähig sind, formuliert diese Ar
 \emph{Messkurven-Typsystem}; implementiert ist davon ein erster Ansatz --- eine Kurvenanpassung über eine Achse
 und eine $x$-Dimension als natürlicher kubischer Spline (Abschnitt~\ref{sec:heuristics-loop}) ---, während der
 Typsystem-Schlüssel Rahmenwerk $\times$ Workload $\times$ Operation $\times$ Größe nicht implementiert ist. Jede
-Tier-Binary-Gesamtpermutation erhält je Mess-Achse eine Wall-Clock-Messkurve über das Working-Set, getrennt
-nach Lastprofil-Rahmenwerk, Workload-Typ, Working-Set-Größe, Operationstyp und Beobachter-Typ und je
-Mess-Ebene wallclock, macro und micro (Abschnitt~\ref{sec:measurement-system}); über alle Permutationen
-entsteht so je Tier-Binary eine mehrdimensionale Mess-Datenbank, deren synthetisierte Kurven als Dateien im
-Lager liegen (Abschnitt~\ref{sec:lager}). Die Kardinalität jeder Dimension ist in Klassen einzuteilen ---
+Tier-Binary-Gesamtpermutation erhält je Mess-Achse und je Mess-Ebene wallclock, macro und micro
+(Abschnitt~\ref{sec:measurement-system}) eine Wall-Clock-Messkurve über das Working-Set, getrennt nach
+Lastprofil-Rahmenwerk, Workload-Typ, Operationstyp und Beobachter-Typ; die synthetisierten Kurven liegen als
+Dateien im Lager (Abschnitt~\ref{sec:lager}). Die Kardinalität jeder Dimension ist in Klassen einzuteilen ---
 design-feste Konstanten, registrierte, dynamisch wachsende Größen (die Mess-Kategorien,
 Abschnitt~\ref{sec:axis-triad}), profil-gebundene Produkte und laufzeit-freie Iterationsräume.
 
-Die compare-Stufe setzt sich aus fünf Auswertungs-Komponenten zusammen, die Stufungen einer Kette sind:
-erstens das Ranking je Metrik mit Pareto-Front und Versand (implementiert, Abschnitt~\ref{sec:heuristics-loop});
-zweitens die Spline-Kurven mit der Break-Even-Entscheidung (erster Ansatz implementiert); drittens die
-Filterkette über die Permutations-Familien (Mechanismus implementiert, Auswerte-Glieder nicht); viertens das
-Live-Ranking der vorgeladenen Tier-Binaries aus den mitgeschnittenen Interface-Zugriffen (nicht
-implementiert); und fünftens die Messfehler-Interpolation über die Mess-Konstellationen (nicht implementiert).
-Die \emph{Filterkette} folgt dem Entwurfsmuster \emph{Chain of Responsibility}~\cite{gamma1994patterns}: Jedes
-Kettenglied prüft anhand der bisherigen Kurven, ob eine Permutations-Familie weiterverfolgt wird, und reicht die
-Entscheidung andernfalls weiter; sie ist im CacheEngineBuilder verortet, weil sie die Generierung der nächsten
-Bau-Runde kontrolliert, und filtert für den release, welche Binary nach den in der XML geforderten
-Eigenschaften statistisch die schnellste ist. Implementiert sind der Mechanismus (Urteile Pass, Reject und
-Weiterreichen) und ein Kern-Glied für die Wiederaufnahme unterbrochener Läufe; die Auswerte-Glieder
+Die compare-Stufe besteht aus fünf Auswertungs-Komponenten, die Stufungen einer Kette sind: erstens das
+Ranking je Metrik mit Pareto-Front und Versand (implementiert, Abschnitt~\ref{sec:heuristics-loop}); zweitens
+die Spline-Kurven mit der Break-Even-Entscheidung (erster Ansatz implementiert); drittens die Filterkette über
+die Permutations-Familien (Mechanismus implementiert, Auswerte-Glieder nicht); viertens das Live-Ranking der
+vorgeladenen Tier-Binaries aus den mitgeschnittenen Interface-Zugriffen (nicht implementiert); und fünftens die
+Messfehler-Interpolation über die Mess-Konstellationen (nicht implementiert). Die \emph{Filterkette} folgt dem
+Entwurfsmuster \emph{Chain of Responsibility}~\cite{gamma1994patterns}: Jedes Kettenglied prüft anhand der
+bisherigen Kurven, ob eine Permutations-Familie weiterverfolgt wird, oder reicht die Entscheidung weiter; sie
+ist im CacheEngineBuilder verortet, weil sie die nächste Bau-Runde kontrolliert, und filtert für den release
+die nach den XML-Anforderungen statistisch schnellste Binary. Implementiert sind der Mechanismus (Urteile Pass,
+Reject und Weiterreichen) und ein Kern-Glied für die Wiederaufnahme unterbrochener Läufe; die Auswerte-Glieder
 Paper-Vergleich und Pareto-Dominanz folgen, mit dem Vorrang des Paper-Vergleichs.
 
 Schließlich braucht der Hybrid-Modus eine Kontrolle des Messfehlers, den die Mess-Instanzen selbst eintragen:
@@ -3460,22 +3392,21 @@ und Achsen-Interface-Zeit (micro) --- lassen sich in allen Anordnungen bauen; di
 dynamisch und wird nie statisch vorgelegt. Aus den Differenzen aller Messwerte mit Messfühlern gegen die jeweils
 genaueste verbleibende Gesamtzeit interpoliert ein Verfahren über die Konstellations-Matrix den Messfehler und
 rechnet ihn heraus --- die fünfte Auswertungs-Komponente; drei Bau-Varianten desselben Experiments (Beobachter
-überall, nur im Heuristik-Tier, nirgends) sind drei dieser Konstellationen, und ein vierter Schritt baut die dem
-Heuristik-Tier untergebenen Tier-Binaries ohne Beobachter neu und vergleicht sie rein an der Wall-Clock gegen
-alle bekannten Permutationen und die Paper-Algorithmen, mit Vorrang des Paper-Vergleichs. Gültigkeits-Kriterium
-jeder Konstellation ist, dass die Messung mit Messfühlern langsamer ist als dieselbe ohne; gelegt ist das
-Fundament (Mess-Gates je Kompilat als Fingerprint-Glied, ausgewiesene Nichterhebung je Messwert,
-Abschnitt~\ref{sec:axis-triad}), Interpolation und Konstellations-Matrix sind nicht implementiert.
+überall, nur im Heuristik-Tier, nirgends) sind drei dieser Konstellationen, und ein vierter Schritt baut die
+untergebenen Tier-Binaries ohne Beobachter neu und vergleicht sie rein an der Wall-Clock gegen alle bekannten
+Permutationen und die Paper-Algorithmen, mit Vorrang des Paper-Vergleichs. Gültigkeits-Kriterium jeder
+Konstellation: die Messung mit Messfühlern ist langsamer als dieselbe ohne; gelegt ist das Fundament (Mess-Gates
+je Kompilat als Fingerprint-Glied, ausgewiesene Nichterhebung je Messwert, Abschnitt~\ref{sec:axis-triad}),
+Interpolation und Konstellations-Matrix sind nicht implementiert.
 
-Damit ist klar getrennt, was implementiert und was Ziel ist. Implementiert sind der Mess-Apparat mit seinen
-Verbund-Stufen, die Auswertungs-Kette bis zu Tabellen und Diagrammen, die Kurvenanpassung samt Break-Even-Baum,
-die Pareto-Auswahl mit Versand, der Filterketten-Mechanismus mit Wiederaufnahme-Glied, die Dock- und
-Klassifikations-Schicht des Hybrid-Tiers und die Mess-Gates je Kompilat; die Messläufe der vollständigen
-Messreihe liegen nicht vor. Nicht implementiert sind die Auswerte-Glieder der Filterkette, Router, Eviction und
-\texttt{.so}-Export des Hybrid-Wechsels, die Zustands-Synchronisation mit Sidecar, die Workload-Clusterung, die
-Messfehler-Interpolation, der Typsystem-Schlüssel der Messkurven, die Erhebung je
-Achsen-Interface-Parametersatz und die Anbindung der P-/E-Kern-Messung an das Lauf-Profil. Die Bewertung des
-heuristischen Gegenbeweises nimmt Kapitel~\ref{ch:eval} auf, die Einordnung des Ausblicks gibt
-Kapitel~\ref{ch:conclusion}; zunächst vertieft Kapitel~\ref{ch:impl} die konkrete Implementierung der hier
-eingeführten Bausteine.
+Implementiert sind damit der Mess-Apparat mit seinen Verbund-Stufen, die Auswertungs-Kette bis zu Tabellen und
+Diagrammen, die Kurvenanpassung samt Break-Even-Baum, die Pareto-Auswahl mit Versand, der
+Filterketten-Mechanismus mit Wiederaufnahme-Glied, die Dock- und Klassifikations-Schicht des Hybrid-Tiers und
+die Mess-Gates je Kompilat; die Messläufe der vollständigen Messreihe liegen nicht vor. Nicht implementiert sind
+die Auswerte-Glieder der Filterkette, Router, Eviction und \texttt{.so}-Export des Hybrid-Wechsels, die
+Zustands-Synchronisation mit Sidecar, die Workload-Clusterung, die Messfehler-Interpolation, der
+Typsystem-Schlüssel der Messkurven, die Erhebung je Achsen-Interface-Parametersatz und die Anbindung der
+P-/E-Kern-Messung an das Lauf-Profil. Die Bewertung des heuristischen Gegenbeweises nimmt Kapitel~\ref{ch:eval}
+auf, die Einordnung des Ausblicks Kapitel~\ref{ch:conclusion}; zunächst vertieft Kapitel~\ref{ch:impl} die
+Implementierung der hier eingeführten Bausteine.
 \end{nurkurz}
