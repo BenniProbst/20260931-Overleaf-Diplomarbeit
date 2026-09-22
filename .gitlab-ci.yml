@@ -29,6 +29,7 @@ workflow:
 stages:
   - lint
   - thesis-pdf
+  - pdf-writeback      # REV 5 (Order 389, 22.09.2026): gegatete PDF-Fassungen als Folge-Commit in die Hauptebene
 
 variables:
   GIT_SUBMODULE_STRATEGY: none
@@ -80,6 +81,9 @@ thesis:pdf:
   script:
     - 'command -v latexmk >/dev/null 2>&1 || { echo "latexmk (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
     # Sprachwahl exakt wie build.ps1: \def\thesislang{<lang>} VOR \input gewinnt gegen \providecommand (config/language.tex).
+    # REV 5 (Order 389, 22.09.2026): reproduzierbare PDF-Bytes -- pdfTeX nimmt Datum/Trailer-ID aus SOURCE_DATE_EPOCH
+    # (Commit-Zeit), damit byte-gleiche Quellen byte-gleiche PDFs liefern und pdf:writeback nur echte Aenderungen committet.
+    - 'export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct) FORCE_SOURCE_DATE=1; echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH"'
     - 'latexmk -pdf -interaction=nonstopmode -halt-on-error -jobname=diplomarbeit-${THESIS_LANG}-${THESIS_UMFANG} -usepretex="\def\thesislang{${THESIS_LANG}}\def\thesisumfang{${THESIS_UMFANG}}" diplomarbeit.tex'
     # ── §7 Hard-Gate: 0 Fehler (latexmk -halt-on-error oben) + <= bekannte Warnings + .blg ohne Repeated-entry/Warning ──
     - 'test -s diplomarbeit-${THESIS_LANG}-${THESIS_UMFANG}.log || { echo "GATE-FAIL [${THESIS_LANG}]: diplomarbeit-${THESIS_LANG}-${THESIS_UMFANG}.log fehlt (Build unvollstaendig)"; exit 1; }; W=$(grep -c "LaTeX Warning" diplomarbeit-${THESIS_LANG}-${THESIS_UMFANG}.log 2>/dev/null || true); W=${W:-0}; echo "LaTeX-Warnings=$W (erlaubt <=${COMDARE_THESIS_KNOWN_WARNINGS})"; test "$W" -le "${COMDARE_THESIS_KNOWN_WARNINGS}" || { echo "GATE-FAIL [${THESIS_LANG}]: $W LaTeX-Warnings > ${COMDARE_THESIS_KNOWN_WARNINGS} bekannte -> Dokument unordentlich"; exit 1; }'
@@ -95,3 +99,26 @@ thesis:pdf:
       - diplomarbeit-${THESIS_LANG}-${THESIS_UMFANG}.pdf
     when: always
     expire_in: 4 weeks
+
+# ── pdf:writeback (Order 389, 22.09.2026): die vier gegateten Fassungen (de/en x lang/kurz) als Folge-Commit ──
+# in die Hauptebene dieses Repos, stabile Namen diplomarbeit-<lang>-<umfang>.pdf, ueberschreibend; keine Folge-
+# Pipeline ([skip ci] + -o ci.skip). Laeuft nur, wenn ALLE Matrix-Instanzen von thesis:pdf gruen sind (needs).
+# main ist Maintainers-geschuetzt (der Bot darf dort nicht pushen) -> main erhaelt die PDFs per FF von development.
+# Uebersteuerung (Order 288, aus ce/super per Trigger-Variable): COMDARE_THESIS_PDF_WRITEBACK=false (inert),
+# COMDARE_THESIS_PDF_DIR (Zielordner), COMDARE_THESIS_PDF_FASSUNGEN (Liste). Skript: ci/pdf_writeback.sh.
+pdf:writeback:
+  stage: pdf-writeback
+  tags: [baremetal]
+  needs:
+    - job: "thesis:pdf"
+      artifacts: true
+  rules:
+    - if: '$COMDARE_TEXLIVE_AVAILABLE != "true"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+  variables:
+    GIT_DEPTH: "0"          # voller Klon: der Folge-Commit haengt an HEAD, kein Shallow-Push-Fehler
+  script:
+    - 'sh ci/pdf_writeback.sh'
