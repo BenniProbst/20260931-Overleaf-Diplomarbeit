@@ -3,10 +3,60 @@
 % [#90/AP-B5] Compact ADR collection (Architecture Decision Records), traced from the chapters.
 % Documented decisions only; every ADR is backed by a \ref to the supporting thesis section.
 This appendix collects the load-bearing design decisions of this thesis as compact
-\emph{Architecture Decision Records} (ADRs): for each decision the context in which it was made,
-the decision itself, and its most important consequence. The goal is quick traceability ---
-\emph{why} the apparatus is built the way the chapters describe it; the detailed derivation and
-justification resides in the section referenced under \emph{Evidence} and is not repeated here.
+\emph{Architecture Decision Records}\footnote{Architecture Decision Record (ADR): a short, numbered
+record of a design decision with context, decision and consequences --- introduced by
+Nygard~\cite{nygard2011adr} as a short text file in a format in the manner of an Alexander pattern and
+described as a tool format by Kopp, Armbruster and Zimmermann~\cite{kopp2018madr}.} (ADRs): for each
+decision the context in which it was made, the decision itself and its most important consequence. The
+goal is quick traceability --- \emph{why} the apparatus is built the way the chapters describe it; the
+detailed derivation and justification resides in the section of the main text referenced under
+\emph{Evidence} and is not repeated here. Where design and implementation diverge, the ADR states the
+implementation status at exactly one place as a fourth field. The collection comprises twenty
+decisions: the twelve decisions of the conception (ADR-1 to ADR-12) and eight decisions of identity,
+interfaces, operation and build (ADR-13 to ADR-20); Table~\ref{tab:adr-overview} gives the overview.
+
+\begin{footnotesize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.3cm}>{\raggedright\arraybackslash}p{6.0cm}>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{3.8cm}@{}}
+\caption{Overview of the twenty architecture decisions: short title, evidencing section and
+implementation status --- \emph{implemented} (implemented and evidenced), \emph{partial}
+(implemented, with a declared open item) or \emph{design} (designed only, not implemented); the
+justifications are in the records, not in the table}\label{tab:adr-overview}\\
+\toprule
+ADR & Decision (short title) & Evidence (section) & Implementation status \\
+\midrule
+\endfirsthead%
+\multicolumn{4}{@{}l}{\tablename\ \thetable{} --- continued}\\
+\toprule
+ADR & Decision (short title) & Evidence (section) & Implementation status \\
+\midrule
+\endhead%
+\midrule
+\multicolumn{4}{@{}r}{\footnotesize continued on the next page}\\
+\endfoot%
+\bottomrule
+\endlastfoot%
+ADR-1 & C-stable module boundary instead of a C++ module ABI & Sect.~\ref{sec:impl-architecture} & implemented \\
+ADR-2 & Compile-time permutation via type lists & Sect.~\ref{sec:axes-impl} & partial (activation of the eighteenth axis) \\
+ADR-3 & Three-level model as the one architecture & Sect.~\ref{sec:anatomy-levels} & implemented \\
+ADR-4 & Pass-through doctrine and enforced full assignment & Sect.~\ref{sec:axes-impl} & partial (pass-through building block of the node type) \\
+ADR-5 & Layer model E4--E0 with frozen contracts & Sect.~\ref{sec:anatomy-layers} & implemented \\
+ADR-6 & Explicitly coded non-observation instead of a phantom value & Sect.~\ref{sec:measurement-system} & implemented \\
+ADR-7 & Four-repository architecture with orthogonal carrier stages & Sect.~\ref{sec:repos} & implemented \\
+ADR-8 & Family-wise adapter fallbacks & Sect.~\ref{sec:axes-impl} & implemented \\
+ADR-9 & Measurement gating in three layers and four work modes & Sect.~\ref{sec:impl-pipeline} & partial (replay run compare/release) \\
+ADR-10 & \texttt{std::map} contract with conformance gate & Sect.~\ref{sec:measurement-system} & partial (full \texttt{std::map} interface, container hull) \\
+ADR-11 & Design-pattern register with evidenced roles & Sect.~\ref{sec:anatomy-patterns} & implemented \\
+ADR-12 & Dual measurement regime Talos and root Linux & Sect.~\ref{sec:eval-method} & partial (Talos regime) \\
+ADR-13 & Four carrier stages and one stamp contract & Sect.~\ref{sec:stamp-model} & partial (stamp export hybrid, SOTA branch) \\
+ADR-14 & Identity cut: only organ axes form the \texttt{binary\_id} & Sect.~\ref{sec:axis-triad} & implemented \\
+ADR-15 & Measurement-visitor seam (surface 3) instead of a sidecar & Sect.~\ref{sec:anatomy-levels} & implemented \\
+ADR-16 & Store as stock with compile-time keys & Sect.~\ref{sec:lager} & partial (full store build-out) \\
+ADR-17 & Optimization level as the user's choice, build world identity-effective & Sect.~\ref{sec:eval-build-scope} & partial (O0/O1 choice, flag pass-through) \\
+ADR-18 & One official build route as a GNU front end over CMake & Appendix~\ref{app:code} & partial (framework export) \\
+ADR-19 & Four CI cells without skip & Sect.~\ref{sec:impl-contracts} & partial (mini-pipelines per carrier stage) \\
+ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (creation mode, headless control path, schema drift) \\
+\end{longtable}
+\end{footnotesize}
 
 \begin{description}
 
@@ -14,146 +64,426 @@ justification resides in the section referenced under \emph{Evidence} and is not
   \textbf{Context:} Each permutation is compiled as a standalone tier binary and loaded at run
   time; C++23 modules structure the translation units but, by themselves, guarantee no portable
   ABI stability~\cite{wg21_modules_abi}.
-  \textbf{Decision:} A uniform C module boundary
-  (\texttt{comdare\_create\_anatomy()} $\to$ \texttt{IAnatomyBase}) exports exactly one creature
-  per permutation; behind it lies the three-layer abstraction chain
-  \texttt{CacheEngine} $\to$ \texttt{ExecutionEngine} $\to$ \texttt{SearchEngine}.
-  \textbf{Consequence:} ABI stability is established by the C boundary, not by the module system;
-  the ABI contract becomes verifiable per module (opt-in ABI verify).
-  \textbf{Evidence:} Sections~\ref{sec:contributions},~\ref{sec:anatomy-patterns},
-  and~\ref{sec:impl-architecture}.
+  \textbf{Decision:} A uniform C module boundary exports exactly one living being per permutation
+  --- an \texttt{IAnatomyBase} instance --- via seven mandatory symbols named independently of the
+  family: the four primal symbols ABI version, magic, factory (\texttt{comdare\_create\_anatomy()})
+  and destroy, the two identity symbols family and genus, whereby the family is not maintained as a
+  second datum but derived statically at compile time from the genus, and the stamp-line symbol. The
+  identity of names across all families is the stability argument: the loader can determine the
+  family via a family-independent symbol without knowing it in advance. Behind it lie two engine
+  concepts: the \texttt{CacheEngine} as the library of the axis building blocks and the
+  \texttt{ExecutionEngine} as the execution and measurement infrastructure with the root
+  \texttt{IExecutionEngine}, under which \texttt{IAnatomyBase} stands; the API facade is
+  \texttt{ICacheEngine}; the name \enquote{SearchEngine} denotes the ABI runtime view of the genus
+  \texttt{SearchAlgorithm}, not a third link in the chain; the same-named module intended to house it
+  separately is declared but not wired in.
+  \textbf{Consequence:} ABI stability is established by the C boundary, not by the module system
+  (ABI major~9); the loader checks every module on loading, fail-closed, against the mandatory
+  symbol set and the identity derivation --- a module with contradictory identity or without a stamp
+  symbol is rejected rather than wandering into stamp, store and measurement series as a wrong
+  identity.
+  \textbf{Evidence:} Sections~\ref{sec:contributions},~\ref{sec:anatomy-patterns}
+  and~\ref{sec:impl-architecture}; Figure~\ref{fig:one-architecture}.
 
   \item[ADR-2 --- Compile-time permutation via type lists instead of runtime adaptation]\hfill\\
   \textbf{Context:} Eighteen organ composition axes already count $2^{17} = 131072$ binary
   identities per system permutation in the canonical measurement catalogue --- one of them, the
-  persistence target, pinned to its in-memory representative ---, and the raw variant
-  product space over all axis catalogues including their sub-axes lies orders of magnitude above
-  that; the hot path must carry neither \texttt{virtual} calls nor runtime switches.
-  \textbf{Decision:} Permutation happens at compile time via Boost.MP11 type lists
-  (\texttt{mp\_list}) and concept-checked \texttt{if constexpr} (\texttt{resolve\_baustein}) ---
-  no runtime tag, no \texttt{std::variant}; the literal \texttt{std::variant} catalogue exists
-  only as the historical eleven-axis precursor (the \texttt{baustein\_variants} fallback).
-  \textbf{Consequence:} The axis abstraction remains a zero-cost abstraction.
-  \textbf{Evidence:} Sections~\ref{sec:contributions},~\ref{sec:anatomy-patterns},~\ref{sec:axes-impl},
-  and~\ref{sec:mess-chain}.
+  persistence target, pinned to its in-memory representative ---, and the raw variant product space
+  over all axis catalogues including their sub-axes lies orders of magnitude above that; the hot
+  path must carry neither \texttt{virtual} calls nor runtime switches. The pinning is a budget
+  decision (according to the catalogue header about 224~GB and 24~h of complete build instead of
+  about 448~GB and 48~h); the variation of all eighteen axes is provided for, and the cardinality of
+  a concrete plan is computed by the planner per XML in the director walk, never statically.
+  \textbf{Decision:} The permutation runs at compile time via Boost.Mp11 type
+  lists\footnote{Boost.Mp11: a C++11 metaprogramming library for the compile-time manipulation of
+  data structures that contain types; its list type is \texttt{mp\_list}~\cite{dimov_mp11}.}: per
+  axis one full list, filtered via the activation predicate into the enabled list, bound to the
+  composition slot, plus concept-checked axis descriptors with the inventory \texttt{variants} and a
+  generic registry-to-tree reflection; the golden reference catalogue selects per slot the first
+  representatives of the enabled list --- no runtime tag, no \texttt{std::variant}.
+  \texttt{std::variant}, \texttt{virtual} and runtime switches are categorically excluded in tier
+  and hybrid binaries; a static check enforces this, and the variant-based building-block cluster
+  (\texttt{baustein\_variants}, \texttt{resolve\_baustein}) is a test inventory isolated from the
+  build, without library consumers.
+  \textbf{Consequence:} The axis abstraction remains a zero-cost abstraction; only the eighteen
+  organ axes enter the binary identity (ADR-14).
+  \textbf{Implementation status:} The inclusion of the eighteenth axis in the reference catalogue is
+  not implemented; it requires two steps at once --- catalogue degree two for the persistence target
+  and the write-back switch of the persistence axis.
+  \textbf{Evidence:} Sections~\ref{sec:contributions},~\ref{sec:anatomy-patterns},~\ref{sec:axes-impl}
+  and~\ref{sec:mess-chain}; Figure~\ref{fig:patterns}.
 
   \item[ADR-3 --- The three-level model as the \emph{one} architecture]\hfill\\
   \textbf{Context:} The anatomy metaphor and the technical engine view threaten to drift apart
   into parallel model trees.
-  \textbf{Decision:} There is exactly one hierarchy without parallel trees --- genus (outer
-  interface, the test dock) $\to$ genus subclass (fixed axis set) $\to$ axis organs --- under the
-  common measurable root \texttt{IExecutionEngine}; a separate genus would arise only if the base
-  axis set differed fundamentally.
-  \textbf{Consequence:} \enquote{SearchEngine} is merely the ABI runtime view of the same
-  creature, not a second model.
-  \textbf{Evidence:} Sections~\ref{sec:anatomy-model},~\ref{sec:anatomy-levels},
-  and~\ref{sec:impl-architecture}.
+  \textbf{Decision:} There is exactly one hierarchy without parallel trees --- family (level~1,
+  outer interface: the probe-dock families Map, Container and Graph as well as the fourth family
+  HeuristikAdapter, which has no dock of its own because its binaries report the target genus via
+  \texttt{genus()} and dock at the dock of the target) $\to$ genus (level~2, the tier subclass with
+  a fixed axis set, alias family subclass; the six genera \texttt{SearchAlgorithm}, \texttt{Set},
+  \texttt{Sequence}, \texttt{Adapter}, \texttt{View} and \texttt{FunctionInterfaceReroute}) $\to$
+  axis organs (level~3) --- under \texttt{IExecutionEngine} as the common measurable root; a family
+  of its own would arise only if the base axis set differed fundamentally.
+  \textbf{Consequence:} The genus \texttt{SearchAlgorithm} under the family Map and its ABI runtime
+  view (\enquote{SearchEngine}) are two views of the same living being, not a second model.
+  \textbf{Evidence:} Sections~\ref{sec:anatomy-model},~\ref{sec:anatomy-levels}
+  and~\ref{sec:impl-architecture}; Figures~\ref{fig:three-levels} and~\ref{fig:genera}.
 
   \item[ADR-4 --- Pass-through doctrine and enforced full assignment]\hfill\\
-  \textbf{Context:} Non-tree-shaped methods (such as the hash cross-check) cannot meaningfully
-  carry tree- and trie-specific axes like path compression or node type.
+  \textbf{Context:} For non-tree-shaped methods (such as the hash cross-check), tree- and
+  trie-specific axes like path compression or node type cannot meaningfully be assigned.
   \textbf{Decision:} Such axes are not dropped but assigned as pass-through variants
-  (\texttt{None}); the \texttt{IsComposition} concept enforces, at compile time, the assignment
-  of all eighteen organs, so no composition with an open axis compiles.
-  \textbf{Consequence:} Non-tree-shaped methods require no genus of their own but a restricted
-  axis subset of the same genus.
-  \textbf{Evidence:} Sections~\ref{sec:sota-instances},~\ref{sec:anatomy-levels},
+  (\texttt{None}) --- a pass-through value is an algorithm with an empty path, not an omission;
+  implemented is the pass-through building block for path compression
+  (\texttt{Path\allowbreak{}Compression\allowbreak{}None}), the node type possesses no None variant
+  and is regularly assigned one of the four ART node formats, which a non-tree-shaped building block
+  does not use (design; without a code building block); the mandatory concept
+  \texttt{IsComposition} of the genus \texttt{SearchAlgorithm} enforces at compile time the
+  assignment of all eighteen organs (eighteen type requirements and an organ counter of eighteen
+  with a check for ABI break), so that no composition of this genus with an open axis compiles.
+  \textbf{Consequence:} Non-tree-shaped methods require no family of their own but a restricted
+  axis subset within the same genus.
+  \textbf{Evidence:} Sections~\ref{sec:sota-instances},~\ref{sec:anatomy-levels}
   and~\ref{sec:axes-impl}.
 
   \item[ADR-5 --- Layer model E4--E0 with frozen contracts and contract tests]\hfill\\
-  \textbf{Context:} Two implementation increments spanning several layers at once had to be
-  rolled back entirely; with a product space that rules out any complete materialisation,
-  multi-layer changes are practically impossible to accept.
-  \textbf{Decision:} The experiment pipeline is organised into layers E4--E0 (plus the
-  cross-cutting concern~M); each layer is completed individually, with an explicitly frozen
-  interface contract towards its neighbouring layer, and contract-tested against a compile-time
-  substitute (fake) of that neighbour.
-  \textbf{Consequence:} Every layer can be accepted individually before the next one begins; the
-  E3$\to$E2 boundary is already golden-tested.
-  \textbf{Evidence:} Sections~\ref{sec:anatomy-layers} and~\ref{sec:impl-contracts}.
+  \textbf{Context:} With a product space that rules out any complete materialization, changes
+  across several levels at once are practically not acceptable; therefore each level is completed
+  individually.
+  \textbf{Decision:} The experiment pipeline is organized into the five layers E4--E0 (E4
+  definition and evaluation, E3 permutation tree, E2 tier binaries, E1 runtime configuration, E0
+  infrastructure) and the cross-cutting concern~M\@; the E identifiers are a conceptual order with
+  one code location each. Each layer is completed individually, with an explicitly frozen interface
+  contract towards the neighbouring level (the freezing of the contract of layer E1 in the ABI
+  adapter: signatures, data layout and capabilities frozen, semantic changes only additive), and
+  contract-tested against a compile-time substitute (fake) of the neighbouring level.
+  \textbf{Consequence:} Every level can be accepted individually before the next one begins; the
+  boundary E3$\to$E2 is contract-tested without a module build against a fake of layer E2, checked
+  is solely the static tree and view structure including its mixed-radix bijection.
+  \textbf{Evidence:} Sections~\ref{sec:anatomy-layers} and~\ref{sec:impl-contracts};
+  Figures~\ref{fig:e-layers} and~\ref{fig:impl-layers}.
 
-  \item[ADR-6 --- honest-0 doctrine: honest zero and honest emptiness]\hfill\\
+  \item[ADR-6 --- Explicitly coded non-observation instead of a phantom value]\hfill\\
   \textbf{Context:} Values that cannot truly be collected (counters without hardware access, axes
   without a real runtime parameter) invite plausible phantom values that would systematically
   poison the heuristic derivation.
-  \textbf{Decision:} The system reports honestly invalid or empty instead of a phantom value ---
-  per-event validity flags per measurement; the wall-clock source, for instance, refuses to label
-  its mean as a percentile.
-  \textbf{Consequence:} Gaps remain visible and can be closed deliberately; the doctrine is
+  \textbf{Decision:} The system reports explicitly invalid or empty instead of a phantom value and
+  distinguishes three states per measured value: valid measured value, explicitly coded
+  non-observation (not applicable or source not available) and measurement error\footnote{The code
+  vocabulary \texttt{honest-0}/\texttt{honest-100}/\texttt{honest-empty} is the implementation name
+  of this principle (Appendix~\ref{app:glossary}); methodically, non-observation is a declared class
+  of missing values in the sense of the missing-data literature~\cite{graham2009missing}, never an
+  imputed value.}. A validity flag travels with every event, so that a measured zero remains a
+  measurement result; the wall-clock source offers only mean and throughput and refuses to label
+  its mean as a percentile, and a negative duration is a measurement error, not a zero value; a PMC
+  catalogue without a model entry yields \enquote{not applicable}, never a guessed encoding; the
+  generators produce no output for a measurement series without a valid row, rather than an empty
+  one.
+  \textbf{Consequence:} Gaps remain visible and can be closed deliberately; the principle is
   programmed into the building blocks rather than merely documented.
-  \textbf{Evidence:} Sections~\ref{sec:measurement-system} and~\ref{sec:impl-system-axes}.
+  \textbf{Evidence:} Sections~\ref{sec:measurement-system},~\ref{sec:impl-system-axes}
+  and~\ref{sec:axis-triad}.
 
-  \item[ADR-7 --- Three-repository split with orthogonal subsystems]\hfill\\
-  \textbf{Context:} Measurement apparatus, test subject, and evaluation have separate
-  responsibilities and life cycles.
-  \textbf{Decision:} Three repositories --- \texttt{comdare-cache-engine} (\emph{how} measuring
-  is done), \texttt{comdare-prt-art} (the test subject), and
-  \texttt{probst-Diplomarbeit-cache-engine} (\emph{what} is tested) ---, with
-  \texttt{comdare-cache-engine} following a Pitchfork source-tree layout; the four subsystems
-  (measurement driver, CacheEngineBuilder, CacheEngine, test
-  subject) lie orthogonal to this split.
-  \textbf{Consequence:} Builder and CacheEngine share one repository as an executable and a
-  library respectively; the roles remain cleanly separated.
-  \textbf{Evidence:} Section~\ref{sec:repos}.
+  \item[ADR-7 --- Four-repository architecture with orthogonal carrier stages]\hfill\\
+  \textbf{Context:} Measurement apparatus, probe, experiment definition including evaluation, and
+  the manuscript have separate responsibilities and life cycles; the measured values are built
+  directly into the manuscript under version control, which is why the manuscript is a repository
+  of its own with its own pipeline.
+  \textbf{Decision:} Four repositories --- \texttt{comdare-cache-engine} (\emph{how} measuring is
+  done; building-block library and builder in the Pitchfork source-tree layout,
+  Appendix~\ref{app:glossary}), \texttt{comdare-prt-art} (the probe), the project repository
+  \texttt{probst-Diplomarbeit-cache-engine} (\emph{what} is tested by the user: experiment
+  definition in XML and XSD, measurement driver, evaluation toolchain) and the manuscript
+  repository with its own CI, into which the forward channel deposits the generator output as table
+  and diagram files per commit ---; orthogonal to this division lie the four carrier stages planner
+  $\to$ CacheEngineBuilder $\to$ tier binary $\to$ hybrid tier binary, where stage $N+1$ hangs only
+  on stage $N$; planner and CEB are two binaries --- the planner
+  \texttt{comdare-experiment-planner} and the measurement driver \texttt{comdare-messung-driver}
+  ---, and the two roles appear as planner line and CEB contract line in the self-stamp of the
+  measurement driver (\texttt{--version}) in one driver binary; the measurement aggregator is run
+  host-side by the \texttt{ExperimentDriver}.
+  \textbf{Consequence:} Builder and CacheEngine share the engine repository --- the builder as an
+  executable above its builder library, the CacheEngine as a library ---; the roles remain cleanly
+  separated, and the probe is not a stage but the transversal supplier of organ building blocks.
+  \textbf{Evidence:} Section~\ref{sec:repos} and Appendix~\ref{app:code};
+  Figure~\ref{fig:traeger-stufen}.
 
-  \item[ADR-8 --- Family-wise adapter fallbacks for self-contained buildable trees]\hfill\\
+  \item[ADR-8 --- Family-wise adapter fallbacks for self-contained runnable builds]\hfill\\
   \textbf{Context:} Third-party code (allocator vendors, SOTA building blocks) is not available
   or activated on every platform and in every build.
-  \textbf{Decision:} Compile-time flag families enable or disable adapters, each with a safe,
-  family-wise chosen fallback: allocator adapters replace the missing vendor with
-  \texttt{std::malloc}/\texttt{std::free}, data-structure adapters with a stub that, when used,
-  throws a controlled \texttt{std::runtime\_error} exception.
+  \textbf{Decision:} Compile-time flag families switch adapters on or off --- per vendor one
+  family switch, whose use follows from approval and availability, behind 23 vendor shim headers
+  ---, each with a safe, family-wise chosen fallback: the allocator adapters replace the missing
+  vendor in \texttt{if constexpr} branches with the portable aligned allocation
+  (\texttt{portable\_aligned\_alloc}), the vendor shim supplies only forward stubs for the
+  never-executed branch, and the axis value \texttt{StdMalloc} is a building block of its own, not
+  a stopgap; data-structure adapters of third-party search methods switch via a family switch and
+  possess a self-contained re-implementation as their body, while the binding to the original code
+  runs via the library build with the original compiler.
   \textbf{Consequence:} The build remains self-containedly runnable without any third-party
   activation.
   \textbf{Evidence:} Section~\ref{sec:axes-impl}.
 
-  \item[ADR-9 --- Measurement gating and four delivery variants]\hfill\\
+  \item[ADR-9 --- Measurement gating in three layers and four work modes]\hfill\\
   \textbf{Context:} Measurement and observer couplings cost time and must not burden the
   production path.
-  \textbf{Decision:} The measurement couplings of the runtime adapter are gated behind
-  \texttt{COMDARE\_MEASUREMENT\_ON}; this yields four delivery variants of the same permutation
-  (debug with observers, measurement with aggregator, release without measurement couplings, and
-  compare as an already selectable label kept build-identical to release for the future replay
-  comparison), and
-  the measurement aggregator is run host-side by the \texttt{ExperimentDriver}.
-  \textbf{Consequence:} The production path stays measurement-free and carries no measurement
-  overhead.
-  \textbf{Evidence:} Sections~\ref{sec:repos} and~\ref{sec:impl-pipeline}.
+  \textbf{Decision:} The measurement couplings of the runtime adapter are switched via the master
+  option \texttt{COMDARE\_MEASUREMENT\_MODE}, which defines \texttt{COMDARE\_MEASUREMENT\_ON} and
+  which the release mode forcibly switches off; the switchable area falls into three separable
+  layers --- base time, observer counters and fine-grained segment timers per axis ---, the
+  switch-off stages of the measurement. The run methodology knows four work modes of the same
+  permutation, as a registry and not as a label: \texttt{build} (build without measuring),
+  \texttt{measure} (deterministic single-thread measurement run, the only mode with measurement),
+  \texttt{compare} (reads the measurement store, the stage before \texttt{release}) and
+  \texttt{release} (full optimization without measurement instrumentation); the work mode is a
+  sub-axis of the measurement realm and does not enter the binary identity, a debug state does not
+  exist (\texttt{--debug} is a flag of the planner shell), and the measurement aggregator is run
+  host-side by the \texttt{ExperimentDriver}.
+  \textbf{Consequence:} The production path stays measurement-free and causes no measurement
+  overhead; four modes are selectable, in build semantics only \texttt{measure} differs --- all
+  four registry rows carry the release build type.
+  \textbf{Implementation status:} The mode-specific replay run of \texttt{compare} and the optimal
+  release binary generated from measured values are planned but not implemented;
+  \texttt{compare} is a selectable, validatable label with release-equivalent build semantics.
+  \textbf{Evidence:} Sections~\ref{sec:repos},~\ref{sec:impl-pipeline} and~\ref{sec:eval-method};
+  Figures~\ref{fig:modi-kette} and~\ref{fig:abschaltungsstufen}.
 
   \item[ADR-10 --- The \texttt{std::map} contract as common denominator with a conformance gate]\hfill\\
   \textbf{Context:} Structurally different search algorithms can only be compared fairly through
   a common, well-understood outer interface.
   \textbf{Decision:} All methods are mapped onto the C++ contract of the ordered map
-  \texttt{std::map<Key,\,Value>} (with \texttt{std::vector} in parallel as the container
-  comparison case); a conformance gate verifies this contract before every measurement.
+  \texttt{std::map<Key,\,Value>}~\cite{iso_cpp}; the container genera are held against one
+  standard oracle each --- \texttt{Set} against \texttt{std::set}, \texttt{Sequence} against
+  \texttt{std::deque}, \texttt{Adapter} against \texttt{std::queue}, \texttt{std::stack} and
+  \texttt{std::priority\_queue}, \texttt{View} against \texttt{std::span} ---, and
+  \texttt{std::vector} serves as the inner substrate of the genus \texttt{Adapter}. A conformance
+  gate checks this contract before every measurement in the binding order import $\to$ gate $\to$
+  measure, via the five core operations \texttt{insert}, \texttt{lookup}, \texttt{erase},
+  \texttt{clear} and \texttt{size}, with conformance ratios as the result form.
   \textbf{Consequence:} Only comparables are compared; the axes describe exclusively the inner
   behaviour behind the fixed interface.
-  \textbf{Evidence:} Section~\ref{sec:measurement-system}.
+  \textbf{Implementation status:} The extension of the gate to the full \texttt{std::map}
+  interface and the genus iterator library are not implemented; the requirement to run the
+  container genera through a complete \texttt{std::vector} hull is not met --- the implemented
+  Sequence oracle is \texttt{std::deque}.
+  \textbf{Evidence:} Sections~\ref{sec:measurement-system} and~\ref{sec:impl-contracts}.
 
-  \item[ADR-11 --- Design-pattern selection with negative list; Command only in hybrid mode]\hfill\\
+  \item[ADR-11 --- Design-pattern register with evidenced roles]\hfill\\
+  \emph{Command as bundling and command pattern.}\hfill\\
   \textbf{Context:} The apparatus is deliberately a composition of named design patterns; unclear
   pattern roles would dilute the architecture.
-  \textbf{Decision:} Used are, among others, \emph{Strategy}, \emph{Abstract Factory},
-  \emph{Composite}, \emph{Iterator}, \emph{Adapter}, \emph{Observer}, \emph{Decorator},
-  \emph{Memento}, and CRTP\@; \emph{not} used are \emph{Singleton}, \emph{Flyweight}, and
-  \emph{Bridge}, and the \emph{Command} pattern appears exclusively as the command channel of the
-  hybrid mode.
-  \textbf{Consequence:} Every pattern has exactly one named role in the wiring of the apparatus.
-  \textbf{Evidence:} Sections~\ref{sec:anatomy-patterns} and~\ref{sec:heuristics-modes}.
+  \textbf{Decision:} Used are, each with a named code location: \emph{Strategy} with
+  CRTP~\cite{coplien1995crtp} per organ axis (the stamp contract of the carriers is a CRTP contract
+  as well, ADR-13), \emph{Abstract Factory} (hybrid docks, composition factory, probe registry),
+  \emph{Director} with \emph{Builder} (plan emission), \emph{Iterator} (the lazily traversed
+  experiment tree), \emph{Adapter} (third-party code behind the ABI boundary), \emph{Observer}
+  (measurement snapshots per axis), \emph{Visitor} (the measurement seam at the \texttt{dlopen}
+  transition, ADR-15), \emph{Chain of Responsibility} (hardware collection chain and selection
+  filter chain), \emph{Memento} (copy-on-write in the ABI adapter, state per tier), \emph{Command}
+  and \emph{Facade} --- the same roles as the pattern register in
+  Section~\ref{sec:impl-hybrid-lager} (Figure~\ref{fig:muster}), named after the catalogue of
+  Gamma et al.~\cite{gamma1994patterns} and composed as a tuple of axis
+  policies~\cite{alexandrescu2001modern}. The patterns \emph{Composite} and \emph{Decorator} are not
+  among them: the measurement hulls of the axes hold no component instance and no full interface
+  and are expressly not a Decorator, and a Composite in the sense of the catalogue has no
+  counterpart in the code.
+  \emph{Not} used in the hot path and in the organ axes are
+  \emph{Singleton}, \emph{Flyweight} and \emph{Bridge}; host-side registries use Meyers
+  singletons\footnote{Meyers singleton: the one instance as a function-local static object that is
+  initialized on the first call~\cite{meyers2005effective}.}, the catalogue generation uses
+  flyweight tables per axis, and \enquote{Bridge} is in the code only a colloquial designation for
+  connecting pieces (ABI adapter, CI bridge jobs, Sandy Bridge), not a pattern. The \emph{Command}
+  pattern carries the compile-time bundling of axis recombinations (the system complex axis as
+  command wrapper, the hub of the external tools as invoker, the command base of the axes in the
+  cross-cutting concern~M) and the typed control command channel; the command channel of the hybrid
+  mode is one of these roles.
+  \textbf{Consequence:} Every pattern carries named roles with code location in the wiring of the
+  apparatus and is executed at compile time rather than runtime-polymorphically.
+  \textbf{Evidence:} Sections~\ref{sec:anatomy-patterns},~\ref{sec:heuristics-modes}
+  and~\ref{sec:impl-hybrid-lager}.
 
   \item[ADR-12 --- Dual measurement regime: immutable Talos and root Linux]\hfill\\
   \textbf{Context:} Production fidelity and measurement depth are in conflict: a
   production-faithful system denies precisely the hardware-counter access that deep measurements
   require.
   \textbf{Decision:} On the production target machines, every measurement is collected under two
-  operating-system regimes: an immutable operating system (Talos) as the production mirror and a
-  root Linux with full hardware-counter access (\texttt{perf}/MSR).
+  operating-system regimes: an immutable operating system (Talos\footnote{Talos Linux: the
+  immutable, API-driven operating system for Kubernetes by Sidero
+  Labs~\cite{siderolabs_talos}.}) as the production mirror and a root Linux with full
+  hardware-counter access (\texttt{perf}~\cite{demelo2010perf,linux_perf_event_open} and the
+  model-specific registers, MSR).
   \textbf{Consequence:} The time- and observer-based categories run identically under both
   regimes and secure comparability; the PMC categories are collected only under the privileged
   regime.
-  \textbf{State of execution:} The decision stands but is only half redeemed --- all reported
-  measurements originate from the root-Linux regime; the Talos mirror remains a requirement and
-  will be collected after submission.
+  \textbf{Implementation status:} The decision stands; implemented is the root-Linux half: the
+  reported measurements all originate from the root-Linux regime of the two production machines
+  --- prod1 with the AMD microarchitecture Zen~5 and prod2 with the Intel Core i9-12900K (Alder
+  Lake) ---; the Talos regime is planned but not measured. For Intel, the PMC raw-event catalogue
+  contains no assignment; for Zen~5 it is cross-checked by measurement.
   \textbf{Evidence:} Sections~\ref{sec:eval-method} and~\ref{sec:contributions}.
+
+  \item[ADR-13 --- Four carrier stages and one stamp contract]\hfill\\
+  \emph{The stamp as identity, store key, recognition criterion and classification.}\hfill\\
+  \textbf{Context:} The configuration travels through four carrier stages (planner,
+  CacheEngineBuilder, tier binary, hybrid tier binary); each stage needs an ABI-stable,
+  compile-time identity into which no measured value enters.
+  \textbf{Decision:} A single CRTP contract binds all four carriers: seven stamp interfaces
+  (version, measurement line, system line, organ line, fingerprint, overall stamp, attached lines)
+  times four carriers yield 28 three-valued admission cells (Table~\ref{tab:stempel-matrix}); the
+  absence of the organ line at the CEB is the static barrier \enquote{the CEB carries no organ
+  axes}, and the check runs as a \texttt{static\_assert} under every heir. The planner carries a
+  SHA-256 fingerprint from version, ISA and operating system, the tier binary a SHA-512 fingerprint
+  over eleven members (format~6), among them the three realm lines, the toolchain member and the
+  hash of the overlay source set (concatenation in fixed order, SHA-512 once); the CEB carries a
+  SHA-512 provenance fingerprint, which is not a reuse criterion. The bracket grammar of the stamp
+  entries is defined at one place (\texttt{c\{p.e\}} is \texttt{c} with the sub-members \texttt{p}
+  and \texttt{e}, never flat), and the bracket depth is the meta-meta level of the entry.
+  \textbf{Consequence:} The stamp fulfils five roles --- identity, cache key, store key, recognition
+  criterion and classification; the self-stamp of the driver binary (\texttt{--version}) carries
+  only the classification and is neither cache key nor build input.
+  \textbf{Implementation status:} The registry-wrapper stamp of the SOTA branch and the stamp
+  export of the hybrid stage are not implemented; the stamp identity in every diagram and every
+  table of the appendix is likewise not implemented.
+  \textbf{Evidence:} Sections~\ref{sec:stamp-model},~\ref{sec:anatomy-levels},~\ref{sec:mess-chain},~\ref{sec:impl-contracts}
+  and~\ref{sec:eval-identity}; Figure~\ref{fig:traeger-flaechen}.
+
+  \item[ADR-14 --- Identity cut: only organ axes form the \texttt{binary\_id}]\hfill\\
+  \emph{System and measurement axes are identity-neutral.}\hfill\\
+  \textbf{Context:} Three axis realms (organ, system, measurement) each carry a registry of their
+  own with generated XML\@; if measurement or system values entered the identity, duplicate
+  binaries of the same permutation would arise, and a store that holds the same binary several
+  times.
+  \textbf{Decision:} The \texttt{binary\_id} is the path of eighteen \texttt{axis=value} segments
+  in canonical slot order (the organ count eighteen is defined at exactly one place); all
+  measurement axes and all system axes carry \texttt{binary\_id = never} in their registries;
+  sub-axes are runtime permutation and appear in no build-job legend; the work mode is
+  identity-neutral. The build world instead travels along as a fingerprint member --- the system
+  line and the toolchain member with \texttt{vendoropt} (ADR-17).
+  \textbf{Consequence:} Store key and regression detector (reference catalogue $2^{17}$ with
+  CRC-64 checksum) are organ-stable; the same organ permutation against two build worlds is a
+  different artefact with a different fingerprint.
+  \textbf{Evidence:} Sections~\ref{sec:axis-triad},~\ref{sec:stamp-model}
+  and~\ref{sec:impl-system-axes}; Table~\ref{tab:axes-overview}.
+
+  \item[ADR-15 --- Measurement-visitor seam (surface 3) instead of a sidecar]\hfill\\
+  \emph{Family and genus interfaces remain unchanged.}\hfill\\
+  \textbf{Context:} An observer that fetches fields from a tier binary from the outside measures
+  the neighbourhood and not the object: what is measured is then decided by the host through the
+  choice of fields; measurement fields in the domain interfaces would alter the family and genus
+  contracts.
+  \textbf{Decision:} Each carrier stage offers three interface surfaces: surface~1 the genus
+  interface (runtime, abstract factory), surface~2 the stamp (compile time, ABI-stable), surface~3
+  the measurement cut-through; the measurement crosses as a seam of its own
+  (\texttt{tier\_measure\_accept} with \texttt{IMessVisitor}), a visitor at the \texttt{dlopen}
+  transition with double dispatch~\cite{gamma1994patterns}; depending on whether the measurement
+  facility is activated in CEB and tier binary, a measurement visitor is handed over at the
+  interface or not.
+  \textbf{Consequence:} The domain interfaces contain no measurement fields; the gate combination
+  CEB off, tier on is evidenced by a coverage test; the measurement-gate assignment travels along
+  as a fingerprint member of its own with positions of its own for the hybrid level.
+  \textbf{Evidence:} Sections~\ref{sec:anatomy-levels},~\ref{sec:impl-pipeline}
+  and~\ref{sec:measurement-system}; Figure~\ref{fig:traeger-flaechen}.
+
+  \item[ADR-16 --- Store as stock with compile-time keys]\hfill\\
+  \emph{Measurement always on, in the store only re-measure what is missing.}\hfill\\
+  \textbf{Context:} A reference space of $2^{17}$ compositions per system permutation (according
+  to the catalogue header about 224~GB and 24~h of complete build) is manageable only with reuse of
+  built binaries and measured values; the measurement is to be always switched on and, in the
+  store, to re-measure only what cannot be found there.
+  \textbf{Decision:} Stock~1 holds the binary under its SHA-512 fingerprint; stock~2 holds the
+  measured values under the pair of fingerprint of the measured binary and hardware identity of the
+  measuring machine, the measurement cell stands beside it and is never fused into the digest; a
+  binary found is skipped if its passed test attestation is inventoried, otherwise built or
+  measured; a version lock over the overlay source set turns unnoticed source changes into a CI
+  error.
+  \textbf{Consequence:} The identity travels unchanged from the store via the measurement line
+  (\texttt{permutation\_id}, \texttt{fingerprint}) into workbook and appendix.
+  \textbf{Implementation status:} Stocks~1 and~2 and the key schema are implemented; stocks~3
+  and~4 (synthesis batches and solutions), the planner leaf function, the CEB full placement, the
+  hybrid storage path, the commit skip, the rebuild flag per stage and the XML section
+  \texttt{publish} form the full store build-out and are not implemented.
+  \textbf{Evidence:} Sections~\ref{sec:lager},~\ref{sec:eval-method},~\ref{sec:stamp-model}
+  and~\ref{sec:heuristics-modes}; Figures~\ref{fig:lager-bestaende}
+  and~\ref{fig:eval-lager-kreislauf}.
+
+  \item[ADR-17 --- Optimization level as the user's choice]\hfill\\
+  \emph{House-wide O2, O3 on XML request; the build world is identity-effective.}\hfill\\
+  \textbf{Context:} Measurement series over differently optimized build worlds are not
+  comparable; the maximum optimization must remain selectable for the user.
+  \textbf{Decision:} The release flags apply house-wide with O2 --- including vendor build,
+  FetchContent and embedding --- via a forced cache value; O3 is built alongside only on XML input
+  request; the build-world level enters the toolchain member of the fingerprint as the field
+  \texttt{vendoropt} (compile error instead of a silent default); a gate rejects self-supplied
+  release optimization flags that bypass the axis; the sub-axis \texttt{opt\_level} offers O0 to
+  Ofast with the determinism flag according to IEEE~754~\cite{ieee754_2019}, which only Ofast
+  negates.
+  \textbf{Consequence:} Two builds of the same permutation against an O2 and an O3 world are
+  different artefacts with different fingerprints; a silent skip is ruled out.
+  \textbf{Implementation status:} O0 and O1 as the user's choice in the XML and the pass-through of
+  further compiler flags from the XML are planned but not implemented (default O2, O3 selectable
+  as override).
+  \textbf{Evidence:} Sections~\ref{sec:eval-build-scope},~\ref{sec:impl-system-axes}
+  and~\ref{sec:complex-axis}.
+
+  \item[ADR-18 --- One official build route as a GNU front end over CMake]\hfill\\
+  \emph{\texttt{configure.sh}, \texttt{make}, \texttt{make check} and \texttt{make install}.}\hfill\\
+  \textbf{Context:} The only procedure official under Linux is \texttt{configure.sh},
+  \texttt{make} and \texttt{make install} or \texttt{make check}, respectively, and these three
+  must lie in the root folder; a configuration may have only one source.
+  \textbf{Decision:} \texttt{configure.sh} is a POSIX-sh front end without Python, building
+  continues to be done with CMake; the \texttt{Makefile} is checked in statically and only
+  forwards to CMake, with the GNU standard targets~\cite{gnu2026standards} \texttt{all},
+  \texttt{install}, \texttt{check}, \texttt{installcheck}, \texttt{uninstall}, \texttt{clean},
+  \texttt{distclean}, \texttt{mostlyclean} and \texttt{maintainer-clean} (the test target is called
+  \texttt{check}); the configuration is stored exclusively in \texttt{config.status} and in the
+  CMake cache, and the Makefile deliberately contains no default values --- a generated Makefile
+  would be a second configuration source without benefit.
+  \textbf{Consequence:} There is no second build route beside CMake and no second configuration
+  source; the front end is checkable with \texttt{sh -n}.
+  \textbf{Implementation status:} \texttt{configure.sh} and \texttt{Makefile} lie in the
+  repository; the framework export for consumers (\texttt{install(EXPORT)},
+  \texttt{find\_package}) and the follow-up checks are not implemented.
+  \textbf{Evidence:} Appendix~\ref{app:code}.
+
+  \item[ADR-19 --- Four CI cells without skip]\hfill\\
+  \emph{gcc and clang each as release and debug; a job fails or passes.}\hfill\\
+  \textbf{Context:} Two compilers find different errors; a silent job skip or a tolerated error
+  feigns a passed run.
+  \textbf{Decision:} The test suite runs in four cells --- gcc and clang each as release and debug
+  build --- without change skip; the cell is the warning, the job fails; \texttt{allow\_failure}
+  carries only two declared exceptions --- the arm64 smoke build without an available runner and
+  the manual relock maintenance job ---, no build or test cell; per compiler and build type there
+  is one object-cache key with exactly one writer; the minimum compiler level is g++~15.3; the
+  golden reference catalogue $2^{17}$ with CRC-64 checksum is the regression detector with frozen
+  cardinality.
+  \textbf{Consequence:} Accepted is only a run without failed tests in all four cells without an
+  exception list --- a gate in the sense of continuous delivery~\cite{humble2010cd} ---, and a
+  test count is named only together with the run that produced it.
+  \textbf{Implementation status:} The mini-pipeline per carrier stage (four stages times gcc and
+  clang times release and debug) is planned but not implemented.
+  \textbf{Evidence:} Section~\ref{sec:impl-contracts}.
+
+  \item[ADR-20 --- XML as the only control]\hfill\\
+  \emph{The XML carries the what, where and when, never the how.}\hfill\\
+  \textbf{Context:} The apparatus is operated from a declarative experiment profile; terms are not
+  translated but must be conformant --- were a translation necessary, that is a regression and a
+  compile-time error.
+  \textbf{Decision:} Two schemas describe profile and measurement series
+  (\texttt{experiment\_schema.xsd}, \texttt{messreihe\_v32\_schema.xsd}); the parse seam aborts
+  with an error message, the validation is a building block of its own, and the CI checks
+  well-formedness; the XML describes the what, where and when, never the how; the axis registries
+  are generated as XML and are thus machine-readable images; the planner is a subcommand tool
+  (\texttt{validate}, \texttt{plan}, \texttt{cache-key}, \texttt{fingerprint}, \texttt{status},
+  \texttt{check-size}, \texttt{simulate}, \texttt{version}, \texttt{help}) and the shell control
+  path; as the second control path, an API command line with a headless service is planned, which
+  serves the planner as a cell on Kubernetes or on bare metal, as well as a command-line-guided
+  creation mode for the user XML in which unavailable options are not selectable.
+  \textbf{Consequence:} There is no side route beside the XML\@; the SOTA profiles are executable
+  as XML\@.
+  \textbf{Implementation status:} The headless control path and the creation mode are not
+  implemented; the hybrid section is parsed but not declared in the schema, the organ meta-meta
+  section declared but not read, and the \texttt{publish} section is missing.
+  \textbf{Evidence:} Sections~\ref{sec:mess-chain} and~\ref{sec:impl-pipeline};
+  Figure~\ref{fig:pipeline}.
 
 \end{description}
