@@ -15,6 +15,13 @@
 %  (literatur.bib, Felder howpublished/note): DE 'abgerufen am', EN 'accessed'.
 %  \ifthesisDE wird in diplomarbeit.tex aus \thesislang abgeleitet; das Makro
 %  wird erst im Literaturverzeichnis expandiert, also nach dieser Ableitung.
-%  Gebrauch in literatur.bib:  \bibaccessed{} 19.09.2026
+%  [FIX-EN r1, 22.09.2026] Erweiterung (LENS-EN-A S-1/S-2, LENS-EN-B S17/S21):
+%    \biblang{DE-Text}{EN-Text}  sprachabhaengiger Feld-/Titeltext eines Eintrags
+%    \bibdate{TT.MM.JJJJ}         DE unveraendert TT.MM.JJJJ, EN ISO JJJJ-MM-TT
+%    \bibaccessed{TT.MM.JJJJ}     DE 'abgerufen am TT.MM.JJJJ', EN 'accessed JJJJ-MM-TT'
+%  Gebrauch in literatur.bib:  \bibaccessed{19.09.2026}
 % ---------------------------------------------------------------------
-\providecommand{\bibaccessed}{\ifthesisDE{abgerufen am}\else{accessed}\fi}
+\providecommand{\biblang}[2]{\ifthesisDE{#1}\else{#2}\fi}
+\providecommand{\bibdate}[1]{\bibdateparse#1\bibdatestop}
+\def\bibdateparse#1.#2.#3\bibdatestop{\ifthesisDE{#1.#2.#3}\else{\mbox{#3-#2-#1}}\fi}
+\providecommand{\bibaccessed}[1]{\biblang{abgerufen am}{accessed} \bibdate{#1}}
