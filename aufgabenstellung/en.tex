@@ -11,7 +11,7 @@
 \bigskip
 \minisec{Context and motivation}
 Search algorithms and index structures are a core building block of modern in-memory database
-systems. The Chair of Databases at TU Dresden addresses the hardware-conscious optimisation of such
+systems. The Chair of Databases at TU Dresden addresses the hardware-conscious optimization of such
 systems. Since the introduction of the Adaptive Radix Tree, numerous cache-aware techniques and related algorithm families have been
 proposed --- from node layout through prefetching and succinct representations to allocation ---,
 yet almost every publication uses its own data structures, different load profiles, and inconsistent
@@ -20,14 +20,14 @@ weightings across improvements of individual algorithm components are currently 
 
 \minisec{Problem statement}
 Search methods --- from balanced search trees (B-/B\textsuperscript{+}-trees) through tries and
-radix trees to specialised, custom-built constructs --- span a large yet conceptually uniform
+radix trees to specialized, custom-built constructs --- span a large yet conceptually uniform
 \emph{design space}: even a
 two- or three-component data structure admits astronomically many designs, and a concrete algorithm
 is a single point in this space, described by many individual design decisions --- how nodes are
 represented, traversed, laid out in memory, and allocated~\cite{idreos2018periodic, idreos2018datacalculator}. Cache-line-aware behaviour arises not at a
 single one of these places but at \emph{many different structural places} of an algorithm or of its
 memory management, and from the interplay of multiple conceptual layers of an algorithm. The state
-of the art comprises numerous mature methods, yet each optimises only
+of the art comprises numerous mature methods, yet each optimizes only
 individual ones of these places and demonstrates its benefit in its own measurement environment,
 which makes progress hard to compare across methods. A common, generic concept and
 \textbf{principle} is missing that can measure and evaluate cache-line-aware behaviour, alongside
@@ -56,7 +56,7 @@ constructively and made measurable in this thesis.
   \item Systematically capture the general design components of search algorithms --- in particular
   the cache-aware ones --- and identify the places at which cache-line-aware and
   search-algorithm-specific decisions take effect. This includes the systematic subdivision of the
-  design components into design levels of a generalised algorithm categorisation.
+  design components into design levels of a generalized algorithm categorization.
   \item Reconstruct state-of-the-art designs --- where possible from the original code of the
   respective publication and original compiler binary linking --- (ART, HOT, Masstree, CoCo-trie, START, B\textsuperscript{2}-tree,
   Wormhole, SuRF, and further methods) as explicit, comparable configurations.
@@ -77,7 +77,7 @@ constructively and made measurable in this thesis.
   mandatory measurement series --- (A)~probe vs.\ the state of the art, (B)~systematic variation of
   the design decisions, (C)~merge/regression of old vs.\ new variants ---, with each series
   collected at three granularities: \emph{micro-benchmarking} (each individual design component is
-  measured --- within the search-algorithm shell as well as the algorithm-category shell --- in each
+  measured --- within the search-algorithm hull as well as the algorithm-category hull --- in each
   common interface function of its category, in isolation against load profiles; the algorithms of
   the category are evaluated comparatively against one another per interface function, in compliance
   with latency-aware best practices in database research), \emph{macro-benchmarking} (the
@@ -101,12 +101,12 @@ constructively and made measurable in this thesis.
 \minisec{Method and evaluation}
 The evaluation covers, besides the CPU-only core, SIMD and concurrent multi-threading paths, and
 compares the configurations against established baselines, including a non-tree-like hash table
-(\texttt{flat\_hash\_map}) as a counterprobe within the same genus. The data basis consists of real
+(\texttt{flat\_hash\_map}) as a counterprobe within the same family. The data basis consists of real
 string datasets of differing characteristics --- e.g.\ \texttt{url}, \texttt{dna}, \texttt{protein},
 \texttt{xml}, \texttt{tpcds-id}, and \texttt{trec-terms} --- under varied data volumes, key lengths,
 prefix overlap, local density, skew, hit/miss ratios, and value sizes. Measured quantities include
 exact/prefix lookup, prefix enumeration, insert/update/delete under all variants of the C++
-standard interfaces of the well-known std::map and std::vector container shells, p50/p95/p99
+standard interfaces of the well-known std::map and std::vector container hulls, p50/p95/p99
 latency, throughput, bytes per key, and hardware counters (cycles, instructions, L1/L2/LLC and dTLB
 misses, branch mispredictions). Single-thread behaviour is studied first, followed by read-parallel multi-thread
 scenarios.
@@ -121,7 +121,7 @@ of source, checksum, and seed rule in order to attest the original code beyond d
 
 \minisec{Scope}
 The core contribution is CPU-focused with SIMD extensions and multi-threading, but restricted to
-read-parallel methods with serialised writing (multi-read, single-write). The GPU is for now out of
+read-parallel methods with serialized writing (multi-read, single-write). The GPU is for now out of
 scope (extendable in the future); full write parallelism and an engine/optimiser integration are
 optional extensions. All architecture extensions are themselves dynamic extensions against the CPU
 baseline run and lead to deeper measurement permutations with multiple runtimes. The
