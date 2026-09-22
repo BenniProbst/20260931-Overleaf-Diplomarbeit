@@ -70,7 +70,9 @@ während der ART-Gesamtbaum als Prüfling und nicht als durchgängig mitgemessen
 Zunächst wird die Landschaft der Suchstrukturen kartiert --- vergleichsbasierte Bäume, digitale und
 präfixbasierte Verfahren, Hashing, räumliche und flache Strukturen. Die Gesamtheit der jeweils besten
 veröffentlichten Verfahren bezeichnet die Literatur als \emph{Stand der Technik} (englisch \emph{State of the Art},
-kurz SOTA): die publizierten Suchstruktur-Entwürfe, an denen sich ein neuer Entwurf messen lassen muss.
+kurz SOTA): die publizierten Suchstruktur-Entwürfe, an denen sich ein neuer Entwurf messen lassen muss. Hier deutet
+sich bereits an, dass sich jeder Algorithmus in einem gemeinsamen Entwurfsraum verorten lässt; wie sich dieser
+Entwurfsraum systematisch aufspannt, entwickelt Kapitel~\ref{ch:measurement}.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
   cat/.style={draw, rounded corners, fill=orange!10, inner sep=3pt}]
@@ -173,7 +175,8 @@ bereichsfähige SuRF~\cite{zhang2018surf}. Drittens liegen weitere Vertreter ---
 Suchbaum, B-Baum, die Gesamtbäume ART~\cite{leis2013art}, HOT~\cite{binna2018hot}, START~\cite{fent2020start},
 Wormhole~\cite{wu2019wormhole} und SuRF~\cite{zhang2018surf} sowie eine skalare SwissTable-Nachbildung ohne
 Messaussage über die SIMD-basierte Vorlage --- als zuschaltbare, im Referenzlauf nicht aktivierte Bausteine vor;
-räumliche Strukturen, theoretische Exoten und Suffix-Array bleiben außerhalb. Welche Bausteine im Referenzlauf
+räumliche Strukturen, theoretische Exoten und Suffix-Array bleiben außerhalb. So verschieden die Klassen äußerlich
+wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen; welche Bausteine im Referenzlauf
 tatsächlich vermessen werden, nennt Kapitel~\ref{ch:measurement}.
 \end{nurkurz}
 
@@ -213,10 +216,11 @@ Alle bisher genannten Verfahren sind \emph{fest entworfene} Strukturen; eine eta
 den Entwurf dagegen in die Laufzeit: \emph{Database Cracking}~\cite{idreos2007cracking} baut den Index adaptiv als
 Nebenprodukt der Anfrageverarbeitung auf, \emph{Stochastic Cracking}~\cite{halim2012stochastic} macht dies gegen
 ungünstige Anfragefolgen robust, \emph{gelernte Indizes}~\cite{kraska2018learned} ersetzen die Suchstruktur durch
-ein Modell der Schlüsselverteilung, und VEGA~\cite{li2025vega} sowie AirIndex~\cite{chockchowwat2023airindex} tunen
-beziehungsweise entwerfen den Index aktiv aus dem Laufzeitprofil. Diese aktiven beziehungsweise adaptiven Ansätze
-belegen, dass Entwurfsentscheidungen veränderlich gehalten werden können; wie sie sich systematisch zerlegen und
-einzeln vermessen lassen, entwickelt Kapitel~\ref{ch:measurement}.
+ein Modell der Schlüsselverteilung, und VEGA~\cite{li2025vega} tunt einen gelernten Index zur Laufzeit nach,
+AirIndex~\cite{chockchowwat2023airindex} entwirft die Index-Hierarchie aus dem Daten- und Speicher-I/O-Profil des
+Zielsystems. Für die vorliegende Arbeit sind diese aktiven beziehungsweise adaptiven Ansätze die nächstverwandten
+bekannten Ansätze: sie belegen, dass Entwurfsentscheidungen veränderlich gehalten werden können; wie sie sich
+systematisch zerlegen und einzeln vermessen lassen, entwickelt Kapitel~\ref{ch:measurement}.
 \end{nurkurz}
 
 Für die cache-bezogenen Eigenschaften dieser Entwürfe hat die Literatur eine gestufte
@@ -310,7 +314,8 @@ oder eingebetteten Kernen~\cite{hennessy2019architecture,intel_optimization,amd_
 aber nicht veränderbar. Für ein cache-line-bewusstes Layout ist die je Zielplattform ermittelte Line-Größe daher
 ein \emph{Eingabeparameter der Übersetzung}, keine feste Annahme; wie er in dieser Arbeit gebunden wird, zeigt
 Kapitel~\ref{ch:measurement}. Der Transfer einer Line erfolgt zudem nicht streng am Stück
-(\emph{critical-word-first}, DDR5-Sub-Kanäle~\cite{micron_ddr5}, Write-Combining~\cite{intel_sdm}).
+(\emph{critical-word-first}, DDR5-Zweiteilung des Kanals in zwei unabhängige 32-Bit-Sub-Kanäle~\cite{micron_ddr5},
+Write-Combining~\cite{intel_sdm}).
 \end{nurkurz}
 
 \begin{nurlang}
@@ -338,9 +343,9 @@ Wo eine Line im Cache liegen darf, bestimmt die \emph{Assoziativität}: Der Cach
 denen jedes $n$ \emph{Ways} (Line-Plätze) hält, und jede Adresse kann nur in den $n$ Plätzen \emph{ihres} Sets
 liegen; gängige Daten-Caches sind 4- bis 16-fach assoziativ~\cite{hennessy2019architecture,intel_optimization,amd_sog}.
 Hill und Smith klassifizieren Fehlzugriffe im \emph{3-C-Modell} als \emph{compulsory} (Erstzugriff),
-\emph{capacity} (Arbeitsmenge übersteigt die Kapazität) und \emph{conflict} (mehr heiße Lines je Set, als es Ways
-hat)~\cite{hill1989associativity}; Mehrkern-Systeme fügen \emph{coherence}-Fehlzugriffe als vierte Klasse
-hinzu~\cite{hennessy2019architecture}. Die Klassifikation trennt die Gegenmittel: Prefetching gegen Compulsory-Misses
+\emph{capacity} (Arbeitsmenge übersteigt die Kapazität) und \emph{conflict} (mehr heiße Lines je Set als
+Ways)~\cite{hill1989associativity}; Mehrkern-Systeme kennen \emph{coherence}-Fehlzugriffe als vierte
+Klasse~\cite{hennessy2019architecture}. Die Klassifikation trennt die Gegenmittel: Prefetching gegen Compulsory-Misses
 (Abschnitt~\ref{subsec:prefetching}), kompaktere Layouts gegen Capacity-Misses; Conflict-Misses entstehen, wenn heiße
 Elemente in Zweierpotenz-Abständen um dieselben Sets konkurrieren~\cite{hennessy2019architecture,drepper2007memory}.
 \end{nurkurz}
@@ -359,8 +364,9 @@ voneinander abhängiger Zugriffe und nutzt sie ohne Weiteres nicht
 \end{nurlang}
 \begin{nurkurz}
 Ein Fehlzugriff blockiert einen modernen Cache nicht: Seit Krofts \emph{lockup-free}-Organisation führt der Cache
-je ausstehendem Miss ein \emph{Miss-Status-Holding-Register} (MSHR)~\cite{kroft1981lockupfree}; die feste Zahl
-dieser Register begrenzt die gleichzeitig ausstehenden Speicherzugriffe --- die \emph{Memory-Level-Parallelität}
+je ausstehendem Miss ein \emph{Miss-Status-Holding-Register} (MSHR\@; bei Intel als \emph{Line-Fill-Buffer} zwischen
+L1 und L2 realisiert)~\cite{kroft1981lockupfree}; die feste Zahl dieser Register begrenzt die gleichzeitig
+ausstehenden Speicherzugriffe --- die \emph{Memory-Level-Parallelität}
 (MLP)~\cite{hennessy2019architecture,intel_optimization}. Ob eine Suchstruktur sie anbieten kann, ist eine
 Entwurfsfrage, denn der Suchpfad eines Baumes ist eine Kette voneinander abhängiger Zugriffe
 (Abschnitt~\ref{subsec:prefetching}).
@@ -401,8 +407,9 @@ Literatur das dichte und das cache-line-ausgerichtete Array-of-Structs (AoS), da
 Struct-of-Arrays (SoA), das bit-gepackte, succinct LOUDS-Layout~\cite{jacobson1989louds,zhang2018surf} und das
 SIMD-gekachelte AoSoA (\emph{Array of Structures of Arrays}: Datensätze in Kacheln fester Breite, innerhalb jeder
 Kachel feldweise, sodass ein SIMD-Register genau eine Kachelspalte lädt --- die Zugriffslokalität des AoS mit der
-Vektorisierbarkeit des SoA); die Referenz-Entwürfe CSS/CSB\textsuperscript{+}~\cite{rao1999css,rao2000csb} und
-ART~\cite{leis2013art} staffeln den Knoten cache-line-orientiert (Abschnitt~\ref{subsec:cc-structures}).
+Vektorisierbarkeit des SoA); die Referenz-Entwürfe CSS/CSB\textsuperscript{+}~\cite{rao1999css,rao2000csb}
+(Cache-Line-Knoten, Geschwister-Cluster) und ART~\cite{leis2013art} (nach Verzweigungsgrad gestaffelte Knoten) legen
+den Knoten cache-line-orientiert aus (Abschnitt~\ref{subsec:cc-structures}).
 \end{nurkurz}
 
 \subsection{Prefetching}\label{subsec:prefetching}
@@ -498,8 +505,8 @@ Bei \emph{NUMA} (Non-Uniform Memory Access) besitzt jeder Knoten eigenen lokalen
 kosten spürbar mehr, und die \emph{First-Touch}-Politik legt eine Seite auf dem Knoten des zuerst schreibenden
 Threads ab~\cite{lameter2013numa}. Der \emph{Translation Lookaside Buffer} (TLB) puffert
 Virtuell-zu-Physisch-Abbildungen, ein TLB-Miss löst einen teuren Page-Walk aus, und große Seiten vergrößern seinen
-\emph{Reach}~\cite{hennessy2019architecture}; für Suchstrukturen ist der Daten-TLB (dTLB) die zweite
-Lokalitätsgrenze neben der Cache-Line.
+\emph{Reach} (Eintragszahl mal Seitengröße)~\cite{hennessy2019architecture}; für Suchstrukturen ist der Daten-TLB
+(dTLB) die zweite Lokalitätsgrenze neben der Cache-Line.
 \end{nurkurz}
 
 \begin{nurlang}
@@ -536,16 +543,16 @@ Line --- muss ein faires Messverfahren eigens sichtbar machen (Kapitel~\ref{ch:m
 \subsection{Schreibpfad, Ersetzung und Kohärenz}\label{subsec:write-coherence}
 Auch das Schreib- und Update-Verhalten der Caches ist überwiegend mikroarchitektonisch fixiert: Schreibzugriffe
 folgen \emph{Write-Through} (Durchschreiben) oder \emph{Write-Back} (Zurückschreiben der \emph{dirty} markierten
-Line erst bei Verdrängung), und die Allokations-Politik (Write-Allocate bzw.\ No-Write-Allocate) legt die Behandlung
-eines Schreib-Fehlzugriffs fest~\cite{arm_arm,intel_sdm}. Welche Line verdrängt wird, entscheidet eine
+Line erst bei Verdrängung), und die Allokations-Politik (Write-Allocate bzw.\ No-Write-Allocate) regelt den
+Schreib-Fehlzugriff~\cite{arm_arm,intel_sdm}. Welche Line verdrängt wird, entscheidet eine
 heuristische Ersetzungsstrategie von LRU/Pseudo-LRU bis zur scan- und thrash-resistenten \emph{Re-Reference
 Interval Prediction} (RRIP, dynamische Variante DRRIP)~\cite{jaleel2010rrip} auf Basis der adaptiven
 Insertions-Politik~\cite{qureshi2007adaptive}; die Inklusions-Politik regelt, ob eine Line in mehreren Ebenen
-zugleich liegt, und in Mehrkern-Systemen sichert ein invalidierungsbasiertes Kohärenzprotokoll die Konsistenz:
+liegt, und in Mehrkern-Systemen sichert ein invalidierungsbasiertes Kohärenzprotokoll die Konsistenz:
 MESI (Zustände \emph{Modified}, \emph{Exclusive}, \emph{Shared}, \emph{Invalid}), herstellerseitig zu MOESI
 (AMD~\cite{amd_sog}) oder MESIF (Intel~\cite{intel_optimization}) erweitert~\cite{hennessy2019architecture}. Ihre
 Wirkung --- insbesondere das \emph{Cache-Line-Ping-Pong} bei konkurrierenden Schreibzugriffen auf dieselbe Line ---
-muss ein faires Messverfahren eigens sichtbar machen (Kapitel~\ref{ch:measurement}).
+muss ein faires Messverfahren sichtbar machen (Kapitel~\ref{ch:measurement}).
 \end{nurkurz}
 
 \begin{nurlang}
@@ -632,11 +639,11 @@ Updates~\cite{saikkonen2008multilevel,saikkonen2016layout}, und Graefe/Larson~\c
 beide Ansätze über die CPU-Cache-Ebenen.
 
 Zwei Beobachtungen an diesen Entwürfen führen weiter: Erstens bindet jeder Entwurf nur \emph{wenige} Parameter fest
-ein, keiner behandelt die Parameter-Menge der vorigen Abschnitte als offenen Eingaberaum; zweitens lassen beide
-Philosophien offen, wie sich \emph{gemessenes} Lokalitätswissen der konkreten Zielplattform --- deren
-Cache-Eigenschaften überwiegend fest verdrahtet sind (Abschnitt~\ref{subsec:write-coherence}) --- systematisch mit
-den tatsächlich wählbaren cache-nahen Einstellungen verbinden lässt. Diese Frage nimmt Kapitel~\ref{ch:measurement}
-(Abschnitt~\ref{sec:task-concerns}) wieder auf.
+ein, keiner behandelt die Parameter-Menge als offenen Eingaberaum; zweitens lassen beide Philosophien offen, wie
+sich \emph{gemessenes} Lokalitätswissen der Zielplattform --- deren Cache-Eigenschaften überwiegend fest verdrahtet
+sind (Abschnitt~\ref{subsec:write-coherence}) --- systematisch mit den tatsächlich wählbaren cache-nahen
+Einstellungen verbinden lässt. Diese Frage greift Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:task-concerns})
+auf.
 \end{nurkurz}
 
 \section{Workloads und Benchmark-Konventionen}\label{sec:workload-basics-known}
@@ -762,29 +769,27 @@ abgeleiteten Klasse zugreifen und ersetzt virtuelle Aufrufe durch statisch aufge
 Laufzeit-Indirektion und ohne Tabelle virtueller Funktionen. Benannt und beschrieben hat das Muster
 Coplien 1995 im \emph{C++ Report}~\cite{coplien1995crtp}.} samt \emph{Policy-based
 Design}~\cite{alexandrescu2001modern} sowie die Komposition aus
-austauschbaren Bausteinen, wie sie die invasive Software-Komposition aus
-Gray-Box-Komponenten~\cite{assmann2003invasive}, die generative Programmierung~\cite{czarnecki2000generative}
-und die feature-orientierten Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical} beschreiben;
-C++23-Module strukturieren solche Kompositionen, garantieren aber keine portable ABI-Stabilität~\cite{wg21_modules_abi}
---- wie diese Arbeit die Binärschnittstelle ihrer vorübersetzten Bausteine stattdessen stabil hält, zeigt
-Kapitel~\ref{ch:impl}.
+austauschbaren Bausteinen (invasive Software-Komposition aus Gray-Box-Komponenten~\cite{assmann2003invasive},
+generative Programmierung~\cite{czarnecki2000generative}, feature-orientierte
+Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}); C++23-Module strukturieren solche
+Kompositionen, garantieren aber keine portable ABI-Stabilität~\cite{wg21_modules_abi}; wie diese Arbeit die
+Binärschnittstelle vorübersetzter Bausteine stattdessen stabil hält, zeigt Kapitel~\ref{ch:impl}.
 
 Damit aus austauschbaren Bausteinen ein konkretes System wird, braucht es eine \emph{Beschreibungsform} der
-gewählten Konfiguration; die etablierte Antwort sind \emph{deklarative Konfigurationsmodelle}:
-Feature-Modelle~\cite{kang1990foda} beschreiben Variantenräume als Merkmal-Hierarchien mit Auswahl-Constraints, die
-generative Programmierung erzeugt daraus die Systemvariante~\cite{czarnecki2000generative}, und die
-Produktlinien-Literatur systematisiert die Bindungszeitpunkte von der Übersetzungs- bis zur
-Laufzeit~\cite{apel2013feature}. Der Werkzeugbau folgt demselben Prinzip: Mavens \emph{Project Object Model}
-beschreibt deklarativ als XML-Datei, \emph{was} ein modulares Java-System ausmacht~\cite{maven_pom}, CMake erzeugt
-aus einer deklarativen Beschreibung über austauschbare \emph{Generatoren} ein natives Buildsystem~\cite{cmake_manual},
-und Mokhov et al.\ fassen Build-Systeme als Kombination weniger Scheduler- und Rebuilder-Bausteine über deklarativen
-Abhängigkeitsbeschreibungen~\cite{mokhov2018build}; dass deklarative Modelle ein System auch im Betrieb begleiten,
-zeigen models@run.time~\cite{blair2009modelsruntime} und Götz' MQuAT-Dissertation zur modellgesteuerten
-Selbstoptimierung komponentenbasierter Systeme~\cite{goetz2013mqat}.
+gewählten Konfiguration --- \emph{deklarative Konfigurationsmodelle}: Feature-Modelle~\cite{kang1990foda}
+beschreiben Variantenräume als Merkmal-Hierarchien mit Auswahl-Constraints, die generative Programmierung erzeugt
+daraus die Systemvariante~\cite{czarnecki2000generative}, und die Produktlinien-Literatur systematisiert die
+Bindungszeitpunkte von der Übersetzungs- bis zur Laufzeit~\cite{apel2013feature}. Der Werkzeugbau folgt demselben
+Prinzip: Mavens \emph{Project Object Model} (POM) beschreibt deklarativ, \emph{was} ein modulares Java-System
+ausmacht~\cite{maven_pom}, CMake erzeugt aus einer deklarativen Beschreibung über austauschbare \emph{Generatoren}
+ein natives Buildsystem~\cite{cmake_manual}, und Mokhov et al.\ fassen Build-Systeme als Kombination weniger
+Scheduler- und Rebuilder-Bausteine über deklarativen Abhängigkeiten~\cite{mokhov2018build}; dass deklarative Modelle
+ein System auch im Betrieb begleiten, zeigen models@run.time~\cite{blair2009modelsruntime} und Götz'
+MQuAT-Dissertation zur modellgesteuerten Selbstoptimierung komponentenbasierter Systeme~\cite{goetz2013mqat}.
 
-Für diese Arbeit bilden beide Stränge den Werkzeugkasten: Kompositions-Techniken, die gemessene
-Hardware-Eigenschaften zur Übersetzungszeit in ein konkretes Layout umsetzen, und deklarative Konfigurationsmodelle,
-die diese Konfiguration beschreiben und reproduzierbar machen; wie beide kombiniert werden, entwickelt Kapitel~\ref{ch:measurement}.
+Für diese Arbeit bilden beide Stränge den Werkzeugkasten: Kompositions-Techniken setzen gemessene
+Hardware-Eigenschaften zur Übersetzungszeit in ein konkretes Layout um, deklarative Konfigurationsmodelle beschreiben
+die gewählte Konfiguration reproduzierbar; ihre Kombination entwickelt Kapitel~\ref{ch:measurement}.
 \end{nurkurz}
 
 \section{Heuristiken als Entscheidungsregeln}\label{sec:heuristics-basics}
