@@ -38,8 +38,8 @@ ADR & Decision (short title) & Evidence (section) & Implementation status \\
 ADR-1 & C-stable module boundary instead of a C++ module ABI & Sect.~\ref{sec:impl-architecture} & implemented \\
 ADR-2 & Compile-time permutation via type lists & Sect.~\ref{sec:axes-impl} & partial (activation of the eighteenth axis) \\
 ADR-3 & Three-level model as the one architecture & Sect.~\ref{sec:anatomy-levels} & implemented \\
-ADR-4 & Pass-through doctrine and enforced full assignment & Sect.~\ref{sec:axes-impl} & partial (pass-through building block of the node type) \\
-ADR-5 & Layer model E4--E0 with frozen contracts & Sect.~\ref{sec:anatomy-layers} & implemented \\
+ADR-4 & Pass-through rule and enforced full assignment & Sect.~\ref{sec:axes-impl} & partial (pass-through building block of the node type) \\
+ADR-5 & Layer model E4--E0 with fixed contracts & Sect.~\ref{sec:anatomy-layers} & implemented \\
 ADR-6 & Explicitly coded non-observation instead of a phantom value & Sect.~\ref{sec:measurement-system} & implemented \\
 ADR-7 & Four-repository architecture with orthogonal carrier stages & Sect.~\ref{sec:repos} & implemented \\
 ADR-8 & Family-wise adapter fallbacks & Sect.~\ref{sec:axes-impl} & implemented \\
@@ -129,7 +129,7 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \textbf{Evidence:} Sections~\ref{sec:anatomy-model},~\ref{sec:anatomy-levels}
   and~\ref{sec:impl-architecture}; Figures~\ref{fig:three-levels} and~\ref{fig:genera}.
 
-  \item[ADR-4 --- Pass-through doctrine and enforced full assignment]\hfill\\
+  \item[ADR-4 --- Pass-through rule and enforced full assignment]\hfill\\
   \textbf{Context:} For non-tree-shaped methods (such as the hash cross-check), tree- and
   trie-specific axes like path compression or node type cannot meaningfully be assigned.
   \textbf{Decision:} Such axes are not dropped but assigned as pass-through variants
@@ -146,16 +146,16 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \textbf{Evidence:} Sections~\ref{sec:sota-instances},~\ref{sec:anatomy-levels}
   and~\ref{sec:axes-impl}.
 
-  \item[ADR-5 --- Layer model E4--E0 with frozen contracts and contract tests]\hfill\\
+  \item[ADR-5 --- Layer model E4--E0 with fixed contracts and contract tests]\hfill\\
   \textbf{Context:} With a product space that rules out any complete materialization, changes
   across several levels at once are practically not acceptable; therefore each level is completed
   individually.
   \textbf{Decision:} The experiment pipeline is organized into the five layers E4--E0 (E4
   definition and evaluation, E3 permutation tree, E2 tier binaries, E1 runtime configuration, E0
   infrastructure) and the cross-cutting concern~M\@; the E identifiers are a conceptual order with
-  one code location each. Each layer is completed individually, with an explicitly frozen interface
-  contract towards the neighbouring level (the freezing of the contract of layer E1 in the ABI
-  adapter: signatures, data layout and capabilities frozen, semantic changes only additive), and
+  one code location each. Each layer is completed individually, with an explicitly fixed interface
+  contract towards the neighbouring level (the fixing of the contract of layer E1 in the ABI
+  adapter: signatures, data layout and capabilities fixed, semantic changes only additive), and
   contract-tested against a compile-time substitute (fake) of the neighbouring level.
   \textbf{Consequence:} Every level can be accepted individually before the next one begins; the
   boundary E3$\to$E2 is contract-tested without a module build against a fake of layer E2, checked
@@ -454,7 +454,7 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   carries only two declared exceptions --- the arm64 smoke build without an available runner and
   the manual relock maintenance job ---, no build or test cell; per compiler and build type there
   is one object-cache key with exactly one writer; the minimum compiler level is g++~15.3; the
-  golden reference catalogue $2^{17}$ with CRC-64 checksum is the regression detector with frozen
+  golden reference catalogue $2^{17}$ with CRC-64 checksum is the regression detector with fixed
   cardinality.
   \textbf{Consequence:} Accepted is only a run without failed tests in all four cells without an
   exception list --- a gate in the sense of continuous delivery~\cite{humble2010cd} ---, and a
