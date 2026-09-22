@@ -1,5 +1,6 @@
 \chapter{Implementierung und konkrete Algorithmusbestandteile}\label{ch:impl}
 
+\begin{nurlang}
 Dieses Kapitel steigt in das Detail: zuerst die Repository-Architektur mit der Träger-Stufenkette
 (Abschnitt~\ref{sec:anatomy-levels}) und den vier Arbeitsmodi einer Permutation, dann jede Schlüsselstelle
 von PRT-ART einzeln und bildhaft, anschließend die Achsen-Implementierung mit der \emph{einen} Architektur
@@ -14,7 +15,19 @@ Autotuning-Systeme, die Kandidaten-Implementierungen erzeugen, vermessen und die
 treffen~\cite{whaley2001atlas,frigo1998fftw,ansel2014opentuner,balaprakash2018autotuning}; der Unterschied
 liegt darin, dass hier nicht die Parameter einer festen Implementierung, sondern die Organ-Belegung eines
 Lebewesens permutiert und je Permutation eine eigene Binary erzeugt wird.
+\end{nurlang}
+\begin{nurkurz}
+Dieses Kapitel steigt in das Detail: von der Repository-Architektur mit der Träger-Stufenkette
+(Abschnitt~\ref{sec:anatomy-levels}) über die Schlüsselstellen von PRT-ART, die Achsen-Implementierung, die
+Bau-Kette und die Contract-Tests bis zu den Realm-Wurzeln, der Hybrid-Stufe und dem Lager. Im Kern ist die
+\emph{eine} Architektur eine selbst-optimierende Compiler-Compiler-Struktur: Der Planer erzeugt aus der
+Anwender-XML die Bau-Aufträge, der Builder daraus die Kompilate, und die Auswertung der Messwerte speist die
+nächste Planung (Abschnitt~\ref{sec:mess-chain}) --- die Linie der empirischen
+Autotuning-Systeme~\cite{whaley2001atlas,frigo1998fftw,ansel2014opentuner,balaprakash2018autotuning}, nur
+dass hier die Organ-Belegung eines Lebewesens permutiert und je Permutation eine eigene Binary erzeugt wird.
+\end{nurkurz}
 
+\begin{nurlang}
 %% INTERN-272: KA-055
 \section{Vier-Repository-Architektur}\label{sec:repos}
 Die Implementierung verteilt sich auf vier Git-Repositorien mit klar getrennten Verantwortlichkeiten:
@@ -156,7 +169,87 @@ Modus & CMake-Typ & misst & Mess-Threads & Zweck / Stand \\
 (\texttt{WorkMode}, vier Einträge; ein fünfter bricht die Übersetzung). Kein Modus misst parallel; nur
 \texttt{measure} schaltet die Messung ein.}\label{tab:work-modes}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+%% INTERN-272: KA-055
+\section{Vier-Repository-Architektur}\label{sec:repos}
+Die Implementierung verteilt sich auf vier Git-Repositorien mit klar getrennten Verantwortlichkeiten:
+\begin{itemize}
+  \item \texttt{comdare-cache-engine} --- \textbf{wie} gemessen wird: die Bausteine-Bibliothek und der
+  Builder (Codegenerierung, Permutations-Schleife, Modul-Loader, der siebenphasige \texttt{ExperimentDriver}
+  und der Planer \texttt{ExperimentPlanDirector}, Abschnitt~\ref{sec:impl-pipeline}), die ABI-Header unter
+  \texttt{abi/} samt dem vom Bau isolierten Test-Cluster (Abschnitt~\ref{sec:axes-impl}), die
+  33~SOTA-Profile als ausführbare XML (Abschnitt~\ref{sec:sota-instances}) und die Test-Suites; der
+  Quellbaum folgt einem Pitchfork-Layout, hinzu treten \texttt{libs/traeger} mit den vier Träger-Stufen
+  (unten) und \texttt{heuristik/} mit sechs Headern (Achsen-Spline, Break-Even, Messkurven-Lader,
+  Offline-Clusterung, Merkmalsvektor, Optimierungs-Katalog).
+  \item \texttt{comdare-prt-art} --- der \textbf{Prüfling}: die hybride \texttt{PrtArtSearchEngine} mit der
+  1/2/N-Parameter-Regel (ein Parameter fordert die Funktionsinterfaces eines Vektors, zwei die einer Map,
+  mehr als zwei die einer Map auf ein Tupel), ihre ABI-Adapter und Bausteine sowie die Re-Implementierungen
+  der Rang-2/3-Arbeiten (\texttt{legacy\_\allowbreak{}reimpl}, vierzehn Verzeichnisse); Rang~1
+  (Zentralitäts-Rang, Abschnitt~\ref{sec:rqs}) umfasst die acht eigenständigen Suchentwürfe mit
+  Original-Adapter. Welche Prüflings-Bausteine den Mess-Apparat erreichen, entscheidet die Slot-Belegung
+  (Abschnitt~\ref{sec:prtart-impl}).
+  \item \texttt{probst-Diplomarbeit-cache-engine} --- \textbf{was} durch den Anwender getestet wird: die
+  Experiment-Konfigurationen (XML samt XSD-Schema), der Mess-Treiber \texttt{messung\_driver} (die
+  CEB-Rolle) und die Auswertungs-Werkzeugkette aus neun numerierten Programmen von
+  \texttt{01\_\allowbreak{}sample\_\allowbreak{}data\_\allowbreak{}generator} bis
+  \texttt{09\_\allowbreak{}tex\_\allowbreak{}formatter}.
+  \item das \textbf{Manuskript-Repository} --- die versionierte Experimentdurchführung im Dokument: Die
+  Generator-Ausgabe der Werkzeugkette wird per Commit im Anhang abgelegt, das Repository besitzt eine
+  eigene CI, und das Projekt-Repository stößt den Manuskript-Bau nach einem Messlauf an
+  (\texttt{trigger:thesis}); ein Messwert im Dokument ist ein versionierter Artefakt-Stand mit Herkunft.
+\end{itemize}
+Die Vierer-Ordnung des Codes ist nicht die Repository-Grenze, sondern die \emph{Träger-Stufenkette}
+Planer $\to$ CEB $\to$ Tier $\to$ Hybrid (Abschnitt~\ref{sec:anatomy-levels}); der Quellbaum bildet sie
+unter \texttt{libs/traeger} als vier Unterprojekte in Stufenform ab, wobei Stufe $N+1$ nur an Stufe $N$
+hängt. Umsetzungsstand: Die Unterprojekte sind ein Gerüst, die Implementierung liegt als Monolith unter
+\texttt{libs/\allowbreak{}cache\_\allowbreak{}engine}. Der Prüfling ist keine Stufe, sondern der quer
+liegende Lieferant von Organ-Bausteinen; die Stufenkette ist zugleich die Schicht, an deren Binaries die
+Verträge in Flächen zergliedert sind (Abschnitt~\ref{sec:impl-pipeline}); Abbildung~\ref{fig:traeger-stufen}
+zeigt sie mit ihren Binaries, Legenden-Formen und Flächen.
+\begin{figure}[htbp]\centering
+%% INTERN-272: KA-056
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  st/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=3.9cm,text width=3.55cm,align=center,inner sep=3pt},
+  fl/.style={draw,rounded corners,fill=orange!10,minimum width=3.75cm,minimum height=1.35cm,text width=3.55cm,align=center,inner sep=2pt,font=\tiny}]
+  \node[st] (s1) at (0,0){\textbf{Stufe 1: Planer}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny löst die Anwender-XML gegen die drei Kataloge auf; Director-Walk; Legende \texttt{ceb:build:\allowbreak[a,b,c]}}};
+  \node[st] (s2) at (3.95,0){\textbf{Stufe 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny führt die Mess-Wahl einkompiliert, permutiert System $\times$ Organ; Legende je Host \texttt{tier:build-batch:\allowbreak<host>}, Testate \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[st] (s3) at (7.9,0){\textbf{Stufe 3: Tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny eine Organ-Permutation je Binary; sieben Pflicht-Symbole; Mess-Batch je Host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, Mess-Testate \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[st] (s4) at (11.85,0){\textbf{Stufe 4: Hybrid}\\{\tiny Hybrid-\texttt{.so}}\\[2pt]{\tiny dieselben Pflicht-Symbole; Dock-Array mit angeschlossenen Tieren; \texttt{genus()} meldet den Ziel-Genus}};
+  \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s3); \draw[->,thick] (s3)--(s4);
+  \node[fl] (f1) at (0,-2.95){Fläche 2 (Stempel): Selbst-Version X.Y.Z, Fingerprint SHA-256, Gesamt-Stempel};
+  \node[fl] (f2) at (3.95,-2.95){Fläche 2 (Stempel): Mess- und System-Zeile, Fingerprint SHA-512; eigene Mess-Gate-Belegung};
+  \node[fl] (f3) at (7.9,-2.95){Flächen 1--3: Genus-Interface, Stempel (drei Zeilen), Mess-Durchstich \texttt{IMessVisitor}};
+  \node[fl] (f4) at (11.85,-2.95){Flächen 1--3 wie Tier, dazu die angeschlossenen Stempel-Zeilen (Laufzeit-Haken)};
+  \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
+\end{tikzpicture}
+\caption[Die Träger-Stufenkette im Code]{Die Träger-Stufenkette im Code: vier Träger in fester Reihenfolge (Stempel-Vertrag), je Stufe die
+Binary, ihre Legenden-Form in der emittierten Pipeline und die an ihr ausgeprägten Vertrags-Flächen.
+Stufe $N+1$ hängt nur an Stufe $N$; nur die Mess-Testate enthalten alle drei Achsen-Klammern. Die Flächen
+zergliedern die Verträge (Abschnitt~\ref{sec:impl-pipeline}); die Unterprojekte unter \texttt{libs/traeger}
+sind ein Gerüst, die Implementierung liegt als Monolith unter \texttt{libs/cache\_engine}.}\label{fig:traeger-stufen}
+\end{figure}
+Quer dazu trennt die Terminologie zwei Engine-Begriffe: Die \texttt{CacheEngine} ist die \emph{Bibliothek
+der Achsen-Bausteine} (je Achse die austauschbaren Entwurfsbestandteile als Concept-/CRTP-Komponenten, ohne
+Mess-Logik), die \texttt{ExecutionEngine} die quer zu allen Achsen liegende \emph{Ausführungs- und
+Mess-Infrastruktur} mit der messbaren Wurzel \texttt{IExecutionEngine}
+(Abschnitt~\ref{sec:measurement-system}); die Mess-Kopplungen des Laufzeit-Adapters werden über
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} geschaltet, und die CMake-Option
+\texttt{COMDARE\_\allowbreak{}EXPERIMENT\_\allowbreak{}MODE} kodiert die Invariante, dass ein Experiment-Bau
+stets ein Mess-Bau ist; die Trennung von Bausteinen und Werkzeugen hält den Produktiv-Pfad mess-frei.
 
+Die vier \emph{Arbeitsmodi} \texttt{build}, \texttt{measure}, \texttt{compare} und \texttt{release} sind
+als Unter-Achse des Mess-Realms registriert (Abschnitt~\ref{sec:anatomy-levels}): \texttt{build} baut ohne
+zu messen und darf parallel laufen, \texttt{measure} ist der deterministische Ein-Thread-Messlauf und der
+einzige Modus mit eingeschalteter Messung, \texttt{compare} liest das Messwertlager (Umsetzungsstand: ein
+wählbares Etikett, der Replay-Vergleich ist nicht implementiert), \texttt{release} erzeugt die
+Referenz-Binary ohne Instrumentierung; alle vier bauen als CMake-Release, und der Verdrahtungs-Check des
+früheren Debug-Regimes ist als Schalter \texttt{--debug} der Planer-Shell realisiert --- ein Flag, kein
+Zustand.
+\end{nurkurz}
+
+\begin{nurlang}
 \section{PRT-ART im Detail}\label{sec:prtart-impl}
 Aufbauend auf dem Stand der Technik beschreibt dieser Abschnitt jede Schlüsselstelle von PRT-ART einzeln und
 bildhaft; je Schlüsselstelle wird zuerst das verwandte Verfahren benannt, aus dem sie hervorgeht.
@@ -236,7 +329,50 @@ Signalisierungsbits in Anhang~\ref{app:blocks} katalogisiert.
 \end{tikzpicture}
 \caption{Galerie der sechs eigenen Schlüsselstellen von PRT-ART, je an ihrer Achse: ein 4+1+2-Pool-Allokator (T6), optimistisches Lock-Coupling mit reservierten Wert-Blöcken (T8), pfad-orientiertes Bundle-Prefetch (T7), ein MultiLevel-Layout (T5) und cache-kohärenz-bewusste Telemetrie samt DensityTracker und den Hypothesen-Metriken H1/H2/H3 --- die Telemetrie-Achse ist zweigeteilt, Sweep-Unter-Achse des Mess-Toolings und Übersetzungszeit-Größe des Builders (Abschnitt~\ref{sec:axis-triad}). Die Kacheln zeigen die \emph{Bausteine des Prüfling-Repos}; im Apparat überschrieben sind der Pfadkompressions-Redirect (T3, Engine-seitige Referenz-Komposition), das Prefetch (T7) und das ChainRef-Wert-Handle (T10, Slot-Komposition des Prüflings) sowie die Build-Achse Seitentyp; die Bausteine zu T5/T6 laufen im Mess-Pfad über den Cache-Engine-Standard, OLC ist von ART geerbt, und die übrigen Organ-Achsen bezieht die Slot-Komposition aus der ART-Referenz der Cache-Engine (sechzehn von achtzehn).}\label{fig:prtart-gallery}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+\section{PRT-ART im Detail}\label{sec:prtart-impl}
+Aufbauend auf dem Stand der Technik benennt dieser Abschnitt jede Schlüsselstelle von PRT-ART samt dem
+verwandten Verfahren, aus dem sie hervorgeht: Pool-Allokation mit rollenreinen Pools (Hoard, jemalloc,
+mimalloc~\cite{berger2000hoard,evans2006jemalloc,leijen2019mimalloc}), optimistisches Lock-Coupling
+(ART~\cite{leis2016olc}), Software-Prefetch entlang der
+Baumpfade~\cite{chen2001prefetch,zhang2025hierarchical}, cache-line-bewusste Knoten-Layouts (ART und
+FAST~\cite{leis2013art,kim2010fast}) und kohärenz-bewusste Telemetrie gegen das
+False-Sharing-Problem~\cite{torrellas1994falsesharing,kuehn2023bplustree}; der DensityTracker und die
+Hypothesen-Metriken H1/H2/H3 sind eigene Beiträge ohne Fremdvorlage.
 
+Der Prüfling steuert sechs eigene Schlüsselstellen bei, zwei davon auf der zweigeteilten Telemetrie-Achse
+(Sweep-Unter-Achse des Mess-Toolings im Planer, Übersetzungszeit-Größe im Builder,
+Abschnitt~\ref{sec:axis-triad}): ein \emph{4+1+2-Pool-Allokator} (vier Seiten-Pools mit den Rollen
+Trie-Hülle, Dense-Pages, MultiLevel und Decision-Span, ein Rest-Pool, zwei Wert-Pools) als
+cache-line-ausgerichtete, fragmentierungsarme Free-List; \emph{optimistisches Lock-Coupling (OLC) mit
+reservierten Wert-Blöcken} über einen Concurrency-Manager (OLC, HTM, STM, Lock-Free, RCU, Hazard
+Pointers~\cite{michael2004hazard}); ein \emph{pfadorientiertes Bundle-Prefetch} der heißen Suchpfade; ein
+\emph{MultiLevel-Layout}; kohärenz-bewusste Telemetrie --- Per-Node-Zähler verursachen
+Cache-Line-Ping-Pong und verfälschen die Messung, die sie erheben --- als \emph{Leaf-Only-Zähler}
+(Hauptvariante), \emph{Sampling} und \emph{Offline-Recompute}, der Per-Node-Zähler bleibt nur als
+gekennzeichnetes Anti-Pattern; und der DensityTracker samt den Metriken H1/H2/H3 als eigene
+Telemetrie-Organe. Im Engine-Quellbaum liegen die Telemetrie-Bausteine (TM1--TM3) und die
+ISA-Unter-Achsen (IS1--IS3) unter den Organ-Achsen, während Telemetrie-Regime und Ziel-ISA in der
+System-Registry geführt werden (Abschnitt~\ref{sec:impl-pipeline}) --- eine doppelte Verortung im Code,
+keine Zuordnungsfrage des Modells.
+
+Diese Schlüsselstellen sind \emph{Bausteine des Prüfling-Repos}; welche davon den Mess-Apparat erreichen,
+entscheidet die Slot-Belegung (Abschnitt~\ref{sec:prtart-demo}). Der Prüfling stellt vier Slot-Hüllen: den
+Seitentyp der Build-Achse (\texttt{PrtArtBPlusPageType}), das Prefetch (\texttt{PrtArtRedirectPrefetch},
+T7), das ChainRef-Wert-Handle (\texttt{PrtArtChainRefHandle}, T10) und einen Telemetrie-Wrapper mit dem
+Per-Node-Zähler als Vergleichsbasis. Seine Slot-Komposition \texttt{PrtArtCompositionDemo} übernimmt
+sechzehn der achtzehn Organe aus der ART-Referenz-Komposition der Cache-Engine und ersetzt Prefetch und
+Wert-Handle; die Engine-seitige \texttt{PrtArtComposition} unterscheidet sich von ART nur im
+Pfadkompressions-Redirect (T3, das \emph{R} in PRT-ART); Pool-Allokator (T6) und MultiLevel-Layout (T5)
+laufen im Mess-Pfad über den Cache-Engine-Standard, ihre Anbindung ist vorgesehen, aber nicht
+implementiert. Die verbleibenden zwei der acht Bausteinschichten aus der Beitragsliste
+(Abschnitt~\ref{sec:contributions}), Wert-Handles und Signaling-Bit-Serialisierung, stellen den
+Wert-Handle-Slot (T10) beziehungsweise sind als Baustein der Serialisierungs-Achse (T9) in
+Anhang~\ref{app:blocks} katalogisiert.
+\end{nurkurz}
+
+\begin{nurlang}
 \section{Achsen-Implementierung und Mess-System-Ebenen}\label{sec:axes-impl}
 Jede Achse wird als generalisiertes Interface implementiert; daneben liegen die Ebenen des Mess-Systems von der
 Codegenerierung bis zur Sieben-Phasen-Pipeline. Der Abschnitt schließt mit dem Ebenen-Bild E4--E0 im Code
@@ -273,7 +409,28 @@ Prüfling nicht belegten Organ-Achsen beziehen ihren Baustein auf demselben Weg 
 Prefetching~\cite{zhang2025hierarchical} liefert zusätzlich einen Call-Graph-Analyzer zur Übersetzungszeit
 (\texttt{p27\_bundle\_finder}, ein C++23-Port des Original-Werkzeugs \texttt{hp\_soft}, der Funktionen mit
 Subtree-Footprint oberhalb eines Schwellwerts als Bundle-Einstiegspunkte identifiziert).
+\end{nurlang}
+\begin{nurkurz}
+\section{Achsen-Implementierung und Mess-System-Ebenen}\label{sec:axes-impl}
+Jede Achse wird als generalisiertes Interface implementiert; daneben liegen die Ebenen des Mess-Systems bis
+zur Sieben-Phasen-Pipeline, das Ebenen-Bild E4--E0 im Code (Abbildung~\ref{fig:impl-layers}) und die
+Vertrags-Flächen; das Muster-Register folgt am Kapitelende (Abbildung~\ref{fig:muster}). Jede Achse ist ein
+Topic-Verzeichnis mit einem zweischichtigen \emph{Concept}~\cite{sutton2012concepts} und einer
+\texttt{requires}-gesicherten CRTP-Basisklasse. Der Live-Weg der Baustein-Auswahl ist monomorph: Aus der
+Typliste aller Bausteine (\texttt{All*}) bildet ein Übersetzungszeit-Filter über das Enable-Flag
+(\texttt{mp\_filter}, Boost.Mp11~\cite{dimov_mp11}) die \texttt{Enabled*}-Liste, und eine Composition
+belegt je Slot genau einen Typ; der Hot-Path enthält weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches
+--- eine ungenutzte Abstraktion kostet nichts~\cite{stroustrup2012foundations}. SOTA-Entwürfe und
+Allokatoren werden über dünne \emph{Adapter} integriert: Vendor-Shims schalten bei fehlendem Vendor den
+Baustein ab, statt den Bau zu brechen, mit familienweise gewähltem Fallback
+(\texttt{portable\_aligned\_alloc}; \texttt{StdMalloc} ist ein eigener Baustein, keine Notlösung), und ein
+Stub, der zur Laufzeit einen \texttt{runtime\_error} wirft, kommt in den Organ-Achsen nicht vor. Die vom
+Prüfling nicht belegten Organ-Achsen beziehen ihren Baustein aus der Cache-Engine
+(Abschnitt~\ref{sec:prtart-impl}); das hierarchische Prefetching~\cite{zhang2025hierarchical} bringt den
+Call-Graph-Analyzer \texttt{p27\_bundle\_finder} zur Übersetzungszeit mit.
+\end{nurkurz}
 
+\begin{nurlang}
 %% INTERN-272: KA-059
 Eine Design-Entscheidung grenzt diesen Live-Weg von einer verworfenen Alternative ab: Eine
 variant-basierte Baustein-Auflösung --- \texttt{resolve\_baustein} über \texttt{baustein\_variants}, ein
@@ -297,7 +454,24 @@ Träger-Gerüsts unter \texttt{libs/traeger/ceb} außerhalb dieses Bereichs ist 
 Das Verbot ist damit strenger als
 die bloße Vermeidung virtueller Aufrufe~\cite{alexandrescu2001modern}: Es verbietet jede Form der
 Laufzeit-Verzweigung zwischen Bausteinen.
+\end{nurlang}
+\begin{nurkurz}
+%% INTERN-272: KA-059
+Eine Design-Entscheidung grenzt diesen Live-Weg von einer verworfenen Alternative ab: Eine variant-basierte
+Baustein-Auflösung (\texttt{resolve\_baustein} über \texttt{baustein\_variants}) ist für statische
+Organ-Achsen ausdrücklich verboten und existiert nur als vom Bau isolierter Test-Cluster. Der Grund ist die
+Sparsamkeit des Kompilats: Eine Tier-Binary bildet genau die eine gefahrene Permutation ab;
+\texttt{std::variant}, \texttt{virtual} und Laufzeit-Switches sind in Tier- und Hybrid-Binaries verboten
+--- wer eine andere Permutation braucht, braucht ein anderes Kompilat. Die eine zugelassene variant-Stelle
+des Hauses ist das Dock-Array der Hybrid-Stufe (\texttt{HybridDockVariant},
+Abschnitt~\ref{sec:impl-hybrid-lager}); daneben duldet der Code \texttt{std::variant} in zwei achsenfremden
+Bausteinen (\texttt{axis\_error}, \texttt{pressure\_state}) und in den drei Expected/Result-Nähten der
+Hardware-Sonden (NUMA-Seiten, NUMA-Kern-Bindung, Betriebssystem). Das Verbot ist damit strenger als die
+bloße Vermeidung virtueller Aufrufe~\cite{alexandrescu2001modern}: Es verbietet jede Form der
+Laufzeit-Verzweigung zwischen Bausteinen.
+\end{nurkurz}
 
+\begin{nurlang}
 %% INTERN-272: KA-060
 Innerhalb jeder Achsen-Kategorie gibt es Haupt-Achsen, Unter-Achsen (sub-axes) und Meta-Meta-Achsen. Die
 Kategorie ist im Code die Trichotomie \texttt{AxisCategory} mit der festen Ordnung mess $<$ system $<$
@@ -330,7 +504,26 @@ Organ & 18 (T0--T17) & 20 Unter-Achsen-Header (z.\,B.\ SA1--SA4, AA1--AA7) & \te
 Familien-Diskriminator \texttt{AxisKind} mit sechs Werten). Die Zahlen sind Strukturzahlen des Quellbaums
 (Registry-Header und generierte Registry-XML), keine Messwerte.}\label{tab:axis-typology}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+%% INTERN-272: KA-060
+Innerhalb jeder Achsen-Kategorie gibt es Haupt-Achsen, Unter-Achsen (sub-axes) und Meta-Meta-Achsen. Die
+Kategorie ist im Code die Trichotomie \texttt{AxisCategory} mit der festen Ordnung mess $<$ system $<$
+organ (ein \texttt{static\_assert} hält sie gegen stilles Umsortieren), die Familie der Diskriminator
+\texttt{AxisKind} mit sechs Werten; eine Unter-Achse ist selbst eine Voll-Achse und kann zugleich
+Permutations-Achse sein. Der Bestand je Kategorie: Der Organ-Realm umfasst achtzehn Haupt-Achsen, zwanzig
+Unter-Achsen-Header und die Organ-Meta-Meta \texttt{disk\_io}; der System-Realm drei Haupt-Achsen, die
+Komplex-Achse \texttt{build\_target\_complex} mit der Unter-Achsen-Gruppe \texttt{build\_toolchain}
+(Compiler, Optimierungsstufe, Atomik), \texttt{target\_isa\_complex} (drei Glieder), das Scheduling mit fünf
+Dimensionen und die System-Meta-Metas unter dem Hub der Erweiterungs-Hardware; der Mess-Realm die
+Tooling-Haupt-Achse (wallclock/macro/micro), vier registrierte Unter-Achsen (sechzehn Kategorien,
+Arbeitsmodus, Mess-Framework, Rückschreib-Methode) und die Mess-Meta-Meta \texttt{load\_framework}. Die
+Benennung Meta-Meta folgt der vierstufigen Meta-Ebenen-Architektur der Object Management Group
+(MOF)~\cite{omg2016mof}; die Lesart M0--M3 für diesen Apparat entwickelt
+Abschnitt~\ref{sec:impl-system-axes}.
+\end{nurkurz}
 
+\begin{nurlang}
 Die achtzehn Organ-Achsen (T0--T17, Abschnitt~\ref{sec:axis-triad}) sind dabei nicht abstrakt, sondern je
 ein konkretes \emph{Strategie-Concept} mit mehreren austauschbaren Bausteinen, aus denen eine konkrete
 Composition je Slot genau einen wählt; ihre Zahl ist als \texttt{kOrganAxisCount} $=$ 18 die Single-Source
@@ -374,7 +567,23 @@ Organ-Satz ist damit keine Konvention, sondern eine übersetzungszeitlich geprü
 \end{tikzpicture}
 \caption{Galerie der achtzehn Organ-Achsen (T0--T17, kanonische Slot-Reihenfolge): je Achse das Implementierungs-Konzept --- Kurzname, Unter-Achsen-Familie und eine repräsentative Auswahl der austauschbaren Bausteine. Jede Achse ist ein \texttt{Concept}-Interface mit mehreren Strategie-Bausteinen (\emph{Strategy}-Muster); eine konkrete Composition belegt je Slot genau einen. Der \emph{Standard} (\enquote{Std.}) ist eine abgeleitete Vergleichs-Baseline, kein Code-Flag. Die Zahlen in Klammern (T0, T6, T15) sind die \emph{Kataloge} der vollständigen Typlisten (\texttt{All*}); das \emph{Enabled-Inventar} einer Build-Konfiguration ist die vom Enable-Filter gebildete Teilmenge, die die generierte Registry-XML je Achse ausweist (etwa vier Suchalgorithmen und drei Allokatoren im Haus-Default). Die T-Nummern sind Slots der Komposition, keine Verzeichnis-Nummern der Implementierung; die Kürzel io1--io3 und IO1--IO3 gehören zu verschiedenen Achsen (Index-Organisation und I/O-Dispatch). Neben den achtzehn Slots steht die Organ-Meta-Meta \texttt{disk\_io}; das Persistenz-Ziel ist im kanonischen Referenz-Katalog auf seinen In-Memory-Vertreter festgelegt (Abschnitt~\ref{sec:axis-triad}). Die vollständige Matrix mit Herkunfts-Quellen führt Anhang~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+Die achtzehn Organ-Achsen (T0--T17, Abschnitt~\ref{sec:axis-triad}) sind dabei nicht abstrakt, sondern je
+ein konkretes \emph{Strategie-Concept} mit mehreren austauschbaren Bausteinen, aus denen eine konkrete
+Composition je Slot genau einen wählt; ihre Zahl ist als \texttt{kOrganAxisCount} $=$ 18 die Single-Source
+der Organ-Zeile, und ihre Namen und Slot-Reihenfolge führt das Array \texttt{kCompositionAxisNames}; die
+vollständige Bausteine-Matrix mit allen Herkunfts-Quellen führt Anhang~\ref{app:blocks}, die
+SOTA-Beiträge je Achse Tabelle~\ref{tab:axes-overview}.
+%% INTERN-272: KA-061
+Neben den achtzehn kanonischen Haupt-Achsen steht die Organ-Meta-Meta \texttt{disk\_io}, die die
+\texttt{binary\_id} nie berührt (Abschnitt~\ref{sec:axis-triad}); eine neunzehnte, optionale Organ-Achse
+ist vorgesehen, aber nicht implementiert; erst ihre Implementierung führt sie als Slot T18. Dass keine
+Composition ein Organ auslässt, erzwingt das \texttt{IsComposition}-Concept: Es verlangt je Algorithmus die
+Belegung genau dieser achtzehn Organe, sodass keine Composition übersetzt, die eine Achse offenlässt.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Die eine Architektur im Code}\label{sec:impl-architecture}
 Die \emph{eine} Architektur aus Abschnitt~\ref{sec:anatomy-model} ist im Code eine einzige Hierarchie.
 Ihre Wurzel ist \texttt{IExecutionEngine} mit drei Engine-Arten --- Anatomy, Virus, Hybrid --- und einem
@@ -398,6 +607,25 @@ gleichnamige Bibliotheks-Skelett \texttt{libs/search\_engine} enthält keinen Co
 Bestand eine Graph-Breitensuche), besitzen aber keine Anatomie (Abbildung~\ref{fig:one-architecture}). In
 dieser Hierarchie ist der Compiler-Compiler-Charakter des Apparats verankert: Jede Composition ist ein Typ,
 aus dem der Builder je Permutation ein eigenes Kompilat erzeugt.
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Die eine Architektur im Code}\label{sec:impl-architecture}
+Die \emph{eine} Architektur aus Abschnitt~\ref{sec:anatomy-model} ist im Code eine einzige Hierarchie. Ihre
+Wurzel ist \texttt{IExecutionEngine} mit drei Engine-Arten --- Anatomy, Virus, Hybrid --- und einem Vertrag
+aus sieben Methoden (\texttt{warm\_up}, \texttt{run}, \texttt{reset} und \texttt{shutdown} als
+Mess-Lebenszyklus sowie \texttt{engine\_name}, \texttt{engine\_kind} und \texttt{lifecycle\_state} als
+Auskünfte). Unter ihr liegen die vier Gattungen und die sechs Genera (Abschnitt~\ref{sec:anatomy-levels});
+die Gattung ist im Code die Ableitung des Genus (\texttt{gattung\_of}), kein zweites Etikett. Das Lebewesen
+\texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind zwei Sichten
+desselben Gegenstands über die Modulgrenze: Der Körper ist \texttt{SearchAlgorithmAnatomy<C>}, die
+Komposition und Verdrahtung der achtzehn Organe, und die Sicht ist \texttt{SearchAlgorithmAbiAdapter<A>}.
+Die Schichtung \texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine}
+(Abschnitt~\ref{sec:repos}) trennt Rollen, nicht Klassenbäume; das gleichnamige Bibliotheks-Skelett
+\texttt{libs/search\_engine} enthält keinen Code. Achsenlose \emph{Viren} stehen als Geschwister unter
+derselben Wurzel, besitzen aber keine Anatomie (Abbildung~\ref{fig:one-architecture}). In dieser Hierarchie
+ist der Compiler-Compiler-Charakter des Apparats verankert: Jede Composition ist ein Typ, aus dem der
+Builder je Permutation ein eigenes Kompilat erzeugt.
+\end{nurkurz}
 
 \begin{figure}[!htbp]
   \centering
@@ -447,6 +675,7 @@ aus dem der Builder je Permutation ein eigenes Kompilat erzeugt.
   Gattung HeuristikAdapter führt das Reroute-Genus der Hybrid-Stufe.}\label{fig:one-architecture}
 \end{figure}
 
+\begin{nurlang}
 Konkret ist die Modulgrenze eine C-stabile Schnittstelle --- die ABI (Application Binary Interface) des
 Apparats ---, die je Permutation genau ein Lebewesen exportiert (Abbildung~\ref{fig:abi}): Jede Tier-Binary
 enthält sieben Pflicht-Symbole mit C-Bindung --- die vier Ur-Symbole ABI-Version, Magic-Zahl, Factory
@@ -470,7 +699,27 @@ dem 64-Bit-Feld \texttt{permutation\_\allowbreak{}fingerprint} im ABI-POD des Mo
 SHA-512-Tier-Fingerprint (Format~6, elf Glieder) und dem SHA-256-Planer-Fingerprint
 (Abschnitt~\ref{sec:stamp-model}). Wie diese und die übrigen Code-Interfaces im Detail zusammenhängen,
 fasst die UML-Landkarte in Abbildung~\ref{fig:uml-interfaces} zusammen.
+\end{nurlang}
+\begin{nurkurz}
+Konkret ist die Modulgrenze eine C-stabile Schnittstelle --- die ABI des Apparats ---, die je Permutation
+genau ein Lebewesen exportiert: Jede Tier-Binary enthält sieben Pflicht-Symbole mit C-Bindung --- die vier
+Ur-Symbole ABI-Version, Magic-Zahl, Factory \texttt{comdare\_\allowbreak{}create\_\allowbreak{}anatomy} und
+Destroy, dazu die zwei über alle Gattungen buchstabengleichen Auskünfte
+\texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} und
+\texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus} sowie die Versions-Zeilen des Stempels. Die
+Buchstabengleichheit ist Bedingung: Der gattungsunabhängige Loader lädt jede Binary über dieselbe
+Ladestrecke (POSIX \texttt{dlopen}~\cite{posix_dlopen}) und ermittelt die Gattung aus dem Genus,
+\emph{bevor} er eine Instanz baut. Die ABI führt die Major-Version~9, deren Naht das Genus-Interface ist.
+Die variadische 1/2/N-Hybrid-API gehört zum Prüfling: \texttt{PrtArtSearchEngine<Ts\ldots>} spezialisiert
+sich nach Parameterzahl (\texttt{std::vector}, \texttt{std::map}, \texttt{std::map} auf ein Tupel). Komplexe
+Schlüssel reduziert eine Fingerprint-Komponente
+(\texttt{fixed\_\allowbreak{}length\_\allowbreak{}fingerprint}, FNV-1a-Basis) auf 16-Byte-Binärstrings,
+die der Prüfling als Schlüsseltyp verwendet (\texttt{BinaryKey}); dieser Schlüssel-Fingerprint ist von den
+drei Identitäts-Fingerprints des Apparats --- \texttt{permutation\_\allowbreak{}fingerprint} im ABI-POD,
+SHA-512-Tier-Fingerprint, SHA-256-Planer-Fingerprint --- zu unterscheiden (Abschnitt~\ref{sec:stamp-model}).
+\end{nurkurz}
 
+\begin{nurlang}
 \begin{figure}[!htbp]
 \begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
 // C-stabile Modulgrenze: sieben Pflicht-Symbole je Tier-Binary
@@ -497,7 +746,9 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   Identität einer Binary führen davon getrennt das \texttt{permutation\_fingerprint}-Feld des ABI-POD, der
   SHA-512-Tier-Fingerprint und der SHA-256-Planer-Fingerprint.}\label{fig:abi}
 \end{figure}
+\end{nurlang}
 
+\begin{nurlang}
 \begin{figure}[htbp]\centering
 %% INTERN-272: KA-064
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
@@ -529,7 +780,9 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
 \end{tikzpicture}
 \caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase}, den vier Gattungen und sechs Genera und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der achtzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird und deren Messung als Fläche~3 durch den Visitor \texttt{IMessVisitor} quert; rechts der je Achse wiederholte Live-Weg --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die vollständige \texttt{mp\_list}-Baustein-Familie, der Übersetzungszeit-Filter über das Enable-Flag und der Composition-Slot, der genau einen Typ enthält. Die variant-basierte Auflösung \texttt{resolve\_baustein} ist eine verworfene, vom Bau isolierte Alternative (gestrichelt).}\label{fig:uml-interfaces}
 \end{figure}
+\end{nurlang}
 
+\begin{nurlang}
 \subsection{Vom Profil zur Tier-Binary: Planer, Builder und Mess-Pipeline}\label{sec:impl-pipeline}
 Die Kette von der Anwender-XML zur Tier-Binary (Abschnitt~\ref{sec:mess-chain}) hat im Code eine
 benannte Gestalt aus zwei Binaries. Stufe~1, die Planer-Rolle, ist \texttt{comdare-experiment-planner}
@@ -763,7 +1016,158 @@ Zulassung P = Pflicht, E = Erlaubt, V = Verboten; E ist im Bestand unbelegt). Di
 Organ-Zeile beim CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}; die Zellen
 werden je Erbin per \texttt{static\_assert} geprüft.}\label{tab:stempel-matrix}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Vom Profil zur Tier-Binary: Planer, Builder und Mess-Pipeline}\label{sec:impl-pipeline}
+Die Kette von der Anwender-XML zur Tier-Binary (Abschnitt~\ref{sec:mess-chain}) hat im Code die Gestalt
+zweier Binaries. Stufe~1, die Planer-Rolle, ist \texttt{comdare-experiment-planner} mit den Subkommandos
+\texttt{validate}, \texttt{plan dump|ci|cmake}, \texttt{cache-key}, \texttt{fingerprint}, \texttt{status},
+\texttt{check-size}, \texttt{simulate}, \texttt{version} und \texttt{help}: \texttt{validate} prüft rein
+lesend gegen die einkompilierten Registry-Kataloge, \texttt{plan} fährt den deterministischen, byte-gleich
+wiederholbaren Walk des \texttt{ExperimentPlanDirector} (\emph{Director} und
+\emph{Builder}~\cite{gamma1994patterns}: ein Walk, je Ausgabe-Syntax ein Builder), \texttt{check-size} und
+\texttt{simulate} rechnen die Mess-Menge vor dem Lauf aus (Abschnitt~\ref{sec:impl-contracts}). Stufe~2,
+die CEB-Rolle, ist der Mess-Treiber \texttt{comdare-messung-driver} (\texttt{tier ci|cmake}, \texttt{run},
+\texttt{version}, \texttt{help}): Er emittiert die Tier-Bau-Aufträge seines Bau-Raums und fährt den
+Mess-Lauf; der Planer steuert die CEB-Aufträge, die CEB die Tier-Aufträge --- zwei Module, nicht nur
+Oberfläche. Die Legenden der emittierten Testate besitzen drei Formen: \texttt{ceb:build:[a,b,c]} auf
+Stufe~1, je Host ein Bau- und Prüf-Batch \texttt{tier:build-batch:<host>} mit den Testaten
+\texttt{zelle=[d,e,f][g,h,i]} (die Meilenstein-Batches in Abschnitt~\ref{sec:fairness}) und je Host ein
+Mess-Batch \texttt{measure:[a,b,c]:batch:<host>}, dessen Mess-Testate als einzige alle drei Klammern
+enthalten (Abbildung~\ref{fig:traeger-stufen}).
 
+%% INTERN-272: KA-065
+Die Anlage hat zwei Steuerpfade, den Planer per Shell direkt und eine API-Kommandozeile mit headless
+Dienst (Zelle auf Kubernetes oder bare metal), dazu einen kommandozeilengeführten Erstellungsmodus für die
+Anwender-XML mit Hardware-Filter; implementiert ist der Shell-Pfad, Dienst und Erstellungsmodus sind
+vorgesehen, aber nicht implementiert. Zwei Eigenschaften sichern den \emph{einen} Hauptkanal ab: Der
+Text-Plan weist je Bau-Schritt den tatsächlich erzeugten Datei-Stamm aus (\texttt{built\_stem}), erzeugt
+von derselben Funktion, die der Bau-Orchestrator aufruft; und es gibt \emph{eine} XML-Quelle und
+\emph{einen} Kanal, der sie baut --- die Variantenbildung liegt in der C++23-Metaprogrammierung, CMake ist
+auf das Bauen beschränkt.
+
+Innerhalb der CEB überführt der Builder jedes Profil in ein vorkompiliertes C++23-Modul. Jede Permutation
+ist durch eine bit-gepackte \emph{Permutations-Flag}-Struktur mit zehn Bänken zu je 64~Bit identifiziert,
+ein Constraint-Filter (\texttt{is\_valid\_combination}) schließt inkohärente Kombinationen aus; die
+achtzehn Organ-Achsen identifiziert der Mess-Pfad über den Achtzehn-Segment-Pfad (die \texttt{binary\_id},
+Abschnitt~\ref{sec:stamp-model}) samt den drei Fingerprints, und die Permutations-Zählung folgt einer
+Mixed-Radix-Kodierung --- der Produktraum der Variabilitätsmodelle der
+Software-Produktlinien~\cite{pohl2005spl}. Darüber läuft die \emph{Sieben-Phasen-Mess-Pipeline}
+(Abbildung~\ref{fig:pipeline}) des \texttt{ExperimentDriver}: (1)~\textsc{Enumerate},
+(2)~\textsc{Generate}, (3)~\textsc{Compile}, (4)~\textsc{Link+Load}, (5)~\textsc{Execute},
+(6)~\textsc{Measure} und (7)~\textsc{Persist}; zwei opt-in-Phasen kompilieren fehlende Module nach und
+fahren je Modul einen Funktionstest mit ABI-Versionsprüfung, und die Messreihen-Modi \texttt{Defined},
+\texttt{Full} und \texttt{FullSampled} (Abschnitt~\ref{sec:mess-chain}) wählen, welche Permutationen eine
+Reihe umfasst. Die nachgelagerte Auswertungs-Werkzeugkette ist eine Folge von neun numerierten Programmen
+von \texttt{sample\_data\_generator} bis \texttt{tex\_formatter}; die xlsx-Mappe ist die Ausgabe, die
+CSV-Form ihr aus der Mappe erzeugter Baum-Abzug (Abschnitt~\ref{sec:eval-dataflow}); implementiert ist
+eine flache Datei. Die Mess-Kopplungen sind über das
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}-Gating vom Produktiv-Pfad getrennt
+(Abschnitt~\ref{sec:repos}), und Continuous Integration~\cite{fowler2006ci} läuft über alle vier
+Repositorien.
+\begin{figure}[htbp]\centering
+%% INTERN-272: KA-066
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  ph/.style={draw,rounded corners,fill=blue!6,minimum width=1.6cm,minimum height=0.85cm},
+  hi/.style={draw,rounded corners,fill=orange!18,very thick,minimum width=1.6cm,minimum height=0.85cm},
+  opt/.style={draw,rounded corners,dashed,fill=orange!8,minimum width=2.0cm,minimum height=0.65cm,font=\scriptsize},
+  pb/.style={draw,rounded corners,fill=orange!16,very thick,minimum width=3.7cm,minimum height=1.05cm,text width=3.5cm,font=\scriptsize}]
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,0.95){In-Process-Pfad --- \texttt{ExperimentDriver} (7 Phasen)};
+  \node[ph] (p1) at (0,0){\textbf{1}\\Enumerate};
+  \node[ph] (p2) at (1.95,0){\textbf{2}\\Generate};
+  \node[hi] (p3) at (3.9,0){\textbf{3}\\Compile};
+  \node[ph] (p4) at (5.85,0){\textbf{4}\\Link+Load};
+  \node[hi] (p5) at (7.8,0){\textbf{5}\\Execute};
+  \node[hi] (p6) at (9.75,0){\textbf{6}\\Measure};
+  \node[ph] (p7) at (11.7,0){\textbf{7}\\Persist};
+  \foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5,p5/p6,p6/p7}{\draw[->,thick] (\a)--(\b);}
+  \node[font=\scriptsize,text=orange!60!black] at (3.9,0.66){\textsc{Build}};
+  \node[font=\scriptsize,text=orange!60!black] at (8.78,0.66){\textsc{Measure}};
+  \node[opt] (o1) at (2.9,-1.4){opt-in:\\Hot-Compile};
+  \node[opt] (o2) at (5.4,-1.4){opt-in:\\Funktionstest je Modul};
+  \draw[->,dashed] (o1)--(p3);
+  \draw[->,dashed] (o2)--(p4);
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,-2.5){Out-of-Process-Pfad --- \texttt{BuildOrchestrator} $+$ \texttt{perm\_runner} (Design-Entscheidung)};
+  \node[pb] (b1) at (2.0,-3.95){\textbf{build} \texttt{Build\-Orchestrator}: baut \emph{alle} Tier-Binaries zuerst (resumierbar, RAM-gewahr)};
+  \node[pb] (b2) at (8.0,-3.95){\textbf{measure} \texttt{perm\_runner}: lädt $+$ misst jede Tier-Binary einzeln (1 DLL/Prozess, via \texttt{IObservableTier})};
+  \draw[->,very thick] (b1)--node[above,font=\scriptsize]{Tier-Binaries} (b2);
+\end{tikzpicture}
+\caption{Die Mess-Pipeline in zwei Ausprägungen. Der \textbf{In-Process-Pfad} (oben) ist die
+Sieben-Phasen-Pipeline des \texttt{ExperimentDriver} je Messreihe (Enumerate $\to$ Generate $\to$ Compile
+$\to$ Link+Load $\to$ Execute $\to$ Measure $\to$ Persist; zwei opt-in-Phasen kompilieren fehlende Module
+im laufenden Experiment nach und fahren je Modul einen Funktionstest mit ABI-Versionsprüfung). Hervorgehoben sind die substanziellen
+Phasen: \textsc{Compile} (der \emph{Build} der Tier-Binaries) und \textsc{Execute}/\textsc{Measure} (die
+\emph{Messung}); Generate/Link+Load/Persist sind Verdrahtung. Der \textbf{Out-of-Process-Pfad} (unten) ist
+eine Design-Entscheidung zur Prozess-Isolation: Der \texttt{BuildOrchestrator} baut \emph{zuerst alle}
+Tier-Binaries (resumierbar, RAM-gewahr), danach lädt und misst \texttt{perm\_runner} jede Binary einzeln
+über die Beobachter-Schnittstelle \texttt{IObservableTier} --- eine DLL je Prozess, weil die DLL kein
+\texttt{main} enthält und der Runner das Executable ist, das sie lädt; kein Zustand wird zwischen
+Permutationen geteilt, und eine Cluster-Task fährt genau einen Runner mit genau einer
+DLL.}\label{fig:pipeline}
+\end{figure}
+
+Die Ebenen E4--E0 aus Abschnitt~\ref{sec:anatomy-layers} haben im Code je einen Ort, und die Grenzen
+zwischen ihnen besitzen je einen Contract-Test (Abschnitt~\ref{sec:impl-contracts});
+Abbildung~\ref{fig:impl-layers} zeigt diese Code-Gestalt: E4 ist das XML-Profil mit dem Planer und den
+Auswertungs-Programmen 04 und 08, E3 der Experiment-Baum (\texttt{experiment\_tree}) mit der
+\texttt{binary\_id} als Pfad, E2 der ABI-Adapter mit der Modul-ABI-Deklaration, E1 das Interface
+\texttt{IResourceControllableTier} mit den dynamischen Dimensionen der Mess-Registry-XML, E0 sind CI,
+Runner und Lager, und der Querschnitt~M ist die System-Achsen-Wurzel \texttt{SystemAxis}
+(Abschnitt~\ref{sec:impl-system-axes}).
+\begin{figure}[htbp]\centering
+%% INTERN-272: KA-068
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  eb/.style={draw,rounded corners,fill=blue!7,minimum width=11.4cm,minimum height=0.95cm,text width=11.1cm,align=left,inner sep=3pt},
+  ct/.style={font=\tiny,fill=white,inner sep=1pt}]
+  \node[eb] (e4) at (0,0){\textbf{E4} Definitions-/Auswertungs-Schicht --- {\scriptsize XML-Profil $+$ Planer (\texttt{profile\_facade/planner}); Auswertung: Programme 04 und 08}};
+  \node[eb] (e3) at (0,-1.55){\textbf{E3} Permutations-B$^+$-Baum --- {\scriptsize \texttt{experiment\_tree}; Pfad $=$ \texttt{binary\_id} (18 Segmente, mixed-radix)}};
+  \node[eb] (e2) at (0,-3.1){\textbf{E2} Tier-Binaries --- {\scriptsize \texttt{SearchAlgorithmAbiAdapter<A>} $+$ Modul-ABI-Deklaration (sieben Pflicht-Symbole)}};
+  \node[eb] (e1) at (0,-4.65){\textbf{E1} Laufzeit-Konfiguration --- {\scriptsize \texttt{IResourceControllableTier} $+$ dynamische Dimensionen der Mess-Registry-XML}};
+  \node[eb,fill=gray!12] (e0) at (0,-6.2){\textbf{E0} Infrastruktur --- {\scriptsize CI (vier Repositorien), Runner, Lager}};
+  \draw[->,thick] (e4)--(e3); \draw[->,thick] (e3)--(e2); \draw[->,thick] (e2)--(e1); \draw[->,thick] (e1)--(e0);
+  \node[ct] at (0,-0.775){\texttt{test\_e4\_contract\_xml\_to\_axislevels} (Fake-E3)};
+  \node[ct] at (0,-2.325){\texttt{test\_e3\_contract\_binary\_id\_bijektion} $+$ \texttt{\ldots\_conformance\_gate\_wirksam} (Fake-E2)};
+  \node[ct] at (0,-3.875){\texttt{test\_e2\_contract\_abi\_vertrag} (Wormhole-Referenz-DLL, Fake-E1)};
+  \node[ct] at (0,-5.425){\texttt{test\_e1\_contract\_rc\_konsum} (in-process, T6/T8/T1/T11)};
+  \node[draw,rounded corners,fill=orange!12,minimum width=2.8cm,minimum height=7.15cm,text width=2.6cm,align=center,inner sep=3pt] (m) at (7.3,-3.1){\textbf{M} Mess-Querschnitt\\[3pt]{\scriptsize \texttt{SystemAxis}-Wurzel, host-seitig; berührt keine Binary-Identität}\\[3pt]{\tiny \texttt{test\_m\_\allowbreak contract\_\allowbreak system\_\allowbreak axis\_\allowbreak wurzel}, \texttt{test\_b3\_\allowbreak wallclock\_\allowbreak erbe\_ct}}};
+\end{tikzpicture}
+\caption[Die Ebenen E4--E0 im Code]{Die Ebenen E4--E0 des Schichtenmodells (Abschnitt~\ref{sec:anatomy-layers}) an ihrem Ort im Code,
+mit dem Contract-Test je Grenze (Fake der Nachbar-Ebene) und dem Mess-Querschnitt~M, der alle Ebenen
+host-seitig quert, ohne die Binary-Identität zu berühren.}\label{fig:impl-layers}
+\end{figure}
+
+Die Verträge zwischen den Träger-Stufen sind an den Binaries in Flächen zergliedert. Das
+Drei-Flächen-Modell (Abschnitt~\ref{sec:anatomy-levels}) ist im Code namentlich vorhanden: Fläche~1 ist
+das Genus-Interface der Tier-Binary, Fläche~2 der Stempel und Fläche~3 der Mess-Durchstich
+\texttt{IMessVisitor} --- ein Visitor am \texttt{dlopen}-Übergang, der existiert, \emph{damit} Gattungs-
+und Genus-Interfaces unverändert bleiben. Der Stempel-Vertrag ist als Matrix aus sieben Interfaces und
+vier Trägern ausgeführt --- 28~Zellen mit dreiwertiger Zulassung (Tabelle~\ref{tab:stempel-matrix}); die
+Absenz der Organ-Zeile beim CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}, und
+ein \texttt{static\_assert(StempelVertrag<Erbin, Traeger>)} unter jeder Erbin macht eine fehlende Pflicht
+oder ein verbotenes Interface zum Übersetzungsfehler --- eine Form des Consumer-Driven
+Contract~\cite{robinson2006cdc}.
+\begin{table}[htbp]\centering\footnotesize
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Interface & Inhalt & Planer & CEB & Tier & Hybrid \\
+\midrule
+\texttt{VersionXyz}     & statische Selbst-Version X.Y.Z[.flag]            & P & V & V & V \\
+\texttt{MessZeile}      & Stempel-Zeile des Mess-Realms                     & V & P & P & P \\
+\texttt{SystemZeile}    & Stempel-Zeile des System-Realms                   & V & P & P & P \\
+\texttt{OrganZeile}     & Stempel-Zeile des Organ-Realms                    & V & V & P & P \\
+\texttt{FingerprintSha} & Fingerprint-Hex (Planer SHA-256, sonst SHA-512)   & P & P & P & P \\
+\texttt{GesamtStempel}  & das eine Kompositum der Erbin                     & P & P & P & P \\
+\texttt{Angeschlossene} & angeschlossene Stempel-Zeilen (Laufzeit-Haken)    & V & V & V & P \\
+\bottomrule
+\end{tabular}
+\caption{Der Stempel-Vertrag als Matrix aus sieben Interfaces und vier Trägern (28 Zellen, dreiwertige
+Zulassung P = Pflicht, E = Erlaubt, V = Verboten; E ist im Bestand unbelegt). Die Verbots-Zelle der
+Organ-Zeile beim CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}; die Zellen
+werden je Erbin per \texttt{static\_assert} geprüft.}\label{tab:stempel-matrix}
+\end{table}
+\end{nurkurz}
+
+\begin{nurlang}
 \section{Qualitätssicherung: Contract-Tests je Schicht}\label{sec:impl-contracts}
 Das Schichtenmodell E4--E0 mit seinen festgeschriebenen Interface-Verträgen hat
 Abschnitt~\ref{sec:anatomy-layers} als Konzept entwickelt; dieser Abschnitt beschreibt seine Umsetzung
@@ -881,7 +1285,67 @@ Binary-Rekombination gegen welche Lasten zu messen ist, und die CEB gibt die Que
 Umsetzungsstand: Die Hardware-Erhebungskette läuft an der Freigabe-Naht des Builders
 (Abschnitt~\ref{sec:impl-system-axes}); der CEB-getriebene Freigabe-Pfad der Mess-Quelle ist
 vorgesehen, aber nicht implementiert. Die Code-Gestalt des Querschnitts beschreibt der folgende Abschnitt.
+\end{nurlang}
+\begin{nurkurz}
+\section{Qualitätssicherung: Contract-Tests je Schicht}\label{sec:impl-contracts}
+Das Schichtenmodell E4--E0 mit seinen Interface-Verträgen hat Abschnitt~\ref{sec:anatomy-layers} als
+Konzept entwickelt; dieser Abschnitt beschreibt seine Umsetzung als Prüf-Infrastruktur. Änderungen über
+mehrere Schichten zugleich erzeugen Fehler aus Wechselwirkungen, die weder lokale Tests noch Review
+sichtbar machen (ADR-5, Anhang~\ref{app:adr}); weil der Produktraum jede vollständige Materialisierung
+ausschließt (Abschnitt~\ref{sec:mess-chain}), wird jede Schicht einzeln fertiggestellt --- mit
+festgeschriebenem Interface-Vertrag zur Nachbar-Ebene, eigenem Test-Harness und eigener
+Abnahme-Definition.
 
+Das tragende Prüfprinzip lautet: \emph{Jede Schicht wird gegen einen übersetzungszeitlichen Ersatz ihrer
+Nachbar-Ebene getestet.} Die Nachbar-Ebene ersetzt je ein \emph{Fake} (eine Template- und Concept-basierte
+Attrappe im Test-Scope, kein Laufzeit-Umschalter im Produktiv-Code), und die Prüffrage jeder Grenze, ob
+die Schicht ihre Definition \emph{verlustfrei} weiterreicht, wird zum ausführbaren Abnahme-Test.
+
+Je Schicht (die Harness-Namen zeigt Abbildung~\ref{fig:impl-layers}): Für E4 vergleichen Golden-Fixtures
+die aus einem Profil emittierten Achsen-Ebenen gegen eine Referenz, ein Fake-E3 ersetzt den
+Permutationsbaum; für E3 wird die Bijektion der Binary-Identität (mixed-radix hin und zurück) gegen ein
+Fake-E2 gefahren, dazu prüft ein Konformitäts-Gate jede importierte Binary vor der Messung; für E2 ist der
+Vertrag die ABI selbst: Die Wormhole-Referenz-DLL muss \texttt{IAnatomyBase}, \texttt{IObservableTier}
+und \texttt{IResourceControllableTier} erfüllen, und die Antwort einer Stellgrößen-Anfrage
+(\texttt{apply}) ist die \emph{Zahl der Achsen, die den Wert tatsächlich angenommen haben} --- nichts wird
+still angenommen; für E1 prüfen Edge-Tests in-process die Randfälle des dynamischen Regimes (Reset eines
+wiederverwendeten Tiers, Pool-Budget unterhalb des Datenbestands als benannter Zustand, jede Stellgröße
+als benannte Spalte der Ergebnis-Datei, Erhalt der Zwei-Phasen-Operationsschleife). Geprüft wird die
+Persistenz an der Ergebnis-Datei; Führung ist die Standard-xlsx, die CSV-Form ihr Baum-Abzug.
+Umsetzungsstand: Die E1-Prüfung liest die CSV-Ausgabe, die die Naht als eine flache Datei schreibt; die
+Prüfung an der xlsx und die Baumform sind vorgesehen, aber nicht implementiert.
+
+Oberhalb der Schicht-Harnesse sichert ein \emph{Zwei-Gate-Protokoll} jedes Implementierungs-Paket ab
+(Continuous Integration und Delivery als Sicherungsstufen~\cite{fowler2006ci,humble2010cd}).
+\emph{Gate~1} ist das scharfe Gate des Engine-Repositories: Die volle Test-Suite läuft in vier Zellen, gcc
+und clang jeweils als Release- und Debug-Bau, ohne Änderungs-Skip und ohne Ausnahmeliste; der Doppellauf
+zwingt jede statische Prüfung durch zwei Übersetzer und macht die Run-to-Run-Stabilität der Zahl selbst
+zum Prüfgegenstand. Bestandteil von Gate~1 ist die Golden-Verankerung des Permutationsraums
+(Abschnitt~\ref{sec:mess-chain}): Der \emph{Referenz-Katalog} hält $2^{17} = 131072$ Binary-Identitäten
+und wird gegen eine festgeschriebene CRC-64-Prüfsumme bestätigt (\texttt{0x56F1B721C72DC10E}), ein % chktex 29
+kleiner Katalog von $320$ Identitäten dient als byte-genaue Prüfung der Serialisierungsform --- ein
+Charakterisierungs-Test im Sinne von Feathers~\cite{feathers2004legacy} ---, und die \emph{Mächtigkeit}
+des in einer Messreihe geplanten Raums ist davon verschieden und nie statisch: Der Planer zählt sie im
+Director-Walk aus der XML (\texttt{check-size}, \texttt{simulate}), nie als Konstante.
+\emph{Gate~2} ist das Integrations-Gate des Projekt-Repositories: Seine Pipeline baut fehlerfrei ohne
+Ausnahmemenge; die beiden deklarierten Fehlschlag-Duldungen (ein arm64-Smoke-Bau ohne Runner, ein
+manueller Relock-Wartungsjob) sind eine Plattform-Grenze, keine Testmenge.
+
+Dieses Protokoll ist Methodik, kein Systembestandteil: Es beschreibt, \emph{wie} Änderungen am
+Apparat abgenommen werden, nicht, was die Binaries enthalten. Die Verzeichnis- und Suite-Struktur,
+auf der es läuft, dokumentiert Anhang~\ref{app:code}.
+
+%% INTERN-272: KA-074
+Die Fertigstellung folgt der Schichtung top-down --- E4, E3, E2, dann der Mess-Querschnitt~M vor E1, die
+Infrastruktur~E0 als letzter Schritt (Abschnitt~\ref{sec:anatomy-layers}). Alle vier Grenzen besitzen
+ihren Harness, und der Querschnitt~M besitzt einen eigenen ohne Tier-Binary: Eine synthetische Mess-Quelle
+wird über die System-Achsen-Wurzel getrieben und bis in die Ergebnis-Spalten verfolgt. Umsetzungsstand:
+Die Hardware-Erhebungskette läuft an der Freigabe-Naht des Builders (Abschnitt~\ref{sec:impl-system-axes});
+der CEB-getriebene Freigabe-Pfad der Mess-Quelle ist vorgesehen, aber nicht implementiert. Die Code-Gestalt
+des Querschnitts beschreibt der folgende Abschnitt.
+\end{nurkurz}
+
+\begin{nurlang}
 \section{Realm-Wurzeln im Code: System- und Mess-Achsen}\label{sec:impl-system-axes}
 %% INTERN-272: KA-075
 Vier Abstraktionsebenen ordnen die Begriffe dieses Abschnitts (Abbildung~\ref{fig:m0-m3}), in Anlehnung an
@@ -922,7 +1386,43 @@ werden; die Registry-Zeile (M2) klassifiziert Haupt- und Unter-Achsen; die CRTP-
 Konzeption und Laufzeit-Implementierung; die Tier-Binary (M0) ist der Binärcode genau einer
 Belegung.}\label{fig:m0-m3}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+\section{Realm-Wurzeln im Code: System- und Mess-Achsen}\label{sec:impl-system-axes}
+%% INTERN-272: KA-075
+Vier Abstraktionsebenen ordnen die Begriffe dieses Abschnitts (Abbildung~\ref{fig:m0-m3}), in Anlehnung an
+die vierstufige Meta-Ebenen-Architektur der Object Management Group (MOF)~\cite{omg2016mof}: M3 sind die
+\emph{Meta-Meta-Achsen} im Sinne der Indirektion einer Beschreibung --- Achsen, die beschreiben, wie andere
+Achsen beschrieben werden (\texttt{load\_framework}, \texttt{disk\_io}, die System-Meta-Metas) ---, M2 die
+Registry-Zeile mit Kategorie, Familie und Bausteinliste, M1 die CRTP-Achse mit ihrem Concept und M0 der
+Binärcode der Tier-Binary mit genau einer einkompilierten Belegung. Im Stempel ist die Meta-Meta-Ebene
+eines Eintrags mechanisch seine Klammer-Tiefe (Bits~3--5; eine Haupt-Achse ist klammerlos, eine Meta-Meta
+hängt als Klammer-Anhang an ihrer Zeile, eine Tiefe über sieben bricht ab), und die Kurzform
+\texttt{c\{p.e\}} eines Versions-Flags bezeichnet \texttt{c} mit den Untergliedern \texttt{p} und
+\texttt{e}, nie ein flaches Kürzel. Je Realm gibt es einen eigenen Meta-Meta-Diskriminator; die
+PMC-Erfassung (Performance Monitoring Counter, die Hardware-Zähler der CPU) ist eine Meta-Meta-Mess-Achse,
+weil sie beschreibt, mit welchem Zähler-Instrument andere Messungen erhoben werden.
+\begin{figure}[htbp]\centering
+%% INTERN-272: KA-076
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  mb/.style={draw,rounded corners,minimum width=13.6cm,minimum height=1.05cm,text width=13.3cm,align=left,inner sep=3pt}]
+  \node[mb,fill=orange!14] (m3) at (0,0){\textbf{M3 Meta-Meta-Achsen} --- Indirektion einer Beschreibung\\{\scriptsize Beispiele: \texttt{load\_framework} (Mess-Realm, Token \texttt{ycsb@1.0.0.c}), \texttt{disk\_io} (Organ-Realm, Klammer-Anhang), System-Meta-Metas unter \texttt{external\_utils}}};
+  \node[mb,fill=orange!8] (m2) at (0,-1.5){\textbf{M2 Meta-Achsen} (Lesart) --- literale Klassifizierung der Haupt- und Unter-Achsen\\{\scriptsize Beispiel: die Registry-Zeile \texttt{<axis id=allocator slot=T06 category=composition \ldots>} mit ihrer Bausteinliste}};
+  \node[mb,fill=blue!7] (m1) at (0,-3.0){\textbf{M1 Konzeption und Laufzeit-Implementierung} --- Haupt- und Unter-Achsen\\{\scriptsize Beispiel: die CRTP-Achse \texttt{AxisBase<Derived>} mit ihrem Concept und ihren Bausteinen (Strategy)}};
+  \node[mb,fill=gray!12] (m0) at (0,-4.5){\textbf{M0 Binärcode} --- die Tier-Binary\\{\scriptsize Beispiel: \texttt{comdare\_perm\_<fp>.so} mit genau einer einkompilierten Belegung; Identität \texttt{binary\_id} $+$ Fingerprint}};
+  \draw[->,thick] (m3)--node[right,font=\tiny]{beschreibt}(m2);
+  \draw[->,thick] (m2)--node[right,font=\tiny]{klassifiziert}(m1);
+  \draw[->,thick] (m1)--node[right,font=\tiny]{kompiliert zu}(m0);
+\end{tikzpicture}
+\caption[Die vier Abstraktionsebenen M0--M3]{Die vier Abstraktionsebenen M0--M3 als Lesart der Achsen-Begriffe, in Anlehnung an die
+Meta-Ebenen-Architektur der MOF\@: Meta-Meta-Achsen (M3) beschreiben, wie andere Achsen beschrieben
+werden; die Registry-Zeile (M2) klassifiziert Haupt- und Unter-Achsen; die CRTP-Achse (M1) ist ihre
+Konzeption und Laufzeit-Implementierung; die Tier-Binary (M0) ist der Binärcode genau einer
+Belegung.}\label{fig:m0-m3}
+\end{figure}
+\end{nurkurz}
 
+\begin{nurlang}
 Die Dreiteilung der Achsen-Realms (Abschnitt~\ref{sec:axis-triad}) ist im Code als Typ-Trennung
 ausgeführt. Alle Achsen teilen ein gemeinsames Familiendach --- \texttt{topics::Axis<Derived>}, eine
 leere, nicht-polymorphe CRTP-Basis, deren Concept-Prüfung (\texttt{is\_empty} und nicht
@@ -937,7 +1437,21 @@ Eine Achse \emph{ist} ihre Familie durch ihre Basisklasse, nicht durch ein umhä
 \texttt{CebSystemAxis} liefert ihre Art \texttt{axis\_kind()} als harten Rückgabewert
 \texttt{system\_config}, weshalb der Mess-Realm eine eigene Wurzel besitzt statt einer wiederverwendeten:
 Der System-Realm wurzelt an der CEB, der Mess-Realm am Planer (Abschnitt~\ref{sec:axis-triad}).
+\end{nurlang}
+\begin{nurkurz}
+Die Dreiteilung der Achsen-Realms (Abschnitt~\ref{sec:axis-triad}) ist im Code als Typ-Trennung
+ausgeführt. Alle Achsen teilen das Familiendach \texttt{topics::Axis<Derived>}, eine leere,
+nicht-polymorphe CRTP-Basis, deren Concept-Prüfung jede eingeschleppte vtable schon beim Übersetzen
+zurückweist, und deklarieren Kategorie und Familie über \texttt{AxisCategory} und \texttt{AxisKind}
+(Abschnitt~\ref{sec:axes-impl}). Je Familie existiert eine eigene CRTP-Wurzel: \texttt{OrganAxis} und
+\texttt{OrganMetaMetaAxis} für den Organ-Realm, \texttt{SystemAxis} für den host-seitigen Querschnitt,
+\texttt{CebSystemAxis} für die Bau- und Steuer-Achsen der CEB, \texttt{SystemMetaMetaAxis} für die
+System-Meta-Achsen und \texttt{MeasurementMetaMetaAxis} für die Mess-Realm-Achsen des Planers. Eine Achse
+\emph{ist} ihre Familie durch ihre Basisklasse, nicht durch ein umhängbares Etikett: Der System-Realm
+wurzelt an der CEB, der Mess-Realm am Planer (Abschnitt~\ref{sec:axis-triad}).
+\end{nurkurz}
 
+\begin{nurlang}
 %% INTERN-272: KA-077
 Auf der System-Seite ist die kanonische Ordnung selbst Code: Das konstante Drei-Element-Array
 \texttt{kSystemAxisOrder} hält die System-Haupt-Achsen \texttt{target\_isa}, \texttt{operating\_system} und
@@ -958,7 +1472,26 @@ Gate-Beitrag ---, in der ein leeres Glied kein Segment erzeugt und das Gate-Segm
 jeder Suffix-Vergleich einen unveränderten Anfang und ein Anhängsel sieht (Präfix-Stabilität); der
 vierteilige Zell-Pfad der Ablage folgt derselben Ordnung Glied für Glied, mit einer Prüfung, die beide
 Ordnungen aneinander bindet.
+\end{nurlang}
+\begin{nurkurz}
+%% INTERN-272: KA-077
+Auf der System-Seite ist die kanonische Ordnung selbst Code: Das konstante Drei-Element-Array
+\texttt{kSystemAxisOrder} hält die System-Haupt-Achsen \texttt{target\_isa}, \texttt{operating\_system} und
+\texttt{external\_utils} in ihrer verbindlichen Reihenfolge, und jeder Konsument, der eine Ordnung braucht,
+liest sie dort, statt sie nachzubilden (Ordnungs-Single-Source mit Drift-Prüfungen). Drei
+übersetzungszeitliche \emph{Rückkehr-Sperren} halten den Schnitt der Haupt-Achsen fest:
+\texttt{static\_assert}-Prüfungen weisen Compiler, Scheduling und Last-Rahmenwerk als System-Haupt-Achsen
+zurück --- der Compiler ist eine Unter-Achsen-Gruppe \texttt{build\_toolchain} des Komplex-Wrappers
+\texttt{build\_target\_complex}, das Scheduling eine Unter-Achse an \texttt{target\_isa} mit fünf
+Dimensionen, das Last-Rahmenwerk eine Meta-Meta-Haupt-Achse des Mess-Realms ---, und wer einen der drei
+wieder einträgt, bricht den Bau und muss die Zuordnung ausdrücklich widerrufen. Auch die
+Bau-Versionskennung der System-Zeile (Abschnitt~\ref{sec:stamp-model}) speist sich aus einer einzigen
+deklarativen Quelle, der geordneten Acht-Segment-Folge \texttt{kSuffixSegmentOrder} (Compiler-Kennung,
+Optimierung, SIMD-Erweiterung, CEB, Ziel-ISA, Telemetrie, Bau-Typ, Gate-Beitrag), in der ein leeres Glied
+kein Segment erzeugt und das Gate-Segment am Ende steht (Präfix-Stabilität).
+\end{nurkurz}
 
+\begin{nurlang}
 Auf der Mess-Seite besitzt der Planer seine eigene Meta-Meta-Wurzel \texttt{MeasurementMetaMetaAxis};
 ihre erste Trägerin ist das Last-Rahmenwerk \texttt{load\_framework} (Stempel-Token
 \texttt{ycsb@1.0.0.c}), und wie alle Mess-Realm-Achsen ist sie strikt binary-id-neutral (Registry-XML\@:
@@ -1005,7 +1538,31 @@ Registry (Datei) & Werte & Anzahl & Prüfung \\
 Index-gleich-Enum-Prüfung; die Haupt-Achse selbst hält die drei Toolings wallclock, macro und
 micro.}\label{tab:mess-registries}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+Auf der Mess-Seite besitzt der Planer seine eigene Meta-Meta-Wurzel \texttt{MeasurementMetaMetaAxis}; ihre
+erste Trägerin ist das Last-Rahmenwerk \texttt{load\_framework} (Stempel-Token \texttt{ycsb@1.0.0.c}), und
+wie alle Mess-Realm-Achsen ist sie strikt binary-id-neutral (\texttt{binary\_id} $=$ \texttt{never}). Die
+Mess-Tooling-\emph{Haupt}-Achse hält genau drei versionierte Einträge in der einzig erlaubten Reihenfolge
+wallclock/macro/micro (Alias w/ma/mi, Abschnitt~\ref{sec:measurement-system}); ein viertes Tooling ist ein
+Übersetzungsfehler. Sie fächert vier Unter-Achsen-Registries auf: den Arbeitsmodus (\texttt{WorkMode}:
+build, measure, compare, release, Abschnitt~\ref{sec:repos}), das Mess-Framework
+(\texttt{MeasurementFramework}: genau ein Eintrag, YCSB), die Rückschreib-Methode
+(\texttt{WritebackMethod}: CSV, LaTeX-Tabelle, Vergleichs-Metriken und xlsx als Default, ausdrücklich kein
+PDF) und die sechzehn Mess-Kategorien (unten); jede Registry ist ein \texttt{constexpr}-Katalog mit der
+Prüfung Index $=$ Enum-Wert, ein weiterer Eintrag bricht die Übersetzung. Zwei Gates spiegeln die
+Tooling-Leiter: Das \emph{Statistik-Gate} schaltet die Observer-Statistik des Makro-Regimes, das
+\emph{Segment-Timing-Gate} die achtzehn Per-Achsen-Segment-Timer; ein nicht gesetztes Segment-Timing-Gate
+\emph{erbt} den Zustand des Statistik-Gates, ein gesetztes ohne Statistik-Gate bricht die Übersetzung. Der
+wirksame Gate-Zustand jeder Übersetzungseinheit wandert als Mess-Gate-Glied mit neun \texttt{;}-getrennten
+Feldern in das Fingerprint-Preimage des Stempels (Abschnitt~\ref{sec:stamp-model}) --- im Aus-Zustand
+\texttt{mg=m0;s0;st0;x0;tw0;tm0;tmi0;hm0;hmi0}: Messung, Statistik, Segment-Timing, Experiment-Modus, dann
+Wallclock, Makro und Mikro der Tier-Stufe und Makro und Mikro der Hybrid-Stufe ---; der Stempel behauptet
+nie eine Ausstattung, die der Bau nicht fährt. Das Zielbild neben diesem Registry-Stand ist das
+Achsen-Interface-Modell aus Abschnitt~\ref{sec:mess-chain}.
+\end{nurkurz}
 
+\begin{nurlang}
 %% INTERN-272: KA-078
 Die Abschaltung der Messung ist ein Stufenmodell über den drei Mess-Ebenen
 (Abbildung~\ref{fig:abschaltungsstufen}). Das Messgerät \texttt{checkpoint\_measure} erhebt die
@@ -1045,7 +1602,47 @@ erhebt zu einem Zeitpunkt; die Wallclock ist das parameter-leere Minimum, vollzi
 Mikro aber die Parameter-Klammer mit; Stufe~1 schaltet die Parameter-Erhebung ab, Stufe~2 lässt für den
 Release auch die Wallclock samt Mess-Flächen entfallen.}\label{fig:abschaltungsstufen}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+%% INTERN-272: KA-078
+Die Abschaltung der Messung ist ein Stufenmodell über den drei Mess-Ebenen
+(Abbildung~\ref{fig:abschaltungsstufen}). Das Messgerät \texttt{checkpoint\_measure} erhebt die
+Eingangsparameter stets zu einem \emph{Zeitpunkt}; die Wallclock ist das Minimum eines zeitmessenden,
+sonst parameter-leeren Checkpoints und damit das minimale Messgerät der CEB\@. Die erste Abschaltungsstufe
+schaltet in Makro und Mikro die Parameter-Erhebung ab, sodass die Wallclock für \texttt{measure} und
+\texttt{compare} bestehen bleibt; die zweite, permutative Abschaltungsstufe lässt für \texttt{release}
+auch die Wallclock samt den Flächen und Interfaces der Messung entfallen. Umsetzungsstand: Der Code
+enthält die Gates G2 und G3 und den Release-Modus ohne Instrumentierung (\texttt{measurement\_on} aus);
+die zweistufige Abschaltung als Permutations-Größe ist vorgesehen, aber nicht implementiert.
+\begin{figure}[htbp]\centering
+%% INTERN-272: KA-079
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  ze/.style={draw,rounded corners,minimum width=3.9cm,minimum height=1.35cm,text width=3.7cm,align=center,inner sep=2pt,font=\scriptsize},
+  rl/.style={font=\scriptsize\bfseries,anchor=east,text width=2.6cm,align=right}]
+  \node[font=\bfseries\scriptsize] at (0,1.2){wallclock (w)};
+  \node[font=\bfseries\scriptsize] at (4.3,1.2){macro (ma)};
+  \node[font=\bfseries\scriptsize] at (8.6,1.2){micro (mi)};
+  \node[rl] at (-2.3,0){Stufe 0: volle Messung\\(\texttt{measure})};
+  \node[ze,fill=orange!14] at (0,0){Zeitpunkt $+$ Parameter-Klammer (Übersetzungszeit-Sonderfall)};
+  \node[ze,fill=orange!14] at (4.3,0){Zeit $+$ Parameter je Genus-Interface-Funktion};
+  \node[ze,fill=orange!14] at (8.6,0){Zeit $+$ Erfolgs-Parameter je Achsen-Interface};
+  \node[rl] at (-2.3,-1.7){Stufe 1: Parameter aus\\(\texttt{measure}, \texttt{compare})};
+  \node[ze,fill=orange!8] at (0,-1.7){nur Zeitpunkt: parameter-leerer \texttt{checkpoint\_measure} (Minimum)};
+  \node[ze,fill=gray!10] at (4.3,-1.7){Parameter-Erhebung abgeschaltet};
+  \node[ze,fill=gray!10] at (8.6,-1.7){Parameter-Erhebung abgeschaltet};
+  \node[rl] at (-2.3,-3.4){Stufe 2: alles aus\\(\texttt{release})};
+  \node[ze,fill=gray!18] at (0,-3.4){entfällt --- keine Mess-Fläche, kein Mess-Interface};
+  \node[ze,fill=gray!18] at (4.3,-3.4){entfällt};
+  \node[ze,fill=gray!18] at (8.6,-3.4){entfällt: nur der Kern-Code der Binary};
+\end{tikzpicture}
+\caption[Die zwei Abschaltungsstufen der Messung]{Die zwei Abschaltungsstufen der Messung über den drei Mess-Ebenen: \texttt{checkpoint\_measure}
+erhebt zu einem Zeitpunkt; die Wallclock ist das parameter-leere Minimum, vollzieht bei aktivem Makro oder
+Mikro aber die Parameter-Klammer mit; Stufe~1 schaltet die Parameter-Erhebung ab, Stufe~2 lässt für den
+Release auch die Wallclock samt Mess-Flächen entfallen.}\label{fig:abschaltungsstufen}
+\end{figure}
+\end{nurkurz}
 
+\begin{nurlang}
 %% INTERN-272: KA-080
 Das PMC-Tooling ist mehrschichtig, weil die Hardware-Zähler je Kern-Sorte und Hersteller verschieden sind
 (Zugriff über die \texttt{perf\_event\_open}-Schnittstelle des Linux-Kernels~\cite{linux_perf_event_open}).
@@ -1070,7 +1667,27 @@ Zähler-Pfade, \texttt{pmc:amd} auf prod1 und \texttt{pmc:intel} auf prod2, dem 
 und über die Kern-Pinning-Bausteine angelegt (Sechs-Modus-Modell mit HybridAware als Pflicht-Modus,
 Abschnitt~\ref{sec:axis-triad}); Umsetzungsstand: Das Laufzeit-Pinning je Kern-Sorte ist
 vorgesehen, aber nicht implementiert.
+\end{nurlang}
+\begin{nurkurz}
+%% INTERN-272: KA-080
+Das PMC-Tooling ist mehrschichtig, weil die Hardware-Zähler je Kern-Sorte und Hersteller verschieden sind
+(Zugriff über \texttt{perf\_event\_open}~\cite{linux_perf_event_open}). Eine generische Ereignis-Liste
+(\texttt{pmc\_event\_set}) entscheidet, ob PMC eingebaut wird: Die Host-Sonde des Planers prüft genau die
+Events, die die reale Quelle später öffnet. Ein modellgebundener RAW-Katalog füllt die Kanäle für
+L2-Misses und Kohärenz je Mikroarchitektur: Für AMD Zen~5 (prod1) ist die Belegung gegen die benannten
+\texttt{perf}-Events mit identischen Zählerständen (17\,314\,023 gegen 17\,314\,023) gegengeprüft ---
+\texttt{cache\_misses\_l2} erfasst dort die Demand-Misses ohne L2-Prefetch,
+\texttt{coherence\_invalidations} die Cache-zu-Cache-Fills aus einem fremden CCX ---; für Intel liegt kein
+Eintrag vor, weil eine RAW-Belegung ohne Gegenprüfung ein Rateversuch wäre~\cite{intel_sdm} --- eine
+ausgewiesene Lücke. Eine Vendor-Registry führt die PMC als \emph{ein} Merkmal mit zwei Werten, AMD und
+Intel, mit je eigener Versionskennung, weil die eingebaute Zählerform den Fingerprint der CEB mitbestimmt;
+die CI fährt zwei Zähler-Pfade, \texttt{pmc:amd} auf prod1 und \texttt{pmc:intel} auf prod2 (Intel Alder
+Lake mit P- und E-Kernen). Die getrennte Messung der P- und E-Kerne ist als Scheduling-Dimension angelegt
+(Sechs-Modus-Modell, Abschnitt~\ref{sec:axis-triad}); das Laufzeit-Pinning je Kern-Sorte ist vorgesehen,
+aber nicht implementiert.
+\end{nurkurz}
 
+\begin{nurlang}
 Der host-seitige Mess-Querschnitt des System-Realms --- der Querschnitt~M, der alle Schichten
 durchdringt, ohne je die Binary-Identität zu berühren (Abschnitt~\ref{sec:axis-triad}) --- wurzelt in der
 CRTP-Basis \texttt{SystemAxis} (Datei \texttt{system\_axis.hpp}), die nur lesend an die host-seitigen
@@ -1082,7 +1699,20 @@ Basis ohne virtuelle Aufrufe im Hot-Path, deren Konformität ein eigenes Concept
 zählerbasierte PMC-Kategorien, Abschnitt~\ref{sec:axis-triad}), und ein zweites weist jede Achse zurück,
 die Kategorien beider Regimes mischt --- das Regime-Misch-Verbot bricht so die Übersetzung statt erst die
 Auswertung.
+\end{nurlang}
+\begin{nurkurz}
+Der host-seitige Mess-Querschnitt des System-Realms --- der Querschnitt~M, der alle Schichten durchdringt,
+ohne je die Binary-Identität zu berühren (Abschnitt~\ref{sec:axis-triad}) --- wurzelt in der CRTP-Basis
+\texttt{SystemAxis} (Datei \texttt{system\_axis.hpp}), die nur lesend an die host-seitigen
+Ergebnis-Strukturen andockt: eine leere, nicht-polymorphe zero-cost abstraction, deren Konformität ein
+eigenes Concept erzwingt. Zwei \texttt{consteval}-Gates übersetzen die Konzept-Invarianten: Jede der
+sechzehn Mess-Kategorien ist genau einem der beiden Regimes \texttt{TimeObserver} und \texttt{PmcCounter}
+zugeordnet (neun zeit- und observer-basierte, sieben zählerbasierte PMC-Kategorien), und jede Achse, die
+Kategorien beider Regimes mischt, wird zurückgewiesen --- das Regime-Misch-Verbot bricht so die
+Übersetzung statt erst die Auswertung.
+\end{nurkurz}
 
+\begin{nurlang}
 Die sechzehn Mess-Kategorien führt eine einzige \texttt{constexpr}-Registry
 (\texttt{measurement\_\allowbreak{}axis\_\allowbreak{}registry.hpp}): je Kategorie der Name und das aus der einen Quelle
 abgeleitete Regime. Ein statisches Gate erzwingt, dass der Tabellen-Index mit dem Kategorie-Wert
@@ -1094,7 +1724,17 @@ manifestieren sich als Spalten der Ergebnis-Tabellen (Abschnitt~\ref{sec:axis-tr
 Registry-Namen sind zugleich das Berichts-Vokabular der Auswertungs-Schicht (die Spalten-Namen der
 E4-Berichte), und eine compile-time-Iteration über alle Einträge stellt die Registry der
 Metaprogrammierung zur Verfügung.
+\end{nurlang}
+\begin{nurkurz}
+Die sechzehn Mess-Kategorien führt eine einzige \texttt{constexpr}-Registry
+(\texttt{measurement\_\allowbreak{}axis\_\allowbreak{}registry.hpp}) mit einem statischen Gate über Index,
+Namen und Regime --- eine siebzehnte Kategorie oder eine stille Index-Drift wird damit zum
+Übersetzungsfehler. Konzeptionell sind die Kategorien eine \emph{Unter}-Achse des Mess-Toolings und
+manifestieren sich als Spalten der Ergebnis-Tabellen (Abschnitt~\ref{sec:axis-triad}); die Registry-Namen
+sind zugleich das Berichts-Vokabular der Auswertungs-Schicht (die Spalten-Namen der E4-Berichte).
+\end{nurkurz}
 
+\begin{nurlang}
 Die Erhebung abstrahiert eine vendor-neutrale Mess-Quellen-Schnittstelle
 (\texttt{i\_\allowbreak{}measurement\_\allowbreak{}source.hpp}). \texttt{IMeasurementSource} beschreibt eine Quelle über ihre
 \emph{strukturellen} Fähigkeiten --- welche der zehn Ereignis-Semantiken (Zyklen, Instruktionen,
@@ -1109,7 +1749,21 @@ Hardware-Ereignisse ungültig; die Bestands-PMC-Familie bindet der Adapter \text
 an, der nur die sieben strukturell ausdrückbaren Kanäle bewirbt --- L1d-, L2-, L3-, dTLB- und
 Branch-Misses, Kohärenz-Invalidierungen und Energie ---, während Zyklen, Instruktionen und
 Speicher-Stalls im Zähler-POD strukturell nicht ausdrückbar sind und ungültig bleiben.
+\end{nurlang}
+\begin{nurkurz}
+Die Erhebung abstrahiert eine vendor-neutrale Mess-Quellen-Schnittstelle
+(\texttt{i\_\allowbreak{}measurement\_\allowbreak{}source.hpp}): \texttt{IMeasurementSource} beschreibt
+eine Quelle über ihre \emph{strukturellen} Fähigkeiten --- welche der zehn Ereignis-Semantiken (Zyklen,
+Instruktionen, L1-/L2-/L3-Cache-, dTLB- und Branch-Misses, Speicher-Stalls, Kohärenz-Invalidierungen,
+Energie) sie überhaupt ausdrücken kann --- und liefert je Messintervall ein \texttt{MeasuredDelta} mit
+\emph{per-Ereignis-Gültigkeit}: Null mit gesetztem Gültigkeits-Flag ist eine tatsächliche Null-Messung,
+ein nicht gesetztes Flag heißt \emph{nicht gemessen}. Als garantierter, ausdrücklich \emph{degradierter}
+Fallback existiert die Wall-Clock-Quelle (\texttt{WallClockSource}); die Bestands-PMC-Familie bindet der
+Adapter \texttt{PmcSourceAdapter} an, der nur die sieben strukturell ausdrückbaren Kanäle bewirbt, während
+Zyklen, Instruktionen und Speicher-Stalls im Zähler-POD ungültig bleiben.
+\end{nurkurz}
 
+\begin{nurlang}
 %% INTERN-272: KA-083
 Im Achsen-Interface-Modell wird die Mess-Quellen-Schnittstelle für das Mikro-Benchmarking je
 Achsen-Interface speziell für dessen Parametersatz erhoben und in Stufen über das Makro-Benchmarking und
@@ -1127,7 +1781,22 @@ Permutationen genügt dafür nicht, und ein kompletter Neustart weist einen neue
 verschlechtert die Vergleichbarkeit, wenn nicht exakt auf den letzten Checkpoint zurückgerollt werden
 kann. Umsetzungsstand: vorgesehen, aber nicht implementiert. Das Prüfkriterium der Nachmessung ist die Plausibilitäts-Invariante,
 dass die Binary mit Messfühlern langsamer ist als die ohne (Kapitel~\ref{ch:eval}).
+\end{nurlang}
+\begin{nurkurz}
+%% INTERN-272: KA-083
+Im Achsen-Interface-Modell wird die Mess-Quellen-Schnittstelle für das Mikro-Benchmarking je
+Achsen-Interface speziell für dessen Parametersatz erhoben; die Kategorien-Menge wächst damit über die
+Kanal-Adressen Achse $\to$ Genus $\to$ Kategorie auf hunderte Mess-Kategorien (Umsetzungsstand: sechzehn,
+durch die Registry statisch festgelegt). Dazu tritt die \emph{ungebremste Nachmessung}: Die Aktionen jeder
+Achse werden über den Checkpoint der zuerst aufgerufenen Achsen-Interface-Funktion hinter dem
+Genus-Interface durch eine eigene Steuerungsfläche zurückgerollt, die CEB übernimmt den inneren Zustand
+einer Tier-Binary mit Messfühlern in die analoge Tier-Binary ohne Messfühler und misst vom selben Punkt
+erneut, rekursiv je Makro-Benchmarking-Interface --- vorgesehen, aber nicht implementiert. Das
+Prüfkriterium der Nachmessung ist die Plausibilitäts-Invariante, dass die Binary mit Messfühlern langsamer
+ist als die ohne (Kapitel~\ref{ch:eval}).
+\end{nurkurz}
 
+\begin{nurlang}
 Der Grundsatz der ausgewiesenen Nichterhebung (Abschnitt~\ref{sec:axis-triad}) --- ein fehlender Wert ist
 ein eigener Zustand, kodiert als Gültigkeits-Flag oder als NaN nach IEEE~754~\cite{ieee754_2019}, nie ein
 Nullwert; in der Terminologie fehlender Daten ist er \emph{fehlend}, nicht
@@ -1154,7 +1823,9 @@ Fill-Buffer-Auslastung bleiben ungültig, bis eine tatsächliche Peak-Spalte bez
 existiert (der Software-Operations-Puffer der Pufferungs-Achse ist kein Proxy für den
 Hardware-Line-Fill-Buffer), und IPC/CPI bleibt ungültig, solange das Zähler-POD keine Instruktions- und
 Zyklen-Spalten besitzt.
+\end{nurlang}
 
+\begin{nurlang}
 Die Hardware-Erkennung ist die Erhebungskette der System-Haupt-Achse \texttt{target\_isa} --- ihre
 Unter-Achse \texttt{target\_isa\_complex} führt je benannter Rekombination die Glieder CPU-Fabrikation,
 RAM-Frequenz und CAS-Latenz --- und zugleich eine \emph{Mess}-Achse (Abschnitt~\ref{sec:hw-probe}), deren
@@ -1183,7 +1854,9 @@ unvollständiger Typ und bricht den Bau ---, eine Totalitäts-Prüfung erfasst d
 deklarierten ISA-Komplexe und Betriebssysteme, und nicht implementierte Zellen (Windows, macOS) sind
 ausgewiesene Nur-Deklarations-Zellen mit ausdrücklich besetzten oberen Stufen, damit der Degradations-Pfad
 \enquote{gefragt, gibt es hier nicht} meldet statt \enquote{übersprungen}.
+\end{nurlang}
 
+\begin{nurlang}
 Den Abgleich zwischen Deklaration und Erhebung fällt ein benanntes Laufzeit-Verdikt mit genau
 sieben Ausgängen --- Übereinstimmung, Abweichung, nur deklariert, nicht erhoben, keine
 Deklaration, unvergleichbare Stufen und Etikett-Widerspruch ---, wobei nur provenienz-kompatible
@@ -1197,7 +1870,9 @@ und bleibt als Notiz seines Ursprungs geführt (\texttt{DeclarationOrigin}), der
 sondern nur die Präsenz eines Werts, und die Erhebung findet bei jedem Lauf erneut statt und führt ihre
 Vertrauensstufe mit --- in der Messung liefert Stufe~1 auf prod1 den konfigurierten Takt von 5600\,MT/s bei
 aktivem XMP und auf prod2 4800\,MT/s.
+\end{nurlang}
 
+\begin{nurlang}
 Am Auswertungs-Ende des Querschnitts liegt der erste Ansatz der Kurvenanpassung aus
 Abschnitt~\ref{sec:heuristics-curves} als Gerüst vor (\texttt{curve\_fit.hpp} im Builder): Eine
 Mess-Achsen-Kurve über die Working-Set-Größe wird per kleinster Quadrate an das Modell
@@ -1218,7 +1893,24 @@ derselben Achse, den Messkurven-Lader, die Offline-Clusterung der Workloads mit 
 den Optimierungs-Katalog der Achsen; Break-Even-Kurven werden nur über die w/ma/mi-gemessenen
 Organ-Achsen-Parameter gebildet. Die Kurvenbildung selbst entwickelt
 Abschnitt~\ref{sec:heuristics-curves}; hier steht nur ihre Code-Gestalt.
+\end{nurlang}
+\begin{nurkurz}
+Am Auswertungs-Ende des Querschnitts liegt der erste Ansatz der Kurvenanpassung aus
+Abschnitt~\ref{sec:heuristics-curves} als Gerüst vor (\texttt{curve\_fit.hpp}): Eine Mess-Achsen-Kurve
+über die Working-Set-Größe wird per kleinster Quadrate an das Modell $y = a\log_2 x + b$ angepasst --- die
+für Cache-Hierarchie-Kurven erwartete Form~\cite{hill1989associativity}. Kein Fit ohne gültige Daten: Der
+Fit-Status unterscheidet \emph{keine Daten}, \emph{unterbestimmt} und \emph{ungültige Daten} vom
+Erfolgsfall --- nie ein \emph{Ok} mit NaN-Koeffizienten ---, und der Ergebnis-Leser übernimmt nur streng
+numerische Zellen. Je Messkurve steht ein kubischer Spline über $\log_2 x$, natürlich oder
+monotonie-erhaltend nach Fritsch und Carlson~\cite{fritsch1980monotone}, der auf monotonen Daten keine
+Schein-Extrema erzeugt. Die Heuristik-Familie (\texttt{heuristik/}) enthält den Achsen-Spline, den
+Break-Even-Finder über den Schnittpunkten zweier Kurven derselben Achse, den Messkurven-Lader, die
+Offline-Clusterung der Workloads und den Optimierungs-Katalog; Break-Even-Kurven werden nur über die
+w/ma/mi-gemessenen Organ-Achsen-Parameter gebildet. Die Kurvenbildung selbst entwickelt
+Abschnitt~\ref{sec:heuristics-curves}; hier steht nur ihre Code-Gestalt.
+\end{nurkurz}
 
+\begin{nurlang}
 Implementiert sind damit die Realm-Wurzeln samt Ordnung und Rückkehr-Sperren, die Registries, die
 Quellen-Abstraktion mit degradiertem Fallback, die zweistufige Hardware-Erkennung und der erste Fit-Ansatz mit
 Spline; die Anbindung dieser Querschnitts-Bausteine an Runner und Prüf-Dock (der Kollektor der
@@ -1232,7 +1924,26 @@ vervielfacht den Organ-Raum je Plattform ---; sie stehen nicht im Organ-Permutat
 \texttt{never}; nur die achtzehn Organ-Haupt-Achsen gehen in den Achtzehn-Segment-Pfad ein). Das wahrt
 die Bauform selbst: Die Wurzel dockt nur lesend an die host-seitigen Ergebnis-Strukturen an und bleibt
 der ABI-Grenze gegenüber unsichtbar.
+\end{nurlang}
+\begin{nurkurz}
+Implementiert sind damit die Realm-Wurzeln samt Ordnung und Rückkehr-Sperren, die Registries, die
+Quellen-Abstraktion mit degradiertem Fallback, die zweistufige Hardware-Erkennung
+(Abschnitt~\ref{sec:hw-probe}: Provenienz-Vokabular, SPD-Parser, Fehler-Domäne, Erhebungs-Kette als Chain
+of Responsibility, Übersetzungszeit-Factory je Plattform-Zelle und Laufzeit-Verdikt Deklaration gegen
+Erhebung) und der erste Fit-Ansatz mit Spline; die Anbindung dieser Querschnitts-Bausteine an Runner und
+Prüf-Dock (der Kollektor der Erfolgs-Parameter) und die Abbildung der Registry-Namen auf die
+Bestands-Spalten der Ergebnis-Dateien sind nicht implementiert. Die drei Konzept-Invarianten der
+System-Achsen lauten: Sie \emph{permutieren} den Bau- und Mess-Raum --- die Komplex-Achse
+\texttt{build\_target\_complex} ist der Command-Wrapper der Rekombination der drei Haupt-Achsen mit der
+Unter-Achsen-Gruppe \texttt{build\_toolchain} und dem Scheduling mit fünf Dimensionen, und dieser
+System-Multiplikator vervielfacht den Organ-Raum je Plattform ---; sie stehen nicht im
+Organ-Permutationsbaum der \texttt{binary\_id}; und sie berühren die Binary-Identität nie
+(Registry-XML\@: \texttt{binary\_id} $=$ \texttt{never}; nur die achtzehn Organ-Haupt-Achsen gehen in den
+Achtzehn-Segment-Pfad ein). Das wahrt die Bauform selbst: Die Wurzel dockt nur lesend an die host-seitigen
+Ergebnis-Strukturen an und bleibt der ABI-Grenze gegenüber unsichtbar.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Muster-Register, Hybrid-Stufe und Lager}\label{sec:impl-hybrid-lager}
 Die Entwurfsmuster des Apparats sind kein Zufallsbestand, sondern ein Register
 (Abbildung~\ref{fig:muster}); die Benennung folgt dem Katalog von Gamma et al.~\cite{gamma1994patterns}
@@ -1377,6 +2088,71 @@ Bestand & Schlüssel-Komponenten & Quelle im Code & Umsetzungsstand \\
 Schlüssel-Schema; der Versions-Lock bindet die Achsen-Quellen an Digest und gestempelte
 Version.}\label{tab:lager-schluessel}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Muster-Register, Hybrid-Stufe und Lager}\label{sec:impl-hybrid-lager}
+Die Entwurfsmuster des Apparats sind ein Register (Abbildung~\ref{fig:muster}); die Benennung folgt Gamma
+et al.~\cite{gamma1994patterns} (\enquote{Gang of Four}, GoF), und jedes Muster ist übersetzungszeitlich
+statt laufzeit-polymorph ausgeführt, weil der Hot-Path keine Laufzeit-Verzweigung enthalten darf
+(Abschnitt~\ref{sec:axes-impl}): \emph{Strategy} je Achse (Bausteine hinter einem Concept, über
+CRTP~\cite{coplien1995crtp} gebunden), \emph{Director} und \emph{Builder} für die Plan-Emission, eine
+\emph{Abstract Factory} für die Hybrid-Docks und die Ergebnis-Mappen des Lagers (xlsx-Mappe als Standard,
+CSV-Baum als wählbare Strategie derselben Factory; implementiert ist eine flache Datei), der
+\emph{Visitor} \texttt{IMessVisitor} am \texttt{dlopen}-Übergang, eine \emph{Chain of Responsibility} mit
+Typliste für die Hardware-Erhebungskette und die Auswahl-Filterkette der CEB\@; ein \emph{Memento} für den
+Zustand statusbehafteter Achsen je Tier (\texttt{memento\_all} nach dem Warmlauf), \emph{Command} als
+Command-Basis der Achsen und Command-Wrapper der Komplex-Achse \texttt{build\_target\_complex} sowie eine
+\emph{Facade} für die Anhang-Erzeugung (Programm~08) und die lesende Plan-Emission des Planers.
+\begin{figure}[htbp]\centering
+%% INTERN-272: KA-084
+\begin{tikzpicture}[font=\footnotesize,
+  mu/.style={draw,rounded corners,fill=blue!7,minimum width=3.6cm,minimum height=2.55cm,text width=3.4cm,align=center,inner sep=2pt}]
+  \node[mu] (m1) at (0,0){\textbf{Strategy $+$ CRTP}\\{\scriptsize je Achse}\\[2pt]{\tiny austauschbare Bausteine hinter einem Concept; \texttt{topics/axis}, \texttt{AxisBase<Derived>}; übersetzungszeitlich gebunden}};
+  \node[mu] (m2) at (3.85,0){\textbf{Director $+$ Builder}\\{\scriptsize Plan-Emission}\\[2pt]{\tiny ein deterministischer Walk, je Syntax ein Builder (Text, CI-YAML, CMake); \texttt{experiment\_plan\_director}, \texttt{plan\_legend}}};
+  \node[mu] (m3) at (7.7,0){\textbf{Abstract Factory}\\{\scriptsize Hybrid-Docks, Ergebnis-Mappen}\\[2pt]{\tiny einziger Konstruktions-Ort der Docks (\texttt{hybrid\_dock\_factory}); xlsx-Mappe, CSV-Baum als wählbare Strategie (\texttt{ergebnis\_mappe})}};
+  \node[mu] (m4) at (11.55,0){\textbf{Visitor}\\{\scriptsize Mess-Durchstich (Fläche 3)}\\[2pt]{\tiny \texttt{IMessVisitor} am \texttt{dlopen}-Übergang: Host reicht die Senke, das Tier ruft \texttt{visit}; doppelter Dispatch}};
+  \node[mu] (m5) at (0,-3.0){\textbf{Chain of Responsibility}\\{\scriptsize Erhebung, Auswahl}\\[2pt]{\tiny Hardware-Kette Boot-Cache $\to$ SPD $\to$ Deklaration als Typliste (\texttt{ram\_probe\_chain}); Auswahl-Filterkette der CEB}};
+  \node[mu] (m6) at (3.85,-3.0){\textbf{Memento}\\{\scriptsize Zustand je Tier}\\[2pt]{\tiny \texttt{memento\_all} rollt den Zustand statusbehafteter Achsen nach dem Warmlauf zurück; Plan: Zustands-Übernahme der Hybrid-Stufe}};
+  \node[mu] (m7) at (7.7,-3.0){\textbf{Command}\\{\scriptsize Achsen-Basis, Komplex-Achse}\\[2pt]{\tiny \texttt{axis\_command\_base} mit Mess-Visitor-Slot und Limitations-Auskunft; \texttt{build\_target\_complex} als Command-Wrapper}};
+  \node[mu] (m8) at (11.55,-3.0){\textbf{Facade}\\{\scriptsize Anhang, Plan-Emission}\\[2pt]{\tiny \texttt{appendix\_generator} (08) als Fassade über 04 und 05, in-process; \texttt{profile\_run\_facade} für die lesende Plan-Emission}};
+\end{tikzpicture}
+\caption[Das Register der Entwurfsmuster]{Das Register der Entwurfsmuster des Apparats (Benennung nach Gamma et al.): je Muster die Rolle
+und der Code-Ort. Alle acht sind übersetzungszeitlich ausgeführt --- Bindung über Concepts, CRTP und
+Typlisten statt über virtuelle Aufrufe ---, weil Tier-Binaries keine Laufzeit-Verzweigung zwischen
+Bausteinen enthalten dürfen.}\label{fig:muster}
+\end{figure}
+
+%% INTERN-272: KA-085
+Die Hybrid-Stufe ist die vierte Träger-Stufe (Abschnitt~\ref{sec:heuristics-modes}); ihr Code-Stand liegt
+unter \texttt{hybrid/}. Implementiert sind die Dock-Verträge (vier Vertragsformen \texttt{standard},
+\texttt{rollback}, \texttt{scan} und \texttt{resource\_control} mit sechzehn Status-Konstanten), das
+Prüf-Dock, die Dock-Factory als einziger Konstruktions-Ort, das Dock-Array mit \texttt{HybridDockVariant}
+(die eine erlaubte variant-Stelle, Abschnitt~\ref{sec:axes-impl}) und dem Laufzeit-Deckel
+\texttt{max\_docks}, der Parser der \texttt{<hybrid\_tier>}-Sektion und der Binary-Proxy, der eine
+Hybrid-.so nach außen zu einer gewöhnlichen Tier-Binary macht; nicht implementiert sind \texttt{.so}-Export,
+Eviction und Router --- sechs der neun Dateien der Schicht. Die Hybrid Module ABI exportiert dieselben
+Pflicht-Symbole wie die plain Tiere, \texttt{comdare\_anatomy\_genus} meldet den \emph{Ziel}-Genus, nie
+den Reroute-Genus, und die Genus-Bau-Zulassung führt als sechsten Eintrag das Reroute-Genus mit dem
+Dock-Deckel (Default 32) als Arität. Das Hybrid-Live-Ranking als vierte Auswertungs-Komponente der
+compare-Stufe und der Zustandsabgleich per Memento mit zwei Release-Artefakten, single und hybrid, im
+Lager sind vorgesehen (Abschnitt~\ref{sec:heuristics-modes}), aber nicht implementiert, ebenso nicht die
+Behebung der Schema-Drift (das XSD führt die \texttt{<hybrid\_tier>}-Sektion nicht); der Hybrid-Modus
+kompiliert nur mithilfe der CEB\@.
+
+%% INTERN-272: KA-087
+Das Lager (Abschnitt~\ref{sec:lager}) hat im Code ein übersetzungsstatisches Schlüssel-Schema
+(\texttt{bestand\_\allowbreak{}schluessel\_\allowbreak{}schema}), das die vier Bestände deklariert:
+Bestand~1, die Binaries, über den einen SHA-512-Schlüssel, der mit dem Tier-Fingerprint identisch ist;
+Bestand~2, die Messwerte, über den 128-Hex-Fingerprint der vermessenen Binary und die Hardware-Identität
+der messenden Maschine; Bestand~3, die Synthese-Batches, und Bestand~4, die Lösungen, als Arbeitsschritt
+des Lager-Vollausbaus; Drift zwischen Schema und Mechanik bricht beim Bau. Der Versions-Lock
+(\texttt{axis\_version.lock}, Format v3, 719 Datensätze) bindet jede Quell-Datei der Achsen an
+Inhalts-Digest und gestempelte Version, das CI-Gate \texttt{contract:axis-version-lock} erzwingt das. Aus
+dem Schema folgen die Lager-Eigenschaften: Die Messung ist immer eingeschaltet, im Lager wird nur
+nachgemessen, was fehlt; ein Versionswechsel einer Achse baut den betroffenen Lager-Stapel neu; und jeder
+Maschinentyp hat seinen eigenen Messwert-Bestand. Umsetzungsstand: Schema, Lock und die Bestände~1 und~2
+sind implementiert, der Vollausbau ist vorgesehen, aber nicht implementiert.
+\end{nurkurz}
 
 Damit ist der Apparat vollständig beschrieben --- von den vier Repositorien über den Prüfling, die
 achtzehn Organ-Achsen und die Träger-Stufenkette bis zur Kette vom Plan zur Tier-Binary, ihren
