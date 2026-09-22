@@ -1,8 +1,6 @@
 \chapter{Suchbäume und Grundlagen}\label{ch:foundations}
 
-% [HABICH-R2] NUR BEKANNTES: Begriffe, etablierte Konzepte, existierende Paper. KEINE Katalog-Tabellen,
-% keine eigene Begriffswelt. Fünfschritt Landschaft (2.1) -> Hardware (2.2) -> Workloads/Benchmarks (2.3)
-% -> Software-Mittel (2.4) -> Heuristik-Begriff (2.5). Alle Kataloge und Eigenkonzepte liegen in Kapitel 3.
+%% INTERN-272: KA-004
 
 Dieses Kapitel führt vom vertrauten Gegenstand --- den Suchbäumen --- über die Hardware, die ihre Leistung
 prägt, und die Workloads, unter denen sie verglichen werden, zu den Software-Mitteln und zum
@@ -60,9 +58,7 @@ jeweiligen Teilbaums erstmals unterscheiden~\cite{morrison1968patricia}.}, die d
 Ein-Kind-Ketten kollabieren, und der
 \emph{Adaptive Radix Tree} (ART)~\cite{leis2013art}, der die Knotenrepräsentation an den tatsächlichen
 Verzweigungsgrad anpasst.
-%% OWNER-VORLAGE: OV-K2-B --- Rolle von ART: Referenzentwurf als Quelle der einzeln vermessbaren
-%% Teilentscheidungen (Knotenklassen, lineare Suche), der Gesamtbaum als Pruefling; Default gesetzt,
-%% Widerspruch genuegt.
+%% INTERN-272: KA-005
 ART dient dieser Arbeit als Referenzentwurf: Seine Entwurfsentscheidungen --- die nach Verzweigungsgrad
 gestaffelten Knotenklassen Node4, Node16, Node48 und Node256 sowie die lineare Suche innerhalb kleiner
 Knoten --- kehren in Kapitel~\ref{ch:measurement} als einzeln vermessbare Teilentscheidungen wieder,
@@ -85,9 +81,7 @@ eines Baumes --- und das Suffix-Array, das dieses Layout auf String-Schlüsseln 
 Volltext-Index verallgemeinert und dessen leichtgewichtige, speicher-budgetierte Konstruktion als
 Musterbeispiel des Algorithm-Engineerings gilt~\cite{manzini2002suffixarray}.
 
-%% OWNER-VORLAGE: OV-K2-A --- Umfang der Arbeit dreiwertig (Untersuchungsgegenstand / vorgeschaltete
-%% Filter / zuschaltbare, nicht freigegebene Bausteine) statt der bisherigen Zweiteilung; der Bestand wird
-%% genannt, die Messaussage bleibt auf den freigegebenen Satz begrenzt. Default gesetzt, Widerspruch genuegt.
+%% INTERN-272: KA-006
 Der Umfang dieser Arbeit gliedert sich entlang dieser Landschaft in drei Stufen. Untersuchungsgegenstand
 sind erstens die baumartigen Strukturen der vergleichs- und der digitalbasierten Klasse
 (Abbildung~\ref{fig:search-map}) und mit ihnen die elementaren Suchmethoden auf sortierten Feldern, aus
@@ -106,12 +100,12 @@ tritt in dieser Arbeit also nicht als Hash-Tabelle, sondern in seiner Filter-For
 weitere Vertreter --- die Skip-Liste, die Hash-Suche, der binäre Suchbaum, der B-Baum, die Gesamtbäume
 ART~\cite{leis2013art}, HOT~\cite{binna2018hot}, START~\cite{fent2020start},
 Wormhole~\cite{wu2019wormhole} und SuRF~\cite{zhang2018surf} sowie eine skalare Nachbildung der
-SwissTable --- als zuschaltbare, im Referenzlauf nicht freigegebene Bausteine vor; die
+SwissTable --- als zuschaltbare, im Referenzlauf nicht aktivierte Bausteine vor; die
 SwissTable-Nachbildung erlaubt dabei keine Messaussage über die SIMD-basierte Vorlage. Außerhalb des
 Umfangs bleiben die räumlichen Strukturen, die theoretischen Exoten und das Suffix-Array. So verschieden
 die Klassen äußerlich wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen;
 welche Bausteine im Referenzlauf tatsächlich vermessen werden, nennt Kapitel~\ref{ch:measurement} mit
-Stand und Quelle.
+Implementierungsstand und Quelle.
 
 Quer zu dieser Suchalgorithmus-Sicht steht die etablierte Untergliederung der \emph{Container} der
 C++-Standardbibliothek~\cite{iso_cpp}: Sequenz-Container (\texttt{std::vector}) ordnen nach
@@ -173,7 +167,7 @@ verbindet, folgt in Abschnitt~\ref{sec:heuristics-basics}.
 Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Nachgezeichnet wird die
 historische Einführung cache-naher Hardware --- Cache-Hierarchie, Cache-Line, Adressübersetzung, Kohärenz ---
 mit Fokus auf die \emph{statischen und übersetzungszeit-relevanten} Eigenschaften, die später die
-Abstraktion in Abschnitt~\ref{sec:software-means} tragen.
+Abstraktion in Abschnitt~\ref{sec:software-means} stützen.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center]
   \foreach \i in {0,...,7} { \draw (\i*0.55,0) rectangle (\i*0.55+0.55,0.55); }
@@ -321,7 +315,7 @@ dem Modul ablesbare Konstante.
 In Mehr-Sockel- und Chiplet-Systemen kommt die Topologie hinzu: Bei \emph{NUMA} (Non-Uniform Memory
 Access) besitzt jeder Knoten eigenen lokalen Speicher, und Zugriffe auf entfernte Knoten kosten
 spürbar mehr als lokale. Das Betriebssystem platziert Seiten standardmäßig nach der
-\emph{First-Touch}-Politik --- eine Seite landet auf dem Knoten desjenigen Threads, der sie zuerst
+\emph{First-Touch}-Politik --- eine Seite wird auf dem Knoten desjenigen Threads abgelegt, der sie zuerst
 beschreibt~\cite{lameter2013numa}. Für Messungen an Suchstrukturen ist das eine stille Vorbedingung:
 Wer die Struktur auf einem anderen Knoten aufbaut, als er sie vermisst, misst die
 Interconnect-Latenz mit.
@@ -338,9 +332,9 @@ auf; algorithmenseitig adressieren ihn große Seiten (Huge-Pages, 2\,MiB/1\,GiB)
 vergrößern, von mehreren Allokatoren --- mimalloc~\cite{leijen2019mimalloc}, jemalloc~\cite{evans2006jemalloc},
 TCMalloc~\cite{hunter2021temeraire} und snmalloc~\cite{lietar2019snmalloc} --- unterstützt werden und die
 Schmidt et al.~\cite{schmidt2025hbm} mit 2-MiB-Seiten empirisch nutzen; diese vier Allokatoren liegen in
-dieser Arbeit als austauschbare Allokator-Bausteine vor, und den Freigabe-Stand der Allokator-Bausteine
-im Referenzlauf nennt Kapitel~\ref{ch:measurement}. Eine eigenständige dTLB-Optimierung bleibt in den
-Suchalgorithmus-Papern jedoch unterbelegt, eine Beobachtung, auf die die Forschungslücke in
+dieser Arbeit als austauschbare Allokator-Bausteine vor, und welche Allokator-Bausteine
+im Referenzlauf aktiviert sind, nennt Kapitel~\ref{ch:measurement}. Eine eigenständige dTLB-Optimierung bleibt in den
+Suchalgorithmus-Veröffentlichungen jedoch unterbelegt, eine Beobachtung, auf die die Forschungslücke in
 Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:task-concerns}) zurückkommt.
 
 \subsection{Schreibpfad, Ersetzung und Kohärenz}\label{subsec:write-coherence}
@@ -427,7 +421,7 @@ Hardware-Parameter sie explizit in den Entwurf binden.
   Originalarbeiten.
 \end{table}
 
-Zwei Beobachtungen an der Tabelle tragen weiter. Erstens bindet jeder Entwurf nur \emph{wenige}
+Zwei Beobachtungen an der Tabelle führen weiter. Erstens bindet jeder Entwurf nur \emph{wenige}
 Parameter fest ein --- kein bekannter Entwurf behandelt die Parameter-Menge der vorigen Abschnitte
 als offenen Eingaberaum. Zweitens lassen beide Philosophien dieselbe Frage offen: Wie lässt sich
 \emph{gemessenes} Lokalitätswissen der konkreten Zielplattform --- deren Cache-Eigenschaften
@@ -439,8 +433,9 @@ Einstellungen verbinden? Diese Frage nimmt Kapitel~\ref{ch:measurement}
 \section{Workloads und Benchmark-Konventionen}\label{sec:workload-basics-known}
 Ob eine Suchstruktur die Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} gut nutzt,
 zeigt sich erst unter Last; dafür haben sich feste Begriffe und Benchmark-Konventionen etabliert. Eine
-\emph{Last} (Operation) ist ein einzelner Aufruf der Such-Schnittstelle --- eine Punktanfrage, ein
-Einfügen, ein Löschen oder ein Bereichs-Scan. Ein \emph{Workload} (in dieser Arbeit synonym:
+\emph{Last} (Operation) ist ein einzelner Aufruf der Such-Schnittstelle --- eine Punktsuche
+(auch Punktanfrage: die Suche nach genau einem Schlüssel), ein Einfügen, ein Löschen oder ein
+Bereichs-Scan. Ein \emph{Workload} (in dieser Arbeit synonym:
 \emph{Lastprofil}) ist ein strukturiertes Profil solcher
 Operationen: ein Operations-Mix (etwa 50\,\% Lesen / 50\,\% Aktualisieren) über einer
 Schlüssel-Zugriffsverteilung (gleichverteilt, Zipf-verteilt, jüngste Werte) auf einem Datensatz
@@ -486,7 +481,7 @@ L2-Miss oder dTLB-Miss) zugewiesen wird; zugänglich machen sie Werkzeuge wie
 dokumentiert: Zählerstände sind über Wiederholungen nicht streng deterministisch und zählen je nach
 Ereignis systematisch über~\cite{weaver2008counters}, und sollen mehr Ereignisse beobachtet werden,
 als Register existieren, multiplext das Werkzeug die Zähler --- das Ergebnis ist dann eine
-Hochrechnung, keine Zählung. Ein belastbarer Vergleich braucht darum Wiederholungen und eine ehrliche
+Hochrechnung, keine Zählung. Ein belastbarer Vergleich braucht darum Wiederholungen und eine ausgewiesene
 Streuungs-Angabe~\cite{hoefler2015benchmarking,weaver2008counters}. Welche dieser Kenngrößen diese
 Arbeit erhebt und wie sie zu Mess-Kategorien geordnet werden, entwickelt
 Kapitel~\ref{ch:measurement}.

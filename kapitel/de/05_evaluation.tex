@@ -14,8 +14,7 @@ Gegenbeweis; der Ergebnis-Teil (Abschnitt~\ref{sec:eval-results}) führt in sieb
 die Identität der Ergebnisse, den Datenfluss, die Messreihen, die vorliegenden Messungen, die
 Sensitivitätsanalyse, die Gültigkeitsprüfung und die Zusammenfassung.
 
-%% OWNER-VORLAGE: OV-K5-05 --- Kapitel-Aufbau nach der Methodenliteratur (drei Evaluationsobjekte, acht plus
-%% sieben Unterabschnitte, Gültigkeitsprüfung, Zusammenfassung); Bestands-Labels unverändert. Widerspruch genügt.
+%% INTERN-272: KA-088
 Die Evaluation folgt der in der empirischen Software- und Systemforschung üblichen Kette aus
 Forschungsfrage, Hypothese, Messgröße, Versuchsaufbau, Durchführung, Ergebnis, Gültigkeitsprüfung
 und Diskussion~\cite{wohlin2012experimentation,shaw2003writing}: Jede Hypothese benennt ihre
@@ -29,7 +28,7 @@ Nützlichkeit, Strenge des Vorgehens und Nachvollziehbarkeit verlangt~\cite{hevn
 hinzu: Nützlichkeit, Strenge und
 Nachvollziehbarkeit~\cite{hevner2004designscience,peffers2007dsrm,wieringa2014designscience}.
 Leistungsmessungen werden nach den Berichts-Regeln von Hoefler und Belli~\cite{hoefler2015benchmarking}
-und Blackburn et~al.~\cite{blackburn2016truth} ausgewiesen: Nenner, Wiederholungen, Streuung,
+und Blackburn et~al.~\cite{blackburn2016truth} ausgewiesen: Bezugsgröße, Wiederholungen, Streuung,
 Plattform und nicht erhobene Werte (n/a) stehen an jedem Ergebnis. Die drei Evaluationsobjekte ordnen
 die Unterabschnitte; die Cacheline-Awareness ist ihre gemeinsame Leitachse.
 
@@ -42,8 +41,8 @@ Maschinen-Signatur: prod1 (AMD Zen~5), prod2 (Intel Core i9-12900K, Alder Lake) 
 mit Intel-Gracemont-Kernen. Die Frage lautet nicht, welcher Algorithmus schneller ist, sondern welche
 Achse die cacheline-bezogenen Kosten auf welcher Mikroarchitektur bewegt. Die PMC-Kategorien
 (Performance Monitoring Counter, die Hardware-Zähler der Prozessoren) sind dafür die primären
-Messgrößen, die Zeit-Kategorien die Gegenprobe; weil Hardware-Zähler nur nach einer Kreuzprobe am
-Objekt vertrauenswürdig sind~\cite{weaver2008counters}, legt Abschnitt~\ref{sec:eval-counters} die
+Messgrößen, die Zeit-Kategorien die Gegenprobe; weil Hardware-Zähler nur nach einer Gegenprüfung durch
+Messung vertrauenswürdig sind~\cite{weaver2008counters}, legt Abschnitt~\ref{sec:eval-counters} die
 Semantik jedes Zählers je Modell offen.
 
 \section{Methodik}\label{sec:eval-method}
@@ -57,16 +56,13 @@ der Messung:
   Cache-Miss-Kategorien je Workload; H1 gilt als gestützt, wenn die Rangfolge der Page-Type-Varianten
   zwischen YCSB-A und YCSB-E auf derselben Plattform kippt und der Abstand das Unsicherheitsband der
   Bau-Varianten (Abschnitt~\ref{sec:eval-counterproof}) übersteigt.
-  %% OWNER-VORLAGE: OV-03 --- Annahme-/Ablehnkriterium für H2 (zwei Instrumente: Hand-Audit über sieben
-  %% Achsen und tool-berechneter cppcheck-Score in der Mess-Zeile). Default: Rangkorrelation des
-  %% tool-berechneten Scores gegen den Durchsatz derselben Zelle, n/a-Profile ausgeschlossen, Hand-Audit
-  %% als qualitative Einordnung, Schwelle vor der Messung zu nennen. Echter Entscheid des Owners.
+  %% INTERN-272: KA-089
   \item[H2 (Code-Qualität pro Quelle)] Der vom Original-Quell-Repository geerbte Code-Qualitäts-Score
-  korreliert messbar mit dem erreichten Durchsatz. Zwei Instrumente tragen den Score: erstens das
+  korreliert messbar mit dem erreichten Durchsatz. Zwei Instrumente liefern den Score: erstens das
   dokumentierte Hand-Audit je Quell-Repository über sieben Bewertungs-Achsen (Stil, Tests,
   Dokumentation, Wartbarkeit, Pflege-Status, Lizenz, Build-System; Skala 1--5) für 22 bewertete
   Quellen --- eine Akte unter den Audits des Cache-Engine-Repositories ---, zweitens das
-  tool-berechnete Instrument, das real in die Mess-Zeile eingeht: die gewichtete
+  tool-berechnete Instrument, das tatsächlich in die Mess-Zeile eingeht: die gewichtete
   \texttt{cppcheck}-Befunddichte je tausend physischer Zeilen (Gewichte error~3, warning~2,
   performance~1, portability~1, style~0,5) über die vendorten Original-Quellen; die Akte führt 33
   Einträge, davon 22 als n/a, weil die Rekonstruktion keine vendorte Original-Quelle besitzt, und der
@@ -78,13 +74,12 @@ der Messung:
   mit dem Durchsatz in derselben Zelle (Plattform, Workload, Regime) einen Rangkorrelations-Koeffizienten
   jenseits einer vor der Messung genannten Schwelle zeigt; n/a-Profile gehen nicht in die Korrelation
   ein, und das Hand-Audit ist die qualitative Einordnung.
-  %% OWNER-VORLAGE: OV-K5-03 --- H3-Nenner: drei ValueHandle-Varianten (Inline, External, ChainRef) als
-  %% Ausschnitt der fünf Registry-Bausteine der Achse value_handle. Default gesetzt; Widerspruch genügt.
+  %% INTERN-272: KA-090
   \item[H3 (Inline- vs.\ External- vs.\ Chain-Verteilung)] Die beobachtete Verteilung der drei
   ValueHandle-Varianten korreliert mit der Page-Dichte: dichte Pages bevorzugen Inline, spärliche Pages
   External und PRT-ART-Heuristiken ChainRef. Die Registry der Achse \texttt{value\_handle} führt fünf
   Bausteine (Inline, External-Pool, Immutable-Shared-Ref, Versioned-Pointer, Chain-Ref; nur Inline ist
-  golden-verdrahtet); H3 betrachtet die drei für PRT-ART tragenden Varianten als begründeten
+  an den golden-Referenzkatalog gebunden); H3 betrachtet die drei für PRT-ART maßgeblichen Varianten als begründeten
   Ausschnitt. Messgröße ist der Anteil je Variante über der Page-Dichte; H3 gilt als gestützt, wenn
   der Anteil monoton mit der Dichte wandert.
 \end{description}
@@ -96,27 +91,26 @@ liefern.
 \subsection{Vollautomatische Experiment-Evaluation aus der XML}\label{sec:eval-xml}
 Die Evaluation ist selbst Gegenstand der Automatisierung (Abbildung~\ref{fig:eval-xml-kette}): Eine
 Anwender-XML mit der Wurzel \texttt{<comdare\_experiment>} deklariert, \emph{was} gemessen wird,
-\emph{wo} und \emph{wann} --- nie das \emph{Wie}. Für die Evaluation tragen die Sektionen
+\emph{wo} und \emph{wann} --- nie das \emph{Wie}. Für die Evaluation sind die Sektionen
 \texttt{workloads}, \texttt{datasets}, \texttt{measurement\_tooling}, \texttt{measurement\_categories},
-\texttt{run\_methodology}, \texttt{writeback\_methods} und \texttt{output}; der Profil-Validator prüft
+\texttt{run\_methodology}, \texttt{writeback\_methods} und \texttt{output} maßgeblich; der Profil-Validator prüft
 sie vor jedem Lauf gegen die Registries (Achsen-Namen und -Werte, Verbund-Bindungen, Fairness-Modi,
 Akten). Aus der XML entsteht deterministisch der Plan --- der Director-Walk des Planers, der als reine
 Text-Emission auch ohne Bau abrufbar ist ---, daraus die Bau-Jobs des CacheEngineBuilders und die
-Tier-Binaries, deren Messung in der Mappe (xlsx) landet; die CSV-Form ist der aus der Mappe erzeugte,
+Tier-Binaries, deren Messung in der Mappe (xlsx) abgelegt wird; die CSV-Form ist der aus der Mappe erzeugte,
 geordnete Baum aus CSV-Dateien (ein Ordner je Blatt, darin die Dateien der einzelnen Unter-Achsen-Fahrten;
 kein einzelnes Kind-Dokument), und die
 Generatoren des Werkzeug-Repositories (Binary-zu-CSV, CSV-zu-LaTeX, Diagramm-Generator,
 Anhang-Generator) rendern Steckbriefe, Tabellen und TikZ-Diagramme je Sprache in ein
 \texttt{tabellen}-Verzeichnis, das das Manuskript einbindet. Kein Schritt dieser Kette wird von Hand
-ausgeführt; jede Zahl im Anhang trägt den Lauf, der sie erzeugt hat (Anhang~\ref{app:measurements}).
-Durchführungs-Stand: Die Kette ist am Durchstich real gelaufen --- die Smoke-Messreihe über 43
+ausgeführt; jede Zahl im Anhang führt den Lauf, der sie erzeugt hat (Anhang~\ref{app:measurements}).
+Umsetzungsstand: Die Kette ist in einem ersten durchgehenden Lauf nachgewiesen --- die Smoke-Messreihe über 43
 Permutationen im Anhang ist ihr Erzeugnis ---; die XML-Sektion \texttt{<publish>} für den
 Lager-Rückschrieb, der kommandozeilengeführte Erstellungsmodus der XML
 (Abschnitt~\ref{sec:impl-pipeline}) und die dritte Ausgabe-Factory LaTeX
-(Abschnitt~\ref{sec:eval-dataflow}) sind Ausbaustufen, nicht Behauptungen.
+(Abschnitt~\ref{sec:eval-dataflow}) sind vorgesehen, aber nicht implementiert.
 \begin{figure}[htbp]\centering
-% Kein \resizebox: fuenf Kacheln je 2.55cm Textbreite im Raster 3.1cm (Gesamtbreite ~15.1cm) passen nativ
-% in \textwidth; Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
+%% INTERN-272: KA-091
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,
   st/.style={draw,rounded corners,fill=blue!7,text width=2.55cm,minimum height=1.1cm,align=center,inner sep=2pt,font=\scriptsize},
   og/.style={st,fill=green!9},
@@ -126,17 +120,17 @@ Lager-Rückschrieb, der kommandozeilengeführte Erstellungsmodus der XML
   \node[st] (p) at (6.2,0){\textbf{Planer}\\Director-Walk, Plan-Text, Bau-Legende};
   \node[st] (c) at (9.3,0){\textbf{CEB}\\Bau-Jobs je System-Permutation, Tier-Binaries};
   \node[st] (m) at (12.4,0){\textbf{Messung}\\wallclock / macro / micro, PMC-Zähler, ein Mess-Thread};
-  \node[og] (xl) at (12.4,-2.6){\textbf{Mappe (xlsx)}\\Stamm: entsteht immer; ein Datenblatt (konstanter Blattschlüssel); Blatt je Unter-Achsen-Permutation: Soll};
-  \node[og] (cs) at (9.3,-2.6){\textbf{CSV-Baum}\\Ordner je Blatt; WIDE 189 Spalten, Pipeline-Sicht 16 + 16};
+  \node[og] (xl) at (12.4,-2.6){\textbf{Mappe (xlsx)}\\Stamm: entsteht immer; ein Datenblatt (konstanter Blattschlüssel); Blatt je Unter-Achsen-Permutation: vorgesehen};
+  \node[og] (cs) at (9.3,-2.6){\textbf{CSV-Baum} (Baum: vorgesehen)\\Ordner je Blatt; WIDE 189 Spalten, Pipeline-Sicht 16 + 16};
   \node[og] (g) at (6.2,-2.6){\textbf{Generatoren}\\Binary-zu-CSV, CSV-zu-LaTeX, Diagramme, Anhang};
   \node[og] (t) at (3.1,-2.6){\textbf{tabellen/}\\je Sprache: Steckbriefe, booktabs-Tabellen, TikZ};
   \node[og] (ms) at (0,-2.6){\textbf{Manuskript}\\\textbackslash{}input im Anhang; jede Zahl mit ihrem Lauf};
   \foreach \a/\b in {x/v,v/p,p/c,c/m}{\draw[->,thick] (\a)--(\b);}
   \draw[->,thick] (m)--(xl);
   \foreach \a/\b in {xl/cs,cs/g,g/t,t/ms}{\draw[->,thick] (\a)--(\b);}
-  \node[pl] (a1) at (0,-4.5){Ausbaustufe: XML-Erstellungsmodus (Kommandozeile, Hardware-Filter)};
-  \node[pl] (a2) at (12.4,-4.5){Ausbaustufe: \texttt{<publish>}-Sektion (Lager-Rückschrieb)};
-  \node[pl] (a3) at (9.3,-4.5){Ausbaustufe: dritte Factory LaTeX (Blatt-Ordnung, Messreihe je Binary)};
+  \node[pl] (a1) at (0,-4.5){nicht implementiert: XML-Erstellungsmodus (Kommandozeile, Hardware-Filter)};
+  \node[pl] (a2) at (12.4,-4.5){nicht implementiert: \texttt{<publish>}-Sektion (Lager-Rückschrieb)};
+  \node[pl] (a3) at (9.3,-4.5){nicht implementiert: dritte Factory LaTeX (Blatt-Ordnung, Messreihe je Binary)};
   \draw[->,dashed] (a1)--(ms);
   \draw[->,dashed] (a2)--(xl);
   \draw[->,dashed] (a3)--(cs);
@@ -145,18 +139,16 @@ Lager-Rückschrieb, der kommandozeilengeführte Erstellungsmodus der XML
 XML deklariert Was, Wo und Wann; der Validator prüft sie gegen die Registries; der Planer emittiert den
 deterministischen Plan; die CEB baut je System-Permutation die Tier-Binaries; die Messung erhebt die
 drei Mess-Ebenen und die Zähler mit einem Mess-Thread. Untere Reihe: Die Mappe ist der Stamm (ein Datenblatt
-unter konstantem Blattschlüssel; die Auffächerung in ein Blatt je Unter-Achsen-Permutation ist Soll), die
+unter konstantem Blattschlüssel; die Auffächerung in ein Blatt je Unter-Achsen-Permutation ist vorgesehen, aber nicht implementiert), die
 CSV-Form ihr aus ihr erzeugter, geordneter Baum aus CSV-Dateien (ein Ordner je Blatt; kein einzelnes
-Kind-Dokument; im Durchführungs-Stand eine flache Datei), die Generatoren rendern je Sprache in das
+Kind-Dokument; implementiert ist eine flache Datei), die Generatoren rendern je Sprache in das
 \texttt{tabellen}-Verzeichnis, das Manuskript bindet die
-Dateien ein --- jede Zahl trägt ihren Lauf. Gestrichelt: Ausbaustufen (XML-Erstellungsmodus,
+Dateien ein --- jede Zahl führt ihren Lauf. Gestrichelt: nicht implementierte Teile (XML-Erstellungsmodus,
 \texttt{<publish>}-Sektion, dritte Factory).}\label{fig:eval-xml-kette}
 \end{figure}
 
 \subsection{Workloads und Datensätze}\label{sec:eval-workloads}
-%% OWNER-VORLAGE: OV-02 --- Default-Workload: die Voll-Permutation über alle verfügbaren Workloads ist
-%% Plan-Ist-Stand (dynamische Dimension workload); der Treiber fällt für profil-lose Module auf genau einen
-%% Workload zurück. Durchführungs-Stand an dieser einen Stelle; Zweiteilung in beide Richtungen.
+%% INTERN-272: KA-092
 Phase~5 der Mess-Pipeline (Execute, Abschnitt~\ref{sec:impl-pipeline}) leitet den YCSB-Workload je
 Permutation als Fallback-Heuristik aus dem Traversal-Tag des Profils ab
 (Tabelle~\ref{tab:workload-routing}), sofern kein \texttt{<expected\_workload>}-Tag des Profils die
@@ -165,17 +157,17 @@ Heuristik überschreibt (Abschnitt~\ref{sec:sota-instances}); das Routing matcht
 \texttt{<expected\_workload>}-Tags wird gegen die sechs Token \texttt{YCSB\_A} bis \texttt{YCSB\_F}
 aufgelöst. Der globale Default-Workload ist die Permutation über alle verfügbaren Workloads; die
 Laufzeit-Dimension \texttt{workload} ist dafür als dynamische Dimension der Mess-Registry
-registriert, gespeist aus dem Last-Rahmenwerk YCSB~\cite{cooper2010ycsb}. Durchführungs-Stand: Der
+registriert, gespeist aus dem Last-Rahmenwerk YCSB~\cite{cooper2010ycsb}. Umsetzungsstand: Der
 Treiber fällt für profil-lose Module auf genau einen Workload zurück, die Workload-Option des Laufs;
-die Voll-Permutation ist Plan-Ist-Stand und wird mit dem Kampagnen-Fenster gebaut. Als
+die Voll-Permutation ist vorgesehen, aber nicht implementiert. Als
 Datengrundlage dienen reale String-Datensätze unterschiedlicher Charakteristik
 (Tabelle~\ref{tab:datasets}), jeder mit einer Reproduzierbarkeits-Akte aus Quelle, Prüfsumme,
 Zeilenzahl, Vorverarbeitung und Seed-Regel für die synthetischen Miss-, Update- und Delete-Schlüssel;
 vier der sechs Datensätze (\texttt{url}, \texttt{protein}, \texttt{tpcds-id}, \texttt{trec-terms})
-tragen eine gegen die vorverarbeiteten Dateien berechnete reale Akte, \texttt{dna} die Akte der
-Pizza\&Chili-Quelle, und \texttt{xml} trägt eine Spezifikation ohne Prüfsumme, weil die Datei nicht
-lokal vorliegt --- eine erfundene Prüfsumme gibt es nicht (n/a). Die Akten liegen als XML-Dateien je
-Datensatz im Werkzeug-Repository, und ein Kanon-Test prüft die realen Akten gegen den Sechser-Kanon
+besitzen eine gegen die vorverarbeiteten Dateien tatsächlich berechnete Akte, \texttt{dna} die Akte der
+Pizza\&Chili-Quelle, und \texttt{xml} besitzt eine Spezifikation ohne Prüfsumme, weil die Datei nicht
+lokal vorliegt --- eine synthetische Prüfsumme gibt es nicht (n/a). Die Akten liegen als XML-Dateien je
+Datensatz im Werkzeug-Repository, und ein Kanon-Test prüft die berechneten Akten gegen den Sechser-Kanon
 der Tabelle.
 
 \begin{table}[!htbp]
@@ -209,31 +201,28 @@ der Tabelle.
   \end{tabular}
 \end{table}
 
-\subsection{Plattformen, Hersteller-Lanes und Regimes}\label{sec:eval-platforms}
-%% OWNER-VORLAGE: OV-K5-01 / OV-K3-03 --- Barnard-CPU-Familie mit ZIH-Beleg (Intel Sapphire Rapids, Xeon
-%% Platinum 8470) gegen den Code-Kommentar (AMD EPYC 7763); ZIH deklariert, nicht vermessen (n/a),
-%% gleichlautend mit Kapitel 3. OV-02 --- XML-Erstellungsmodus als Plan-Ist-Stand (Verweis Kapitel 4).
-%% Defaults gesetzt; Widerspruch genügt.
-Die Messungen zielen auf die registrierte Flotte des Apparats: prod1, die AMD-Maschine mit einem
+\subsection{Plattformen, Hersteller-Pfade und Regimes}\label{sec:eval-platforms}
+%% INTERN-272: KA-093
+Die Messungen zielen auf die registrierten Messmaschinen des Apparats: prod1, die AMD-Maschine mit einem
 Ryzen~9~9950X3D (Zen~5; Maschinen-Signatur \texttt{prod1\_zen5} mit 22 Merkmalen inklusive AVX-512), % chktex 29
 zugleich die Entwicklungs-Workstation der Verifikation; prod2, die Intel-Maschine mit einem Core
 i9-12900K (Alder Lake; Signatur \texttt{prod2\_alder\_lake} mit neun Merkmalen, ohne AVX-512, mit P-
 und E-Kernen); und ein ODROID-Board mit Intel-Gracemont-Kernen (Signatur \texttt{odroid\_gracemont},
 neun Merkmale). Der ZIH-Cluster der TU Dresden ist als Unter-Achse IS3 der Ziel-ISA deklariert
-(Barnard, Capella, GraceHopper, N/A); der Barnard-Knoten trägt Intel-Sapphire-Rapids-CPUs, zwei Xeon
+(Barnard, Capella, GraceHopper, N/A); der Barnard-Knoten besitzt Intel-Sapphire-Rapids-CPUs, zwei Xeon
 Platinum 8470 je Knoten~\cite{zih_hpc_compendium_hardware}, und Capella ist der GPU-Cluster mit
 AMD-Genoa-CPUs und NVIDIA H100. In keiner Maschinen-Signatur ist ein ZIH-Knoten registriert, und ein
-Lauf dort ist nicht vermessen (n/a) --- gleichlautend mit Abschnitt~\ref{sec:measurement-system}. Eine
+Lauf dort ist nicht gemessen (n/a) --- gleichlautend mit Abschnitt~\ref{sec:measurement-system}. Eine
 HBM-Plattform ist in keiner Signatur und in keiner Achse als Plattform registriert; die Plattform-Sonde
-trägt ein HBM-Merkmal und die Allokator-Achse kennt PIM-Sonderfälle, mehr nicht --- sie bleibt
-geplant, nicht registriert. Eine \texttt{IPlatformProbe} (Phase~1) meldet je Plattform die lauffähige
+führt ein HBM-Merkmal und die Allokator-Achse kennt PIM-Sonderfälle, mehr nicht --- sie ist
+vorgesehen, aber nicht registriert. Eine \texttt{IPlatformProbe} (Phase~1) meldet je Plattform die lauffähige
 Teilmenge der Achsen (etwa AVX-512 nur dort, wo verfügbar), wobei der Ausschluss einer nicht
 verfügbaren Erweiterung stets \emph{maschinenseitig} fällt --- mit Warnung und benannter
 Fehlerklasse, nie als stiller Profil-Filter, denn das Experiment-Profil bleibt für alle Maschinen
 gleich; je Plattform werden ein Scalar- und ein AVX2-Build vorbereitet, ein AVX-512-Build nur dort, wo
-die Signatur das Merkmal trägt. Die verfügbaren Achsen-Optionen sind je Plattform über die
+die Signatur das Merkmal führt. Die verfügbaren Achsen-Optionen sind je Plattform über die
 Planer-Sonde prüfbar; ein kommandozeilengeführter XML-Erstellungsmodus mit Plattform-Filter ist
-Plan-Ist-Stand und wird im Kampagnen-Fenster gebaut (Abschnitt~\ref{sec:impl-pipeline}). Auf
+vorgesehen, aber nicht implementiert (Abschnitt~\ref{sec:impl-pipeline}). Auf
 Hybrid-CPUs werden P- und E-Kerne getrennt vermessen statt zusammenaggregiert, auf Intel wie auf AMD\@;
 die Messmechanik dafür sind die Core-PMU-Domänen des Kernels (auf Intel die sysfs-Namen
 \texttt{cpu\_core} und \texttt{cpu\_atom}), während die Benennung der Unter-Achse vendorneutral bleibt
@@ -241,27 +230,27 @@ die Messmechanik dafür sind die Core-PMU-Domänen des Kernels (auf Intel die sy
 Kern-Modi folgen dem Sechs-Modus-Modell aus Abschnitt~\ref{sec:axis-triad}: vier Pinning-Modi je
 Kern-Sorte (P- oder E-Kerne, einzelner Kern oder alle Kerne der Sorte), der ungepinnte Referenzlauf
 und \emph{HybridAware} als sechster Modus (Scheduling-Dimension \texttt{hetero\_core\_dispatch}), der
-für die Cache-Line-Awareness-Messung verpflichtend ist; die Verdrahtung des Kern-Pinnings und der
-Kern-Modi in das Lauf-Profil ist als Bau-Schritt benannt (Abschnitt~\ref{sec:impl-system-axes}).
+für die Cache-Line-Awareness-Messung verpflichtend ist; die Anbindung des Kern-Pinnings und der
+Kern-Modi an das Lauf-Profil ist vorgesehen, aber nicht implementiert (Abschnitt~\ref{sec:impl-system-axes}).
 
 Der produktive Mess-Betrieb ist ein \emph{Zwei-Maschinen-Betrieb} --- die AMD-Maschine prod1 neben
 der Intel-Maschine prod2 ---, und die zählerbasierte Erhebung führt dafür zwei je einzeln
-scharfschaltbare Hersteller-Lanes, \texttt{pmc:amd} auf prod1 und \texttt{pmc:intel} auf prod2, mit je
-eigener PMU-Ressourcengruppe; die Lanes laufen absichtlich parallel, weil verschiedene Hosts
-verschiedene PMUs tragen und eine gemeinsame Gruppe sie grundlos serialisieren würde. Die
+aktivierbare Hersteller-Pfade, \texttt{pmc:amd} auf prod1 und \texttt{pmc:intel} auf prod2, mit je
+eigener PMU-Ressourcengruppe; die Pfade laufen absichtlich parallel, weil verschiedene Hosts
+verschiedene PMUs besitzen und eine gemeinsame Gruppe sie grundlos serialisieren würde. Die
 Vollständigkeit ist eine Auswertungs-Regel, kein CI-Gate: Eine Messreihe gilt erst als vollständig,
-wenn beide Lanes ihre Zähler-Voraussetzungen nachgewiesen und geliefert haben; eine einseitige
-Lane-Fahrt wird als Teil-Messung ausgewiesen, nie still als Ganzes geführt
-(Abschnitt~\ref{sec:eval-validity}). Auf den Produktions-Zielmaschinen soll zudem jede Messung unter
-\emph{zwei Betriebssystem-Regimes} erhoben werden, um Produktions-Treue von Mess-Tiefe zu trennen: Ein
+wenn beide Pfade ihre Zähler-Voraussetzungen nachgewiesen und geliefert haben; ein einseitig
+gefahrener Pfad wird als Teil-Messung ausgewiesen, nie still als Ganzes geführt
+(Abschnitt~\ref{sec:eval-validity}). Der Messplan sieht auf den Produktions-Zielmaschinen zudem für jede Messung
+\emph{zwei Betriebssystem-Regimes} vor, um Produktions-Treue von Mess-Tiefe zu trennen: Ein
 \emph{immutables} Betriebssystem (Talos) spiegelt den Produktiv-Einsatz und erzwingt
 boot-/übersetzungsstatische Cache-Einstellungen (Abschnitt~\ref{sec:hardware-history}); ein
 \emph{root-Linux mit vollem Hardware-Zähler-Zugriff} (\texttt{perf} und die modellspezifischen
 Register, MSR) eröffnet hingegen überhaupt erst den Zugang zu den zählerbasierten Mess-Kategorien
 (Abschnitt~\ref{sec:sota-instances}) und zu den laufzeit-konfigurierbaren cache-nahen
 Achsen-Parametern (Prefetch-Distanz, Hardware-Prefetcher). Das zweite Regime ist \emph{entworfen,
-nicht vollzogen}: Die berichteten Messungen stammen sämtlich vom root-Linux-Regime der beiden
-Produktionsmaschinen; der Talos-Spiegel bleibt als Anforderung bestehen.
+nicht umgesetzt}: Die berichteten Messungen stammen sämtlich vom root-Linux-Regime der beiden
+Produktionsmaschinen; das Talos-Regime ist vorgesehen, aber nicht gemessen.
 
 \subsection{Mess-Ebenen, Kollektoren und Zähler}\label{sec:eval-counters}
 Davon zu trennen ist, welche Zähler dieser Zugang tatsächlich füllt
@@ -270,46 +259,46 @@ Davon zu trennen ist, welche Zähler dieser Zugang tatsächlich füllt
 L1D-Misses, Last-Level-Misses, dTLB-Misses und Branch-Misses
 (\texttt{PERF\_COUNT\_HW\_BRANCH\_MISSES}, portabel auf Intel und AMD). Für L2-Misses und
 Kohärenz-Invalidierungen gibt es keinen portablen generischen Zähler; beide werden modell-gebunden über
-einen RAW-Event-Katalog erhoben, dessen Kodierungen am Objekt kreuzgeprobt sind: Für
+einen RAW-Event-Katalog erhoben, dessen Kodierungen gegengeprüft sind: Für
 Zen~5\footnote{Zen~5: die AMD-Mikroarchitektur des Ryzen~9~9950X3D (Granite Ridge, CPUID-Familie 26); % chktex 29
-prod1 trägt zwei ungleich große L3-Komplexe.} ist \texttt{l2\_cache\_req\_stat.ic\_dc\_miss\_in\_l2} das
+prod1 besitzt zwei ungleich große L3-Komplexe.} ist \texttt{l2\_cache\_req\_stat.ic\_dc\_miss\_in\_l2} das
 Event \texttt{0x64} mit Maske \texttt{0x09} (Demand-Misses in L2 ohne L2-Prefetch) und % chktex 29
 \texttt{ls\_dmnd\_fills\_from\_sys.remote\_cache} das Event \texttt{0x43} mit Maske \texttt{0x14} % chktex 29
 (Demand-Fills aus dem Cache eines anderen CCX, eines Kern-Komplexes mit eigenem L3); ein wörtlicher
-Invalidierungs-Zähler existiert im Core-Event-Satz nicht, die Spalte trägt genau diese Belegung. Die
+Invalidierungs-Zähler existiert im Core-Event-Satz nicht, die Spalte führt genau diese Belegung. Die
 Kodierungen stammen aus der Eventtabelle des Linux-Kernels für Zen~5~\cite{linux_perf_amdzen5}, aus
-der \texttt{perf} die benannten Events bindet. Modelle ohne Katalog-Eintrag tragen n/a, nie eine
-geratene Kodierung; für Intel liegt kein Eintrag vor, weil die Kreuzprobe auf einem Intel-Host
-aussteht. Das Last-Level-Event scheitert auf Zen~5 beim Öffnen (\texttt{ENOENT}). IPC/CPI ist als
-Kategorie deklariert, aber nicht verdrahtet --- dem Zähler-Verbund fehlen die Quellen für Instruktionen
+der \texttt{perf} die benannten Events bindet. Modelle ohne Katalog-Eintrag führen n/a, nie eine
+geratene Kodierung; für Intel liegt kein Eintrag vor, weil die Gegenprüfung auf einem Intel-Host
+nicht vorliegt. Das Last-Level-Event scheitert auf Zen~5 beim Öffnen (\texttt{ENOENT}). IPC/CPI ist als
+Kategorie deklariert, aber nicht angebunden --- dem Zähler-Verbund fehlen die Quellen für Instruktionen
 und Zyklen ---, und die Energie-Aufnahme wird best-effort aus der RAPL-Sysfs-Zone\footnote{RAPL
 (Running Average Power Limit): die Energie-Zähler der Prozessoren, die das Betriebssystem über die
 Powercap-Schnittstelle in Mikrojoule ausliest~\cite{david2010rapl,khan2018rapl}; ohne Leserecht auf
-die Zone bleibt der Wert leer.} gelesen und bleibt ohne Zonen-Leserecht leer. Die Ehrlichkeits-Regel
-ist als Feld-Flag realisiert: Je Zähler trägt der Zähler-Verbund ein
+die Zone bleibt der Wert leer.} gelesen und bleibt ohne Zonen-Leserecht leer. Der Grundsatz der ausgewiesenen Nichterhebung
+ist als Feld-Flag realisiert: Je Zähler führt der Zähler-Verbund ein
 \texttt{*\_source\_available}-Flag, sieben Flags für sieben Zähler; eine Zahl bedeutet, dass die
-Quelle geliefert hat --- auch eine echte Null ---, n/a bedeutet, dass die Quelle fehlt, und diese
+Quelle geliefert hat --- auch eine gemessene Null ---, n/a bedeutet, dass die Quelle fehlt, und diese
 Unterscheidung reist Ende-zu-Ende bis in Mappe, Tabellen und Diagramme. Hardware-Zähler gelten dabei
-nur nach Kreuzprobe als vertrauenswürdig~\cite{weaver2008counters}; die Kreuzprobe für Zen~5 ist am
-Objekt geführt, die für Intel steht aus.
+nur nach Gegenprüfung als vertrauenswürdig~\cite{weaver2008counters}; die Gegenprüfung für Zen~5 ist durch
+Messung belegt, die für Intel liegt nicht vor.
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}l>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{2.3cm}@{}}
 \toprule
-Kategorie (Spalte) & Quelle & Intel-Stand & Ehrlichkeits-Flag \\
+Kategorie (Spalte) & Quelle & Intel-Stand & Gültigkeits-Flag \\
 \midrule
 \texttt{cache\_misses\_l1} & generisches perf-Event (L1D-Read-Miss) & generisch: ja & eigenes Flag \\
-\texttt{cache\_misses\_l2} & RAW-Katalog Zen~5: Event \texttt{0x64}, Maske \texttt{0x09} (Demand-Misses in L2) & kein Katalog-Eintrag, Kreuzprobe ausstehend (n/a) & eigenes Flag \\ % chktex 29
+\texttt{cache\_misses\_l2} & RAW-Katalog Zen~5: Event \texttt{0x64}, Maske \texttt{0x09} (Demand-Misses in L2) & kein Katalog-Eintrag, Gegenprüfung nicht durchgeführt (n/a) & eigenes Flag \\ % chktex 29
 \texttt{cache\_misses\_l3} & generisches perf-Event (Last-Level); scheitert auf Zen~5 beim Öffnen (n/a) & generisch: ja & eigenes Flag \\
 \texttt{dtlb\_misses} & generisches perf-Event (dTLB-Read-Miss) & generisch: ja & eigenes Flag \\
 \texttt{branch\_misses} & generisches perf-Event (\texttt{PERF\_COUNT\_\allowbreak{}HW\_\allowbreak{}BRANCH\_\allowbreak{}MISSES}) & generisch: ja & eigenes Flag \\
-\texttt{coherence\_invalidations} & RAW-Katalog Zen~5: Event \texttt{0x43}, Maske \texttt{0x14} (Fremd-CCX-Fills) & kein Katalog-Eintrag, Kreuzprobe ausstehend (n/a) & eigenes Flag \\ % chktex 29
+\texttt{coherence\_invalidations} & RAW-Katalog Zen~5: Event \texttt{0x43}, Maske \texttt{0x14} (Fremd-CCX-Fills) & kein Katalog-Eintrag, Gegenprüfung nicht durchgeführt (n/a) & eigenes Flag \\ % chktex 29
 \texttt{energy\_micro\_joules} & RAPL-Sysfs-Zone, best-effort (Leserecht) & wie AMD (Leserecht) & eigenes Flag \\
-IPC/CPI & deklariert, nicht verdrahtet (Quelle fehlt) & n/a & --- \\
+IPC/CPI & deklariert, nicht angebunden (Quelle fehlt) & n/a & --- \\
 \bottomrule
 \end{tabular}
 \caption{Die Zähler der Mess-Kette und ihre Quellen: vier generische perf-Events (portabel), zwei
-modell-gebundene RAW-Events aus dem Katalog für Zen~5 (kreuzgeprobt am Objekt), die RAPL-Energie als
-best-effort-Lesung und IPC/CPI als deklarierte, nicht verdrahtete Kategorie. Je Zähler trägt der
+modell-gebundene RAW-Events aus dem Katalog für Zen~5 (durch Messung gegengeprüft), die RAPL-Energie als
+best-effort-Lesung und IPC/CPI als deklarierte, nicht angebundene Kategorie. Je Zähler führt der
 Zähler-Verbund ein \texttt{*\_source\_available}-Flag; eine Zahl heißt \enquote{Quelle hat geliefert},
 n/a heißt \enquote{Quelle fehlt}. Der Intel-Stand nennt, was ohne Katalog-Eintrag auf prod2
 erhoben wird.}\label{tab:eval-pmc-zaehler}
@@ -322,87 +311,83 @@ parameter-leer; \emph{macro} (ma) --- die Zeit der Genus-Interface-Funktionen de
 \emph{micro} (mi) --- die Zeit und die Erfolgs-Parameter je Achsen-Interface
 (Abschnitt~\ref{sec:measurement-system}, Abbildung~\ref{fig:traeger-flaechen}); Teilmengen der drei
 Ebenen sind erlaubt, jede andere Reihenfolge ist syntaktisch falsch, und w/ma/mi ist der registrierte
-Alias. Drei Kollektoren tragen die Erhebung als Bausteine der Mess-Achse \texttt{collector} ---
+Alias. Drei Kollektoren übernehmen die Erhebung als Bausteine der Mess-Achse \texttt{collector} ---
 Wall-Clock, Beobachter-Schnappschuss und PMC ---, und die sechzehn Mess-Kategorien sind die
 Unter-Achse der Tooling-Achse, nicht ihre Haupt-Auffächerung. Die Auswertung hält die drei Ebenen
 getrennt: Achsen-Interface, Gattungs- und Genus-Interface und die Wall-Clock des CacheEngineBuilders
 werden nie gemischt (Abschnitt~\ref{sec:eval-sensitivity}); PMC-Messungen als eigener Abbildungstyp des
-Anhang-Generators sind eine Ausbaustufe. Durchführungs-Stand: Registry und Ebenen-Kanon sind gebaut;
+Anhang-Generators sind vorgesehen, aber nicht implementiert. Umsetzungsstand: Registry und Ebenen-Kanon sind implementiert;
 die Ordnungs-Validierung an den drei Serialisierungs-Stellen und der Kollektor als eigenständiges
-Bauteil sind als Posten benannt.
+Bauteil sind es nicht.
 
 Die zeit- und beobachter-basierten Kategorien laufen unter beiden Regimes identisch und sichern die
 Vergleichbarkeit; die PMC-Kategorien werden nur unter dem privilegierten Regime erhoben. Je Kategorie
-trägt die Registry das Regime als Ordinal (0 für Zeit und Beobachter, 1 für Zähler): neun
+führt die Registry das Regime als Ordinal (0 für Zeit und Beobachter, 1 für Zähler): neun
 Zeit-/Beobachter-Kategorien und sieben Zähler-Kategorien. Betriebssystem, Kernel und Zähler-Domäne sind
 je Plattform zu protokollieren: Die Betriebssystem-Sonde erhebt Kernel und Kennung des Systems als
 System-Achse, und die Zähler-Quelle hält je Zähler fest, auf welcher Core-PMU-Domäne er geöffnet hat
 (generisch oder, auf Hybrid-Maschinen, der sysfs-Name der Domäne); eine eigene Spalte der Mess-Ausgabe
-tragen diese drei Angaben im WIDE-Schema nicht --- die Spalten \texttt{platform} und
-\texttt{build\_version} tragen Plattform-Tag und Bau-Version je Zeile, die Protokoll-Spalte je
-Domäne ist Anforderung.
+besitzen diese drei Angaben im WIDE-Schema nicht --- die Spalten \texttt{platform} und
+\texttt{build\_version} führen Plattform-Tag und Bau-Version je Zeile, die Protokoll-Spalte je
+Domäne ist nicht implementiert.
 
 \subsection{Bau-Umfang und Optimierungsstufen}\label{sec:eval-build-scope}
-%% OWNER-VORLAGE: OV-02 --- O0 bis O3 als Kunden-Wahl in der XML samt Durchreichung weiterer Compile-Flags:
-%% Verfahren als Plan-Ist-Stand, Durchführungs-Stand an dieser einen Stelle (Registry führt fünf Stufen,
-%% das Profil deklariert O2 und O3). Default gesetzt; Widerspruch genügt.
-Der Umfang des vollständigen Baus ist als \emph{Soll} festgelegt. Das Profil deklariert die
+%% INTERN-272: KA-100
+Der Umfang des vollständigen Baus ist im Profil festgelegt. Das Profil deklariert die
 Bau-Steuergrößen: zwei Optimierungsstufen (O2, O3) mal zwei SIMD-Stufen (keine Erweiterung, AVX2), also
 vier Bau-Varianten je Permutation (Abschnitt~\ref{sec:axis-triad}). Beide Stufen sind in der
 System-Registry als IEEE-754-deterministisch deklariert; die Registry führt fünf Stufen (O0 bis O3 und
 Ofast), und ausgeschlossen aus dem Profil ist allein Ofast, weil es den Gleitkomma-Determinismus nach
-IEEE~754 und den Run-to-Run-Determinismus des Apparats sowie den CRC64-Anker des golden-Katalogs
+IEEE~754 und den Run-to-Run-Determinismus des Apparats sowie die CRC-64-Prüfsumme des golden-Referenzkatalogs
 bräche --- die Registry markiert genau diese Stufe als nicht deterministisch. Die maximale
-Optimierung bleibt damit wählbar: Der Haus-Standard ist global O2, O3 wird auf XML-Eingangswunsch
+Optimierung bleibt damit wählbar: Der Standard des Baus ist global O2, O3 wird über die XML gewählt und
 mitgebaut, und die gewählte Stufe ist über das Werkzeugketten-Glied des Fingerprints
 identitätswirksam, sodass O2- und O3-Bestände nie stillschweigend als Cache-Treffer verwechselt
-werden; O0 bis O3 als Kunden-Wahl in der XML samt Durchreichung weiterer Compile-Flags sind
-Plan-Ist-Stand und werden im golden-Fenster gebaut. Je Bau-Variante wird der golden-Referenzkatalog
+werden; O0 bis O3 als Anwender-Wahl in der XML und die Durchreichung weiterer Compiler-Flags sind
+vorgesehen, aber nicht implementiert. Je Bau-Variante wird der golden-Referenzkatalog
 gebaut: $2^{17} = 131072$ Binary-Identitäten, weil das golden-Profil für siebzehn Organ-Haupt-Achsen
-je zwei Vertreter aus dem Angebot der Organ-Registry freischaltet und die achtzehnte
-(\texttt{persistence\_target}) gepinnt ist
+je zwei Vertreter aus dem Angebot der Organ-Registry aktiviert und die achtzehnte
+(\texttt{persistence\_target}) festgelegt ist
 (Abschnitt~\ref{sec:mess-chain}); die System-Achsen multiplizieren die Bau-Matrix, nie die
 \texttt{binary\_id}. Die Mächtigkeit des realen Permutationsraums rechnet der Planer dynamisch aus
-seinen Eingängen (Subkommando \texttt{simulate}); sie ist kein statischer Nenner. Ergebnisse der
-Voll-Bau-Läufe liegen nicht vor (Abschnitt~\ref{sec:eval-available}).
+seinen Eingängen (Subkommando \texttt{simulate}); sie ist keine feste Anzahl. Ergebnisse der
+Läufe des vollständigen Baus liegen nicht vor (Abschnitt~\ref{sec:eval-available}).
 
 \subsection{Fairness und Reproduzierbarkeit}\label{sec:fairness}
-%% OWNER-VORLAGE: OV-K5-04 --- Label sec:fairness in Kapitel 5 gesetzt, damit die Code-Verweise des
-%% Profil-Validators und der Mess-Achse wieder auf das gebaute Dokument zeigen (Alternative: Code-Nachzug
-%% auf sec:eval-method). Default gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-101
 Faire Vergleichbarkeit ist über feste Regeln gesichert. Jeder Vergleich trennt einen gemeinsamen
 Minimalmodus (Common-Denominator: externe Werte-Handles, keine PRT-ART-Spezialpfade) vom
 PRT-ART-Native-Modus (Inline-Umschaltung und adaptive Seitentyp-Wahl je Verzweigungspunkt); die
 Anwender-XML deklariert den Modus je SOTA-Reihe als \texttt{fairness\_mode} mit den zwei erlaubten
 Werten \texttt{common\_denominator} und \texttt{native}, und der Validator weist jeden anderen Wert ab.
-Durchführungs-Stand: Der Modus ist Reihen-Metadatum ohne Mess-Einfluss --- er reist als Tag-Spalte der
-Mess-Zeile und im Wiederaufnahme-Stempel, nie in der \texttt{binary\_id} ---, die Kompositions-Pinnung
+Umsetzungsstand: Der Modus ist Reihen-Metadatum ohne Mess-Einfluss --- er reist als Tag-Spalte der
+Mess-Zeile und im Wiederaufnahme-Stempel, nie in der \texttt{binary\_id} ---, die Kompositions-Festlegung
 des Minimalmodus ist daten-gebunden, und zwei Reihen desselben Prüflings mit verschiedenem Modus
 erzeugen deshalb dieselbe \texttt{binary\_id}, was der Validator als Warnung meldet. Alle Verfahren
 erhalten identische, normalisierte Byte-Schlüssel sowie identische Miss-, Update- und Delete-Mengen;
 der Warmup ist der Zwei-Phasen-Treiber des Lastprofil-Orchestrators (sichern, aufwärmen,
 zurückrollen, messen), sonst wird kalt gemessen, und jede Konfiguration wird in mehreren getrennten
 Läufen vermessen (Wiederholungs-Dimension \texttt{repetition}). Thread-Pinning: Der Aktuator --- ein
-bereichsgebundenes Pinning des Mess-Threads --- ist gebaut; die Kern-Wahl innerhalb des
+bereichsgebundenes Pinning des Mess-Threads --- ist implementiert; die Kern-Wahl innerhalb des
 Kern-Komplexes ist Aktuator-Politik ohne Emissions-Vertrag, und die Mess-Emission des Planers
-deklariert das Pinning als Soll und schreibt den Ist-Zustand \emph{ungepinnt} daneben, weil der
-Aktuator im Lauf-Profil nicht verdrahtet ist --- auf prod1 mit seinen zwei ungleich großen
+weist das Pinning als vorgesehen und den Ist-Zustand als \emph{ungepinnt} aus, weil der
+Aktuator nicht an das Lauf-Profil angebunden ist --- auf prod1 mit seinen zwei ungleich großen
 L3-Komplexen (96 und 32~MiB) ist ein ungepinnter Lauf nicht reproduzierbar, was die Emission wörtlich
 sagt. Fehlende Fähigkeiten einer Baseline --- etwa Bereichs-Scans einer Hash-Tabelle --- werden als
 n/a ausgewiesen statt verdeckt emuliert; die Mechanik dafür sind die Stichproben-Status
 \emph{NotApplicable}, \emph{SourceUnavailable} und \emph{Failed} der Mess-Achsen, sodass fehlende
-Fähigkeiten und fehlende Quellen n/a tragen, nie eine Null. Provenienz: Werkzeugkette
+Fähigkeiten und fehlende Quellen n/a führen, nie eine Null. Provenienz: Werkzeugkette
 (Compiler-Kennung und -Version), Flags, ISA-Zusammenfassung und die Commit-Stände der vier
 Repositories werden zur Konfigurationszeit als Bau-Provenienz erfasst und in das Provenienz-Manifest
 der Host-Exporte geschrieben; der Allokator ist als Organ-Achse Teil jeder \texttt{binary\_id}; eine
-Provenienz je einzelner Fremdbibliothek --- ihr eigener Compiler, ihre Flags, ihr Commit-Hash --- ist
-zu protokollieren (Anforderung). Die Latenz-Perzentile bestimmt der Auswertungs-Baum der Cache-Engine
+Provenienz je einzelner Fremdbibliothek --- ihr eigener Compiler, ihre Flags, ihr Commit-Hash --- wird
+nicht protokolliert (nicht implementiert). Die Latenz-Perzentile bestimmt der Auswertungs-Baum der Cache-Engine
 nearest-rank aus den Rohwerten --- Hyndman und Fan, Typ~1: Rang $k = \lceil q \cdot n \rceil - 1$,
-ohne Interpolation~\cite{hyndman1996quantiles} ---, sodass jedes Perzentil ein real gemessener Wert
+ohne Interpolation~\cite{hyndman1996quantiles} ---, sodass jedes Perzentil ein tatsächlich gemessener Wert
 ist\footnote{Nearest-Rank: Das $q$-Quantil ist der kleinste Stichprobenwert, unter dem mindestens der
 Anteil $q$ der Stichprobe liegt; interpolierende Verfahren (Typ~7) erzeugen dagegen Werte, die nie
-gemessen wurden.}; die Darstellungs-Werkzeuge des Werkzeug-Repositories tragen eigene Kopien der
-Umrechnung (eine benannte Lücke), und das HDR-Histogramm~\cite{tene_hdrhistogram} ist ein eigenes
+gemessen wurden.}; die Darstellungs-Werkzeuge des Werkzeug-Repositories besitzen eigene Kopien der
+Umrechnung (eine ausgewiesene Lücke), und das HDR-Histogramm~\cite{tene_hdrhistogram} ist ein eigenes
 Verfahren der Verteilungssicht (Abschnitt~\ref{sec:impl-system-axes}), keine Ergänzung des
 Nearest-Rank. Layout- und Umgebungs-Effekten, die ohne erkennbaren Fehler falsche Schlüsse
 erzeugen~\cite{mytkowicz2009wrongdata}, begegnet der Apparat mit identischen Schlüsseln, identischer
@@ -410,43 +395,38 @@ Bau-Matrix je Variante und der Wiederholungs-Dimension; eine randomisierte Layou
 Sinne von Curtsinger und Berger~\cite{curtsinger2013stabilizer} ist nicht Teil des Apparats und wird
 in Abschnitt~\ref{sec:eval-validity} als Grenze geführt.
 
-%% OWNER-VORLAGE: OV-02 --- Original-Compiler-Doktrin: Nachweis-Seite (is_original-Markierung, Validator,
-%% Relock-Gate) gebaut; automatischer Einzug der vendorten Quellen mit ihrem Original-Compiler als
-%% Plan-Ist-Stand. Durchführungs-Stand an dieser einen Stelle; Widerspruch genügt.
-Für fremde Bibliotheken gilt die Original-Compiler-Doktrin: Sezierte Achsen-Funktionen werden zur
+%% INTERN-272: KA-102
+Für fremde Bibliotheken gilt die Regel des Original-Compilers: Sezierte Achsen-Funktionen werden zur
 Übersetzungszeit eingebunden und zu einem wieder originalen Binary-Block kompiliert, sodass jeder
 sezierte Teilalgorithmus seine Leistungseigenschaften behält; wo umsetzbar oder vergleichbar, wird die
-Fremdquelle mit ihrem Original-Compiler gebaut. Der Nachweis der Originalität ist gebaut: die
+Fremdquelle mit ihrem Original-Compiler gebaut. Der Nachweis der Originalität ist implementiert: die
 \texttt{is\_original}-Markierung je Funktion (ein Makro der Cache-Engine samt Mixin-Basis der
 Achsen-Bausteine), der Validator als eigenes Programm und das manuelle Relock-Gate der CI, das die
 Lock-Dateien der Markierungen neu verankert; der Beleg je Baustein steht in Anhang~\ref{app:blocks}.
 Die H2-Akte markiert Rekonstruktionen ohne vendorte Originalquelle als n/a (22 von 33,
-Abschnitt~\ref{sec:eval-hypotheses}). Durchführungs-Stand: Der automatische Einzug der vendorten Quellen
-in den Bau mit ihrem Original-Compiler ist Plan-Ist-Stand und liegt im Fenster nach dem Trigger.
+Abschnitt~\ref{sec:eval-hypotheses}). Umsetzungsstand: Der automatische Einzug der vendorten Quellen
+in den Bau mit ihrem Original-Compiler ist vorgesehen, aber nicht implementiert.
 
-%% OWNER-VORLAGE: OV-02 --- Lager im Mess-Betrieb: Bestand 1/2 und Schlüssel-Schema gebaut; Bestand 3/4,
-%% Planer-Blattfunktion, CEB-Vollplatzierung, Hybrid-Ablage, Commit-Skip, rebuild-Flag und XML-<publish>
-%% als Lager-Vollausbau benannt. Durchführungs-Stand an dieser einen Stelle; Widerspruch genügt.
+%% INTERN-272: KA-103
 Auch der Mess-\emph{Betrieb} ist Teil dieser Fairness-Regeln, und er läuft über das Lager. Das Lager
 ist der Bestand aller gebauten Tier-Binaries und ihrer Messwerte, adressiert über
 Übersetzungszeit-Schlüssel (Abschnitt~\ref{sec:lager}; Abbildung~\ref{fig:lager-bestaende} zeigt seine
-Struktur): Bestand~1 trägt die Binary unter ihrem SHA-512-Fingerprint, Bestand~2 die Messwerte unter
+Struktur): Bestand~1 führt die Binary unter ihrem SHA-512-Fingerprint, Bestand~2 die Messwerte unter
 dem Paar aus dem Fingerprint der vermessenen Binary und der Hardware-Identität der messenden Maschine;
 die Zelle aus ISA, Optimierung und Erweiterung steht daneben geklammert, nie im Digest. Weil der
 Mess-Gate-Zustand ein Fingerprint-Glied ist, liegen die Binary mit und die Binary ohne Messfühler als
 zwei Einträge des Bestands~1 nebeneinander. Die Messung ist immer eingeschaltet; im Lager wird nur
 nachgemessen, was dort fehlt: Eine vorgefundene Binary wird übersprungen, wenn ihr Fingerprint bekannt
-und ihr grünes Prüf-Testat am Binary inventarisiert ist, sonst wird gebaut oder gemessen
+und ihr bestandenes Prüf-Testat am Binary inventarisiert ist, sonst wird gebaut oder gemessen
 (Abbildung~\ref{fig:eval-lager-kreislauf}). Die CEB steuert die Parallelität, indem sie parallele
 Anfragen an die Tier-Binaries erzeugt --- die Ausführungs-Threads entstehen in der CEB, in einem
 Worker-Pool mit deterministischer Ergebnis-Reihenfolge ---, während das Threading der Gattung in der
-Tier-Binary bleibt. Durchführungs-Stand: Bestand~1 und~2 sowie das Schlüssel-Schema aller vier
-Bestände sind gebaut; Bestand~3 und~4 (synthetisierte Kurven als Dateien, Lösungen je Anwender-XML),
+Tier-Binary bleibt. Umsetzungsstand: Bestand~1 und~2 sowie das Schlüssel-Schema aller vier
+Bestände sind implementiert; Bestand~3 und~4 (synthetisierte Kurven als Dateien, Lösungen je Anwender-XML),
 die Planer-Blattfunktion, die Vollplatzierung der CEB, die Hybrid-Ablage, der Commit-Skip, das
-rebuild-Flag und die XML-Sektion \texttt{<publish>} sind der Lager-Vollausbau.
+rebuild-Flag und die XML-Sektion \texttt{<publish>} bilden den Lager-Vollausbau und sind nicht implementiert.
 \begin{figure}[htbp]\centering
-% Kein \resizebox: vier Kacheln im Raster 4.1cm (Gesamtbreite ~15.3cm) passen nativ in \textwidth;
-% Regel: resizebox nur zum VERKLEINERN (vgl. fig:m-model).
+%% INTERN-272: KA-104
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,
   k/.style={draw,rounded corners,fill=blue!7,text width=2.7cm,minimum height=1.15cm,align=center,inner sep=2pt,font=\scriptsize},
   lg/.style={k,fill=green!10},
@@ -454,10 +434,10 @@ rebuild-Flag und die XML-Sektion \texttt{<publish>} sind der Lager-Vollausbau.
   pl/.style={k,fill=orange!10,dashed,font=\tiny,minimum height=0.9cm}]
   \node[k]  (bau)  at (0,0){\textbf{Bau (CEB)}\\Batches zu je 4096 Binaries, inventarisierte Wiederaufnahme};
   \node[lg] (b1)   at (4.1,0){\textbf{Bestand 1: Binary}\\Schlüssel: SHA-512-Fingerprint; Zelle daneben geklammert};
-  \node[dc] (skip) at (8.2,0){\textbf{Skip-Kriterium}\\Fingerprint bekannt \emph{und} Prüf-Testat grün inventarisiert?};
+  \node[dc] (skip) at (8.2,0){\textbf{Wiedererkennungs-Kriterium}\\Fingerprint bekannt \emph{und} Prüf-Testat als bestanden inventarisiert?};
   \node[k]  (mess) at (12.3,0){\textbf{Messung}\\Prüf-Dock; ein Mess-Thread; die CEB erzeugt parallele Anfragen};
   \node[lg] (b2)   at (12.3,-2.6){\textbf{Bestand 2: Messwerte}\\Schlüssel: Fingerprint $+$ Hardware-Identität; Zelle daneben};
-  \node[lg] (mp)   at (8.2,-2.6){\textbf{Mappe (xlsx)}\\CSV-Baum (Ordner je Blatt); Anhang-Generatoren};
+  \node[lg] (mp)   at (8.2,-2.6){\textbf{Mappe (xlsx)}\\CSV-Baum (Ordner je Blatt; Baum: vorgesehen); Anhang-Generatoren};
   \node[k]  (ref)  at (4.1,-2.6){\textbf{Struktur des Lagers}\\Abbildung~\ref{fig:lager-bestaende}: Baum, Bestände 1--4, Schlüssel-Schema};
   \node[pl] (vp)   at (0,-2.6){Lager-Vollausbau: Bestand 3/4, Hybrid-Ablage, Commit-Skip, rebuild-Flag, \texttt{<publish>}};
   \draw[->] (bau)--(b1);
@@ -470,23 +450,24 @@ rebuild-Flag und die XML-Sektion \texttt{<publish>} sind der Lager-Vollausbau.
   \draw[->,dashed] (vp)--(ref);
 \end{tikzpicture}
 \caption{Der Lager-Kreislauf im Mess-Betrieb: Die CEB baut in Batches zu je 4096 Binaries; jede Binary
-liegt unter ihrem SHA-512-Fingerprint in Bestand~1; das Skip-Kriterium überspringt, was mit grünem
+liegt unter ihrem SHA-512-Fingerprint in Bestand~1; das Wiedererkennungs-Kriterium überspringt, was mit bestandenem
 Prüf-Testat inventarisiert ist, und lässt sonst bauen oder messen; die Messung läuft am Prüf-Dock mit
 einem Mess-Thread, während die CEB die parallelen Anfragen erzeugt; die Messwerte liegen unter
-Fingerprint und Hardware-Identität in Bestand~2 und fließen in die Mappe. Die Struktur des Lagers
+Fingerprint und Hardware-Identität in Bestand~2 und fließen in die Mappe (die CSV-Baumform mit einem
+Ordner je Blatt ist vorgesehen; implementiert ist eine flache Datei). Die Struktur des Lagers
 (Baum, vier Bestände, Schlüssel-Schema) zeigt Abbildung~\ref{fig:lager-bestaende}; gestrichelt der
 Lager-Vollausbau.}\label{fig:eval-lager-kreislauf}
 \end{figure}
 
-Die Messung bleibt strikt vom Bau getrennt: Mess-Läufe starten nie automatisch mit einem grünen Bau,
-sondern werden ausdrücklich ausgelöst --- ein grüner Bau beweist Bau-Fähigkeit, kein Mess-Ergebnis.
+Die Messung bleibt strikt vom Bau getrennt: Mess-Läufe starten nie automatisch mit einem fehlerfreien Bau,
+sondern werden ausdrücklich ausgelöst --- ein fehlerfreier Bau beweist Bau-Fähigkeit, kein Mess-Ergebnis.
 Die Ablaufmethodik kennt vier Arbeitsmodi --- \texttt{build}, \texttt{measure}, \texttt{compare} und
 \texttt{release} (Abschnitt~\ref{sec:impl-pipeline}) ---; der Mess-Modus misst mit genau \emph{einem}
 Mess-Thread, eine parallele Mess-Ausführung ist über keine Registry-Zeile scharfgeschaltet und nur über
 die Zustands-Injektion des Laufeintrags erreichbar, und \texttt{--debug} ist ein Schalter der
 Planer-Shell für den Verdrahtungs-Check, der für Anwender gesperrt bleibt, kein Arbeitsmodus; das
 Threading der Gattung selbst bleibt dabei der Tier-Binary überlassen, statt vom Harness überschrieben
-zu werden. Ein im Lager vorgefundenes Binary wird nur dann übersprungen, wenn sein grünes Prüf-Testat
+zu werden. Ein im Lager vorgefundenes Binary wird nur dann übersprungen, wenn sein bestandenes Prüf-Testat
 am Binary inventarisiert ist (Abbildung~\ref{fig:eval-lager-kreislauf}), und vor jeder Messung steht
 die Konformitätsprüfung am Prüf-Dock (Abschnitt~\ref{sec:impl-contracts}): das Konformitäts-Gate des
 Genus-Vertrags vor den Post-Compile-Testaten der Mess-Interfaces, daneben das Konsistenz-Gate der
@@ -496,9 +477,7 @@ ist ---, mit gleichverteilter Zuteilung der gemeinsam baubaren Binaries über di
 inventarisierter Wiederaufnahme nach Unterbrechung.
 
 \subsection{Der heuristische Gegenbeweis als vierte Dimension}\label{sec:eval-counterproof}
-%% OWNER-VORLAGE: OV-02 / OV-K5-02 --- Hybrid-Stufe: Klassifikation, Dock-Schicht, XML-Parser und Proxy
-%% gebaut, Router und Eviction nicht (Durchführungs-Stand an dieser einen Stelle); der Gegenbeweis steht
-%% neben der Rangbildung der Sensitivitätsanalyse, nicht in ihr. Defaults gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-105
 Über die drei Hypothesen hinaus erhält die Auswertung eine vierte, eigenständige
 \emph{Evaluations-Dimension}: den heuristischen Gegenbeweis. Sein Konzept ist in
 Kapitel~\ref{ch:measurement} entwickelt (Abschnitte~\ref{sec:heuristics-modes}
@@ -512,14 +491,14 @@ die Messfehler-Erkennung formuliert Abschnitt~\ref{sec:heuristics-curves}. Die B
 Dimension lautet: \enquote{Ist die heuristisch geschätzte Rekombination der Tier-Binaries schneller
 als die existierenden Paper-Algorithmen?} Anders als H1--H3, die Aussagen über den Entwurfsraum
 prüfen, prüft der Gegenbeweis den Apparat der Arbeit selbst: ob die aus den Messkurven geschätzte
-Rekombination im realen Wall-Clock-Verhalten hält, was die Kurven versprechen; er steht deshalb
+Rekombination im tatsächlichen Wall-Clock-Verhalten die von den Kurven vorhergesagte Leistung erreicht; er steht deshalb
 \emph{neben} der Rangbildung der Sensitivitätsanalyse (Abschnitt~\ref{sec:eval-sensitivity}), nicht
-in ihr. Durchführungs-Stand: Klassifikations-Schicht, Dock-Schicht, XML-Parser und Binary-Proxy der
-Hybrid-Stufe sind gebaut (sechs der neun geplanten Dateien, Abschnitt~\ref{sec:impl-hybrid-lager});
-Router und Eviction brauchen echte Messkurven und sind nicht gebaut.
+in ihr. Umsetzungsstand: Klassifikations-Schicht, Dock-Schicht, XML-Parser und Binary-Proxy der
+Hybrid-Stufe sind implementiert (sechs der neun Dateien der in der \texttt{README} des Verzeichnisses
+\texttt{hybrid/} vorgesehenen Dock-, Proxy- und Router-Schicht, Abschnitt~\ref{sec:impl-hybrid-lager});
+Router und Eviction setzen Messkurven voraus und sind nicht implementiert.
 \begin{figure}[htbp]\centering
-% Kein \resizebox: Kurvenfeld 4.8cm + drei Kacheln im Raster 3.0cm (rechte Kante ~13.9cm) und drei
-% Varianten-Kacheln zu je 4.6cm (~14.7cm) passen nativ in \textwidth; resizebox nur zum VERKLEINERN.
+%% INTERN-272: KA-106
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,
   k/.style={draw,rounded corners,fill=blue!7,text width=2.55cm,minimum height=1.1cm,align=center,inner sep=2pt,font=\scriptsize},
   hy/.style={k,fill=orange!14},
@@ -540,7 +519,7 @@ Router und Eviction brauchen echte Messkurven und sind nicht gebaut.
   \node[k]  (em) at (9.7,1.6){\textbf{CEB}\\Hybrid-Modul-Emitter im Builder-Baum: kompiliert};
   \node[hy] (hb) at (12.7,1.6){\textbf{Hybrid-Tier-Binary}\\Stufe hinter der CEB; dockt am Prüf-Dock an; erzeugt keinen Code};
   \node[k]  (wc) at (12.7,-0.6){\textbf{Wall-Clock-Vergleich}\\primär gegen Paper-Rekonstruktionen, sekundär gegen das beste Einzel-Binary};
-  \node[pl] (ro) at (9.7,-0.6){Router und Eviction: nicht gebaut (brauchen echte Messkurven)};
+  \node[pl] (ro) at (9.7,-0.6){Router und Eviction: nicht implementiert (setzen Messkurven voraus)};
   \draw[->,thick] (4.8,1.6)--(re);
   \draw[->,thick] (re)--(em);
   \draw[->,thick] (em)--(hb);
@@ -559,11 +538,11 @@ ist die Träger-Stufe hinter der CEB, dockt am Prüf-Dock an und erzeugt selbst 
 wird an der Wall-Clock, primär gegen die Paper-Rekonstruktionen, sekundär gegen das beste
 Einzel-Binary. Unten: die drei Bau-Varianten des Messfehler-Prüfplans, auseinandergehalten über die
 Gate-Felder des Fingerprints. Gestrichelt: Router und Eviction (nicht
-gebaut).}\label{fig:eval-messkurven}
+implementiert).}\label{fig:eval-messkurven}
 \end{figure}
 
-Der Prüfplan hierfür ist zweistufig festgelegt; die zugehörigen Messläufe stehen aus
-(Abschnitt~\ref{sec:eval-available}), der Plan gilt im Präsens. Die erste Stufe quantifiziert den
+Der Prüfplan hierfür ist zweistufig festgelegt; die zugehörigen Messläufe liegen nicht vor
+(Abschnitt~\ref{sec:eval-available}). Die erste Stufe quantifiziert den
 Messfehler, den die Mess-Instanzen selbst eintragen, denn die Schätzgrundlage der Heuristik sind
 \emph{beobachtete} Kurven, ihr Anspruch aber gilt dem unbeobachteten Produktions-Verhalten. Dazu wird
 dasselbe Experiment in drei Bau-Varianten aufgelegt:
@@ -573,7 +552,7 @@ dasselbe Experiment in drei Bau-Varianten aufgelegt:
   \item Beobachter in \emph{keinem} Kompilat --- gemessen wird nur die Wall-Clock.
 \end{enumerate}
 Auseinandergehalten werden die Varianten über das Mess-Gate-Glied des Fingerprints
-(Abschnitt~\ref{sec:stamp-model}): Es trägt eigene Felder für die Tier-Ebene (\texttt{tm},
+(Abschnitt~\ref{sec:stamp-model}): Es führt eigene Felder für die Tier-Ebene (\texttt{tm},
 \texttt{tmi}) und die Hybrid-Ebene (\texttt{hm}, \texttt{hmi}); der Aus-Zustand aller Felder lautet
 \texttt{mg=m0;s0;st0;x0;tw0;tm0;tmi0;hm0;hmi0}, und weil das Glied in den Digest eingeht, liegen die
 drei Varianten als drei Binaries mit drei Fingerprints im Lager nebeneinander. Die Differenzen zwischen
@@ -584,10 +563,10 @@ unterhalb dessen zwei Konfigurationen als nicht unterscheidbar gelten; das Band 
 Wiederholungen mit Konfidenzintervall gebildet, nicht aus einem Einzellauf~\cite{georges2007rigorous}.
 Gültigkeitskriterium der Stufe: Mit Messfühler muss langsamer sein als ohne --- für die
 Wall-Clock-Zeiten der drei Varianten gilt $t_1 \ge t_2 \ge t_3$; eine Verletzung ist ein Mess-Defekt
-der betroffenen Zelle, kein Ergebnis, und führt zum Ausschluss der Zelle. Durchführungs-Stand: Diese
-Plausibilitäts-Prüfung ist im Code nicht gebaut; sie schließt an die Messfehler-Interpolation als
+der betroffenen Zelle, kein Ergebnis, und führt zum Ausschluss der Zelle. Umsetzungsstand: Diese
+Plausibilitäts-Prüfung ist im Code nicht implementiert; sie schließt an die Messfehler-Interpolation als
 fünfte Auswertungs-Komponente der compare-Stufe an (Abschnitt~\ref{sec:heuristics-curves}), deren
-Konstellationen der Planer dynamisch aus der Torlage rechnet, nie als statischer Nenner.
+Konstellationen der Planer dynamisch aus der Gate-Belegung berechnet, nie als feste Anzahl.
 
 Die zweite Stufe ist der komplementäre \emph{vierte Schritt} der finalen heuristischen
 Zusammenstellung: Die dem Heuristik-Tier untergebenen Tier-Binaries --- nicht die final optimierte
@@ -612,9 +591,7 @@ Abschnitt~\ref{sec:eval-available} ausgewiesen.
 
 \section{Ergebnisse und Analyse}\label{sec:eval-results}
 \subsection{Identität der Ergebnisse: Stempel, Lager, Mappe}\label{sec:eval-identity}
-%% OWNER-VORLAGE: OV-04 --- Ersatz-Tag für das entfallene e-Suffix: kein neues Versions-Suffix; die
-%% Misch-Strategie reist über die merge_mode-Token und die hierarchisch erweiterten Algorithmus-Namen der
-%% Organ-Zeile (gleichlautend mit Kapitel 3). Default gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-107
 Jede Ergebniszeile ist über das Stempelsystem identifizierbar (Abschnitt~\ref{sec:stamp-model}): die
 \texttt{binary\_id} --- der Pfad aus achtzehn \texttt{achse=wert}-Segmenten in Slot-Reihenfolge ---,
 der SHA-512-Fingerprint über elf Glieder mit der Format-Kennung \texttt{fingerprint\_format=6} und die
@@ -623,24 +600,24 @@ durch die Kette: als Lager-Schlüssel (Bestand~1 und~2), als Spalten \texttt{per
 \texttt{fingerprint} der Mess-Zeile, als Blatt-Schlüssel der Mappe und als Kennung in jedem Diagramm
 und jeder Tabelle des Anhangs --- so bleibt jede dargestellte Zahl auf ihre Binary, ihre
 Achsen-Versionen und ihre Maschine zurückführbar. Die Misch-Strategie eines Prüflings wird nicht über
-ein Versions-Suffix getragen, sondern über die \texttt{merge}-Token \texttt{replace}, \texttt{merge}
+ein Versions-Suffix ausgedrückt, sondern über die \texttt{merge}-Token \texttt{replace}, \texttt{merge}
 und \texttt{union} der Anwender-XML und die hierarchisch erweiterten Algorithmus-Namen der Organ-Zeile
 unter dem Namensraum-Präfix des Prüflings; das Flag \texttt{e} der Eintrags-Grammatik bezeichnet einen
 Efficiency-Core-Algorithmus (den E-Kern-Pfad einer Hybrid-CPU), kein Experiment und keine Mischung.
 Werte der Messung erscheinen nie im Stempel; gestempelt wird die Übersetzungszeit-Identität.
-Durchführungs-Stand: Die Anhang-Tabellen konsumieren \texttt{permutation\_id} und
-\texttt{fingerprint} je Zeile; die volle Stempel-Identität je Diagramm ist Ausbaustufe.
+Umsetzungsstand: Die Anhang-Tabellen führen \texttt{permutation\_id} und
+\texttt{fingerprint} je Zeile; die volle Stempel-Identität je Diagramm ist vorgesehen, aber nicht implementiert.
 
 \subsection{Datenfluss von der Messung zum Manuskript}\label{sec:eval-dataflow}
 Je Reihen-Lauf schreibt die Messstufe die eine offizielle \texttt{measurements.csv} als Projektion der
-Mappe (Durchführungs-Stand: eine flache Datei; Soll ist der CSV-Baum mit einem Ordner je Blatt, unten); die
+Mappe (implementiert ist eine flache Datei; vorgesehen ist der CSV-Baum mit einem Ordner je Blatt, unten); die
 \texttt{<output>}-Pfade der Anwender-XML (Muster \texttt{\_runs/<Datum>/<Reihe>/}) löst der
 Laufeintrag als Lauf-Provenienz auf. Drei Spaltenlisten sind zu unterscheiden
 (Tabelle~\ref{tab:eval-schema-ebenen}): das WIDE-Schema mit 189 Spalten (Trenner Semikolon; die
 Schema-Hoheit der Mess-Ausgabe, deren Kopf zur Laufzeit aus vier Einzelquellen entsteht und deshalb als
-Freeze verankert ist), die Pipeline-Sicht mit 16 Spalten plus 16 Zusatzspalten, also 32, für die
+Festschreibung verankert ist), die Pipeline-Sicht mit 16 Spalten plus 16 Zusatzspalten, also 32, für die
 LaTeX-Stufen (Trenner Komma) und die dreizehnspaltige Altform des Ergebnis-Aggregators über
-\texttt{ExecutionResult}. Die Pipeline-Sicht trägt je Permutation \texttt{permutation\_id},
+\texttt{ExecutionResult}. Die Pipeline-Sicht führt je Permutation \texttt{permutation\_id},
 \texttt{fingerprint}, \texttt{succeeded}, \texttt{workload\_used}, \texttt{op\_count},
 \texttt{total\_cycles}, \texttt{cache\_misses\_l1}, \texttt{cache\_misses\_l2},
 \texttt{cache\_misses\_l3}, \texttt{dtlb\_misses}, \texttt{coherence\_\allowbreak{}invalidations},
@@ -648,22 +625,22 @@ LaTeX-Stufen (Trenner Komma) und die dreizehnspaltige Altform des Ergebnis-Aggre
 \texttt{external\_\allowbreak{}frag} und \texttt{internal\_\allowbreak{}frag}; die volle Sicht ergänzt sechs Such-Zähler
 (\texttt{search\_\allowbreak{}insert} bis \texttt{search\_\allowbreak{}peak\_\allowbreak{}occupancy}), \texttt{pmc\_\allowbreak{}available},
 \texttt{branch\_\allowbreak{}misses}, \texttt{throughput\_\allowbreak{}ops\_\allowbreak{}per\_\allowbreak{}sec} und die sieben
-\texttt{*\_source\_available}-Flags. \texttt{total\_cycles} trägt --- unter seinem Legacy-Namen ---
-die repräsentative p50-Latenz in Nanosekunden, keine Zyklen; die Umbenennung oder ein echter
-Zyklen-Kanal ist ein benannter Code-Entscheid. Nicht erhobene Werte stehen als n/a, nie als Null.
+\texttt{*\_source\_available}-Flags. \texttt{total\_cycles} führt --- unter seinem Legacy-Namen ---
+die repräsentative p50-Latenz in Nanosekunden, keine Zyklen; die Umbenennung oder ein tatsächlicher
+Zyklen-Kanal ist eine dokumentierte Entwurfsentscheidung. Nicht erhobene Werte stehen als n/a, nie als Null.
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}l>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{4.0cm}@{}}
 \toprule
 Schema & Trenner & Spalten & Hoheit / Konsument & Quelle im Code \\
 \midrule
-WIDE (E4) & Semikolon & 189 & Mess-Ausgabe; Kopf zur Laufzeit aus vier Einzelquellen, als Freeze verankert & Iterator des CacheEngineBuilders (\texttt{lazy\_csv\_header}); Schema-Freeze \\
+WIDE (E4) & Semikolon & 189 & Mess-Ausgabe; Kopf zur Laufzeit aus vier Einzelquellen, als Festschreibung verankert & Iterator des CacheEngineBuilders (\texttt{lazy\_csv\_header}); Schema-Festschreibung \\
 PIPELINE & Komma & 16 (+16 = 32) & LaTeX-Stufen 04/05/06; volle Sicht als Präfix-Superset & Pipeline-CSV-Schema: eine Liste, vier Schreiber \\
 F15-ALT & Komma & 13 (12 + 1) & Ergebnis-Aggregator über \texttt{ExecutionResult} & Ergebnis-Aggregator der Builder-Kommandos \\
 \bottomrule
 \end{tabular}
 \caption{Die drei Mess-Spaltenlisten der Cache-Engine und ihre Hoheit. \texttt{total\_cycles} der
-Pipeline-Sicht trägt die repräsentative p50-Latenz in Nanosekunden (Legacy-Name), keine
-Zyklen. F15-ALT trägt zwölf Spalten und, hinten angehängt, \texttt{degeneriert} (12~+~1).}\label{tab:eval-schema-ebenen}
+Pipeline-Sicht führt die repräsentative p50-Latenz in Nanosekunden (Legacy-Name), keine
+Zyklen. F15-ALT umfasst zwölf Spalten und, hinten angehängt, \texttt{degeneriert} (12~+~1).}\label{tab:eval-schema-ebenen}
 \end{table}
 
 Die Mappe (xlsx) entsteht immer --- im Speicher, bedingungslos, auch wenn ein Profil nur CSV
@@ -676,45 +653,39 @@ angenommen hat, und bricht die Mappen-Erzeugung, ist auch der CSV-Baum ungültig
 entscheidet allein \texttt{<writeback\_methods>} --- xlsx, csv oder beide (die Mappe, der CSV-Baum oder
 beides am selben Ziel), als Strategie über den
 Ausgabe-Formaten mit xlsx als Default (Abschnitt~\ref{sec:impl-system-axes}); der xlsx-Writer liegt in
-der Lager-Ablage und schreibt über libxlsxwriter. Durchführungs-Stand: Die Naht schreibt die
+der Lager-Ablage und schreibt über libxlsxwriter. Umsetzungsstand: Die Naht schreibt die
 CSV-Projektion als eine flache Datei (\texttt{projektion\_\allowbreak{}oeffnen} in
-\texttt{ergebnis\_\allowbreak{}mappe\_\allowbreak{}naht}); die Baumform ist ein offener Bauposten. Die
+\texttt{ergebnis\_\allowbreak{}mappe\_\allowbreak{}naht}); die Baumform ist vorgesehen, aber nicht implementiert. Die
 Auswertung reichert die Projektion über
 Binary-zu-CSV um Profil-ID, Paper-Referenz und Achsen-Belegung an, rendert CSV-zu-LaTeX-Steckbriefe
 je Permutations-ID (eine leere Eingabe erzeugt keine Datei, nie einen leeren Plot) und
 Diagramm-Generator-Diagramme als TikZ-Balken, Scatter-Plots und Heatmaps samt den darauf aufbauenden
 Familien des Mess-Anhangs (ECDF, Range-Balken, Sweep-Kurven, 3D-Rohdaten-Ansicht, Verhältnis-Matrizen,
 normalisierte Balken, Pareto-Streuung, Per-Achsen-Attribution, Observer-Detail-Tabelle) mit A4-Deckel und
-Größen-Wache (eine 1$\times$1-, 1$\times$n- oder n$\times$1-Matrix erzeugt kein Bild); der
+Größen-Prüfung (eine 1$\times$1-, 1$\times$n- oder n$\times$1-Matrix erzeugt kein Bild); der
 Anhang-Generator schreibt je Sprache in ein \texttt{tabellen}-Verzeichnis, aus dem das Manuskript die
 Dateien einbindet --- die deutsche Fassung bindet 38 erzeugte Dateien des Anhangs ein.
 
-%% OWNER-VORLAGE: OV-02 --- Mappen-Aufmachung: Writer und Projektion gebaut; Contract-Test an der
-%% Standard-xlsx (Owner-Soll) gegen die E1-Prüfung an der CSV (Ist); Export-Element, Chart-Features,
-%% dritte Factory LaTeX, Warnungs-Sektion des Info-Blatts, WIDE-Freeze-Nachzug und CSV-Baum (Ordner je
-%% Blatt statt einer flachen Projektion) als Ausbaustufen.
-%% Durchführungs-Stand an dieser einen Stelle; Widerspruch genügt.
+%% INTERN-272: KA-108
 Die Mappe eines Laufs ist eine Datei mit einem Blatt je gewählter Unter-Achsen-Permutation und einem
 Info-Blatt (System-Informationen der messenden Maschine, verwendete Haupt-Achsen aller drei Realms,
 konstante Meta-Achsen); die Blätter sind in der bindenden Ordnung Mess $\to$ System $\to$ Organ
 nummeriert (\texttt{S001} bis \texttt{Snnn}), und die Spalten stammen ausschließlich aus dem
 WIDE-Kopf; Spalten, deren Wert sich innerhalb eines Laufs nie ändert, wandern in die Metadaten des
-Info-Blatts, statt in jeder Zeile wiederholt zu werden. Die Contract-Tests der Persistenz sollen an der
-Standard-xlsx prüfen, nicht an der CSV (Abschnitt~\ref{sec:impl-contracts}). Neben xlsx und csv ist
+Info-Blatts, statt in jeder Zeile wiederholt zu werden. Die Contract-Tests der Persistenz prüfen an der
+CSV-Ausgabe; eine Prüfung an der Standard-xlsx ist vorgesehen, aber nicht implementiert
+(Abschnitt~\ref{sec:impl-contracts}). Neben xlsx und csv ist
 eine dritte Factory LaTeX vorgesehen, die die Blatt-Ordnung der Mappe beim Ausrollen des Anhangs
-serialisiert und je Binary eine Tabellenzeile als zeitliche Messreihe führt. Durchführungs-Stand:
-Writer und Projektion sind gebaut; die Naht schreibt ein Datenblatt unter konstantem Blattschlüssel, die
-Auffächerung in ein Blatt je Unter-Achsen-Permutation plus Info-Blatt ist Soll
-(Abschnitt~\ref{sec:limitations}); die Projektion ist eine flache Datei, der CSV-Baum (ein Ordner je
-Blatt) ist Soll; die Persistenz-Prüfung liest die CSV-Ausgabe, die Prüfung an der
-je Binary erzeugten xlsx ist als Bau-Schritt benannt; das Export-Element mit Ziel-Filter und
-per-Binary-xlsx, die Chart-Features, die LaTeX-Factory, die Warnungs-Sektion des Info-Blatts und der
-Nachzug des WIDE-Freeze sind Ausbaustufen.
+serialisiert und je Binary eine Tabellenzeile als zeitliche Messreihe führt. Umsetzungsstand:
+Writer und Projektion sind implementiert; die Naht schreibt ein Datenblatt unter konstantem Blattschlüssel,
+und die Projektion ist eine flache Datei. Nicht implementiert sind: die Auffächerung in ein Blatt je
+Unter-Achsen-Permutation plus Info-Blatt (Abschnitt~\ref{sec:limitations}), der CSV-Baum (ein Ordner je
+Blatt), die Prüfung an der je Binary erzeugten xlsx (die Persistenz-Prüfung liest die CSV-Ausgabe), das
+Export-Element mit Ziel-Filter und per-Binary-xlsx, die Chart-Funktionen, die LaTeX-Factory, die
+Warnungs-Sektion des Info-Blatts und der Nachzug der WIDE-Festschreibung.
 
 \subsection{Messreihen und Verbund-Strategien}\label{sec:eval-series}
-%% OWNER-VORLAGE: OV-04 / OV-05 --- kein e-Suffix für die Misch-Strategie (e = Efficiency Core);
-%% Begriffs-Kanon: die merge-Token replace/merge/union führen, Verbund-Namen als Haus-Begriff, Stufe 1..3 nur
-%% Alias, Full Join auf union zurückgeführt. Defaults gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-109
 Drei Messreihen werden ausgewertet (Tabelle~\ref{tab:stage-series}): Reihe~A --- PRT-ART gegen den
 Stand der Technik mit den Evaluations-Hypothesen H1--H3 (Abschnitt~\ref{sec:eval-hypotheses}); Reihe~B
 --- die systematische Variation der Cache-Engine-Permutationen, gespeist aus der Union der Stufe~3;
@@ -729,13 +700,13 @@ Prüflings-Direktive, und \enquote{Stufe~1 bis~3} bleibt der Alias der Verbund-N
 der Alias von \texttt{union}. Reihe~A arbeitet mit \texttt{replace} und \texttt{merge}, Reihe~B mit
 \texttt{union}. Unterscheidbar bleiben die Stände an der Binary über die hierarchisch erweiterten
 Algorithmus-Namen der Organ-Zeile (Abschnitt~\ref{sec:eval-identity}); eine eigene Stempel-Zeile
-tragen sie nicht, denn der Prüfling mischt gegen die Organ-Achsen und steht damit bereits in deren
-Zeile, und ein Versions-Suffix trägt die Mischung nicht. Bei reinen Ersetzungs- wie reinen
-Cache-Engine-Bauten bleibt die Namens-Erweiterung folgerichtig aus. Durchführungs-Stand: Das Token
+besitzen sie nicht, denn der Prüfling mischt gegen die Organ-Achsen und steht damit bereits in deren
+Zeile, und ein Versions-Suffix bezeichnet die Mischung nicht. Bei reinen Ersetzungs- wie reinen
+Cache-Engine-Bauten bleibt die Namens-Erweiterung folgerichtig aus. Umsetzungsstand: Das Token
 \texttt{merge} ist im Merge-Plan registriert und im golden-Kern-Profil deklariert; materialisiert
 sind die Strategien \texttt{Verbund1\_CeOnly}, \texttt{Verbund2\_Replace} und
-\texttt{Verbund3\_Union}, während \texttt{Verbund2\_Hybrid} ohne Produktions-Aufrufer bleibt, bis
-seine Materialisierung im Strategie-Enum landet.
+\texttt{Verbund3\_Union}, während \texttt{Verbund2\_Hybrid} ohne Produktions-Aufrufer bleibt, weil
+seine Materialisierung im Strategie-Enum nicht implementiert ist.
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{1.6cm}@{}}
 \toprule
@@ -754,15 +725,15 @@ der Zuordnung aus Tabelle~\ref{tab:stage-series}.}\label{tab:eval-verbund-modi}
 
 \subsection{Vorliegende Messungen}\label{sec:eval-available}
 Methodik und Auswertungs-Pipeline sind vorhanden und an realen Daten verifiziert: Eine Smoke-Messreihe
-über 43 Permutationen --- echte DLL-Messung; 27 kartesische Kombinationen aus SIMD, Speicherlayout
+über 43 Permutationen --- DLL-Messung; 27 kartesische Kombinationen aus SIMD, Speicherlayout
 und Allokator plus 16 weitere über vier zweiwertige Größen --- dokumentiert
 Anhang~\ref{app:measurements} samt ihren Limitierungen
 (Abschnitt~\ref{sec:measurements:limitations}); sie variiert sieben Größen (SIMD ist eine
 System-Achse, Speicherlayout und Allokator sind Organ-Achsen, die übrigen vier Namen sind keine
-Registry-Bausteine und werden nicht gleichgesetzt), die Kampagne variiert alle achtzehn
+Registry-Bausteine und werden nicht gleichgesetzt), die vollständige Messreihe variiert alle achtzehn
 Kompositions-Achsen. Die vollständigen Läufe der Pflicht-Messreihen A--C auf den
-Zielplattformen liegen nicht vor: n/a, weil der Voll-Bau --- der Trigger der Kampagne --- nicht
-gefahren ist (Abschnitt~\ref{sec:limitations}); dasselbe gilt für die Messdaten des Gegenbeweises
+Zielplattformen liegen nicht vor (n/a), weil der vollständige Bau nicht
+durchgeführt ist (Abschnitt~\ref{sec:limitations}); dasselbe gilt für die Messdaten des Gegenbeweises
 (Abschnitt~\ref{sec:eval-counterproof}). Keine Zahl dieses Kapitels stammt aus einem anderen Lauf als
 dem im Anhang ausgewiesenen.
 
@@ -771,8 +742,7 @@ dem im Anhang ausgewiesenen.
 %   die Dateinamen der Reihen B und C entstehen mit dem Lauf.
 
 \subsection{Achsen-Sensitivitätsanalyse}\label{sec:eval-sensitivity}
-%% OWNER-VORLAGE: OV-K5-02 --- die vierte Dimension (Gegenbeweis) steht neben der Rangbildung über die drei
-%% Mess-Ebenen, nicht in ihr. Default gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-111
 Den Kern der Auswertung bildet die \emph{Achsen-Sensitivitätsanalyse}: Sie beantwortet das
 Trennbarkeits-Problem der Aufgabenstellung (Abschnitte~\ref{sec:rqs} und~\ref{sec:task-concerns}),
 indem das Achsen-Framework jeden Bestandteil als austauschbare Achse über einer sonst konstanten
@@ -796,19 +766,19 @@ Die Gültigkeit der Evaluation wird nach den vier Klassen der empirischen Softwa
 geprüft\footnote{Threats to Validity: die in der empirischen Softwareforschung übliche Einteilung der
 Bedrohungen eines Schlusses in Konstrukt-Validität (misst die Messgröße das Gemeinte?), interne
 Validität (ist der Effekt kausal isoliert?), externe Validität (überträgt sich der Befund auf andere
-Plattformen und Lasten?) und Schluss-Validität (tragen Statistik und Aggregation den
+Plattformen und Lasten?) und Schluss-Validität (stützen Statistik und Aggregation den
 Schluss?)~\cite{wohlin2012experimentation}.} (Tabelle~\ref{tab:eval-gueltigkeit};
 Abschnitt~\ref{sec:measurement-system} führt dieselben Klassen als Gütekriterien des Mess-Systems).
 Konstrukt-Validität: Messen die Kategorien die Cacheline-Awareness? Die PMC-Semantik ist je Modell
-offengelegt (Abschnitt~\ref{sec:eval-counters}), und Hardware-Zähler gelten nur kreuzgeprobt als
+offengelegt (Abschnitt~\ref{sec:eval-counters}), und Hardware-Zähler gelten nur gegengeprüft als
 vertrauenswürdig~\cite{weaver2008counters}. Interne Validität: Der Beobachter-Overhead ist über das
 Unsicherheitsband der drei Bau-Varianten gebunden (Abschnitt~\ref{sec:eval-counterproof}); Layout- und
 Umgebungs-Bias~\cite{mytkowicz2009wrongdata,curtsinger2013stabilizer} begegnen identische Schlüssel,
 identische Bau-Matrix und Wiederholungen, eine Layout-Randomisierung fehlt; Warmup und
 Wiederholungen folgen Abschnitt~\ref{sec:fairness}~\cite{kalibera2013rigorous}. Externe Validität: Die
-registrierte Flotte umfasst zwei x86-64-Mikroarchitekturen und einen Gracemont-Knoten; ZIH und HBM
-sind deklariert, nicht vermessen (Abschnitt~\ref{sec:eval-platforms}), die Intel-RAW-Belegung fehlt,
-und eine einseitige Lane-Fahrt gilt als Teil-Messung. Schluss-Validität: Perzentile nearest-rank ohne
+registrierten Messmaschinen umfassen zwei x86-64-Mikroarchitekturen und einen Gracemont-Knoten; ZIH und HBM
+sind deklariert, nicht gemessen (Abschnitt~\ref{sec:eval-platforms}), die Intel-RAW-Belegung fehlt,
+und ein einseitig gefahrener Pfad gilt als Teil-Messung. Schluss-Validität: Perzentile nearest-rank ohne
 Interpolation, geometrische Aggregation, n/a statt Null. Die Limitierungen des Mess-Anhangs
 (Tabelle~\ref{tab:le:limitierung}, Abschnitt~\ref{sec:measurements:limitations}) und des Fazits
 (Abschnitt~\ref{sec:limitations}) sind die belegte Liste dieser Grenzen; keine Zahl wird ohne Lauf
@@ -817,39 +787,39 @@ gelten für jede Zahl, die ein Lauf liefert.
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{4.9cm}>{\raggedright\arraybackslash}p{3.7cm}@{}}
 \toprule
-Klasse & Bedrohung & Gegenmaßnahme im Apparat & Stand \\
+Klasse & Bedrohung & Gegenmaßnahme im Apparat & Umsetzungsstand \\
 \midrule
-Konstrukt & Zähler messen nicht das Gemeinte (Modell-Semantik, Prefetch-Anteile) & RAW-Katalog je Modell mit Kreuzprobe; Semantik-Offenlegung je Spalte; n/a ohne Katalog-Eintrag & gebaut (Zen~5); Intel-Eintrag: Ausbaustufe \\
-Konstrukt & Zeit-Kategorie als Zyklen fehlgelesen & \texttt{total\_cycles} als p50-Latenz in Nanosekunden deklariert & gebaut; Umbenennung: Code-Entscheid \\
-Intern & Beobachter-Overhead verfälscht die Kurven & drei Bau-Varianten, Unsicherheitsband, Gültigkeitskriterium $t_1 \ge t_2 \ge t_3$ & Gate-Felder gebaut; Prüfung: Ausbaustufe \\
-Intern & Layout-/Umgebungs-Bias, Wechsel des L3-Komplexes & identische Schlüssel und Bau-Matrix; Wiederholungs-Dimension; Pinning als Soll deklariert & Aktuator gebaut, Verdrahtung: Ausbaustufe; keine Layout-Randomisierung \\
-Intern & Warmup- und Kaltstart-Effekte & Zwei-Phasen-Treiber (sichern, aufwärmen, zurückrollen, messen) & gebaut \\
-Extern & Flotte deckt die Zielplattformen nicht ab & registrierte Signaturen prod1, prod2, ODROID\@; ZIH als IS3 deklariert & ZIH und HBM\@: deklariert, nicht vermessen (n/a) \\
-Extern & einseitige Hersteller-Lane & Vollständigkeits-Regel der Auswertung; Teil-Messung wird ausgewiesen & Regel gesetzt; Intel-Lane: Kreuzprobe ausstehend \\
-Schluss & Perzentile erfunden, Mittelwerte verzerrt & Nearest-Rank ohne Interpolation; geometrische Aggregation & gebaut (Auswertungs-Baum); Kopien in den Werkzeugen: benannte Lücke \\
-Schluss & Null statt Nichterhebung & Feld-Flags je Zähler, n/a Ende-zu-Ende & gebaut \\
+Konstrukt & Zähler messen nicht das Gemeinte (Modell-Semantik, Prefetch-Anteile) & RAW-Katalog je Modell mit Gegenprüfung; Semantik-Offenlegung je Spalte; n/a ohne Katalog-Eintrag & implementiert (Zen~5); Intel-Eintrag: nicht implementiert \\
+Konstrukt & Zeit-Kategorie als Zyklen fehlgelesen & \texttt{total\_cycles} als p50-Latenz in Nanosekunden deklariert & implementiert; Umbenennung: Entwurfsentscheidung \\
+Intern & Beobachter-Overhead verfälscht die Kurven & drei Bau-Varianten, Unsicherheitsband, Gültigkeitskriterium $t_1 \ge t_2 \ge t_3$ & Gate-Felder implementiert; Prüfung: nicht implementiert \\
+Intern & Layout-/Umgebungs-Bias, Wechsel des L3-Komplexes & identische Schlüssel und Bau-Matrix; Wiederholungs-Dimension; Pinning als vorgesehen ausgewiesen & Aktuator implementiert, Anbindung: nicht implementiert; keine Layout-Randomisierung \\
+Intern & Warmup- und Kaltstart-Effekte & Zwei-Phasen-Treiber (sichern, aufwärmen, zurückrollen, messen) & implementiert \\
+Extern & Messmaschinen decken die Zielplattformen nicht ab & registrierte Signaturen prod1, prod2, ODROID\@; ZIH als IS3 deklariert & ZIH und HBM\@: deklariert, nicht gemessen (n/a) \\
+Extern & einseitiger Hersteller-Pfad & Vollständigkeits-Regel der Auswertung; Teil-Messung wird ausgewiesen & Regel gesetzt; Intel-Pfad: Gegenprüfung nicht durchgeführt \\
+Schluss & Perzentile synthetisch statt gemessen, Mittelwerte verzerrt & Nearest-Rank ohne Interpolation; geometrische Aggregation & implementiert (Auswertungs-Baum); Kopien in den Werkzeugen: ausgewiesene Lücke \\
+Schluss & Null statt Nichterhebung & Feld-Flags je Zähler, n/a Ende-zu-Ende & implementiert \\
 \bottomrule
 \end{tabular}
 \caption{Gültigkeit der Evaluation nach den vier Klassen der Bedrohungen (Konstrukt, intern, extern,
-Schluss): je Bedrohung die Gegenmaßnahme im Apparat und ihr Durchführungs-Stand --- gebaut,
-deklariert und nicht vermessen (n/a) oder Ausbaustufe. Keine Zeile nennt eine Zahl ohne
+Schluss): je Bedrohung die Gegenmaßnahme im Apparat und ihr Umsetzungsstand --- implementiert,
+deklariert und nicht gemessen (n/a) oder nicht implementiert. Keine Zeile nennt eine Zahl ohne
 Lauf.}\label{tab:eval-gueltigkeit}
 \end{table}
 
 \subsection{Zusammenfassung der Evaluation}\label{sec:eval-summary}
-Die Evaluation hält je Evaluationsobjekt fest. Entwurfsraum: Die Hypothesen H1--H3 tragen Messgröße und
+Die Evaluation hält je Evaluationsobjekt fest. Entwurfsraum: Die Hypothesen H1--H3 führen Messgröße und
 Kriterium, und die Sensitivitätsanalyse ist als Verfahren über die drei Mess-Ebenen festgelegt; Belege
 liegen für die Smoke-Reihe vor (43 Permutationen, sieben Größen, Anhang~\ref{app:measurements}), für die
-Pflicht-Messreihen nicht (n/a, Voll-Bau ausstehend). Apparat: Der Gegenbeweis ist als vierte Dimension
+Pflicht-Messreihen nicht (n/a, vollständiger Bau nicht durchgeführt). Apparat: Der Gegenbeweis ist als vierte Dimension
 mit Prüfplan, Gültigkeitskriterium und Entscheidungsregel festgelegt, seine Messdaten liegen nicht vor;
 das Messfehler-Fundament --- Gate-Felder im Fingerprint, Feld-Flags je Zähler, n/a-Regel --- ist
-gebaut. Automatisierung: Die Kette von der Experiment-XML bis zum eingebundenen Anhang ist am
-Durchstich real gelaufen und liefert jede Zahl mit ihrem Lauf. Die Ergebnisse werden vor dem
+implementiert. Automatisierung: Die Kette von der Experiment-XML bis zum eingebundenen Anhang ist in
+einem ersten durchgehenden Lauf nachgewiesen und liefert jede Zahl mit ihrem Lauf. Die Ergebnisse werden vor dem
 Leitmotiv der Arbeit diskutiert --- dem Übergang vom heuristischen zum informierten Cache-Management,
 also der Frage, ob telemetrie-getriebene, automatisch adaptierte Konfigurationen statisch gewählte
 übertreffen; der Cache-Line-Effekt aus den Synthese-Kurven ist der erste Auswertungsschritt nach dem
 vollständigen Lauf, datenabhängig und deshalb hier nicht vorweggenommen. Nach den Maßstäben für
 Forschungsbeiträge~\cite{shaw2003writing} und für empirische Bewertungen~\cite{blackburn2016truth} ist
 der Beitrag dieses Kapitels ein validierter Versuchsaufbau samt seiner Automatisierung, dessen
-Ergebnis-Zahlen der Kampagne folgen. Kapitel~\ref{ch:conclusion} beantwortet die Forschungsfragen auf
+Ergebniszahlen mit der vollständigen Messreihe vorliegen werden. Kapitel~\ref{ch:conclusion} beantwortet die Forschungsfragen auf
 dieser Grundlage.

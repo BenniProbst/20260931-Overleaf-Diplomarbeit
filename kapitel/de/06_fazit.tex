@@ -8,22 +8,20 @@ nächsten Schritte.
 
 \section{Beantwortung der Forschungsfragen}\label{sec:answers}
 Die Antworten folgen dem Schema Behauptung, Beleg, Validierung~\cite{shaw2003writing}: Eine Frage gilt
-als \emph{beantwortet}, wenn ein Beleg am Objekt oder eine Messung sie trägt; als \emph{strukturell
-beantwortet}, wenn der Apparat, der die Antwort liefert, gebaut und getestet ist, die Messung aber
-aussteht; als \emph{offen}, wenn weder Struktur noch Messung vorliegen. Drei Belegarten kommen vor: die
-Struktur (ein Code-Gegenstand, der die Antwort trägt), der Test (eine übersetzungszeitliche Wache oder ein
-Vertrags-Test, der sie sichert) und die Messung (eine Zahl mit ihrem Lauf). Ein \enquote{strukturell
+als \emph{beantwortet}, wenn ein Test oder eine Messung sie belegt; als \emph{strukturell
+beantwortet}, wenn der Apparat, der die Antwort liefert, implementiert und getestet ist, die Messung aber
+nicht vorliegt; als \emph{offen}, wenn weder Struktur noch Messung vorliegen. Drei Belegarten kommen vor: die
+Struktur (ein Code-Gegenstand, der die Antwort stützt), der Test (eine statische Prüfung oder ein
+Vertrags-Test, der sie sichert) und die Messung (eine Zahl mit ihrem Lauf); für die Frage nach dem
+Stand der Technik der Workloads (FF2.d) tritt der Literaturbeleg hinzu. Ein \enquote{strukturell
 beantwortet} ersetzt die Zahl nicht: Ohne Messwerte bleibt die Hauptfrage unbeantwortet, auch wenn ihre
-Struktur trägt. Tabelle~\ref{tab:ff-beweiskette} führt Status, Beweis und Rest je Haupt- und Teilfrage;
+Struktur tragfähig ist. Tabelle~\ref{tab:ff-beweiskette} führt Status, Beweis und Rest je Haupt- und Teilfrage;
 die Berichtsform folgt den Regeln der empirischen Software- und
-Systemforschung~\cite{wohlin2012experimentation,runeson2009guidelines} und der Forderung, Nenner,
+Systemforschung~\cite{wohlin2012experimentation,runeson2009guidelines} und der Forderung, Bezugsgröße,
 Plattform und nicht erhobene Werte an jedem Ergebnis auszuweisen~\cite{blackburn2016truth,hoefler2015benchmarking}.
 
-%% OWNER-VORLAGE: OV-K6-08 --- Sprach-Kanon (gleichlautend mit Kapitel 3 und 4): \enquote{Abgangs-Wache} ->
-%% übersetzungszeitliche Rückkehr-Sperre, \enquote{datierbare Umzüge} -> Ist-Stand ohne Umzugs-Erzählung,
-%% \enquote{Heimspiel-Bias} -> Lastprofil-Selektionsverzerrung, \enquote{Beschattung} -> Instrumentierungs-
-%% Artefakt, honest-0 -> explizit kodierte Nicht-Erhebung. Default gesetzt; Widerspruch genügt.
-Quer zu allen fünf Fragen hatte die Einleitung eine Kategorien-Frage offen gehalten: ob sich die Achsen
+%% INTERN-272: KA-112
+Quer zu allen fünf Fragen hat die Einleitung eine Kategorisierungs-Frage als Frage ausgelegt: ob sich die Achsen
 des Entwurfsraums sauber in Organ-, System- und Mess-Achsen trennen lassen --- und wie eine solche
 Trennung zu bewerkstelligen ist, wo sie in einem Entwurf nicht angelegt ist. Beides ist beantwortet
 (Abschnitt~\ref{sec:axis-triad}): Die Achsen trennen sich entlang der drei Belange in drei \emph{Realms}
@@ -34,71 +32,67 @@ drei Zeilen-Träger des Fingerprints --- Organ-, System- und Mess-Zeile --- sind
 unkonstruierbar auseinander, sodass eine Vertauschung nicht übersetzt. In die \texttt{binary\_id} gehen
 ausschließlich die Organ-Haupt-Achsen ein; System- und Mess-Achsen sind in ihren Registries als
 binary-id-neutral deklariert. Gehalten wird die Trennung durch übersetzungszeitliche
-\emph{Rückkehr-Sperren} (Abschnitt~\ref{sec:impl-system-axes}): \texttt{static\_assert}-Wachen weisen
+\emph{Rückkehr-Sperren} (Abschnitt~\ref{sec:impl-system-axes}): \texttt{static\_assert}-Prüfungen weisen
 Compiler, Scheduling und Last-Rahmenwerk als System-Haupt-Achsen zurück --- das Scheduling ist eine
 Unter-Achse der Ziel-ISA \texttt{target\_isa} mit fünf Dimensionen, der Compiler eine Unter-Achsen-Gruppe
 der Komplex-Klammer \texttt{build\_target\_complex}, das Last-Rahmenwerk die Meta-Meta-Achse des
 Mess-Realms ---, und die Flag-Grammatik der Versions-Stempel lässt nur katalogisierte Flag-Ketten zu.
-Diese Dreiteilung ist die zweite Gestalt des Trennbarkeits-Problems und trägt die Antworten auf die
+Diese Dreiteilung ist die zweite Gestalt des Trennbarkeits-Problems und stützt die Antworten auf die
 folgenden Teilfragen.
 
-%% OWNER-VORLAGE: OV-K6-07 --- Plattform-Klammer der Hauptfrage: der Frage-Wortlaut \enquote{(Hybrid-CPUs,
-%% Sapphire Rapids)} bleibt in der Einleitung; die Antwort nennt die vermessene Flotte und weist Sapphire
-%% Rapids als erkannt, nicht vermessen (n/a) aus. Default gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-113
 \paragraph{FF0 (Hauptfrage).} Gefragt ist, wie stark aktive, messgetriebene cache-bewusste
 Entscheidungen --- Seitentyp, Speicher-Layout, Value-Ablage, Prefetching --- ihre passiven, statisch
 ausgelegten Gegenstücke auf unterschiedlichen CPU-Plattformen übertreffen; die Erweiterung FF0.E fragt,
 ob sich ein gemessener Gewinn eindeutig dem Organ-, dem System- oder dem Mess-Belang zuordnen lässt.
 Der \emph{Status}: FF0 ist offen. Ohne die End-to-End-Läufe je Plattform gibt es keine Zahl; die Struktur,
-die die Zahl liefern wird, ist gebaut. Dieselbe achsen-konstante Struktur wird einmal aktiv --- mit
+die die Zahl liefert, ist implementiert. Dieselbe achsen-konstante Struktur wird einmal aktiv --- mit
 laufzeit-dynamischer Cache-Line-Politik (der Politik-Selektor leitet aus einem ausgewerteten
 Profil-Aggregat aus Operationsmix und Working-Set die Cache-Line-Anpassung ab) und messwert-getriebener
 Auswahl der besten Binary --- und einmal passiv --- mit statisch fixierter Organ-Wahl von
 Speicher-Layout, Prefetch, Value-Ablage und Knotentyp als Segmenten der \texttt{binary\_id} --- gebaut
-und unter identischer Compiler- und Flag-Basis gegenübergestellt (Haus-Standard \texttt{-O2};
-\texttt{-O3} nur als Opt-in unter Warnung und mit eigener Toolchain-Identität). Vermessene Flotte sind
+und unter identischer Compiler- und Flag-Basis gegenübergestellt (Standard \texttt{-O2};
+\texttt{-O3} nur als Opt-in unter Warnung und mit eigener Toolchain-Identität). Vermessene Messmaschinen sind
 die drei registrierten Maschinen-Signaturen: prod1 (AMD Zen~5, Ryzen~9~9950X3D), prod2 (Intel Core % chktex 29
 i9-12900K, Alder Lake --- eine Hybrid-CPU mit P- und E-Kernen, ohne AVX-512) und ein ODROID-Board mit
 Intel-Gracemont-Kernen; die in der Frage genannte Server-Plattform Sapphire Rapids ist in der
-Plattform-Erkennung angelegt (ZIH-Knoten Barnard, Xeon~8470), aber nicht vermessen (n/a;
+Plattform-Erkennung angelegt (ZIH-Knoten Barnard, Xeon~8470), aber nicht gemessen (n/a;
 Abschnitt~\ref{sec:eval-platforms}). FF0.E ist strukturell beantwortet, und die dafür nötige Trennung ist
 die Dreiteilung: Ein Organ-Effekt permutiert die \texttt{binary\_id}, ein Plattform-Belang steht als
 System-Stempel-Zeile und Bau-Versionskennung an der Binary, ohne sie zu permutieren, und ein Mess-Belang
 bleibt binary-id-neutral --- kein Mess-Instrument verändert, \emph{was} gebaut wird. Als
-\emph{Beweis} tragen Abschnitt~\ref{sec:axis-triad} (Dreiteilung; Struktur),
+\emph{Beleg} dienen Abschnitt~\ref{sec:axis-triad} (Dreiteilung; Struktur),
 Abschnitt~\ref{sec:impl-system-axes}
-(Rückkehr-Sperren; Test) und Abschnitt~\ref{sec:eval-method} (Messplan; Struktur). Die \emph{Folge}: Die
-Bezifferung folgt dem Voll-Bau und dem Lauf der Reihe~A (Abschnitt~\ref{sec:outlook}); nach dem ersten
-Messlauf und seiner Auswertung wird der Effekt der Cache-Line-Bewusstheit gezielt aus den synthetisierten
-Mess-Kurven gezogen (Abschnitt~\ref{sec:heuristics-curves}).
+(Rückkehr-Sperren; Test) und Abschnitt~\ref{sec:eval-method} (Messplan; Struktur). Die \emph{Folge}: Eine
+Bezifferung setzt den vollständigen Bau und den Lauf der Reihe~A voraus (Abschnitt~\ref{sec:outlook}); der
+Effekt der Cache-Line-Bewusstheit aus den synthetisierten Mess-Kurven ist der erste Auswertungsschritt
+nach dem ersten Messlauf (Abschnitt~\ref{sec:heuristics-curves}).
 
-%% OWNER-VORLAGE: OV-K6-03 --- $2^{17}$ als fester Nenner des golden-Referenzkatalogs neben der dynamischen
-%% Mächtigkeit des geplanten Raums (Planer, simulate), gleichlautend mit Kapitel 3 und 4; die neunzehnte
-%% Achse als Organ-Meta-Meta in der Registry, per Profil nicht wählbar (Kapitel 4). Defaults gesetzt;
-%% Widerspruch genügt.
+%% INTERN-272: KA-115
 \paragraph{FF1 (Komposition).} Gefragt ist, wie sich ein Suchalgorithmus-Entwurf kanonisch in
 orthogonale Achsen zerlegen und in einer Permutationsmatrix systematisieren lässt, sodass
-Stand-der-Technik-Verfahren als Profil-Konfigurationen rekonstruierbar und permutierbar werden; FF1.a
+Stand-der-Technik-Verfahren möglichst aus ihrem Originalcode bias-frei als Profile rekonstruierbar
+und beliebig permutierbar werden; FF1.a
 fragt nach dem Kategorien-Schnitt der Zerlegung, FF1.b nach den Organ-Kopplungen und dem Verhalten unter
 allein variierter ISA-/SIMD-Achse. Der \emph{Status}: FF1 ist strukturell beantwortet, FF1.a beantwortet,
-FF1.b in seinem empirischen Teil offen. Die kanonische Zerlegung trägt: \emph{Achtzehn}
+FF1.b in seinem empirischen Teil offen. Die kanonische Zerlegung ist tragfähig: \emph{Achtzehn}
 Organ-Haupt-Achsen in fester Slot-Reihenfolge T0--T17 --- als konstantes Namens-Array der
 Achsen-Pfad-Serialisierung Code, nicht Konvention --- spannen die Permutationsmatrix auf
 (Abschnitt~\ref{sec:axis-triad}); dazu tritt eine optionale \emph{Organ-Meta-Meta-Achse} für die
 Festplatten-Ein-/Ausgabe \texttt{disk\_io}, in der Organ-Registry als neunzehnter Eintrag geführt
 (übersetzungszeitliche Stufe mit der Laufzeit-Option \texttt{staging}, binary-id-neutral), per
 Experiment-Profil aber nicht wählbar, weil der Profil-Parser ihren Registry-Block nicht liest; der
-Profil-Anschluss ist als Folgeschritt ausgewiesen. Sie ist das Beispiel der Arbeit für die
+Profil-Anschluss ist vorgesehen, aber nicht implementiert. Sie ist das Beispiel der Arbeit für die
 Meta-Meta-Ebene M3, die Indirektion einer Beschreibung: Sie stempelt im Klammer-Anhang der Organ-Zeile,
 und die Klammer-Tiefe eines Eintrags ist seine Meta-Meta-Ebene (Abschnitt~\ref{sec:stamp-model}). Zwei
-Nenner sind zu trennen: Der golden-Referenzkatalog variiert siebzehn Achsen je zwei und pinnt das
-Persistenz-Ziel auf einen Wert --- $2^{17} = 131072$ Binary-Identitäten je System-Permutation als
-Regressions-Detektor mit einem eingefrorenen CRC-64-Anker\footnote{CRC-64: eine zyklische
+Bezugsgrößen sind zu trennen: Der golden-Referenzkatalog variiert siebzehn Achsen je zwei und legt das
+Persistenz-Ziel auf einen Wert fest --- $2^{17} = 131072$ Binary-Identitäten je System-Permutation als
+Regressions-Detektor mit einer festgeschriebenen CRC-64-Prüfsumme\footnote{CRC-64: eine zyklische
 Redundanzprüfung mit 64-Bit-Prüfsumme (hier die Variante ECMA-182), berechnet über alle Identitäten in
 kanonischer Reihenfolge; eine geänderte Identität ändert die Prüfsumme.} über alle Identitäten
 (Abschnitt~\ref{sec:impl-contracts}) ---, während die Mächtigkeit eines geplanten Raums keine Konstante
 ist, sondern die Rechnung des Planers je Profil und Plattform (Subkommando \texttt{simulate}); alle
-achtzehn Achsen sind zur Variation vorgesehen. Die 33 Korpus-Arbeiten P01--P33 tragen je ein
+achtzehn Achsen sind für die Variation vorgesehen (nicht gemessen). Die 33 Korpus-Arbeiten P01--P33 besitzen je ein
 Profil-XML, davon 30 Vollprofile eigenständiger Suchentwürfe (acht Rang-1 und 22 Rang-2/3) und drei
 abstrakte Profile (OLC, LOUDS, VAMPIR), die nur einzelne Achsen belegen
 (Abschnitt~\ref{sec:sota-instances}); die Registry der Paper-Prüflinge hält diese Übersetzung
@@ -116,30 +110,28 @@ der System-Achse \texttt{external\_utils} (Laufzeit-Unter-Achse mit den Optionen
 \texttt{no\_extension}, \texttt{avx2} und \texttt{avx512} und einem Merkmals-Katalog von 23 Flags,
 binary-id-neutral): Ein und dieselbe \texttt{binary\_id} wird unter mehreren System-Permutationen
 gebaut und bei sonst unveränderter Struktur verglichen; die empirische Antwort zum Cache-Update- und
-Cache-Line-Füllverhalten ist eine Messung und steht aus. Als \emph{Beweis} tragen
+Cache-Line-Füllverhalten ist eine Messung und liegt nicht vor. Als \emph{Beleg} dienen
 Abschnitt~\ref{sec:axis-triad} (Zerlegung und Realms; Struktur), Abschnitt~\ref{sec:mess-chain}
 (Katalog
-und Nenner; Struktur) und Abschnitt~\ref{sec:impl-contracts} (Katalog-Wachen und Golden-Anker; Test).
-Die \emph{Folge}: FF1 strukturell beantwortet; FF1.b (Füllverhalten) folgt dem Voll-Bau.
+und Bezugsgröße; Struktur) und Abschnitt~\ref{sec:impl-contracts} (Katalog-Prüfungen und Golden-Prüfsumme; Test).
+Die \emph{Folge}: FF1 strukturell beantwortet; FF1.b (Füllverhalten) setzt den vollständigen Bau voraus.
 
-%% OWNER-VORLAGE: OV-K6-04 --- sechzehn registrierte Mess-Kategorien (Registry-Ist) gegenüber dem Plan-Ist
-%% einer Erhebung je Achsen-Interface-Parametersatz (Owner: \enquote{hunderte}); Zweiteilung Plan-Ist im
-%% Präsens plus Durchführungs-Stand an genau dieser Stelle, gleichlautend mit Kapitel 4. OV-02 ---
-%% Voll-Permutation der Workloads und Nachmessung nur des im Lager Fehlenden als Plan-Ist mit
-%% Durchführungs-Stand. Defaults gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-116
 \paragraph{FF2 (Mess-Methodik).} Gefragt ist, wie eine reproduzierbare Mess-Pipeline mit
 Hardware-Zähler-Erhebung gestaltet sein muss, damit jede Achsen-Permutation fair --- unter gleicher
 Compiler- und Flag-Basis --- in drei Messreihen über drei Granularitäten gemessen wird, und unter welchen
-Kriterien eine Plattform als verifiziert gilt; FF2.a fragt, ob die Mess-Instrumente selbst eigene Achsen
-sein müssen, FF2.b nach der Nachmessung widersprüchlicher Literaturbefunde, FF2.c nach der
-Erweiterbarkeit. Der \emph{Status}: FF2 ist strukturell beantwortet, FF2.a beantwortet. Die Messung ist in
+plattform-kalibrierten Kriterien eine Plattform als verifiziert gilt; FF2.a fragt, ob die
+Mess-Instrumente selbst eigene Achsen sein müssen, FF2.b nach der Nachmessung widersprüchlicher
+Literaturbefunde, FF2.c nach der Erweiterbarkeit, FF2.d nach den Workloads, die gerade für
+Suchalgorithmen zum Stand der Technik gehören. Der \emph{Status}: FF2 ist strukturell beantwortet,
+FF2.a und FF2.d beantwortet. Die Messung ist in
 einen Produktiv- und einen Experiment-Modus geteilt, geschaltet über den Master-Schalter der
 Mess-Übersetzung (\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}): Der Experiment-Modus
 misst stets --- ein Release-Bau ohne Messfühler ist ein eigenes, auslieferbares Artefakt, das den
 Schalter erzwungen abschaltet, kein abgeschalteter Messlauf ---, und im Lager wird nur nachgemessen, was
-dort fehlt; das übersetzungsstatische Schlüssel-Schema der vier Bestände ist der Plan-Ist dieser
-Wiedererkennung, der Lager-Vollausbau ist als Folgeschritt ausgewiesen (Abschnitt~\ref{sec:lager}). Den
-Ablauf trägt der \texttt{ExperimentDriver} host-seitig: Der Runner lädt die Module und führt die Phasen
+dort fehlt; das übersetzungsstatische Schlüssel-Schema der vier Bestände ist der Entwurf dieser
+Wiedererkennung, der Lager-Vollausbau ist nicht implementiert (Abschnitt~\ref{sec:lager}). Den
+Ablauf steuert der \texttt{ExperimentDriver} host-seitig: Der Runner lädt die Module und führt die Phasen
 Laden, Ausführen, Messen und Abbau, der Treiber führt Ausführung und Messung je Modul und sammelt die
 Ergebnisse im \texttt{ResultAggregator}. Jede Reihe wird auf drei \emph{Mess-Ebenen} erhoben, in genau
 dieser Reihenfolge: der Wallclock-Ebene (\texttt{wallclock}; die Gesamtläufe im CacheEngineBuilder über
@@ -149,75 +141,96 @@ ist der registrierte Alias, und die drei Ebenen sind die Mess-Tooling-Haupt-Achs
 CacheEngineBuilder-Strecke einkompiliert wird (Abschnitt~\ref{sec:mess-chain}). FF2.a ist bejaht: Die
 Mess-Instrumente sind ein eigener Realm im Planer --- das Last-Rahmenwerk als Meta-Meta-Achse, das
 Mess-Tooling als Haupt-Achse, die Mess-Kategorien als Unter-Achse (sechzehn Bausteine in der Registry;
-Plan-Ist ist die Erhebung je Achsen-Interface-Parametersatz, deren Katalog je Achse als Folgeschritt
-ausgewiesen ist) ---, stets präsent, sobald gemessen wird, und binary-id-neutral. Bewerkstelligt wird
+vorgesehen ist die Erhebung je Achsen-Interface-Parametersatz, deren Katalog je Achse nicht
+implementiert ist) ---, stets präsent, sobald gemessen wird, und binary-id-neutral. Bewerkstelligt wird
 die Trennung durch den doppelten Wurzel-Schnitt: Der System-Realm wurzelt am CacheEngineBuilder, der
 Mess-Realm am Planer, und die Mess-Achse treibt über die System-Achsen-Wurzel die Freigabe der
 Mess-Quelle in Gestalt des CacheEngineBuilder-Typs --- die Legenden-Kette Mess-Achse $\to$
 CacheEngineBuilder-Typ $\to$ System-Achsen $\to$ Tier-Binary ist als Namensschema Code
 (Abschnitt~\ref{sec:axis-triad}). Beim Workload reicht der Treiber einen Standard-Workload je Modul
-durch, und ein Profil bringt seinen eigenen mit; Plan-Ist ist die Voll-Permutation über alle
+durch, und ein Profil bringt seinen eigenen mit; vorgesehen ist die Voll-Permutation über alle
 verfügbaren Workloads, damit kein Entwurf nur unter seinem selbstgewählten Lastprofil gewinnt --- der
 \emph{Lastprofil-Selektionsverzerrung}\footnote{Lastprofil-Selektionsverzerrung (workload selection
 bias): die Verzerrung eines Vergleichs dadurch, dass die Lastprofile so gewählt sind, dass ein Entwurf
 unter ihnen bevorzugt gut abschneidet; die Benchmark-Literatur verlangt darum eine breite, begründete
 Lastprofil-Menge~\cite{blackburn2006dacapo,blackburn2016truth}.} begegnet der Apparat mit der Vollmatrix
 aller Lastprofile gegen alle Lebewesen-Binaries, weil schon unauffällige Setup-Entscheidungen
-Messergebnisse systematisch verfälschen~\cite{mytkowicz2009wrongdata}; Durchführungs-Stand: Die
-Voll-Permutation ist als Folgeschritt ausgewiesen.
+Messergebnisse systematisch verfälschen~\cite{mytkowicz2009wrongdata}; Umsetzungsstand: Die
+Voll-Permutation ist nicht implementiert.
 
-%% OWNER-VORLAGE: OV-K6-09 --- Kenntnisnahme: die Verbund-Namen Verbund1_CeOnly / Verbund2_Replace /
-%% Verbund2_Hybrid (deklariert, nicht materialisiert) / Verbund3_Union sind die Modus-Kennung; das Flag e
-%% bezeichnet einen Efficiency-Core-Algorithmus, kein Experimental-Suffix. Code führt, Text zieht nach.
+%% INTERN-272: KA-117
 Zu FF2.b (Organ-Achsen): Die widersprüchlichen Literaturbefunde zur optimalen Knoten-/Cache-Line-Größe
 --- eine Cache-Line je Knoten bei CSS- und CSB\textsuperscript{+}-Bäumen~\cite{rao1999css,rao2000csb}
 gegenüber sechzehn und mehr Cache-Lines bei Hankins und Patel~\cite{hankins2003nodesize} (Knoten von
 512 Byte und größer bei 32-Byte-Cache-Lines) sowie mehreren je Knoten bei den
-Prefetching-B\textsuperscript{+}-Bäumen von Chen et~al.~\cite{chen2001prefetch} --- werden nicht aus
+Prefetching-B\textsuperscript{+}-Bäumen von Chen, Gibbons und Mowry~\cite{chen2001prefetch} --- werden nicht aus
 ihren Original-Setups übernommen, sondern achsen-isoliert unter sonst gleichen Bedingungen
 nachgemessen: Knotentyp, Speicher-Layout und Prefetch sind Organ-Achsen, die einzeln variiert werden,
-während System- und Mess-Achsen konstant bleiben; die Zahl ist eine Messung und steht aus. Zu FF2.c
+während System- und Mess-Achsen konstant bleiben; die Zahl ist eine Messung und liegt nicht vor. Zu FF2.c
 (Erweiterbarkeit): Ein neuer Prüfling gliedert sich als Lebewesen seiner Gattung ins Genus ein ---
 Gattung ist die erste Ebene (Map, Container, Graph), Genus die zweite, und die Genus-Bau-Zulassung
 führt die Slot-Sätze je Gattung als übersetzungszeitliches Urteil ---; er dockt am Prüf-Dock an,
 durchläuft die Drei-Stufen-Prüfung (Abschnitt~\ref{sec:mess-chain}), und sein Verbund mit der
-Cache-Engine trägt einen der registrierten Namen: \texttt{Verbund1\_CeOnly} (keine
+Cache-Engine führt einen der registrierten Namen: \texttt{Verbund1\_CeOnly} (keine
 Prüflings-Direktive), \texttt{Verbund2\_Replace} (die Prüflings-Achse ersetzt die Cache-Engine-Achse
 mit Rückfall), \texttt{Verbund2\_Hybrid} (Cache-Engine und Prüfling hybrid je Prüfling; deklariert,
-nicht materialisiert --- der Validator sperrt das Token \texttt{merge}, bis der Strategie-Wert landet)
+nicht materialisiert --- der Validator sperrt das Token \texttt{merge}, solange der Strategie-Wert nicht implementiert ist)
 oder \texttt{Verbund3\_Union} (Vereinigung aller Varianten; vorbereitete Schnittstelle,
 Abschnitt~\ref{sec:eval-series}). An der Binary bleibt der Verbund über die hierarchisch erweiterten
-Algorithmus-Namen und Flags der Organ-Zeile unterscheidbar --- ein Prüflings-Organ trägt sein
+Algorithmus-Namen und Flags der Organ-Zeile unterscheidbar --- ein Prüflings-Organ führt sein
 Namensraum-Präfix im Eintrag ---; eine eigene Stempel-Zeile braucht es nicht, und ein Versions-Suffix
-trägt die Mischung nicht: Das Flag \texttt{e} bezeichnet einen Efficiency-Core-Algorithmus
-(Abschnitt~\ref{sec:stamp-model}). Ob der Prüfling eine bestehende Kategorie trifft, eine neue
+bezeichnet die Mischung nicht: Das Flag \texttt{e} bezeichnet einen Efficiency-Core-Algorithmus
+(Abschnitt~\ref{sec:stamp-model}). Ob der Prüfling eine bestehende Gattung trifft, eine neue
 begründet oder eine Mischform darstellt, entscheidet der Gattungs-Schnitt
 (Abschnitt~\ref{sec:anatomy-levels}); eine eigene Gattung entstünde erst bei grundlegend anderem
 Basis-Achsen-Satz. Der in FF2.c erfragte Betriebsmodus, der die Entwurfsbestandteile genau einer
-Veröffentlichung als geschlossenes Achsen-Set isoliert anbietet, ist nicht gebaut und bleibt Ausblick
-(Abschnitt~\ref{sec:outlook}). Zur Plattform-Verifikation: Eine Plattform gilt als verifiziert, wenn
-das Konformitäts-Gatter je geladener Tier-Binary die siebzehn in Anhang~\ref{app:interfaces}
+Veröffentlichung als geschlossenes Achsen-Set isoliert anbietet, ist nicht implementiert und bleibt
+Gegenstand des Ausblicks (Abschnitt~\ref{sec:outlook}). Zu FF2.d (Workload-Stand der Technik): Den Stand der Technik der
+Workloads für Suchalgorithmen bilden die Schlüssel-Wert-Konvention YCSB mit ihren sechs Lastprofilen
+A--F (je ein Operations-Mix über einer Schlüssel-Zugriffsverteilung, von 50/50 Lesen/Aktualisieren
+Zipf-verteilt bis zu kurzen Bereichs-Scans und Read-Modify-Write), der Index-Benchmark SOSD, die
+TPC-Familie (TPC-C, TPC-DS), die Integration in reale Systeme (SuRF in RocksDB), reale String-Korpora
+(URLs, DNA, Wörterbuch-Terme) sowie SPEC~CPU und CloudSuite bei den hardware-nahen Arbeiten
+(Abschnitt~\ref{sec:workload-basics-known}); diese Rahmenwerke erzeugen untereinander nicht unmittelbar
+vergleichbare Lasten, und jede Veröffentlichung wählt typischerweise das Lastprofil, unter dem ihr
+eigener Entwurf am besten abschneidet. Die Arbeit übernimmt daraus YCSB als das registrierte
+Last-Rahmenwerk (die Meta-Meta-Achse \texttt{load\_framework} des Mess-Realms) mit der
+Laufzeit-Dimension \texttt{workload} über die sechs Token \texttt{YCSB\_A} bis \texttt{YCSB\_F},
+geroutet je Permutation aus dem Traversal-Tag des Profils oder seinem
+\texttt{<expected\_workload>}-Tag, und fährt sie über reale String-Datensätze mit
+Reproduzierbarkeits-Akte (\texttt{url}, \texttt{protein}, \texttt{tpcds-id}, \texttt{trec-terms},
+\texttt{dna}, \texttt{xml}; Abschnitt~\ref{sec:eval-workloads}), wobei \texttt{xml} nur eine
+Spezifikation ohne Prüfsumme besitzt, weil die Datei nicht lokal vorliegt (n/a); die übrigen
+Konventionen sind als Last-Rahmenwerk nicht registriert (n/a). Umsetzungsstand: Der Treiber
+fällt für profil-lose Module auf genau einen Workload zurück, die Workload-Option des Laufs; die
+Voll-Permutation über alle Lastprofile ist vorgesehen, aber nicht implementiert (Abschnitt~\ref{sec:eval-workloads}). Zur
+Plattform-Verifikation: Eine Plattform gilt als verifiziert, wenn das Konformitäts-Gatter je
+geladener Tier-Binary die siebzehn in Anhang~\ref{app:interfaces}
 markierten \texttt{std::map}-Operationen --- die Operationsmenge seiner zwölf Kern-Prüfblöcke,
 darunter \texttt{at}, \texttt{contains}, \texttt{count}, \texttt{insert\_or\_assign}, \texttt{erase},
 \texttt{clear}, \texttt{lower\_bound} und \texttt{upper\_bound} --- gegen \texttt{std::map} als Orakel
 bestätigt und die Plattform-Probe die gemeldete Achsen-Teilmenge deckt; die fünf Antriebs-Operationen
 der Modulgrenze (\texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{clear}, \texttt{size}) sind
 die ABI-Primitive, aus denen der Host die übrigen Operationen komponiert, nicht der Prüfumfang, und
-der Vollausbau auf die volle \texttt{std::map}-Schnittstelle ist Folgeschritt; die
-plattform-kalibrierten Schwellwerte werden mit den realen Läufen
-festgelegt. Als \emph{Beweis} tragen Abschnitt~\ref{sec:mess-chain} (Drei-Stufen-Prüfung und
+der Vollausbau auf die volle \texttt{std::map}-Schnittstelle ist nicht implementiert; die
+plattform-kalibrierten Schwellwerte liegen nicht vor, ihre Festlegung setzt die Messläufe
+voraus. Als \emph{Beleg} dienen Abschnitt~\ref{sec:mess-chain} (Drei-Stufen-Prüfung und
 Verbund; Struktur), Abschnitt~\ref{sec:measurement-system} (Mess-Ebenen und Realm; Struktur),
-Abschnitt~\ref{sec:anatomy-levels} (Gattungs-Schnitt; Struktur) und Anhang~\ref{app:interfaces}
-(Vertrags-Teilmenge; Test). Die \emph{Folge}: FF2 strukturell beantwortet, FF2.c konzeptionell beantwortet;
-der Isolations-Modus und die Zahl zu FF2.b sind offen.
+Abschnitt~\ref{sec:anatomy-levels} (Gattungs-Schnitt; Struktur), Anhang~\ref{app:interfaces}
+(Vertrags-Teilmenge; Test) sowie für FF2.d Abschnitt~\ref{sec:workload-basics-known}
+(Workload-Konventionen; Literatur) und Abschnitt~\ref{sec:eval-workloads} (Workload-Routing und Akten;
+Struktur). Die \emph{Folge}: FF2 strukturell beantwortet, FF2.c konzeptionell beantwortet, FF2.d
+beantwortet; der Isolations-Modus, die Zahl zu FF2.b und die Voll-Permutation der Workloads sind offen.
 
 \paragraph{FF3 (Prüfling-Vergleich).} Gefragt ist, ob der Prüfling PRT-ART gegenüber den acht
 Rang-1-Entwürfen --- ART~\cite{leis2013art}, HOT~\cite{binna2018hot}, Masstree, CoCo-Trie, START,
-B\textsuperscript{2}-Baum, Wormhole, SuRF --- und der Rang-2/3-SOTA durch bessere
-Mikroarchitektur-Eigenschaften gewinnt, gemessen in den Pflicht-Messreihen A, B und C\@; FF3.a fragt nach
+B\textsuperscript{2}-Baum, Wormhole, SuRF --- und der Rang-2/3-SOTA \emph{nicht} durch asymptotische
+Neuheit, sondern durch bessere Mikroarchitektur-Eigenschaften gewinnt --- höhere Cache-Line-Auslastung,
+weniger LLC- und dTLB-Misses, geringere Branch-Kosten, kleinere heiße Suchpfade --- bei Punktsuche,
+Prefix-Lookup und Prefix-Enumeration, gemessen in den Pflicht-Messreihen A, B und C\@; FF3.a fragt nach
 der günstigsten lokalen Seitendarstellung je Verzweigungspunkt, FF3.b nach dem Compile-Time-Zwang.
-Der \emph{Status}: FF3 ist offen, FF3.b beantwortet, FF3.a strukturell beantwortet als Plan-Setzung. Der
-Vergleich steht nach den ersten Mess-Läufen aus; der Apparat dafür ist gebaut: das PRT-ART-Profil, die
+Der \emph{Status}: FF3 ist offen, FF3.b beantwortet, FF3.a strukturell beantwortet (Vorgabe ohne Messbeleg). Der
+Vergleich liegt nicht vor und setzt die ersten Mess-Läufe voraus; der Apparat dafür ist implementiert: das PRT-ART-Profil, die
 drei Pflicht-Messreihen --- die Reihe wird mechanisch aus der Verbund-Stufe abgeleitet
 (\texttt{Verbund1} und \texttt{Verbund2} liefern Reihe~A, \texttt{Verbund3} Reihe~B, Reihe~C ist
 bau-übergreifend; Tabelle~\ref{tab:stage-series}) ---, der \texttt{ExperimentDriver} mit Auto-Pickup
@@ -226,24 +239,24 @@ der 33 Profil-XML aus dem Profil-Verzeichnis und der ABI-konforme Adapter mit de
 der Modulgrenze, flankiert von Einfügen und Löschen, mit der geordneten Iteration als additiver
 Scan-Fähigkeit (Anhang~\ref{app:interfaces}). Das Konformitäts-Gatter prüft die siebzehn in
 Anhang~\ref{app:interfaces} markierten Operationen in zwölf Kern-Prüfblöcken gegen \texttt{std::map}
-als Orakel; der Vollausbau auf die volle Schnittstelle ist als Folgeschritt ausgewiesen. Der
+als Orakel; der Vollausbau auf die volle Schnittstelle ist vorgesehen, aber nicht implementiert. Der
 Benachrichtigungs-Haken der Mess-Schicht ist
 ein Single-Slot-Hook je Achse, standardmäßig nicht einkompiliert (Opt-in), und kein Teil des Vertrags.
 Zu FF3.a: Punktseite --- die Direktindex-Seiten Array$_{256}$ und Array$_{65535}$ --- gegenüber
 Kompaktseite --- die Vektor-Seiten Vector$\langle$u8,u8$\rangle$ und Vector$\langle$u16,u16$\rangle$
---- je Verzweigungspunkt und die Umschaltregeln nach Füllstand und Suchtyp sind Teil des
+--- je Verzweigungspunkt und die Umschaltregeln nach Belegungsdichte und Zugriffsart sind Teil des
 PRT-ART-Profils; der Prüfling schaltet nach festen Dichte-Schwellen von 25, 50 und 75~Prozent um
-(Abschnitt~\ref{sec:prtart-demo}), und die plattform-kalibrierten Regeln sind Plan-Setzung, bis die
-Läufe sie belegen. FF3.b ist bejaht und zur Bauform geworden: Jede Achse gliedert sich in eine
-übersetzungszeit-fixierte \emph{Haupt}-Entscheidung und laufzeit-variable \emph{Unter}-Entscheidungen
+(Abschnitt~\ref{sec:prtart-demo}), und die plattform-kalibrierten Regeln sind Vorgaben ohne Messbeleg, solange die
+Läufe sie nicht belegen. FF3.b ist bejaht und zur Bauform geworden: Jede Achse gliedert sich in eine
+übersetzungszeit-fixierte \emph{Haupt-Achse} und laufzeit-variable \emph{Unter-Achsen}
 --- die Haupt-Achsen sind statisch einkompiliert, bei Organ-Achsen als \texttt{binary\_id}-Segment, bei
 System-Achsen als Stempel samt Bau-Versionskennung, während Unter-Achsen mit der Stufe
 \texttt{runtime} ihre Parameter ohne Neuübersetzung variieren; die Organ-Registry führt die Stufe je
 Unter-Achse, die System-Registry die Unter-Achsen-Gruppe \texttt{build\_toolchain} der Komplex-Klammer
-(Abschnitt~\ref{sec:measurement-system}). Als \emph{Beweis} tragen Abschnitt~\ref{sec:prtart-demo} (Prüfling
+(Abschnitt~\ref{sec:measurement-system}). Als \emph{Beleg} dienen Abschnitt~\ref{sec:prtart-demo} (Prüfling
 und Seitendarstellung; Struktur), Abschnitt~\ref{sec:sota-instances} (33 Profile; Struktur),
-Abschnitt~\ref{sec:measurement-system} (Haupt- und Unter-Entscheidung; Struktur) und
-Anhang~\ref{app:interfaces} (Kernvertrag; Test). Die \emph{Folge}: Die Zahl folgt der Reihe~A\@; die
+Abschnitt~\ref{sec:measurement-system} (Haupt- und Unter-Achse; Struktur) und
+Anhang~\ref{app:interfaces} (Kernvertrag; Test). Die \emph{Folge}: Die Zahl setzt die Reihe~A voraus; die
 Hypothesen H1--H3 liefern die Auswerte-Kriterien.
 
 \paragraph{Hypothesen und Zielpfad.} Die Evaluations-Hypothesen H1--H3
@@ -254,38 +267,42 @@ Fundament gelegt, sondern ordnet sie als Prüfsteine der Auswertung ein: H1 (Sei
 über die tool-berechnete Qualitäts-Akte. Deren Datenbasis ist die gewichtete
 \texttt{cppcheck}-Befunddichte je tausend physischer Zeilen über die vendorten Originalquellen; die
 Akte führt 33 Einträge, davon 22 als n/a, weil eine Rekonstruktion keine vendorte Originalquelle
-besitzt, und PRT-ART trägt kein Original-Repository (n/a). Die Hypothesenprüfung folgt der Vorgabe,
+besitzt, und PRT-ART besitzt kein Original-Repository (n/a). Die Hypothesenprüfung folgt der Vorgabe,
 Kriterium und Schwelle vor der Messung zu nennen~\cite{wohlin2012experimentation}, und die
 Wiederholungszahl je Zelle richtet sich nach der geforderten Konfidenz~\cite{kalibera2013rigorous}.
-%% OWNER-VORLAGE: OV-K6-01 --- Annahme-/Ablehnkriterium für H2 (echter Entscheid, Register OV-03): Default
-%% Spearman-Rangkorrelation Befunddichte gegen Durchsatz je Zelle über die Vollprofile mit vendorter Quelle,
-%% angenommen bei rho <= -0,5 (alpha 0,05), abgelehnt bei |rho| < 0,3, sonst unentschieden; unter acht
-%% Profilen nicht prüfbar. Alternative: Schwelle und Maß durch den Owner. Widerspruch genügt.
+%% INTERN-272: KA-118
 H2 gilt als angenommen, wenn über die Vollprofile mit vendorter Originalquelle die Rangkorrelation nach
 Spearman zwischen Befunddichte und gemessenem Durchsatz je Lastprofil und Zelle (Plattform, Workload,
 Regime) negativ ist mit $|\rho| \geq 0{,}5$ bei $\alpha = 0{,}05$; als abgelehnt bei $|\rho| < 0{,}3$;
 dazwischen als nicht entschieden; unterhalb von acht Profilen mit Score ist H2 nicht prüfbar. Das
 Hand-Audit über sieben Bewertungs-Achsen bleibt die qualitative Einordnung. Die
 PRT-ART-Telemetrie-Metriken H1--H3 sind Mess-Organe des Prüflings, nicht diese Hypothesen
-(Abschnitt~\ref{sec:eval-hypotheses}); und die Variante ChainRef der Wert-Ablage trägt H3, sie ist kein
+(Abschnitt~\ref{sec:eval-hypotheses}); und die Variante ChainRef der Wert-Ablage ist Gegenstand von H3, sie ist kein
 Abbruchkriterium für H2.
 
 \paragraph{FF4 (Compile-Time vs.\ Laufzeit).} Gefragt ist, welche Achsen-Eigenschaften zur
 Übersetzungszeit fixiert werden müssen, um plattform-optimierte, provenienz-nachweisbare Binaries je
-Permutation zu erzeugen, und welche zur Laufzeit gewählt werden können, ohne die Vergleichbarkeit zu
-verletzen; die Erweiterung FF4.E fragt, ob die Grenze entlang der Achsen-Kategorien verläuft.
-Der \emph{Status}: FF4 ist strukturell beantwortet, FF4.E beantwortet. Die Grenze verläuft entlang der
+Permutation zu erzeugen, und welche zur Laufzeit gewählt werden können bzw.\ müssen (bit-codierte
+Binary-Identität je Permutation, laufzeit-adaptive Layout-Wahl), ohne die Vergleichbarkeit (gleiche
+Compiler- und Flag-Basis) zu verletzen --- und ob es durch die Messung möglich wird, ISA+OS-optimierte
+Binaries für eine Suchalgorithmus-Rekombination zu erzeugen, deren heuristische Optimierung perfekt
+auf ihre Laufzeitumgebung zugeschnitten ist; FF4.a fragt, ob sich der gesamte Ablauf --- vom
+plattformbezogenen Bau aller Binary-Permutationen über den Messlauf und die Auswahl der besten
+gemessenen Binary oder Binary-Rekombination bis zur Auswertung in CSV-/xlsx-Dateien, LaTeX und
+Diagrammen --- durchgehend aus einer XML-Beschreibung des Experiments erzeugen lässt; die Erweiterung
+FF4.E fragt, ob die Grenze entlang der Achsen-Kategorien verläuft.
+Der \emph{Status}: FF4 ist strukturell beantwortet, FF4.a strukturell beantwortet, FF4.E beantwortet. Die Grenze verläuft entlang der
 Kategorien: Die drei System-Haupt-Achsen \texttt{target\_isa}, \texttt{operating\_system} und
 \texttt{external\_utils} samt ihrer Komplex-Klammer \texttt{build\_target\_complex}
 (Abschnitt~\ref{sec:complex-axis}; keine vierte Haupt-Achse) gehören zur Übersetzungszeit-Identität
 der Binary; sie erscheinen als System-Stempel-Zeile und Bau-Versionskennung, nie als
-\texttt{binary\_id}-Segment. Die Provenienz trägt der Tier-Fingerprint: ein SHA-512 über elf Glieder
+\texttt{binary\_id}-Segment. Die Provenienz sichert der Tier-Fingerprint: ein SHA-512 über elf Glieder
 (Fingerprint-Format~6), darunter das Overlay-Glied als ein SHA-512 über die konkatenierten Quelldateien
 des Overlay-Schnitts --- je Achse die Dateimenge ihrer eigenen Implementierung plus die gemeinsame
 Anatomie-Substanz ---, sodass eine reine Quelltext-Änderung eine neue Identität ergibt, und das
 Toolchain-Glied mit der Bau-Compiler-Kennung und der Optimierungs-Identität; der Planer-Fingerprint ist
 ein SHA-256 über sein eigenes Preimage. Die Abfrage \texttt{get\_compiler()} einer Achse liefert
-dagegen den Original-Compiler des Papiers aus dem Manifest der vendorten Quelle --- eine
+dagegen den Original-Compiler der Veröffentlichung aus dem Manifest der vendorten Quelle --- eine
 Herkunftsangabe, keine Bau-Kennung. Mess-Wahlen bleiben laufzeit-variabel; Layout- und Seiten-Selektion
 bleiben über die mixed-radix-Ordnung der \texttt{binary\_id} (die statische Binary-Sicht) und die
 laufzeit-dynamische Cache-Line-Politik wählbar, ohne die gemeinsame Compiler- und Flag-Basis zu
@@ -296,23 +313,44 @@ des Builders --- die Unter-Achsen-Freigabe der Vorstufe wird zur Haupt-Achsen-An
 Tier-Binaries aus den zur Builder-Laufzeit erhobenen Ist-Eigenschaften (Abschnitt~\ref{sec:hw-probe}).
 Gestempelt wird stets die Plattform-\emph{Klasse}, nie ein Messwert; der \emph{Passungs-Stempel}, der
 die gestempelte Klasse bei jedem Mess-Lauf gegen das Laufzeit-Verdikt der Hardware-Erkennung prüft, ist
-Entwurf, nicht gebaut (Abschnitt~\ref{sec:outlook}). Die vorwärtsgerichtete Teilfrage, ob die Messung
+entworfen, aber nicht implementiert (Abschnitt~\ref{sec:outlook}). Die vorwärtsgerichtete Teilfrage, ob die Messung
 selbst ISA- und betriebssystem-optimierte Binaries für eine Rekombination zuschneiden kann, greift der
 Ausblick als Heuristik-Automation auf; die Betriebssystem-Dimension ist mit drei deklarierten Werten
 der System-Achse (\texttt{linux}, \texttt{windows}, \texttt{macos}, je mit eigener Probe) und den zwei
 Mess-Regimes im Messplan angelegt --- das zweite Regime, ein immutables Betriebssystem, ist entworfen,
-nicht vollzogen (Abschnitt~\ref{sec:eval-platforms}). Als \emph{Beweis} tragen Abschnitt~\ref{sec:complex-axis}
-(Komplex-Klammer; Struktur), Abschnitt~\ref{sec:hw-probe} (zweigeteilte Erkennung; Struktur),
-Abschnitt~\ref{sec:stamp-model} (Stempel-Zeilen; Struktur) und Abschnitt~\ref{sec:impl-system-axes}
-(Rückkehr-Sperren und Ordnungs-Wachen; Test). Die \emph{Folge}: FF4 strukturell beantwortet;
-Heuristik-Automation und Passungs-Stempel offen.
+nicht umgesetzt (Abschnitt~\ref{sec:eval-platforms}). Zu FF4.a (deklarative Kette): Die Kette ist
+durchgehend deklarativ angelegt und als zwei Binaries gebaut. Der Planer
+\texttt{comdare-experiment-planner} prüft die Anwender-XML rein lesend gegen die einkompilierten
+Registry-Kataloge und emittiert aus dem einen Director-Walk den deterministischen Plan --- zwei Läufe
+sind byte-gleich, der Plan-Kopf annotiert das Registry-Trio, und jeder Bau-Schritt weist den tatsächlich
+erzeugten Datei-Stamm aus derselben Orchestrator-Funktion aus, die auch der Bau aufruft ---; der
+Mess-Treiber \texttt{comdare-messung-driver} emittiert die System-Permutationen und
+Tier-Bau-Aufträge seines freigegebenen Bau-Raums und fährt die Sieben-Phasen-Mess-Pipeline von
+\textsc{Enumerate} bis \textsc{Persist} (CSV und JSON); die nachgelagerte Neun-Stufen-Werkzeugkette
+rendert daraus die xlsx-Mappe, die booktabs-Tabellen, die TikZ-Diagramme und die Anhang-Dateien, die
+das Manuskript einbindet --- eine XML-Quelle, ein Bau-Kanal, kein Schritt von Hand
+(Abschnitt~\ref{sec:impl-pipeline}, Abbildung~\ref{fig:eval-xml-kette}). Die Auswahl der besten
+Binary oder Rekombination ist als Arbeitsmodus \texttt{compare} der Ablauf-Kette registriert und
+validierbar; sein modus-spezifischer Ablauf und der \texttt{release} sind vorgesehen, aber nicht
+implementiert --- beide sind wählbare, validierbare Etiketten mit \texttt{release}-gleicher Bausemantik
+(Abschnitt~\ref{sec:anatomy-levels}).
+Umsetzungsstand: Die Kette ist in einem ersten durchgehenden Lauf nachgewiesen --- die Smoke-Messreihe über 43
+Permutationen im Anhang ist ihr Erzeugnis ---; der headless Dienst, der XML-Erstellungsmodus, die
+\texttt{<publish>}-Sektion und die CSV-Baumform sind vorgesehen, aber nicht implementiert. Als \emph{Beleg} dienen
+Abschnitt~\ref{sec:complex-axis} (Komplex-Klammer; Struktur), Abschnitt~\ref{sec:hw-probe}
+(zweigeteilte Erkennung; Struktur), Abschnitt~\ref{sec:stamp-model} (Stempel-Zeilen; Struktur),
+Abschnitt~\ref{sec:impl-system-axes} (Rückkehr-Sperren und Ordnungs-Prüfungen; Test) sowie für FF4.a
+Abschnitt~\ref{sec:impl-pipeline} (Planer, Treiber und Mess-Pipeline; Struktur) und
+Abschnitt~\ref{sec:mess-chain} (Kette von der XML zur Tier-Binary; Struktur). Die \emph{Folge}: FF4
+und FF4.a strukturell beantwortet; Heuristik-Automation, Passungs-Stempel sowie der Ablauf von
+\texttt{compare} und \texttt{release} offen.
 
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.9cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{4.8cm}>{\raggedright\arraybackslash}p{3.3cm}@{}}
 \toprule
 Frage & Teilfrage & Status & Beweis (Abschnitte; Belegart) & Rest \\
 \midrule
-FF0 & Hauptfrage: aktiv, messgetrieben gegen passiv, statisch & offen & {\ref{sec:axis-triad}} (Struktur), {\ref{sec:impl-system-axes}} (Test), {\ref{sec:eval-method}} (Messplan) & Zahl aus Reihe~A nach dem Voll-Bau \\
+FF0 & Hauptfrage: aktiv, messgetrieben gegen passiv, statisch & offen & {\ref{sec:axis-triad}} (Struktur), {\ref{sec:impl-system-axes}} (Test), {\ref{sec:eval-method}} (Messplan) & Zahl aus Reihe~A nach dem vollständigen Bau \\
 FF0.E & Zuordenbarkeit eines Gewinns zu Organ, System, Mess & strukturell beantwortet & {\ref{sec:axis-triad}}, {\ref{sec:stamp-model}} (Struktur) & Messung, die die Zuordnung ausübt \\
 FF1 & kanonische Zerlegung, Permutationsmatrix, Profile & strukturell beantwortet & {\ref{sec:axis-triad}}, {\ref{sec:mess-chain}} (Struktur), {\ref{sec:impl-contracts}} (Test) & Lauf über alle achtzehn Achsen; Profil-Anschluss der Meta-Meta-Achse \\
 FF1.a & Kategorien-Schnitt der Zerlegung & beantwortet & {\ref{sec:axis-triad}} (Struktur), {\ref{sec:impl-system-axes}} (Test) & --- \\
@@ -321,40 +359,41 @@ FF2 & Mess-Pipeline, drei Reihen, drei Ebenen, Verifikation & strukturell beantw
 FF2.a & Mess-Achsen als eigener Realm & beantwortet & {\ref{sec:axis-triad}} (Struktur), {\ref{sec:impl-system-axes}} (Test) & Katalog der Erfolgs-Parameter je Achse \\
 FF2.b & Knoten-/Cache-Line-Größe achsen-isoliert & strukturell beantwortet & {\ref{sec:measurement-system}} (Struktur) & Messung über Knotentyp, Layout, Prefetch \\
 FF2.c & Erweiterbarkeit, Eingliederung neuer Prüflinge & beantwortet (konzeptionell) & {\ref{sec:anatomy-levels}}, {\ref{sec:mess-chain}} (Struktur), {\ref{app:interfaces}} (Test) & Paper-Isolations-Modus; Materialisierung von \texttt{Verbund2\_Hybrid} \\
+FF2.d & Workload-Stand der Technik & beantwortet & {\ref{sec:workload-basics-known}} (Literatur), {\ref{sec:eval-workloads}} (Struktur) & Voll-Permutation der Workloads; nur YCSB als Last-Rahmenwerk registriert \\
 FF3 & PRT-ART gegen SOTA in den Reihen A--C & offen & {\ref{sec:prtart-demo}}, {\ref{sec:sota-instances}} (Struktur) & Reihe~A\@; Vollausbau des Vertrags \\
-FF3.a & Seitendarstellung, Umschaltregeln & strukturell beantwortet (Plan-Setzung) & {\ref{sec:prtart-demo}} (Struktur) & plattform-kalibrierte Regeln aus den Läufen \\
+FF3.a & Seitendarstellung, Umschaltregeln & strukturell beantwortet (Vorgabe ohne Messbeleg) & {\ref{sec:prtart-demo}} (Struktur) & plattform-kalibrierte Regeln aus den Läufen \\
 FF3.b & Compile-Time-Zwang & beantwortet & {\ref{sec:measurement-system}} (Struktur), {\ref{sec:impl-contracts}} (Test) & --- \\
 FF4 & Übersetzungszeit gegen Laufzeit, Provenienz & strukturell beantwortet & {\ref{sec:stamp-model}}, {\ref{sec:hw-probe}} (Struktur), {\ref{sec:impl-system-axes}} (Test) & Passungs-Stempel; Heuristik-Automation \\
+FF4.a & deklarative Kette von der XML bis zur Auswertung & strukturell beantwortet & {\ref{sec:impl-pipeline}}, {\ref{sec:mess-chain}} (Struktur) & Ablauf von \texttt{compare} und \texttt{release}; Dienst, Erstellungsmodus, CSV-Baum \\
 FF4.E & Grenze entlang der Achsen-Kategorien & beantwortet & {\ref{sec:complex-axis}}, {\ref{sec:stamp-model}} (Struktur) & --- \\
 \bottomrule
 \end{tabular}
 \caption{Die Beweiskette je Haupt- und Teilfrage: Status in drei Stufen (beantwortet, strukturell
-beantwortet, offen), die tragenden Abschnitte mit ihrer Belegart (Struktur, Test, Messung) und der
-offene Rest ohne Zahl.}\label{tab:ff-beweiskette}
+beantwortet, offen), die stützenden Abschnitte mit ihrer Belegart (Struktur, Test, Messung; für FF2.d der
+Literaturbeleg) und der offene Rest ohne Zahl.}\label{tab:ff-beweiskette}
 \end{table}
 
-%% OWNER-VORLAGE: OV-K6-03 --- Bau-Soll je System-Permutation als Katalog-Nenner ($2^{17}$), Voll-Bau-Umfang
-%% als Produkt mit den System-Permutationen; Lauf-gebundene Zahlen nur mit Lauf. Default gesetzt;
-%% Widerspruch genügt.
-\paragraph{Stand der Durchführung.} Das deklarierte Bau-Soll --- je System-Permutation die 131072
+%% INTERN-272: KA-119
+\paragraph{Umsetzungsstand.} Der deklarierte Bau-Umfang --- je System-Permutation die 131072
 Organ-Permutationen des golden-Referenzkatalogs; der Katalog-Kommentar schätzt rund 224~GB und rund
-24~Stunden je Voll-Bau, eine Schätzung, kein Messwert --- ist nicht gefahren; die End-to-End-Läufe des
+24~Stunden je vollständigem Bau, eine Schätzung, kein Messwert --- ist nicht durchgeführt; die End-to-End-Läufe des
 Mess-Treibers über die Zielplattformen (x86-64 mit AVX2 und AVX-512, aarch64 mit NEON und
 SVE\footnote{NEON und SVE\@: die SIMD-Erweiterungen der ARM-Architektur --- NEON mit fester
-128-Bit-Breite, SVE (Scalable Vector Extension) mit implementierungsabhängiger Vektorbreite.}) stehen
-aus, ebenso die Abgabe-Messung über den 320er-Katalog. Belegt mit Lauf sind zwei Teil-Durchführungen:
-der Durchstich der Kette von der Experiment-XML über Bau und Messung bis zum eingebundenen Anhang
-(Abschnitt~\ref{sec:eval-xml}) --- ein Mess-Job der Smoke-Stufe (Pipeline 15800, Job 377503, Host prod1;
-Anhang~\ref{app:measurements}) mit 10000 Operationen und 671,5~ns je Operation (p50 der
-\texttt{lookup}-Operation 750~ns) als realer Messwert des Weges; ein vorausgehender erster Durchstich
-derselben Kette (Pipeline 15764, Job 376333) ergab bei 10000 Operationen 1199,047~ns je Operation, seine
-messende Maschine ist nicht belegt und die Differenz bleibt unbewertet --- und der Kalibrierlauf der
-AMD-Lane, der 250 von 250
+128-Bit-Breite, SVE (Scalable Vector Extension) mit implementierungsabhängiger Vektorbreite.}) liegen
+nicht vor, ebenso die Abgabe-Messung über den 320er-Katalog. Belegt mit Lauf sind zwei Teil-Durchführungen:
+der erste durchgehende Lauf der Kette von der Experiment-XML über Bau und Messung bis zum eingebundenen Anhang
+(Abschnitt~\ref{sec:eval-xml}) --- ein Mess-Job der Smoke-Stufe auf der AMD-Zen-5-Maschine\footnote{Provenienz
+des Smoke-Laufs: Pipeline 15800, Mess-Job 377503, Host prod1 (Anhang~\ref{app:measurements}); ein
+vorausgehender erster durchgehender Lauf derselben Kette (Pipeline 15764, Job 376333) ergab bei 10000 Operationen
+1199,047~ns je Operation, seine messende Maschine ist nicht dokumentiert und die Differenz nicht
+bewertet.} mit 10000 Operationen und 671,5~ns je Operation (p50 der
+\texttt{lookup}-Operation 750~ns) als realer Messwert des Weges --- und der Kalibrierlauf auf der
+AMD-Maschine, der 250 von 250
 Tier-Binaries gebaut und den Bau-Takt auf 0,521~s je Binary sowie den Platzbedarf auf rund 457~kB je
-Binary kalibriert hat; daraus folgt ein Lagerbedarf von rund 240~GB für den Voll-Bau von 524288
+Binary kalibriert hat; daraus folgt ein Lagerbedarf von rund 240~GB für den vollständigen Bau von 524288
 Tier-Binaries über die vier System-Permutationen des golden-Profils (zwei Optimierungsstufen mal zwei
 SIMD-Optionen). Die Smoke-Reihe --- 43 Permutationen in zwei Teilblöcken: 27 kartesische
-SIMD$\times$Layout$\times$Allokator-Kombinationen plus 16 über Node-Breite, Pfadkompression, interne
+SIMD$\times$Layout$\times$Allokator-Kombinationen plus 16 über Knotenbreite, Pfadkompression, interne
 Suche und Telemetrie --- liegt in Anhang~\ref{app:measurements} vor; ihre Provenienz ist der Datenstand,
 unter dem sie erhoben wurde: sieben variierte Achsen jener Zählung, von denen SIMD und Telemetrie in der
 kanonischen Ordnung keine Organ-Achsen mehr sind. Sie approximiert Achsen-Effekte teils über
@@ -363,18 +402,14 @@ Wall-Clock-Proxys, und einzelne Effekte sind Instrumentierungs-Artefakte\footnot
 selbst~\cite{gait1986probe}.} statt Organ-Effekte; die Vorbehalte je Reihe führt
 Tabelle~\ref{tab:le:limitierung} (Abschnitt~\ref{sec:measurements:limitations}). Die apparat-seitige
 Abnahme je Paket läuft über das Zwei-Gate-Protokoll (Abschnitt~\ref{sec:impl-contracts}). Die \emph{Folge}:
-FF0 und FF3 bleiben offen, bis Reihe~A gelaufen ist; alle achtzehn Achsen sind zur Variation vorgesehen.
+FF0 und FF3 bleiben offen, solange Reihe~A nicht gelaufen ist; alle achtzehn Achsen sind für die Variation vorgesehen (nicht gemessen).
 
-%% OWNER-VORLAGE: OV-K6-02 --- Zuschnitt des Abschnitts (echter Entscheid, Register OV-02/A-046): Default
-%% Nutzer-Limitierungen L-A bis L-J im Fazit, artefakt-gebundene Vorbehalte nur als Verweis auf die
-%% Limitierungs-Tabelle des Mess-Anhangs, der Posten Modul-Bodies fällt als widerlegt, Voll-Bau und
-%% Smoke-Reihe stehen als Durchführungs-Stand in Abschnitt sec:answers. Alternative: Limitierungen ganz in
-%% den Mess-Anhang, im Fazit nur Verweis. Widerspruch genügt.
+%% INTERN-272: KA-120
 \section{Limitierungen}\label{sec:limitations}
 Die folgenden Grenzen beschreiben, was ein Anwender mit dem System nicht erreichen kann --- abgesehen
 von den natürlichen und selbst gewählten Grenzen der Maschine, auf der er arbeitet; Vorbehalte
 einzelner Messreihen führt der Mess-Anhang (Tabelle~\ref{tab:le:limitierung}), Implementierungsstände
-das Kapitel Implementierung (Kapitel~\ref{ch:impl}), und der Durchführungs-Stand von Voll-Bau und
+das Kapitel Implementierung (Kapitel~\ref{ch:impl}), und der Umsetzungsstand von vollständigem Bau und
 Smoke-Reihe steht in Abschnitt~\ref{sec:answers}. Zwei Grenzen folgen aus dem Lager-Prinzip, die
 übrigen sind aus der Architektur abgeleitet: Maschinenspezifische empirische Optimierung ist der
 Wesenszug cache-bewusster Verfahren --- ATLAS~\cite{whaley2001atlas} und FFTW~\cite{frigo1998fftw}
@@ -382,7 +417,7 @@ vermessen die Maschine, bevor sie den Code wählen ---, und cache-oblivious Verf
 sind der Gegenpol ohne Maschinenbindung; ein Apparat, der die Maschinenbindung zum Prinzip macht, erbt
 ihre Kosten. Die Modul-Bodies sind keine Grenze: Der Codegenerator des Mess-Pfads emittiert je
 Permutation die achtzehn voll qualifizierten Achsen-Typen samt Umbrella-Include, der Alt-Pfad mit dem
-Prüflings-Stub ist durch ein hartes Gate vom Mess-Pfad getrennt, und die Nullaussagen gepinnter
+Prüflings-Stub ist durch eine strikte Sperre vom Mess-Pfad getrennt, und die Nullaussagen fest zugeordneter
 Pool-Familien sind explizit kodierte Nicht-Erhebung mit Grund (Abschnitt~\ref{sec:impl-pipeline};
 Tabelle~\ref{tab:le:limitierung}).
 \begin{itemize}
@@ -402,9 +437,7 @@ Tabelle~\ref{tab:le:limitierung}).
   eine andere übertragen. Das ist der Preis der maschinenspezifischen Optimierung
   (ATLAS~\cite{whaley2001atlas}, FFTW~\cite{frigo1998fftw}) und der Grund für die drei
   Maschinen-Signaturen der System-Registry.
-  %% OWNER-VORLAGE: OV-K6-06 --- Null-Darstellung der Hardware-Spalten: das Fazit sagt \enquote{nicht erhoben
-  %% (n/a)}; die Umstellung der Anhang-Diagramme und -Tabellen von 0 auf n/a ist Generator-Gegenstand.
-  %% Default gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-121
   \item \textbf{Deckung der Hardware-Zähler je Mikroarchitektur:} Im Mess-Pfad ist die
   Zähler-Erhebung aktiv --- die emittierten Mess-Jobs setzen den PMC-Schalter, nur der Test-Bau baut
   ohne Hardware-Zugriff. Erhoben werden vier generische Zähler (L1-, Last-Level-, dTLB- und
@@ -412,12 +445,12 @@ Tabelle~\ref{tab:le:limitierung}).
   Linux-Systemaufruf, der einen Hardware- oder Software-Zähler als Dateideskriptor öffnet; generische
   Ereignisse bildet der Kernel je Mikroarchitektur ab, modellspezifische verlangen eine rohe Kodierung.})
   und zwei modell-gebundene Rohzähler (L2-Demand-Misses und Fills aus dem Cache eines fremden CCX als
-  Kohärenz-Beobachtbare), Letztere nur, wo die Kodierung am Objekt kreuzgeprobt ist --- AMD Zen~5; ohne
-  Katalog-Eintrag tragen die Felder eine explizit kodierte
+  Kohärenz-Beobachtbare), Letztere nur, wo die Kodierung durch Messung gegengeprüft ist --- AMD Zen~5; ohne
+  Katalog-Eintrag führen die Felder eine explizit kodierte
   Nicht-Erhebung\footnote{Explizit kodierte Nicht-Erhebung: Der fehlende Wert ist ein eigener Zustand
   (n/a mit Grund), nie eine Null; die Statistik spricht von geplant fehlenden Daten, deren
   Fehlmechanismus bekannt ist und darum keine Verzerrung einträgt~\cite{graham2006planned,graham2009missing}.}
-  (n/a), nie eine Null, und für Intel gibt es keine Rohbelegung, bis ein Intel-Host die Kreuzprobe
+  (n/a), nie eine Null, und für Intel gibt es keine Rohbelegung, bis ein Intel-Host die Gegenprüfung
   liefert. Das Last-Level-Ereignis scheitert auf Zen~5 beim Öffnen (keine generische Abbildung),
   RAPL\footnote{RAPL (Running Average Power Limit): die Energie-Zähler der Prozessor-Pakete, unter
   Linux über die powercap-Sysfs-Zone lesbar; die Zone ist oft nur mit Root-Rechten lesbar.} ist
@@ -431,7 +464,7 @@ Tabelle~\ref{tab:le:limitierung}).
   die Planer-Probe, die je Lauf den Host nach seinen Zählern fragt), der Übersetzungszeit-Factory (die
   Tier-Stempel aus den Ist-Eigenschaften) und dem Laufzeit-Verdikt; die Maschinen-Deklarationen der
   System-Registry sind Deklarationen mit konservierter Quelle (\texttt{dmidecode}). Nicht vorhanden
-  sind die Verdrahtung in Runner und Prüf-Dock, der additive Ergebnis-Rückschrieb, der
+  sind die Anbindung an Runner und Prüf-Dock, der additive Ergebnis-Rückschrieb, der
   Provenienz-Roundtrip der Deklarationen und der Passungs-Stempel. Was der Anwender nicht kann: die
   Passung zwischen Maschine und Binary automatisch prüfen lassen (Abschnitte~\ref{sec:hw-probe}
   und~\ref{sec:impl-system-axes}).
@@ -439,12 +472,12 @@ Tabelle~\ref{tab:le:limitierung}).
   Speicher; xlsx ist der Standard, die CSV-Form ihr wählbares, immer aus ihr erzeugtes Gegenstück --- kein
   einzelnes Kind-Dokument, sondern ein geordneter Baum aus CSV-Dateien mit einem Ordner je Blatt ---, beide
   zusammen sind wählbar
-  (Abschnitt~\ref{sec:eval-identity}). Die Mappe trägt einen konstanten Blattschlüssel --- alle Zeilen
-  in einem Blatt ---; die Auffächerung in ein Blatt je Unter-Achsen-Permutation plus Info-Blatt ist die
-  Filterkette der Auswertung und Soll; die CSV-Projektion ist eine flache Datei, die Baumform ein
-  offener Bauposten. Was der Anwender nicht kann: Ergebnisse je
+  (Abschnitt~\ref{sec:eval-identity}). Die Mappe besitzt einen konstanten Blattschlüssel --- alle Zeilen
+  in einem Blatt ---; die Auffächerung in ein Blatt je Unter-Achsen-Permutation plus Info-Blatt ist als
+  Filterkette der Auswertung vorgesehen, aber nicht implementiert; die CSV-Projektion ist eine flache Datei,
+  die Baumform nicht implementiert. Was der Anwender nicht kann: Ergebnisse je
   Unter-Achsen-Permutation als eigene Blätter erhalten oder die CSV-Ablage als Baum erhalten.
-  \item \textbf{Permutationsraum und Budget:} Ein Voll-Bau des golden-Referenzkatalogs kostet je
+  \item \textbf{Permutationsraum und Budget:} Ein vollständiger Bau des golden-Referenzkatalogs kostet je
   System-Permutation nach der Schätzung des Katalogs rund 224~GB und rund 24~Stunden, nach der
   Kalibrierung rund 457~kB und 0,521~s je Tier-Binary (Abschnitt~\ref{sec:answers}); der Planer rechnet
   die Mächtigkeit je Profil und bietet im Subkommando \texttt{simulate} Budget-Eingänge (Bytes je
@@ -452,25 +485,25 @@ Tabelle~\ref{tab:le:limitierung}).
   aller Achsen-Kataloge materialisieren --- er wählt Kataloge oder Teilmengen, und die Wiederholungszahl
   je Messung bleibt eine Abwägung von Aufwand und Konfidenz~\cite{kalibera2013rigorous}.
   \item \textbf{Kein Laufzeit-Wechsel zwischen Tier-Binaries:} Die Hybrid-Stufe ist als
-  Klassifikation, Dock-Schicht, XML-Parser und Binary-Proxy gebaut
+  Klassifikation, Dock-Schicht, XML-Parser und Binary-Proxy implementiert
   (Abschnitt~\ref{sec:impl-hybrid-lager}); der \texttt{.so}-Export der Hybrid-Stufe, die Eviction und
-  der Router sind nicht gebaut --- Reroute und Router brauchen echte Messkurven. Was der Anwender nicht
+  der Router sind nicht implementiert --- Reroute und Router setzen Messkurven voraus. Was der Anwender nicht
   kann: ein Hybrid-Tier betreiben, das zur Laufzeit zwischen vorgeladenen Binaries wechselt; auch die
   Zustands-Übergabe beim Wechsel --- der Memento-Abgleich mit den zwei Release-Artefakten single und
-  hybrid im Lager --- ist Plan-Ist, nicht Bau.
+  hybrid im Lager --- ist entworfen, nicht implementiert.
   \item \textbf{Betriebssystem-Regime:} Die System-Achse \texttt{operating\_system} ist mit
-  \texttt{linux}, \texttt{windows} und \texttt{macos} deklariert und trägt je eine Probe; gemessen wird
+  \texttt{linux}, \texttt{windows} und \texttt{macos} deklariert und besitzt je eine Probe; gemessen wird
   unter root-Linux mit vollem Zähler-Zugriff, das zweite Regime (immutables Betriebssystem) ist
-  entworfen, nicht vollzogen (Abschnitt~\ref{sec:eval-platforms}), und ein Windows-Zählertreiber steht
-  aus (Tabelle~\ref{tab:le:limitierung}, Zeile~1). Was der Anwender nicht kann: Messreihen unter
+  entworfen, nicht umgesetzt (Abschnitt~\ref{sec:eval-platforms}), und ein Windows-Zählertreiber liegt
+  nicht vor (Tabelle~\ref{tab:le:limitierung}, Zeile~1). Was der Anwender nicht kann: Messreihen unter
   Windows oder macOS oder ohne perf-Rechte (\texttt{perf\_event\_paranoid}, RAPL-Zonen) erheben.
   \item \textbf{Keine isolierte Nachmessung einer einzelnen Veröffentlichung:} Ein Betriebsmodus, der
   die Entwurfsbestandteile genau einer Veröffentlichung als geschlossenes Achsen-Set anbietet, ist nicht
-  gebaut; je Papier existieren das Profil-XML (33) und der Ersetzungs-Verbund, nicht die Isolation gegen
-  alle übrigen Achsen. Was der Anwender nicht kann: ein Papier originalgetreu isoliert durchmessen
+  implementiert; je Veröffentlichung existieren das Profil-XML (33) und der Ersetzungs-Verbund, nicht die Isolation gegen
+  alle übrigen Achsen. Was der Anwender nicht kann: eine Veröffentlichung originalgetreu isoliert durchmessen
   (Abschnitt~\ref{sec:outlook}).
   \item \textbf{Keine automatische Auswahl der besten Konfiguration:} Die heuristik-gesteuerte
-  Vollautomatisierung (Klassifikator und Binary-Packager) ist nicht gebaut; vorhanden sind das
+  Vollautomatisierung (Klassifikator und Binary-Packager) ist nicht implementiert; vorhanden sind das
   messwert-getriebene Inkrement der Binary-Auswahl (Rangierung je Metrik aus der Auswertungs-Ausgabe)
   und die laufzeit-dynamische Cache-Line-Politik. Was der Anwender nicht kann: aus Lastprofil- und
   Hardware-Merkmalen automatisch eine Achsen-Konfiguration empfehlen lassen; die Empfehlung bleibt
@@ -478,22 +511,22 @@ Tabelle~\ref{tab:le:limitierung}).
 \end{itemize}
 
 \section{Ausblick}\label{sec:outlook}
-Kurzfristig stehen die folgenden Schritte an; gebaute Bestände treten mit ihrem offenen Rest auf,
-Plan-Ist-Stände mit ihrem Durchführungs-Stand:
+Kurzfristig stehen die folgenden Schritte an; implementierte Teile treten mit ihrem offenen Rest auf,
+entworfene Teile mit ihrem Umsetzungsstand:
 \begin{enumerate}[label=(\arabic*)]
-  \item der Voll-Bau nach dem deklarierten Soll (Abschnitt~\ref{sec:eval-build-scope}) und die
+  \item der vollständige Bau nach dem deklarierten Umfang (Abschnitt~\ref{sec:eval-build-scope}) und die
   Abgabe-Messung über den 320er-Katalog;
-  \item der End-to-End-Lauf der drei Pflicht-Messreihen auf der registrierten Flotte samt Erzeugung der
+  \item der End-to-End-Lauf der drei Pflicht-Messreihen auf den registrierten Messmaschinen samt Erzeugung der
   Mess-Diagramme;
   \item der Lager-Vollausbau: die Binaries \emph{mit} und \emph{ohne} Messfühler als zwei eingelagerte
   Release-Artefakte und die synthetisierten Funktions-Kurven als Dateien --- die Messung ist immer
-  eingeschaltet, im Lager wird nur Fehlendes nachgemessen (Abschnitt~\ref{sec:lager}); der Ausbau ist als
-  Folgeschritt ausgewiesen;
-  \item die Hardware-Erkennung: Verdrahtung in Runner und Prüf-Dock, Ergebnis-Rückschrieb,
+  eingeschaltet, im Lager wird nur Fehlendes nachgemessen (Abschnitt~\ref{sec:lager}); der Ausbau ist
+  nicht implementiert;
+  \item die Hardware-Erkennung: Anbindung an Runner und Prüf-Dock, Ergebnis-Rückschrieb,
   Provenienz-Roundtrip und Passungs-Stempel;
   \item die Blatt-Auffächerung der xlsx-Mappe je Unter-Achsen-Permutation plus Info-Blatt --- der
-  Mappen-Writer ist gebaut, die Auffächerung ist Soll;
-  \item die Kreuzprobe der Intel-Rohzähler auf prod2, damit L2- und Kohärenz-Zähler auch dort erhoben
+  Mappen-Writer ist implementiert, die Auffächerung ist nicht implementiert;
+  \item die Gegenprüfung der Intel-Rohzähler auf prod2, damit L2- und Kohärenz-Zähler auch dort erhoben
   werden;
   \item das zweite Betriebssystem-Regime (immutables Betriebssystem) und der Windows-Zählertreiber;
   \item der Paper-Isolations-Modus aus FF2.c: ein Betriebsmodus, der die Entwurfsbestandteile genau
@@ -507,15 +540,15 @@ Plan-Ist-Stände mit ihrem Durchführungs-Stand:
 
 \paragraph{Heuristik-Automation und Binary-Delivery.} Der in der Aufgabenstellung (Teilaufgabe~7)
 geforderte Mechanismus, der aus den Messergebnissen automatisch die beste Konfiguration ableitet, ist
-in seiner heuristik-gesteuerten \emph{Voll}automatisierung nicht implementiert und einer Folge-Phase
-vorbehalten; ein erstes Inkrement der automatischen Auswahl und des Binary-Versands liegt als
+in seiner heuristik-gesteuerten \emph{Voll}automatisierung nicht implementiert und Gegenstand künftiger
+Arbeit; ein erstes Inkrement der automatischen Auswahl und des Binary-Versands liegt als
 eigenständiges Werkzeug (\texttt{best\_binary\_selector}) vor, das je Metrik die beste Permutation aus
 der Auswertungs-Ausgabe rangiert und ausliefert --- die xlsx-Mappe ist die Ausgabe und der Standard, die
 CSV-Form ihr aus ihr erzeugter, geordneter Baum aus CSV-Dateien (ein Ordner je Blatt, kein einzelnes
-Kind-Dokument), und das Werkzeug liest die CSV-Projektion, die die Naht im Durchführungs-Stand als eine
-flache Datei schreibt (die Baumform ist ein offener Bauposten). Neben der Auswahl (Versprechen~1) trägt
-derselbe Strang die
-laufzeit-dynamische Cache-Line-Anpassung (Versprechen~2), die für die Cache-Line-Bewusstheit der Arbeit
+Kind-Dokument), und das Werkzeug liest die CSV-Projektion, die die Naht als eine flache Datei schreibt (die
+Baumform ist vorgesehen, aber nicht implementiert). Neben der Auswahl (Zusage~1) umfasst
+derselbe Werkzeug-Strang die
+laufzeit-dynamische Cache-Line-Anpassung (Zusage~2), die für die Cache-Line-Bewusstheit der Arbeit
 einschlägig ist: Aus einem ausgewerteten Profil-Aggregat leitet der Politik-Selektor die Cache-Line-Politik
 ab. Der Vollausbau setzt drei Komponenten voraus; die zweite liegt vor, und zur ersten wie zur dritten
 stellt das Werkzeug ein erstes, rein messwert-getriebenes Inkrement: (i) einen
@@ -526,14 +559,12 @@ XML-Lastprofil-Ergebnis abgelegten, je Architekturfokus wiederverwendbaren Heuri
 (iii) einen \emph{Binary-Packager}, der den so ausgewählten Gesamtalgorithmus als eigenständige Binary
 hinter dem einheitlichen Suchalgorithmus-Interface ausliefert. Voraussetzung für alle drei ist, dass die
 End-to-End-Messreihen vollständig vorliegen --- erst die belastbare Datenbasis über alle Permutationen
-und Lastprofile macht eine messgetriebene, automatisch gesteuerte Auswahl sinnvoll; bis dahin werden
+und Lastprofile macht eine messgetriebene, automatisch gesteuerte Auswahl sinnvoll; ohne diese Automatisierung werden
 die Konfigurations-Empfehlungen des Auswertungs-Schemas aus Abschnitt~\ref{sec:eval-results} nach
 Vorliegen der Daten manuell abgeleitet.
 
 \medskip
-%% OWNER-VORLAGE: OV-K6-05 --- GPU-Ausblick ohne Plan-Anker: Default = Übertragung des Anatomie-Prinzips
-%% auf Beschleuniger-Speicherhierarchien ohne Zusage einer Cluster-Verfügbarkeit; Alternative: der Punkt
-%% fällt. Widerspruch genügt.
+%% INTERN-272: KA-122
 Mittel- bis langfristig: die Messung der PIM-Allokator-Familie auf PIM-Hardware\footnote{PIM
 (Processing-in-Memory): Speicherbausteine mit eigenen Rechenwerken, etwa UPMEM-DPUs oder Samsungs
 HBM-PIM\@; ein PIM-Allokator verlangt solche Hardware.} --- der Allokator A16 ist als Achsen-Baustein
@@ -548,11 +579,11 @@ Hybrid-Komponenten Live-Ranking, Zustands-Übergabe und Messfehler-Interpolation
 (Abschnitt~\ref{sec:heuristics-modes}). Die Vier-Repository-Architektur (Abschnitt~\ref{sec:repos})
 --- Cache-Engine, Prüfling, Super-Repository, Manuskript --- erlaubt, weitere Prüflinge analog zu
 PRT-ART einzubringen, ohne die Bausteine-Bibliothek zu ändern: Der Prüflings-Kontrakt der Bau-Konfiguration
-kreuzprobt den Code-Weg und den Registry-Weg gegeneinander, damit beide Hälften der Integration auf
+prüft den Code-Weg und den Registry-Weg gegeneinander, damit beide Hälften der Integration auf
 denselben Ort zeigen. Über die hier behandelten baumartigen Suchstrukturen hinaus ist das
 Anatomie-Prinzip über höherwertige Abstraktionen auf die weiteren Strukturklassen aus
 Abschnitt~\ref{sec:overview} erweiterbar --- hash-basierte, räumliche und flache Strukturen ---, sodass
 derselbe Mess- und Permutationsapparat ohne Neubau auf neue Klassen angewendet werden kann; darin liegt
 ein wesentlicher Hebel für künftigen experimentellen Fortschritt.
 
-% Das Abbildungsverzeichnis und Tabellenverzeichnis  wird derzeit nicht von Abbildungen und Tabellen gefolgt und braucht eine Sichtprüfung. Es kommen erst beide Inhaltsverzeichnisse und dann nacheinander Abbildungen und dann Tabellen - vielleicht ist das aber wenn es zusammengehört eher ein großes Inhaltsverzeichnis, wo in jedem Aufführungspunkt klar durch A vs T erkennbar ist, ob es sich um eine Abbildung oder Tabelle handelt. Im Abbildungsverzeichnis fehlen die wichtigen PMC Messungen. ALLE Anhänge der Diplomarbeit müssen auf Konformität und repräsentierbarkeit gegen den Plan geprüft werden, vor allem weil neuerdings eine zeitlich und Mess-Parameter orientierte Darstellung dominiert über w/ma/mi Messsystem. Die Einzelnen Kompositionen haben jetzt Achsen-Versionierungen und Benennungen über das Stempelsystem, welche sich auch in den Diagrammen und tabellen identifizierbar wiederspiegeln müssen. Was bedeuten "Zyklen", mir ist diese Messeinrichtung nicht bekannt und sie ergibt im Kontext des aktuellen Mess-Ketten Verfahrens über die multiplen Schichten der Messung in Tier-Binaries keinen Sinn -> Die Messung verschiedener Algorithmen je Achseninterface und Tier-Binaries auf deren Vertrags-Gattung+Genus-Interface ist nicht sinnvoll getrennt dargestellt und die Wallclocktime Ebene der CEB über die Gesamtverläufe der verschiedenen Last-Framework Abläufe nicht korrekt dargelegt. Es gibt sehr viele Diagramme die Messwert 0 anzeigen statt NaN weil kein Messwert erhoben wurde, das ist keine ehrlich angezeigte Einschränkung. Die Auswertung der Achsen und Tier-Binary Interface Funktionen ist nicht korrekt getrennt erfolgt, sindern wild gemixt. Die Schichtung der Architektur ist im Abbildungsverzeichnis kaum erkennbar. Die Ordnung der vielschichtigen xlsx muss beim Ausrollen des Latex Anhangs als dritte factory neben xlsx und csv "serialisiert" werden, um die Kern-Messungen und Diagramme als eigene Ausgabe in Latex vollständig in das Dokument zu kippen. Am besten werden die einzelnen Mess-Strecken je binary als Zeitliche Messreihe mit allen Start und Endpunkten von Parametern jeweils in eine Tabellenzeile gekippt und referenziert wie ein sequentiell ausgerollter Baum gegliedert. Die Diagnose jeder Messzeile ist derzeit noch generisch und berücksichtigt nicht die vorangegangene Historie aller Messwerte über die Zeit. Alle 18 Kompositions-Achsen müssen in Zukunft variieren. Aussagen wie etwas ist "jetzt" der Fall, wirken wie ein Status Bericht, bitte lass dieses "jetzt" weg und schreibe den Satz einfach ohne, also einfache Auflistung der Fakten im Präsens ohne Zeitangabe. Die Gesamte Code-Struktur und Bedienungs-struktur hat sich geändert. Bitte prüfe jede einzelne Definition im Glossar, weil einige Definition tatsächlich jetzt noch abstrakter und allgemeiner gelebt werden. Die Aufführung der Achsen und Bausteine ist sehr gelungen, muss jetzt aber noch ergänzt werden. Die Architektur-Entscheidungen im Ist-Zustand haben sich grundsätzlich geändert, dabei sind Begriffe wie honest-0 nicht menschenlesbar und müssen mit Begriffen aus der Wissenschaft (web recherche) ausgedrückt werden. Die GESAMTE englische Übersetzung muss zum Schluss nach allen Korrekturen der deutschen Übersetzung folgen. Die Erklärungen zu Lizenzen und Urheberrecht in der Diplomarbeit müssen angepasst werden, weil wir den Code dann doch gesperrt hatten, aber nicht die Diplomarbeit und die XML Konfigurationen (so sollte es im Code zumindest sein), Forschung hatten wir freigegeben, bitte übernimm die Lizenzen aus dem Code. Grundsätzlich sollte die gesamte Diplomarbeit zuerst korrekt ergänzt, dann als Stufe ins englische übersetzt werden, und zum schluss muss die Deusche Übersetzung durch eine englische Rück-Übersetzung aus dem Englischen formulierungstechnisch und zur Schärfung von mikro-Wörtern, geschärft werden.
+%% INTERN-272: S-103

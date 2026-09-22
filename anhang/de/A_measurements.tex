@@ -1,49 +1,29 @@
 \chapter{Vollständige Messreihen}\label{app:measurements}
-%% OWNER-VORLAGE: OV-AA-01 --- Kapiteltitel bei $N = 1$: der Titel meint die vollständige Dokumentation
-%% aller erzeugten Reihen und Artefakte (drei Kapitel verweisen so auf den Anhang), nicht ihren Umfang;
-%% Nenner und Smoke-Charakter stehen im ersten und zweiten Absatz. Alternative nur auf Owner-Wort:
-%% "Messreihen und Auswertungs-Artefakte" (Label unverändert). Default gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-124
+% Order 272 T3 (V-270-5/6 b): Platzhalter-Familien als Tabelle, leere Langtabellen als Zeile statt
+% grafikloser Figuren; Rueckweg nach der Messreihe = \PlatzhalterAlsTabellefalse (RUECKWEG-REGISTER-270).
+\newif\ifPlatzhalterAlsTabelle%
+\PlatzhalterAlsTabelletrue%
+% Verweis nur, wenn die referenzierte Generator-Tabelle eingebunden ist (sonst Reference undefined).
+\newcommand{\PlatzhalterTabRef}[1]{\ifPlatzhalterAlsTabelle\else{} (Tabelle~\ref{#1})\fi}
 
-% IST-STAND DER ERZEUGUNG (ein konsolidierter Kopf; keine Datierungen, keine Umzugs-Erzaehlung):
-% (1) Die zwei Permutations-Tabellen und ihre Diagramm-Rahmen (v5_pipeline_demo_*, cartesian_smoke43_*)
-%     stammen aus dem 16-Spalten-Schema des In-Process-Pfads (run_workload): binaere Mess-Records ->
-%     Pipeline-Stufe 03 (Binary-zu-CSV, measurement_record_v1) -> Writer csv_to_latex. Die Provenienz-
-%     zeile der zwei *_diagram.tex-Rahmen nennt nicht den heutigen Erzeuger (Aufraeum-Kandidat des
-%     Regenerats).
-% (2) Alle uebrigen Darstellungen erzeugt die C++23-Fassade Code/08_appendix_generator je Messlauf aus
-%     EINER WIDE-Matrix (18 Kompositions-Achsen, op_<art>_p50/p99/p999-Spalten, two_phase_valid) mit den
-%     Writern csv_to_latex + diagram_generator in-process. Familien: Bias-Matrix, 6x lc_surface,
-%     4x ld_exchange, le_limitierung (aus der im Writer gepflegten Vorbehaltsliste, ohne CSV-Eingang),
-%     seg_attribution, latency_range, latency_ecdf, exchange_forest, observer_detail, 6x lc_surface3d,
-%     3x ld_sweep, exchange_forest_vs_reference, 6x lc_surface_ratio, 6x lc_normbar, latency_tradeoff.
-%     Ablage symmetrisch unter anhang/de/tabellen/ und anhang/en/tabellen/.
-% (3) REGEL DER VOLLSTAENDIGEN AUSLASSUNGS-DEKLARATION: jeder \InputIfFileExists-Eintrag kompiliert
-%     auch ohne Datei und traegt seinen EIGENEN Ersatztext, der (a) benennt, was die Abbildung zeigen
-%     wuerde, und (b) warum sie fehlt -- je Eintrag, weil jede Zeile ihre eigene Kennzahl nennt und
-%     "die Dateien einer Gruppe entstehen gemeinsam" eine Annahme ueber den Writer waere, keine
-%     Garantie des Dokuments. Faellt sie, verschwaende ein Eintrag spurlos.
-% (4) Weitere Messreihe: Generatorlauf auf die WIDE-Matrix, dann die \input-/\InputIfFileExists-Zeilen
-%     hier ergaenzen (Tabelle + Diagramm bzw. je Familie).
+%% INTERN-272: KA-125
 
-%% OWNER-VORLAGE: OV-AA-03 --- Nullen und "Zyklen" in den zwei Smoke-Tabellen (gleichlautend OV-K6-06):
-%% der Fließtext trägt die Auflösung (0 = nicht erhoben; Zyklen = p50-Latenz in ns unter Legacy-Namen),
-%% die Generator-Artefakte bleiben unverändert, bis das Regenerat sie trägt (Schema-/Writer-Eingriff, kein
-%% Text-Eingriff). Alternative: Regenerat der zwei Tabellen vor der Abgabe. Default gesetzt; Widerspruch
-%% genügt.
+%% INTERN-272: KA-126
 Dieser Anhang dokumentiert die Messreihen und Auswertungs-Artefakte der Mess-Kette
 (Abschnitt~\ref{sec:mess-chain}). Tabelle~\ref{tab:measurements:v5_pipeline_demo} listet je
 vorkonfigurierter Lebewesen-Permutation die Kennzahlen des 16-Spalten-Schemas: die Operationszahl
 (\texttt{op\_count}), die repräsentative p50-Latenz in Nanosekunden --- im Schema unter dem
 Legacy-Spaltennamen \texttt{total\_cycles} geführt und in der Tabelle mit \enquote{Zyklen}
 beschriftet; es sind keine Taktzyklen\footnote{\texttt{total\_cycles}: Das Feld des Snapshot-Schemas
-trägt die repräsentative Latenz der Messung in Nanosekunden (den zusammengeführten p50-Wert), nicht
-gezählte Prozessortakte; der Spaltenname ist ein Erbe der ersten Schema-Fassung, seine Umbenennung ist
-Gegenstand des Generators, nicht dieses Textes.} --- sowie die Spalten der Cache-Misses L1--L3, die in
+enthält die repräsentative Latenz der Messung in Nanosekunden (den zusammengeführten p50-Wert), nicht
+gezählte Prozessortakte; der Spaltenname ist ein Erbe der ersten Schema-Fassung; die Spalte heißt daher
+\enquote{Zyklen} und bezeichnet die p50-Latenz in Nanosekunden.} --- sowie die Spalten der Cache-Misses L1--L3, die in
 dieser Reihe nicht erhoben sind (\texttt{pmc\_available} $= 0$) und deshalb als 0 tabelliert stehen:
-Sie sind als explizit kodierte Nicht-Erhebung zu lesen (Doktrin der ausgewiesenen Nichterhebung,
-Abschnitt~\ref{sec:axis-triad}), nicht als gemessene Null; die Umstellung dieser Zellen auf n/a ist
-Generator-Gegenstand. Mit gesetztem Schalter \texttt{COMDARE\_ENABLE\_PMC} (Bau-Option, Vorgabe aus,
-damit die Unit-Tests ohne Hardware-Zugriff bauen; die CI setzt ihn in den PMC-Lanes) erhebt die
+Sie sind als explizit kodierte Nicht-Erhebung zu lesen (Grundsatz der ausgewiesenen Nichterhebung,
+Abschnitt~\ref{sec:axis-triad}), nicht als gemessene Null; eine Ausgabe dieser Zellen als n/a ist nicht
+implementiert. Mit gesetztem Schalter \texttt{COMDARE\_ENABLE\_PMC} (Bau-Option, Vorgabe aus,
+damit die Unit-Tests ohne Hardware-Zugriff bauen; die CI setzt ihn in den PMC-Pfaden) erhebt die
 Mess-Kette L1D-, Last-Level-, dTLB- und Branch-Misses generisch über
 \texttt{perf\_event\_open}\footnote{\texttt{perf\_event\_open}(2): der Linux-Systemaufruf, der einen
 Hardware- oder Software-Zähler als Dateideskriptor öffnet; generische Ereignisse bildet der Kernel je
@@ -53,31 +33,32 @@ zählt).}~\cite{demelo2010perf} sowie L2-Demand-Misses und Fills aus dem Cache e
 CCX\footnote{CCX (Core Complex): ein Kern-Komplex mit eigenem L3-Cache; Demand-Fills aus dem Cache
 eines anderen CCX sind die Kohärenz-Beobachtbare des Core-PMU, ein wörtlicher Invalidierungs-Zähler
 existiert im Ereignis-Satz nicht.} modellgebunden über den RAW-Event-Katalog --- für die
-AMD-Mikroarchitektur Zen~5 (CPUID-Familie 26) am Objekt
-kreuzgeprobt~\cite{linux_perf_amdzen5,weaver2008counters}; Modelle ohne Katalog-Eintrag, heute jedes
-Intel-Modell, tragen n/a (Limitierung~1 in Abschnitt~\ref{sec:measurements:limitations};
+AMD-Mikroarchitektur Zen~5 (CPUID-Familie 26) durch Messung
+gegengeprüft~\cite{linux_perf_amdzen5,weaver2008counters}; Modelle ohne Katalog-Eintrag (alle
+Intel-Modelle) führen n/a (Limitierung~1 in Abschnitt~\ref{sec:measurements:limitations};
 Abschnitt~\ref{sec:eval-counters}). Abbildung~\ref{fig:measurements:v5_pipeline_demo} stellt
 dieselbe Kennzahl grafisch gegenüber; ihre Achsenbeschriftung \enquote{Zyklen} folgt dem
 Legacy-Spaltennamen. Die hier dokumentierten Reihen sind Smoke-Nachweise des vollständigen
 Ketten-Durchlaufs mit Achsen-Variation; sie ersetzen die Pflicht-Messreihen A--C
 (Abschnitt~\ref{sec:eval-available}, Tabelle~\ref{tab:stage-series}) nicht, deren vollständige Läufe
-nicht vorliegen: n/a, weil der Voll-Bau als Trigger der Kampagne aussteht.
+nicht vorliegen (n/a), weil der vollständige Bau nicht durchgeführt ist.
 
 Die zwei Permutations-Tabellen (Tabellen~\ref{tab:measurements:v5_pipeline_demo}
 und~\ref{tab:measurements:cartesian_smoke43}) entstammen dem In-Process-Pfad
 (\texttt{run\_workload}) eines Ketten-Durchlaufs auf der Entwicklungsmaschine
 (Abschnitt~\ref{sec:eval-available}). Alle übrigen Artefakte dieses Anhangs stammen aus \emph{einem}
-Smoke-Lauf der Mess-Pipeline --- Stufe \texttt{measure:smoke} des Durchstichs: Pipeline 15800,
-Mess-Job 377503, Host prod1 (AMD Zen~5), System-Permutation Optimierungsstufe O3 mit SIMD-Option
-\texttt{no\_extension}; diese Angaben stammen aus dem Lauf-Protokoll der Pipeline, die Artefakte
-selbst tragen keine davon ---, und dieser Lauf trägt genau \emph{eine} Zelle: ein Suchverfahren
+Smoke-Lauf der Mess-Pipeline auf der AMD-Zen-5-Maschine --- Stufe \texttt{measure:smoke} des ersten
+durchgehenden Laufs der Kette\footnote{Provenienz des Smoke-Laufs: Pipeline 15800, Mess-Job 377503, Host
+prod1 (AMD Zen~5); diese Angaben stammen aus dem Lauf-Protokoll der Pipeline, die Artefakte selbst
+enthalten keine davon.}, System-Permutation Optimierungsstufe O3 mit SIMD-Option
+\texttt{no\_extension} ---, und dieser Lauf enthält genau \emph{eine} Zelle: ein Suchverfahren
 (\texttt{k\_ary}), ein Lastprofil (\texttt{ycsb\_c}), ein Tier-Binary, eine Arbeitsmenge $n = 4096$,
 $N = 1$. Die vermessene Komposition ist über ihre \texttt{binary\_id} mit 18 Segmenten identifiziert
 (Kopfzeile von Tabelle~\ref{tab:appendix:observer-detail}); Stempel-Versionszeile, Fingerprint, Host,
 Datum und Lauf-Kennung führen die Generator-Ausgaben nicht mit (n/a im Artefakt) --- eine
 Provenienz-Zeile je Artefakt, die die Identitäts-Stempel aus Abschnitt~\ref{sec:stamp-model} in
-Tabellen und Diagrammen lesbar macht, ist Ausbaustufe des Generators; bis dahin ist die Beweiskette
-dieses Absatzes der Beleg. PMC-Kennzahlen erscheinen in diesem Anhang nur als Tabellenspalten (nicht
+Tabellen und Diagrammen lesbar macht, ist im Generator nicht implementiert; der Beleg ist die Beweiskette
+dieses Absatzes. PMC-Kennzahlen erscheinen in diesem Anhang nur als Tabellenspalten (nicht
 erhoben); ein PMC-Abbildungstyp ist im Generator nicht vorhanden. Jede Zahl dieses Anhangs stammt aus
 diesen Artefakten; keine andere Messung wird zitiert.
 
@@ -90,21 +71,21 @@ Gattungs-Interface-Operationen \texttt{insert}, \texttt{lookup}, \texttt{erase},
 \texttt{rmw} der Tier-Binary (ma); \texttt{seg\_<achse>\_ns} und \texttt{stat\_<achse>\_<feld>}
 sind die Per-Achsen-Zeiten und Observer-Zähler über die Achsen-Interfaces (mi); die PMC-Spalten
 gehören zur Micro-Instrumentierung (mi). Dieser Anhang definiert die Ebenen nicht neu, er ordnet zu:
-Tabelle~\ref{tab:measurements:artefakt-ebenen} nennt je Artefakt die Kennzahl, ihre Ebene und den
-Nenner, den der vorliegende Korpus trägt. In jedem Abschnitt ist die Design-Aussage (was eine
-Darstellung leistet) von der Korpus-Aussage (was der vorliegende Lauf trägt) getrennt.
+Tabelle~\ref{tab:measurements:artefakt-ebenen} nennt je Artefakt die Kennzahl, ihre Ebene und die
+Datenbasis, die der vorliegende Korpus enthält. In jedem Abschnitt ist die Design-Aussage (was eine
+Darstellung leistet) von der Korpus-Aussage (was der vorliegende Lauf enthält) getrennt.
 
 \begin{footnotesize}
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}p{1.1cm}>{\raggedright\arraybackslash}p{5.3cm}@{}}
-\caption{Artefakte des Mess-Anhangs: Kennzahl, Mess-Ebene (w/ma/mi) und der im vorliegenden Korpus
-getragene Nenner; Zahlen nur aus den eingebundenen Artefakten}\label{tab:measurements:artefakt-ebenen}\\
+\caption{Artefakte des Mess-Anhangs: Kennzahl, Mess-Ebene (w/ma/mi) und die im vorliegenden Korpus
+enthaltene Datenbasis; Zahlen nur aus den eingebundenen Artefakten}\label{tab:measurements:artefakt-ebenen}\\
 \toprule
-Artefakt & Kennzahl & Ebene & Nenner im Korpus \\
+Artefakt & Kennzahl & Ebene & Datenbasis im Korpus \\
 \midrule
 \endfirsthead%
 \multicolumn{4}{@{}l}{\tablename\ \thetable{} --- Fortsetzung}\\
 \toprule
-Artefakt & Kennzahl & Ebene & Nenner im Korpus \\
+Artefakt & Kennzahl & Ebene & Datenbasis im Korpus \\
 \midrule
 \endhead%
 \midrule
@@ -115,17 +96,34 @@ Artefakt & Kennzahl & Ebene & Nenner im Korpus \\
 Tabelle~\ref{tab:measurements:v5_pipeline_demo}, Abbildung~\ref{fig:measurements:v5_pipeline_demo} & \texttt{op\_count}; p50-Latenz (ns) unter \enquote{Zyklen}; HW-Spalten L1--L3 & w (HW-Spalten: mi) & 6 Permutationen, 2000 Operationen je Zeile; HW-Spalten 0 = nicht erhoben \\
 Tabelle~\ref{tab:measurements:cartesian_smoke43}, Abbildung~\ref{fig:measurements:cartesian_smoke43} & wie oben & w (HW-Spalten: mi) & 43 Permutationen (27 + 16), 1000 Operationen je Zeile; HW-Spalten 0 = nicht erhoben \\
 Bias-Bruch-Matrix (Tabelle~\ref{tab:bias:search-algo-workload}) & Median \texttt{ns\_per\_op} (nearest-rank), nur \texttt{two\_phase\_valid} & w & $1{\times}1$ (\texttt{k\_ary} $\times$ \texttt{ycsb\_c}): 672 ns/op \\
-Heatmaps \texttt{lc\_\allowbreak{}surface\_*} (6) & \texttt{ns\_per\_op}; \texttt{op\_*\_p50} & w; ma & \texttt{ns\_per\_op} und \texttt{lookup} gemessen, aber $1{\times}1$ unter dem $2{\times}2$-Minimum; \texttt{insert}, \texttt{erase}, \texttt{scan}, \texttt{rmw} nicht ausgeführt --- sechs Vermerke, keine Fläche \\
-3D-Ansichten \texttt{lc\_\allowbreak{}surface3d\_*} (6) & wie oben & w; ma & zwei Ansichten mit je einem Stützpunkt (671,5 ns/op; 750 ns), vier Vermerke (nicht ausgeführt) \\
-Sweep-Kurven \texttt{ld\_\allowbreak{}sweep\_*} (3) & \texttt{ns\_per\_op}, \texttt{op\_insert\_p50}, \texttt{op\_lookup\_p50} über $n$ & w; ma & ein gemessenes $n$ (4096): je ein Messpunkt für \texttt{ns\_per\_op} und \texttt{lookup}; \texttt{insert} nicht ausgeführt (Vermerk) \\
+Heatmaps \texttt{lc\_\allowbreak{}surface\_*} (6) & \texttt{ns\_per\_op}; \texttt{op\_*\_p50} & w; ma &
+  \texttt{ns\_per\_op} und \texttt{lookup} gemessen, aber $1{\times}1$ unter dem $2{\times}2$-Minimum;
+  \texttt{insert}, \texttt{erase}, \texttt{scan}, \texttt{rmw} nicht ausgeführt --- sechs Vermerke, keine Fläche
+  \ifPlatzhalterAlsTabelle{}(bis zur vollständigen Messreihe durch
+  Tabelle~\ref{tab:t3:surfaces} vertreten)\fi \\
+3D-Ansichten \texttt{lc\_\allowbreak{}surface3d\_*} (6) & wie oben & w; ma & zwei Ansichten mit je einem Stützpunkt
+  (671,5 ns/op; 750 ns), vier Vermerke (nicht ausgeführt)
+  \ifPlatzhalterAlsTabelle{}(bis zur vollständigen Messreihe durch
+  Tabelle~\ref{tab:t3:surfaces3d} vertreten)\fi \\
+Sweep-Kurven \texttt{ld\_\allowbreak{}sweep\_*} (3) & \texttt{ns\_per\_op}, \texttt{op\_insert\_p50},
+  \texttt{op\_lookup\_p50} über $n$ & w; ma & ein gemessenes $n$ (4096): je ein Messpunkt für \texttt{ns\_per\_op} und
+  \texttt{lookup}; \texttt{insert} nicht ausgeführt (Vermerk)
+  \ifPlatzhalterAlsTabelle{}(bis zur vollständigen Messreihe durch
+  Tabelle~\ref{tab:t3:sweep} vertreten)\fi \\
 Per-Achsen-Attribution \texttt{seg\_\allowbreak{}attribution} & \texttt{seg\_\allowbreak{}<achse>\_\allowbreak{}ns} gegen \texttt{seg\_\allowbreak{}run\_\allowbreak{}total\_\allowbreak{}ns} & mi & ein Balken (\texttt{k\_ary}); 19 Segmente = 18 Organ-Achsen + Framework-Rest \\
 Observer-Detail (Tabelle~\ref{tab:appendix:observer-detail}) & \texttt{stat\_\allowbreak{}<achse>\_\allowbreak{}<feld>} & mi & ein Tier-Binary (\texttt{binary\_id} mit 18 Segmenten) \\
 Range-Balken \texttt{latency\_\allowbreak{}range} & \texttt{op\_*\_p50} und \texttt{op\_*\_p99} & ma & eine Kategorie (\texttt{k\_ary}/\texttt{lookup}): p50 750 ns, p99 1170 ns \\
 ECDF \texttt{latency\_\allowbreak{}ecdf} & \texttt{ns\_per\_op} über die Konfigurationen & w & $N = 1$: einstufige Treppe bei 671,5 ns/op \\
 Pareto-Streuung \texttt{latency\_\allowbreak{}tradeoff} & \texttt{op\_*\_p50} gegen \texttt{op\_*\_p99} & ma & ein Punkt (750/1170 ns); keine Front \\
-Austauschbarkeit \texttt{ld\_\allowbreak{}exchange\_*} (4 Langtabellen) & Median rel.\ $\Delta$ ns/op je Geschwister-Paar, IQR & w; ma & 0 von 480/480/480/640 Geschwister-Paaren: leere Hüllen \\
+Austauschbarkeit \texttt{ld\_\allowbreak{}exchange\_*} (4 Langtabellen) & Median rel.\ $\Delta$ ns/op je
+  Geschwister-Paar, IQR & w; ma & 0 von 480/480/480/640 Geschwister-Paaren: leere Hüllen
+  \ifPlatzhalterAlsTabelle{}(bis zur vollständigen Messreihe durch
+  eine Ersatzzeile vertreten)\fi \\
 Forest-Plots \texttt{exchange\_\allowbreak{}forest}, \texttt{exchange\_\allowbreak{}forest\_\allowbreak{}vs\_\allowbreak{}reference} & wie oben, aggregiert & w & keine Datei (0 Paare; Referenz nicht gemessen): Ersatztext \\
-Verhältnis-Matrizen \texttt{lc\_\allowbreak{}surface\_\allowbreak{}ratio\_*} (6) & Quotient Median/Referenz-Median & w; ma & Referenz \texttt{linear\_scan} nicht gemessen: sechs Vermerke \\
+Verhältnis-Matrizen \texttt{lc\_\allowbreak{}surface\_\allowbreak{}ratio\_*} (6) & Quotient Median/Referenz-Median &
+  w; ma & Referenz \texttt{linear\_scan} nicht gemessen: sechs Vermerke
+  \ifPlatzhalterAlsTabelle{}(bis zur vollständigen Messreihe durch
+  Tabelle~\ref{tab:t3:ratio} vertreten)\fi \\
 Normalisierte Balken \texttt{lc\_\allowbreak{}normbar\_*} (6) & wie oben, je Suchalgorithmus & w; ma & keine Datei (Referenz nicht gemessen): Ersatztexte \\
 Limitierungen (Tabelle~\ref{tab:le:limitierung}) & Vorbehaltsliste, keine Messzahl & --- & 16 Zeilen \\
 \end{longtable}
@@ -134,12 +132,9 @@ Limitierungen (Tabelle~\ref{tab:le:limitierung}) & Vorbehaltsliste, keine Messza
 \input{anhang/de/tabellen/v5_pipeline_demo_table.tex}
 \input{anhang/de/tabellen/v5_pipeline_demo_diagram.tex}
 
-\section{Kartesische Smoke-Messreihe (43 Permutationen, echte DLL-Messung)}
+\section[head={Kartesische Smoke-Messreihe (43 Permutationen)}]{Kartesische Smoke-Messreihe (43 Permutationen, DLL-Messung)}
 
-%% OWNER-VORLAGE: OV-AA-02 --- die zwei Smoke-Reihen (43 + 6) unter der Ist-Stand-Doktrin: sie bleiben
-%% als Ketten-Nachweis mit ihrer eigenen Nomenklatur (keine Datierung, keine Gleichsetzung mit
-%% Registry-Bausteinen, Heimat nur wo belegbar); die Kampagne ist der Lauf über alle 18 Achsen.
-%% Alternative: eigener Unterabschnitt "Vorläufer-Nachweise". Default gesetzt; Widerspruch genügt.
+%% INTERN-272: KA-127
 Die folgende Messreihe entstand aus dem vollständigen Ketten-Durchlauf: 43 gebaute Permutations-DLLs
 in zwei Teilblöcken --- 27 kartesische Kombinationen SIMD $\times$ Speicherlayout $\times$ Allokator
 (\texttt{avx2}, \texttt{scalar}, \texttt{sse4} $\times$ \texttt{aos}, \texttt{hybrid}, \texttt{soa}
@@ -154,7 +149,7 @@ Speicherlayout und Allokator sind Organ-Achsen (\texttt{memory\_layout}, \texttt
 Telemetrie ist keine \texttt{binary\_id}-Achse (Limitierung~2 in
 Tabelle~\ref{tab:le:limitierung}); die übrigen Namen sind nicht namensgleich mit
 Registry-Bausteinen und werden nicht gleichgesetzt. Die Reihe variiert damit sieben Größen; die
-Kampagne variiert alle 18 Kompositions-Achsen, dazu die optionale Organ-Meta-Meta-Achse
+vollständige Messreihe variiert alle 18 Kompositions-Achsen, dazu die optionale Organ-Meta-Meta-Achse
 \texttt{disk\_io} ohne \texttt{binary\_id}-Anteil. Tabelle~\ref{tab:measurements:cartesian_smoke43}
 und Abbildung~\ref{fig:measurements:cartesian_smoke43} zeigen die Ergebnisse; die HW-Spalten stehen
 auf 0 = nicht erhoben, und die Achsenbeschriftung \enquote{Zyklen} der Abbildung folgt dem
@@ -168,17 +163,17 @@ Legacy-Spaltennamen (siehe oben).
 Tabelle~\ref{tab:bias:search-algo-workload} fasst die je Suchverfahren und Lastprofil gemessene
 Median-Latenz (ns/op, nearest-rank\footnote{Nearest-Rank: Das $q$-Quantil ist der kleinste
 Stichprobenwert, unter dem mindestens der Anteil $q$ der Stichprobe liegt (Hyndman und Fan,
-Typ~1); es wird nicht interpoliert, jedes Perzentil ist ein real gemessener
+Typ~1); es wird nicht interpoliert, jedes Perzentil ist ein tatsächlich gemessener
 Wert~\cite{hyndman1996quantiles}.}) über alle dynamischen Einstellungen und Wiederholungen
 zusammen; berücksichtigt sind ausschließlich die als \texttt{two\_phase\_valid}\footnote{%
 \texttt{two\_phase\_valid}: das Gültigkeits-Flag der Zwei-Phasen-Operationsschleife --- nur eine
 Messung, deren zweite (warme) Phase gültig abgeschlossen wurde, geht in die Auswertung ein
 (Abschnitt~\ref{sec:measurement-system}).} markierten Läufe. Die Matrix macht sichtbar, bei welchen
-Lastprofilen das jeweilige Verfahren seinen systematischen Bias bricht. Im vorliegenden Korpus trägt
+Lastprofilen das jeweilige Verfahren seinen systematischen Bias bricht. Im vorliegenden Korpus enthält
 die Matrix eine Zelle (\texttt{k\_ary} $\times$ \texttt{ycsb\_c}, 672~ns/op --- ganzzahlig
 formatiert; dieselbe Zelle steht in den Diagrammen als 671,5~ns/op); ein Bruch-Muster über
-Lastprofile ist mit einer $1{\times}1$-Matrix nicht ablesbar --- die Aussagekraft entsteht mit der
-Kampagne (n/a bis dahin).
+Lastprofile ist mit einer $1{\times}1$-Matrix nicht ablesbar --- eine Aussagekraft setzt die
+vollständige Messreihe voraus (n/a).
 
 \input{anhang/de/tabellen/bias_matrix_table.tex}
 
@@ -187,29 +182,54 @@ Kampagne (n/a bis dahin).
 Für jede der sechs Kennzahlen --- die Gesamt-Latenz (\texttt{ns\_per\_op}) sowie die p50-Latenzen
 der Einzeloperationen \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{scan} und
 \texttt{rmw} --- ist eine Latenz-Oberfläche als Heatmap\footnote{Heatmap: eine Matrix, deren Zellen
-den Wert farbkodiert tragen; die Form geht auf die geclusterte Wärmekarte der Statistik
+den Wert farbkodiert darstellen; die Form geht auf die geclusterte Wärmekarte der Statistik
 zurück~\cite{wilkinson2009heatmap}.} Suchalgorithmus $\times$ Lastprofil vorgesehen. Im vorliegenden
-Korpus trägt keine der sechs eine darstellbare Fläche, aus zwei verschiedenen Gründen: Die
+Korpus enthält keine der sechs eine darstellbare Fläche, aus zwei verschiedenen Gründen: Die
 Gesamt-Latenz und die p50-Latenz von \texttt{lookup} sind gemessen, liegen aber als
 $1{\times}1$-Matrix unter dem $2{\times}2$-Minimum der pgfplots-Flächenform; die Operationen
 \texttt{insert}, \texttt{erase}, \texttt{scan} und \texttt{rmw} wurden im Korpus nicht ausgeführt
 (\texttt{op\_<art>\_n} $= 0$). Beide Fälle stehen als explizit kodierte Nicht-Erhebung im Artefakt
 --- als Vermerk, der den Grund nennt ---, nie als Nullfläche.
 
+\ifPlatzhalterAlsTabelle%
+Tabelle~\ref{tab:t3:surfaces} fasst die sechs Vermerke zusammen; die Vermerk-Artefakte des Generators
+bleiben erhalten und erscheinen nach der vollständigen Messreihe als Heatmaps an dieser Stelle.
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{7.0cm}@{}}
+\toprule
+Kennzahl & Status im Korpus & Grund (Vermerk des Artefakts) \\
+\midrule
+Gesamt-Latenz (\texttt{ns\_per\_op}) & gemessen, nicht darstellbar & $1{\times}1$-Matrix (\texttt{k\_ary} $\times$ \texttt{ycsb\_c}) unter dem $2{\times}2$-Minimum der pgfplots-Flächenform; Messwert im Korpus vorhanden (Tabelle~\ref{tab:bias:search-algo-workload}) \\
+Insert-Latenz p50 (\texttt{op\_insert\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_insert\_n} $= 0$) \\
+Lookup-Latenz p50 (\texttt{op\_lookup\_p50}) & gemessen, nicht darstellbar & $1{\times}1$-Matrix unter dem $2{\times}2$-Minimum der pgfplots-Flächenform; Messwert im Korpus vorhanden (Tabelle~\ref{tab:measurements:artefakt-ebenen}) \\
+Erase-Latenz p50 (\texttt{op\_erase\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_erase\_n} $= 0$) \\
+Scan-Latenz p50 (\texttt{op\_scan\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_scan\_n} $= 0$) \\
+RMW-Latenz p50 (\texttt{op\_rmw\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_rmw\_n} $= 0$) \\
+\bottomrule
+\end{tabular}
+\caption{Nicht erhobene Kennzahlen der Heatmap-Familie \texttt{lc\_surface\_*} (Suchalgorithmus $\times$
+Lastprofil): sechs Vermerke statt Flächen --- zwei Kennzahlen gemessen, aber als $1{\times}1$-Matrix
+nicht darstellbar, vier nicht erhoben}%
+\label{tab:t3:surfaces}
+\end{table}
+\else
 \input{anhang/de/tabellen/lc_surface_ns_per_op.tex}
 \input{anhang/de/tabellen/lc_surface_op_insert_p50_ns.tex}
 \input{anhang/de/tabellen/lc_surface_op_lookup_p50_ns.tex}
 \input{anhang/de/tabellen/lc_surface_op_erase_p50_ns.tex}
 \input{anhang/de/tabellen/lc_surface_op_scan_p50_ns.tex}
 \input{anhang/de/tabellen/lc_surface_op_rmw_p50_ns.tex}
+\fi
 
 \section{Dreidimensionale Rohdaten-Ansicht}\label{sec:measurements:surfaces3d}
 
 Dieselben sechs Kennzahlen sind zusätzlich als 3D-Rohdaten-Ansicht über der Ebene
-(Suchalgorithmus $\times$ Lastprofil) vorgesehen. Im Korpus tragen zwei Ansichten je einen Stützpunkt
+(Suchalgorithmus $\times$ Lastprofil) vorgesehen. Im Korpus enthalten zwei Ansichten je einen Stützpunkt
 (\texttt{ns\_per\_op}: 671,5~ns/op; \texttt{lookup}-p50: 750~ns) und vier den Vermerk der nicht
 ausgeführten Operation; eine Fläche spannt der Korpus nicht auf. Beide Flächen-Achsen sind
-\emph{nominal}: die aufgespannte Fläche trägt bewusst \emph{keine} Interpolations- oder Trendaussage
+\emph{nominal}: die aufgespannte Fläche enthält bewusst \emph{keine} Interpolations- oder Trendaussage
 und ist ausschließlich als Rohdaten- und Prüfansicht neben der Heatmap zu lesen.
 
 \InputIfFileExists{anhang/de/tabellen/lc_surface3d_ns_per_op.tex}{}{%
@@ -217,14 +237,17 @@ und ist ausschließlich als Rohdaten- und Prüfansicht neben der Heatmap zu lese
   über der Ebene Suchalgorithmus $\times$ Lastprofil. Sie fehlt nur, wenn der Anhang-Generator für
   diese Kennzahl keine Datei geschrieben hat; liegt die Datei vor, benennt sie selbst, ob sie einen
   Stützpunkt trägt oder die Operation nicht ausgeführt wurde.)}}
+\ifPlatzhalterAlsTabelle\else
 \InputIfFileExists{anhang/de/tabellen/lc_surface3d_op_insert_p50_ns.tex}{}{%
   \emph{(Hier stünde dieselbe 3D-Ansicht für die \textbf{p50-Latenz von \texttt{insert}}. Sie fehlt
   nur, wenn der Anhang-Generator für diese Kennzahl keine Datei geschrieben hat; liegt die Datei vor,
   benennt sie selbst Stützpunkt oder Nicht-Ausführung.)}}
+\fi
 \InputIfFileExists{anhang/de/tabellen/lc_surface3d_op_lookup_p50_ns.tex}{}{%
   \emph{(Hier stünde dieselbe 3D-Ansicht für die \textbf{p50-Latenz von \texttt{lookup}}. Sie fehlt
   nur, wenn der Anhang-Generator für diese Kennzahl keine Datei geschrieben hat; liegt die Datei vor,
   benennt sie selbst Stützpunkt oder Nicht-Ausführung.)}}
+\ifPlatzhalterAlsTabelle\else
 \InputIfFileExists{anhang/de/tabellen/lc_surface3d_op_erase_p50_ns.tex}{}{%
   \emph{(Hier stünde dieselbe 3D-Ansicht für die \textbf{p50-Latenz von \texttt{erase}}. Sie fehlt
   nur, wenn der Anhang-Generator für diese Kennzahl keine Datei geschrieben hat; liegt die Datei vor,
@@ -237,15 +260,38 @@ und ist ausschließlich als Rohdaten- und Prüfansicht neben der Heatmap zu lese
   \emph{(Hier stünde dieselbe 3D-Ansicht für die \textbf{p50-Latenz von \texttt{rmw}}. Sie fehlt
   nur, wenn der Anhang-Generator für diese Kennzahl keine Datei geschrieben hat; liegt die Datei vor,
   benennt sie selbst Stützpunkt oder Nicht-Ausführung.)}}
+\fi
+\ifPlatzhalterAlsTabelle%
+Tabelle~\ref{tab:t3:surfaces3d} fasst die vier Vermerke zusammen; die Vermerk-Artefakte des Generators
+bleiben erhalten und erscheinen nach der vollständigen Messreihe als 3D-Ansichten an dieser Stelle.
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{7.0cm}@{}}
+\toprule
+Kennzahl & Status im Korpus & Grund (Vermerk des Artefakts) \\
+\midrule
+Insert-Latenz p50 (\texttt{op\_insert\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_insert\_n} $= 0$) \\
+Erase-Latenz p50 (\texttt{op\_erase\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_erase\_n} $= 0$) \\
+Scan-Latenz p50 (\texttt{op\_scan\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_scan\_n} $= 0$) \\
+RMW-Latenz p50 (\texttt{op\_rmw\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_rmw\_n} $= 0$) \\
+\bottomrule
+\end{tabular}
+\caption{Nicht erhobene Kennzahlen der 3D-Familie \texttt{lc\_surface3d\_*} (Suchalgorithmus $\times$
+Lastprofil): vier Vermerke statt Ansichten; die zwei gemessenen Kennzahlen (Gesamt-Latenz, Lookup-Latenz
+p50) zeigen die zwei Ansichten dieses Abschnitts mit je einem Stützpunkt}%
+\label{tab:t3:surfaces3d}
+\end{table}
+\fi
 
 \section{Arbeitsmengen-Sweep}\label{sec:measurements:working-set-sweep}
 
 Die folgenden Kurven tragen die Latenz über der Arbeitsmengen-Größe $n$ (Schlüssel) auf --- je eine
 Kurve je gesweepter Achsen-Ausprägung, und zwar für die Gesamt-Latenz (\texttt{ns\_per\_op}) sowie
 die p50-Latenzen von \texttt{insert} und \texttt{lookup}. Im Korpus liegt ein gemessener Wert von $n$
-vor (4096): \texttt{ns\_per\_op} und \texttt{lookup}-p50 tragen je einen Stützpunkt
-(\enquote{1 Messpunkt}), \texttt{insert} wurde nicht ausgeführt und trägt den Vermerk statt einer
-Kurve. Es wird kein Stützpunkt erfunden: Eine Messreihe ohne \texttt{working\_set\_n}-Spalte erzeugt
+vor (4096): \texttt{ns\_per\_op} und \texttt{lookup}-p50 enthalten je einen Stützpunkt
+(\enquote{1 Messpunkt}), \texttt{insert} wurde nicht ausgeführt und führt den Vermerk statt einer
+Kurve. Ohne Messwert entsteht kein Stützpunkt: Eine Messreihe ohne \texttt{working\_set\_n}-Spalte erzeugt
 bewusst \emph{keine} Kurve, eine nicht ausgeführte Operation (\texttt{op\_<art>\_n} $= 0$) keinen
 Punkt.
 
@@ -254,16 +300,37 @@ Punkt.
   Arbeitsmengen-Größe $n$. Sie fehlt nur, wenn der Generatorlauf für diese Kennzahl keine Datei
   geschrieben hat --- etwa weil die Messreihe keine \texttt{working\_set\_n}-Spalte führt; liegt die
   Datei vor, benennt sie selbst Stützpunkte oder Nicht-Ausführung.)}}
+\ifPlatzhalterAlsTabelle\else
 \InputIfFileExists{anhang/de/tabellen/ld_sweep_op_insert_p50_ns.tex}{}{%
   \emph{(Hier stünde dieselbe Sweep-Kurve für die \textbf{p50-Latenz von \texttt{insert}}. Sie fehlt
   nur, wenn der Generatorlauf für diese Kennzahl keine Datei geschrieben hat --- etwa weil die
   Messreihe keine \texttt{working\_set\_n}-Spalte führt; liegt die Datei vor, benennt sie selbst
   Stützpunkte oder Nicht-Ausführung.)}}
+\fi
 \InputIfFileExists{anhang/de/tabellen/ld_sweep_op_lookup_p50_ns.tex}{}{%
   \emph{(Hier stünde dieselbe Sweep-Kurve für die \textbf{p50-Latenz von \texttt{lookup}}. Sie fehlt
   nur, wenn der Generatorlauf für diese Kennzahl keine Datei geschrieben hat --- etwa weil die
   Messreihe keine \texttt{working\_set\_n}-Spalte führt; liegt die Datei vor, benennt sie selbst
   Stützpunkte oder Nicht-Ausführung.)}}
+\ifPlatzhalterAlsTabelle%
+Tabelle~\ref{tab:t3:sweep} nennt den Vermerk der nicht erhobenen Sweep-Kennzahl; das Vermerk-Artefakt des
+Generators bleibt erhalten und erscheint nach der vollständigen Messreihe als Kurve an dieser Stelle.
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{7.0cm}@{}}
+\toprule
+Kennzahl & Status im Korpus & Grund (Vermerk des Artefakts) \\
+\midrule
+Insert-Latenz p50 über $n$ (\texttt{op\_insert\_p50}) & nicht erhoben & Operation im Korpus nicht ausgeführt (\texttt{op\_insert\_n} $= 0$): kein Stützpunkt, keine Kurve \\
+\bottomrule
+\end{tabular}
+\caption{Nicht erhobene Kennzahlen der Sweep-Familie \texttt{ld\_sweep\_*} (Latenz über der
+Arbeitsmengen-Größe $n$): ein Vermerk statt Kurve; die zwei gemessenen Kennzahlen (Gesamt-Latenz,
+Lookup-Latenz p50) zeigen die zwei Kurven dieses Abschnitts mit je einem Stützpunkt}%
+\label{tab:t3:sweep}
+\end{table}
+\fi
 
 \section{Per-Achsen-Latenz-Attribution}\label{sec:measurements:seg-attribution}
 
@@ -272,21 +339,21 @@ Organ-Achsen (gestapelte Balken). Das 100\,\%-Ganze je Balken ist die Wall-Clock
 Segment-Laufs (\texttt{seg\_run\_total\_ns}), \emph{nicht} die Real-Workload-Latenz
 (\texttt{total\_ns}); die 19 Segmente --- die 18 Organ-Achsen der kanonischen Kompositions-Ordnung
 plus der Framework-Rest --- summieren sich exakt zu dieser Basis (Coverage $\approx 1{,}0$). Der
-Korpus trägt einen Balken (\texttt{k\_ary}).
+Korpus enthält einen Balken (\texttt{k\_ary}).
 
 \InputIfFileExists{anhang/de/tabellen/seg_attribution.tex}{}{%
   \emph{(Diese Darstellung erscheint nach dem nächsten Messlauf mit \texttt{seg\_*\_ns}-Spalten.)}}
 
 \subsection{Per-Achsen-Observer-Detail}\label{sec:measurements:observer-detail}
 
-Die folgende Langtabelle listet je Tier-Binary die echt gemessenen Observer-Zähler
+Die folgende Langtabelle listet je Tier-Binary die gemessenen Observer-Zähler
 (\texttt{stat\_*}-Spalten aus dem DLL-seitigen Achsen-Schema) auf --- je Achse und Observer-Feld
 den gemessenen uint64-Zählwert; nicht erhobene Felder (\texttt{n/a}) werden weggelassen (kein
-erfundener 0-Wert). Nullen in der Tabelle sind gemessene Zählerstände inaktiver Sub-Features
-gepinnter Strategien (etwa \texttt{budget\_reject}, \texttt{fail}, \texttt{register};
+synthetisch ergänzter 0-Wert). Nullen in der Tabelle sind gemessene Zählerstände inaktiver Teilfunktionen
+fest gewählter Strategien (etwa \texttt{budget\_reject}, \texttt{fail}, \texttt{register};
 Limitierung~4 in Tabelle~\ref{tab:le:limitierung}), keine nicht erhobenen Felder --- Letztere fehlen
 in der Tabelle. Das Achsen-Schema ist single-source (18 Achsen mal 8 Feld-Slots, DLL-seitig
-emittiert, host-seitig header-getrieben gelesen); der Korpus trägt ein Tier-Binary, dessen
+emittiert, host-seitig header-getrieben gelesen); der Korpus enthält ein Tier-Binary, dessen
 \texttt{binary\_id} die Kopfzeile von Tabelle~\ref{tab:appendix:observer-detail} nennt.
 
 \InputIfFileExists{anhang/de/tabellen/observer_detail.tex}{}{%
@@ -334,7 +401,7 @@ Referenz ist eine gemessene Achsen-Ausprägung des Korpus selbst (Voreinstellung
 Bibliotheks-Baseline: eine gemessene \texttt{std::map}-Leistungsserie existiert nicht, denn jedes
 \texttt{std::map} im Korpus ist das Konformitäts-Orakel des Prüf-Docks und damit ein
 Korrektheits-, kein Leistungs-Datenpunkt. Kommt die Referenz-Ausprägung in einer Messreihe nicht
-vor, tragen die Darstellungen dieses Abschnitts den Vermerk der fehlenden Referenz beziehungsweise
+vor, führen die Darstellungen dieses Abschnitts den Vermerk der fehlenden Referenz beziehungsweise
 ihren Ersatztext; im vorliegenden Korpus ist \texttt{linear\_scan} nicht mitgemessen, alle
 Verhältnis-Darstellungen sind daher ohne Nenner (n/a).
 
@@ -352,6 +419,31 @@ hängt von der Wahl der Referenz ab und kann die Rangfolge umkehren; das geometr
 dagegen referenz-invariant~\cite{fleming1986statistics}.} --- das gilt auch für die normalisierten
 Balken des nächsten Unterabschnitts.
 
+\ifPlatzhalterAlsTabelle%
+Tabelle~\ref{tab:t3:ratio} fasst die sechs Vermerke zusammen; die Vermerk-Artefakte des Generators
+bleiben erhalten und erscheinen nach der vollständigen Messreihe mit gemessener Referenz als
+Verhältnis-Matrizen an dieser Stelle.
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{7.0cm}@{}}
+\toprule
+Kennzahl & Status im Korpus & Grund (Vermerk des Artefakts) \\
+\midrule
+Gesamt-Latenz (\texttt{ns\_per\_op}) & n/a (ohne Nenner) & Referenz \texttt{linear\_scan} nicht gemessen \\
+Insert-Latenz p50 (\texttt{op\_insert\_p50}) & n/a (ohne Nenner) & Referenz \texttt{linear\_scan} nicht gemessen; Operation zudem nicht ausgeführt \\
+Lookup-Latenz p50 (\texttt{op\_lookup\_p50}) & n/a (ohne Nenner) & Referenz \texttt{linear\_scan} nicht gemessen \\
+Erase-Latenz p50 (\texttt{op\_erase\_p50}) & n/a (ohne Nenner) & Referenz \texttt{linear\_scan} nicht gemessen; Operation zudem nicht ausgeführt \\
+Scan-Latenz p50 (\texttt{op\_scan\_p50}) & n/a (ohne Nenner) & Referenz \texttt{linear\_scan} nicht gemessen; Operation zudem nicht ausgeführt \\
+RMW-Latenz p50 (\texttt{op\_rmw\_p50}) & n/a (ohne Nenner) & Referenz \texttt{linear\_scan} nicht gemessen; Operation zudem nicht ausgeführt \\
+\bottomrule
+\end{tabular}
+\caption{Nicht erhobene Kennzahlen der Verhältnis-Familie \texttt{lc\_surface\_ratio\_*} (Quotient
+Median/Referenz-Median): sechs Vermerke statt Matrizen, weil die Referenz-Ausprägung
+\texttt{search\_algo}/\texttt{linear\_scan} im Korpus nicht mitgemessen ist}%
+\label{tab:t3:ratio}
+\end{table}
+\else
 \InputIfFileExists{anhang/de/tabellen/lc_surface_ratio_ns_per_op.tex}{}{%
   \emph{(Hier stünde die Verhältnis-Matrix der \textbf{Gesamt-Latenz} (\texttt{ns\_per\_op})
   gegen den Referenz-Median. Sie liegt nicht vor: in den bisher vorliegenden Messreihen ist die
@@ -372,6 +464,7 @@ Balken des nächsten Unterabschnitts.
 \InputIfFileExists{anhang/de/tabellen/lc_surface_ratio_op_rmw_p50_ns.tex}{}{%
   \emph{(Hier stünde dieselbe Verhältnis-Matrix für die \textbf{p50-Latenz von
   \texttt{rmw}}; auch ihr fehlt die mitgemessene Referenz-Ausprägung.)}}
+\fi
 
 \subsection{Normalisierte Balken}\label{sec:measurements:normalised-bars}
 
@@ -402,25 +495,33 @@ die Gesamtaussage je Suchalgorithmus.
 
 \section{Achsen-Austauschbarkeit}\label{sec:measurements:exchange}
 
-Die vier folgenden Langtabellen sind die Träger des Austauschbarkeits-Nachweises je variabler Achse
+Die vier \ifPlatzhalterAlsTabelle{}Langtabellen der Generator-Familie \texttt{ld\_exchange\_*}\else
+folgenden Langtabellen\fi{} sind die Träger des Austauschbarkeits-Nachweises je variabler Achse
 anhand der Geschwister-Paar-Differenzen (Median rel.\ $\Delta$ ns/op bezüglich $v$):
-\texttt{search\_algo} (Tabelle~\ref{tab:ld:exchange:search_algo}), \texttt{node\_type}
-(Tabelle~\ref{tab:ld:exchange:node_type}), \texttt{memory\_layout}
-(Tabelle~\ref{tab:ld:exchange:memory_layout}) und \texttt{prefetch}
-(Tabelle~\ref{tab:ld:exchange:prefetch}); das Aggregat je Wertepaar und Interface-Funktion ist der
+\texttt{search\_algo}\PlatzhalterTabRef{tab:ld:exchange:search_algo}, \texttt{node\_type}%
+\PlatzhalterTabRef{tab:ld:exchange:node_type}, \texttt{memory\_layout}%
+\PlatzhalterTabRef{tab:ld:exchange:memory_layout} und \texttt{prefetch}%
+\PlatzhalterTabRef{tab:ld:exchange:prefetch}; das Aggregat je Wertepaar und Interface-Funktion ist der
 nearest-rank-Median des relativen Deltas mit seiner IQR\footnote{IQR (Interquartilsabstand): die
 Breite zwischen dem 25\,\%- und dem 75\,\%-Perzentil, hier als p75 $-$ p25 des relativen Deltas.}
 über alle Geschwister-Paare und validen Lastprofile. Ein Nachweis setzt Geschwister-Paare voraus
 --- der Generator erwartet 480/480/480/640 (\texttt{search\_algo}, \texttt{node\_type},
 \texttt{prefetch}, \texttt{memory\_layout}); der vorliegende Korpus liefert 0, die vier Tabellen sind
-daher leer und belegen nichts; derselbe Generatorlauf füllt sie mit der Kampagne. Dass
+daher leer und belegen nichts; derselbe Generatorlauf füllt sie, sobald die vollständige Messreihe vorliegt. Dass
 \texttt{search\_algo} und \texttt{prefetch} am wenigsten konfundiert sind, ist ein Vorbehalt der
-Messanordnung (Limitierung~10 in Tabelle~\ref{tab:le:limitierung}), kein Messergebnis.
+Messanordnung (Limitierung~10 in Tabelle~\ref{tab:le:limitierung}), kein Messergebnis.\ifPlatzhalterAlsTabelle{}
+Bis zur vollständigen Messreihe steht an der Stelle der vier Tabellen die folgende Zeile.\fi
 
+\ifPlatzhalterAlsTabelle%
+\emph{(0 Geschwister-Paare im Korpus (Stand der Messreihe); die vier Langtabellen
+\texttt{ld\_exchange\_*} erscheinen an dieser Stelle nach dem Generator-Neulauf der vollständigen
+Messreihe.)}
+\else
 \input{anhang/de/tabellen/ld_exchange_search_algo.tex}
 \input{anhang/de/tabellen/ld_exchange_node_type.tex}
 \input{anhang/de/tabellen/ld_exchange_memory_layout.tex}
 \input{anhang/de/tabellen/ld_exchange_prefetch.tex}
+\fi
 
 Der folgende Forest-Plot\footnote{Forest-Plot: die Darstellung mehrerer Effektschätzer als Punkte
 mit Unsicherheits-Whiskern übereinander an einer gemeinsamen Referenzlinie, aus der Meta-Analyse
@@ -432,7 +533,7 @@ die IQR-Breite, nicht die Quartilsgrenzen trägt.
 \InputIfFileExists{anhang/de/tabellen/exchange_forest.tex}{}{%
   \emph{(Hier stünde der Forest-Plot der \texttt{ns\_per\_op}-Austauschbarkeit. Er liegt nicht vor:
   ohne Geschwister-Paare (0 von 480/480/480/640) schreibt der Generator keine Datei --- keine leere
-  Figur, kein erfundenes Aggregat.)}}
+  Abbildung, kein synthetisch erzeugtes Aggregat.)}}
 
 Der zweite Forest-Plot zeigt dieselben Aggregate, dreht aber alle Paare auf \emph{eine} feste
 Referenz-Achsen\-ausprägung im Sinne von Abschnitt~\ref{sec:measurements:reference}, sodass der
@@ -448,14 +549,16 @@ abbilden lassen, werden ausgelassen und nicht ersetzt.
 \section{Limitierungen}\label{sec:measurements:limitations}
 
 Tabelle~\ref{tab:le:limitierung} führt die im Generator gepflegten, nicht behobenen Vorbehalte der
-Mess-Artefakte auf (16 Zeilen), damit kein Befund still verfällt; die Limitierungen der Arbeit aus
-Nutzer-Sicht stehen im Fazit (Abschnitt~\ref{sec:limitations}). Zeile~1 benennt die Lage der
-Kernmetrik Cache-Misses: L1D-, Last-Level- und dTLB-Misses nur mit gesetztem PMC-Schalter;
-L2-Demand-Misses und Fremd-CCX-Fills modellgebunden über den RAW-Event-Katalog --- für die
-AMD-Mikroarchitektur Zen~5 (CPUID-Familie 26) am Objekt kreuzgeprobt (\texttt{PERF\_TYPE\_RAW}
-\texttt{0x964} und \texttt{0x1443})~\cite{linux_perf_amdzen5}, für Modelle ohne Katalog-Eintrag % chktex 29
-n/a (heute jedes Intel-Modell); Energie best-effort über RAPL~\cite{david2010rapl}. Der Neuaufsatz
-der Tabelle mit dreiwertigem Status je Zeile und die Begriffe ihrer Zeilen~4 und~10 sind Gegenstand
-des Generators, nicht dieses Textes.
+Mess-Artefakte auf (16 Zeilen), damit jeder Vorbehalt dokumentiert bleibt; die Limitierungen der Arbeit aus
+Nutzer-Sicht stehen im Fazit (Abschnitt~\ref{sec:limitations}).
 
 \input{anhang/de/tabellen/le_limitierung.tex}
+
+Zeile~1 benennt die Lage der
+Kernmetrik Cache-Misses: L1D-, Last-Level- und dTLB-Misses nur mit gesetztem PMC-Schalter;
+L2-Demand-Misses und Fremd-CCX-Fills modellgebunden über den RAW-Event-Katalog --- für die
+AMD-Mikroarchitektur Zen~5 (CPUID-Familie 26) durch Messung gegengeprüft (\texttt{PERF\_TYPE\_RAW}
+\texttt{0x964} und \texttt{0x1443})~\cite{linux_perf_amdzen5}, für Modelle ohne Katalog-Eintrag % chktex 29
+n/a (alle Intel-Modelle); Energie best-effort über RAPL~\cite{david2010rapl}. Ein Neuaufsatz
+der Tabelle mit dreiwertigem Status je Zeile und eine Überarbeitung der Begriffe ihrer Zeilen~4 und~10
+sind im Generator nicht umgesetzt.
