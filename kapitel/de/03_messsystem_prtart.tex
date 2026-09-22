@@ -145,7 +145,8 @@ T17 Persistence-Target (F) & In-Memory-Ablage als Standard-Ziel & implizite In-M
 \midrule
 \multicolumn{4}{@{}l}{\emph{Größen der System- und Mess-Sphäre (Abschnitt~\ref{sec:axis-triad}):}} \\
 target\_isa (System) & Vendor-Spec x86-64/AArch64/Power/RISC-V (+ SIMD) & --- & Ziel-ISA als System-Komplex-Achse \\
-Telemetrie (System/Mess) & Density-Tracker, Insert-Zähler, HdrHistogram, Pfad-Zähler & All-Node-Zähler (Cache-Line-Ping-Pong) & kohärenz-schonend Leaf-Only; zweigeteilt: Mess-Unter-Achse $+$ Bau-Größe \\
+Telemetrie (System/Mess) & Density-Tracker, Insert-Zähler, HdrHistogram, Pfad-Zähler & Per-Node-Zähler
+  (Cache-Line-Ping-Pong) & kohärenz-schonend Leaf-Only; zweigeteilt: Mess-Unter-Achse $+$ Bau-Größe \\
 \end{longtable}
 }
 
@@ -843,7 +844,7 @@ und Allokator~(T6) komponiert.\ \emph{Verpflichtend} (durchgezogen) konsumiert d
 und die Suche~(T0) läuft über ihn. Alle übrigen Kopplungen sind \emph{optional} (gestrichelt): Prefetch~(T7)
 und die Telemetrie (Mess-Instrumentierung, Abschnitt~\ref{sec:axis-triad}) lesen den Store nur über \texttt{requires}-gegatete Beobachter-Hooks --- eine Achse
 \emph{kann} fremde Interfaces nutzen, \emph{muss} aber nicht. Die Kopplung der Nebenläufigkeit~(T8) an den
-Store ist im Code nicht verdrahtet (gepunktet). Der Graph ist eine Beispiel-Verdrahtung des Speicher-Organs,
+Store ist nicht angebunden (gepunktet). Der Graph ist eine Beispiel-Verdrahtung des Speicher-Organs,
 keine im Code ausgewertete Struktur.}\label{fig:usage}
 \end{figure}
 %% INTERN-272: KA-016
@@ -1087,7 +1088,7 @@ hinter der stabilen Engine-Schnittstelle an, \emph{Observer} erhebt die Mess-Sna
 Hardware-Erhebungskette und die Auswahl-Filterkette, und ein \emph{Memento} (Copy-on-Write) sichert
 den Zustand zwischen Warmlauf und Messung~\cite{gamma1994patterns}. Die Mess-Hüllen der Achsen halten
 keine Komponenten-Instanz und kein Voll-Interface und sind ausdrücklich kein \emph{Decorator}, und ein
-\emph{Composite} im Sinne des Katalogs hat keinen Anker im Code. Nicht verwendet werden im Hot-Path
+\emph{Composite} im Sinne des Katalogs hat keine Entsprechung im Code. Nicht verwendet werden im Hot-Path
 und in den Organ-Achsen \emph{Singleton}, \emph{Flyweight} und \emph{Bridge}: host-seitige Registries
 nutzen Meyers-Singletons (die eine Instanz als funktionslokales statisches
 Objekt)~\cite{meyers2005effective}, die Katalog-Erzeugung Flyweight-Tabellen je Achse, und
