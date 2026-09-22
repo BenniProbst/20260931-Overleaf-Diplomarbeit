@@ -1109,7 +1109,8 @@ DLL.}\label{fig:pipeline}
 Die Ebenen E4--E0 aus Abschnitt~\ref{sec:anatomy-layers} haben im Code je einen Ort, und die Grenzen
 zwischen ihnen besitzen je einen Contract-Test (Abschnitt~\ref{sec:impl-contracts});
 Abbildung~\ref{fig:impl-layers} zeigt diese Code-Gestalt: E4 ist das XML-Profil mit dem Planer und den
-Auswertungs-Programmen 04 und 08, E3 der Experiment-Baum (\texttt{experiment\_tree}) mit der
+Auswertungs-Programmen 04 (\texttt{csv\_to\_latex}) und 08 (\texttt{appendix\_generator}), E3 der
+Experiment-Baum (\texttt{experiment\_tree}) mit der
 \texttt{binary\_id} als Pfad, E2 der ABI-Adapter mit der Modul-ABI-Deklaration, E1 das Interface
 \texttt{IResourceControllableTier} mit den dynamischen Dimensionen der Mess-Registry-XML, E0 sind CI,
 Runner und Lager, und der Querschnitt~M ist die System-Achsen-Wurzel \texttt{SystemAxis}
@@ -1677,9 +1678,10 @@ Events, die die reale Quelle später öffnet. Ein modellgebundener RAW-Katalog f
 L2-Misses und Kohärenz je Mikroarchitektur: Für AMD Zen~5 (prod1) ist die Belegung gegen die benannten
 \texttt{perf}-Events mit identischen Zählerständen (17\,314\,023 gegen 17\,314\,023) gegengeprüft ---
 \texttt{cache\_misses\_l2} erfasst dort die Demand-Misses ohne L2-Prefetch,
-\texttt{coherence\_invalidations} die Cache-zu-Cache-Fills aus einem fremden CCX ---; für Intel liegt kein
-Eintrag vor, weil eine RAW-Belegung ohne Gegenprüfung ein Rateversuch wäre~\cite{intel_sdm} --- eine
-ausgewiesene Lücke. Eine Vendor-Registry führt die PMC als \emph{ein} Merkmal mit zwei Werten, AMD und
+\texttt{coherence\_invalidations} die Cache-zu-Cache-Fills aus einem fremden CCX (Core Complex, einem
+Kern-Komplex mit eigenem L3) ---; für Intel liegt kein Eintrag vor, weil eine RAW-Belegung ohne
+Gegenprüfung ein Rateversuch wäre~\cite{intel_sdm} --- eine ausgewiesene Lücke. Eine Vendor-Registry
+führt die PMC als \emph{ein} Merkmal mit zwei Werten, AMD und
 Intel, mit je eigener Versionskennung, weil die eingebaute Zählerform den Fingerprint der CEB mitbestimmt;
 die CI fährt zwei Zähler-Pfade, \texttt{pmc:amd} auf prod1 und \texttt{pmc:intel} auf prod2 (Intel Alder
 Lake mit P- und E-Kernen). Die getrennte Messung der P- und E-Kerne ist als Scheduling-Dimension angelegt
@@ -2099,10 +2101,13 @@ CRTP~\cite{coplien1995crtp} gebunden), \emph{Director} und \emph{Builder} für d
 \emph{Abstract Factory} für die Hybrid-Docks und die Ergebnis-Mappen des Lagers (xlsx-Mappe als Standard,
 CSV-Baum als wählbare Strategie derselben Factory; implementiert ist eine flache Datei), der
 \emph{Visitor} \texttt{IMessVisitor} am \texttt{dlopen}-Übergang, eine \emph{Chain of Responsibility} mit
-Typliste für die Hardware-Erhebungskette und die Auswahl-Filterkette der CEB\@; ein \emph{Memento} für den
-Zustand statusbehafteter Achsen je Tier (\texttt{memento\_all} nach dem Warmlauf), \emph{Command} als
-Command-Basis der Achsen und Command-Wrapper der Komplex-Achse \texttt{build\_target\_complex} sowie eine
-\emph{Facade} für die Anhang-Erzeugung (Programm~08) und die lesende Plan-Emission des Planers.
+Typliste für die Hardware-Erhebungskette (Boot-Cache --- die gefilterte SMBIOS/DMI-Tabelle des
+Systems~\cite{dmtf_smbios} --- $\to$ SPD $\to$ Deklaration) und die Auswahl-Filterkette der CEB\@; ein
+\emph{Memento} für den Zustand statusbehafteter Achsen je Tier (\texttt{memento\_all} nach dem Warmlauf),
+\emph{Command} als Command-Basis der Achsen und Command-Wrapper der Komplex-Achse
+\texttt{build\_target\_complex} sowie eine \emph{Facade} für die Anhang-Erzeugung --- Programm~08 als
+Fassade über die Programme 04 (\texttt{csv\_to\_latex}) und 05 (\texttt{diagram\_generator}) --- und die
+lesende Plan-Emission des Planers.
 \begin{figure}[htbp]\centering
 %% INTERN-272: KA-084
 \begin{tikzpicture}[font=\footnotesize,
@@ -2146,7 +2151,9 @@ Bestand~1, die Binaries, über den einen SHA-512-Schlüssel, der mit dem Tier-Fi
 Bestand~2, die Messwerte, über den 128-Hex-Fingerprint der vermessenen Binary und die Hardware-Identität
 der messenden Maschine; Bestand~3, die Synthese-Batches, und Bestand~4, die Lösungen, als Arbeitsschritt
 des Lager-Vollausbaus; Drift zwischen Schema und Mechanik bricht beim Bau. Der Versions-Lock
-(\texttt{axis\_version.lock}, Format v3, 719 Datensätze) bindet jede Quell-Datei der Achsen an
+(\texttt{axis\_version.lock}, Format v3, 719 Datensätze) bindet jede Quell-Datei der Achsen --- die
+Heuristik-Header und den Overlay-Schnitt (je Achse die Dateimenge ihrer eigenen Implementierung plus die
+gemeinsame Anatomie-Substanz), über den das Overlay-Glied des Tier-Fingerprints hasht --- an
 Inhalts-Digest und gestempelte Version, das CI-Gate \texttt{contract:axis-version-lock} erzwingt das. Aus
 dem Schema folgen die Lager-Eigenschaften: Die Messung ist immer eingeschaltet, im Lager wird nur
 nachgemessen, was fehlt; ein Versionswechsel einer Achse baut den betroffenen Lager-Stapel neu; und jeder
