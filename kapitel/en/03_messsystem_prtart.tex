@@ -5,7 +5,7 @@
 
 Building on the foundations from Chapter~\ref{ch:foundations}, this chapter first develops the problem
 statement and the requirements for a measurement system, and as their \emph{solution} the anatomy model
-and the measurement system built upon it --- demonstrated on the probe PRT-ART\@. In doing so, the
+and the measurement system built upon it --- demonstrated on the candidate under test PRT-ART\@. In doing so, the
 chapter newly introduces three orderings that Chapters~\ref{ch:impl} to~\ref{ch:conclusion} presuppose:
 the triad of the axes into measurement, system, and organ axes, the four carrier stages of the
 apparatus --- planner, CacheEngineBuilder, tier binary, and hybrid tier binary --- with their identity
@@ -153,7 +153,7 @@ organs, and per axis the contributing organ algorithms are listed, with a brief 
 originating living being. The framework carries \emph{eighteen organ composition axes} in fixed
 slot order (T0--T17); alongside them stand the quantities of the system sphere --- target ISA,
 SIMD and extension hardware as well as the two-way-split telemetry (the triad of axis categories
-is ordered by Section~\ref{sec:axis-triad}) --- and the probe build axis page type. Besides the eighteen
+is ordered by Section~\ref{sec:axis-triad}) --- and the candidate build axis page type. Besides the eighteen
 canonical organ main axes --- a \emph{main axis} is an axis whose chosen assignment is compiled
 compile-statically into the binary --- the organ catalogue carries an optional
 \emph{organ meta-meta axis} for disk I/O (\emph{meta-meta} means: the axis does not describe an
@@ -172,7 +172,7 @@ contributions.
 \begin{table}[!htbp]
   \caption{Axis dissection of the search methods: eighteen organ axes in canonical
   slot order (T0--T17), the quantities of the system and measurement sphere, the
-  probe build axis, and the optional organ meta-meta axis; per axis the sources contributing an organ.}\label{tab:axes-overview}
+  candidate build axis, and the optional organ meta-meta axis; per axis the sources contributing an organ.}\label{tab:axes-overview}
   \centering\footnotesize
   \begin{tabular}{@{}l l p{6.8cm}@{}}
     \toprule
@@ -202,7 +202,7 @@ contributions.
     Sys.\ external\_utils: SIMD & SE1--SE3 & SSE2/AVX2/AVX-512/NEON/SVE2/RVV\@; GPU\@: CUDA \\
     Sys.\ external\_utils: ext.\ HW & HW1--HW4 & HW strategy per publication (Tab.~\ref{tab:hw-sched}) \\
     Sys./meas.\ telemetry & TM1--TM3 & P01,P02,P16,P17,P26,P28; HdrHistogram (Gil Tene) \\
-    Build (probe) page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (2026) \\
+    Build (candidate) page\_type & PG1--PG3 & P01,P02,P04,P05,P06,P10,P11,P12,P13,P20; PRT-ART (2026) \\
     Organ meta-meta disk\_io & staging (runtime) & CE baseline; optional, disabled (Section~\ref{sec:axis-triad}) \\
     \bottomrule
   \end{tabular}
@@ -235,7 +235,7 @@ their own (the sub-axis PC1 carries the granularity \texttt{multi-byte} as a tag
 Node4/16/48/256~\cite{leis2013art}; HOT compound~\cite{binna2018hot}, Internal/Border~\cite{mao2012masstree},
 Decision/Span~\cite{schmeisser2022b2tree}, LOUDS-Dense/Sparse~\cite{zhang2018surf}, and the
 CSS/CSB\textsuperscript{+}/Hankins nodes are paper node formats (reconstruction targets of this
-thesis, not a CE baseline); the PRT-ART profile family is brought in by the probe via its build axis page type.
+thesis, not a CE baseline); the PRT-ART profile family is brought in by the candidate under test via its build axis page type.
 
 The \emph{memory-layout axis} (T5) ranges in the code from the cache-line-aligned AoS
 (\texttt{AoS\allowbreak{}Strict\allowbreak{}Memory\allowbreak{}Layout},
@@ -304,7 +304,7 @@ On the hardware-near side, the \emph{prefetch axis} (T7) contains four building 
 prefetch (\texttt{None\allowbreak{}Prefetch}, measurement baseline), the distance-estimated software prefetch after
 ART~\cite{leis2013art} (\texttt{Distance\allowbreak{}Estimator\allowbreak{}Prefetch}), the explicit
 hardware prefetch instruction from Wormhole~\cite{wu2019wormhole} (\texttt{Hardware\allowbreak{}Prefetch}), and
-the probe's path-oriented bundle prefetch (\texttt{Path\allowbreak{}Oriented\allowbreak{}Prefetch},
+the candidate's path-oriented bundle prefetch (\texttt{Path\allowbreak{}Oriented\allowbreak{}Prefetch},
 this thesis); the related literature spans the axis from software-fixed~\cite{chen2001prefetch} through
 adaptively distanced~\cite{khan2010adaptive} and fill-buffer-aware~\cite{mahling2025hotpath} to
 path-oriented~\cite{zhang2024pathprefix} and hierarchical bundle prefetch~\cite{zhang2025hierarchical}
@@ -541,7 +541,7 @@ which it makes its main contribution; all thus appear as points in the common de
 For each SOTA algorithm (\emph{state of the art} --- the state of the art from
 Section~\ref{sec:overview}) and each allocator a profile XML records the axis assignment: the
 organ assignment (\texttt{node}, \texttt{traversal}, \texttt{value\_handle}, \texttt{concurrency},
-\texttt{allocator}, \texttt{prefetch}, \texttt{layout}, \texttt{reclamation}), the probe build axis
+\texttt{allocator}, \texttt{prefetch}, \texttt{layout}, \texttt{reclamation}), the candidate build axis
 \texttt{page}, and --- separately from it, because not an organ assignment --- the target ISA (\texttt{isa},
 system sphere) and the telemetry (\texttt{telemetry}, measurement tooling); in addition a key-value signature
 and an optional \texttt{<expected\_workload>} tag that overrides the measurement heuristic
@@ -549,14 +549,14 @@ and an optional \texttt{<expected\_workload>} tag that overrides the measurement
 
 For each of the 33~corpus works and each of the 23~allocators there exists a profile XML
 with \texttt{<expected\_workload>} tag. The profiles are of two types --- the type is marked in the
-profile XML and anchored compile-statically in the probe registry of the cache engine: 30
+profile XML and anchored compile-statically in the candidate registry of the cache engine: 30
 \emph{full profiles} describe standalone search designs completely; three \emph{abstract profiles}
 enter only dissected --- the optimistic lock coupling of ART~\cite{leis2016olc} as a
 concurrency organ, the succinct LOUDS representation~\cite{jacobson1989louds} as a
 memory-layout organ (e.g.\ in SuRF~\cite{zhang2018surf}), and the profiling tool
 VAMPIR~\cite{berthold2023vampir} as a measurement technology. An abstract profile supplies some organs itself
-and leaves the rest to the default toolkit; it is the same type that the probe PRT-ART
-corresponds to (Section~\ref{sec:prtart-demo}), and full profiles of foreign probes can be integrated
+and leaves the rest to the default toolkit; it is the same type that the candidate under test PRT-ART
+corresponds to (Section~\ref{sec:prtart-demo}), and full profiles of foreign candidates under test can be integrated
 along the same path. The design envisions per axis a separate permutation over
 \emph{profile ranges} --- a value range per axis instead of a single value; the persisted
 profiles contain a single value per axis, the range permutation is not implemented.
@@ -611,7 +611,7 @@ profiles contain a single value per axis, the range permutation is not implement
 
 Across all 33 profiles these affinities distribute into 13$\times$~YCSB\_C (read-heavy),
 10$\times$~YCSB\_A (zipf-distributed read and update), 6$\times$~YCSB\_E (range scans), and
-4$\times$~YCSB\_B (95/5 read/update); PRT-ART itself is tagged in its probe profile with YCSB\_F
+4$\times$~YCSB\_B (95/5 read/update); PRT-ART itself is tagged in its candidate profile with YCSB\_F
 (read-modify-write, for the DensityTracker updates).
 
 The core finding of this load-profile analysis is a systematic \emph{bias}: each publication chooses
@@ -926,11 +926,11 @@ axis subset of the same family.
   % Levels 3--5 --- mammal branch down to the compiled individual
   \node[band] (l3) at (1.3,-4.75){\textbf{Level 3 --- organs:} the 18 organ axes (node type, layout, allocator, prefetch, \dots) \emph{permute}; the container genera are formed from the same axis pool.};
   \node[band] (l4) at (1.3,-6.15){\textbf{Level 4 --- concrete animal:} one assignment of \emph{all} axes $=$ one individual (ART, HOT, Masstree, SuRF, START, Wormhole, \dots; 30 full profiles) --- an abstract profile (PRT-ART, OLC, LOUDS, VAMPIR) assigns only some axes itself.};
-  \node[band,fill=orange!20,very thick,minimum height=1.25cm] (l5) at (1.3,-7.7){\textbf{Level 5 --- tier binary (carrier stage):} compiled per permutation to \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, refined by the probe build axis page type; the platform is stamped by the three system axes, the measurement choice by the measurement line; every tier binary offers the three interface surfaces (Figure~\ref{fig:traeger-flaechen}).};
+  \node[band,fill=orange!20,very thick,minimum height=1.25cm] (l5) at (1.3,-7.7){\textbf{Level 5 --- tier binary (carrier stage):} compiled per permutation to \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, refined by the candidate build axis page type; the platform is stamped by the three system axes, the measurement choice by the measurement line; every tier binary offers the three interface surfaces (Figure~\ref{fig:traeger-flaechen}).};
   \draw[->,thick] (s1.south) -- (s1.south |- l3.north);
   \draw[->,thick] (l3.south) -- (l4.north); \draw[->,thick] (l4.south) -- (l5.north);
 \end{tikzpicture}
-\caption[The four families and the tier hierarchy down to the compiled binary]{The family/tier hierarchy across five levels. \texttt{Map}, \texttt{Container}, \texttt{Graph}, and \texttt{HeuristikAdapter} are the four \emph{families} (level~1, outer interface). Each family hosts its \emph{own} genera (level~2, alias tier subclasses): \texttt{Map} exclusively the \enquote{mammal} (genus \texttt{SearchAlgorithm}, full eighteen-axis anatomy), \texttt{Container} every \emph{non}-mammal genus (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} a laid-out interface without an implemented genus, \texttt{HeuristikAdapter} the reroute genus of the hybrid tier. The mammal branch is drawn out down to the individual: the eighteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone tier binary (level~5, the carrier stage of the tier binary, additionally refined by the probe build axis page type and platform-stamped by the three system axes, Section~\ref{sec:axis-triad})\@. \emph{Every tier binary is thus an animal of its own with an actual binary genus interface and three interface surfaces}; the hierarchy reaches from the family down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
+\caption[The four families and the tier hierarchy down to the compiled binary]{The family/tier hierarchy across five levels. \texttt{Map}, \texttt{Container}, \texttt{Graph}, and \texttt{HeuristikAdapter} are the four \emph{families} (level~1, outer interface). Each family hosts its \emph{own} genera (level~2, alias tier subclasses): \texttt{Map} exclusively the \enquote{mammal} (genus \texttt{SearchAlgorithm}, full eighteen-axis anatomy), \texttt{Container} every \emph{non}-mammal genus (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} a laid-out interface without an implemented genus, \texttt{HeuristikAdapter} the reroute genus of the hybrid tier. The mammal branch is drawn out down to the individual: the eighteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone tier binary (level~5, the carrier stage of the tier binary, additionally refined by the candidate build axis page type and platform-stamped by the three system axes, Section~\ref{sec:axis-triad})\@. \emph{Every tier binary is thus an animal of its own with an actual binary genus interface and three interface surfaces}; the hierarchy reaches from the family down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
 \end{figure}
 
 The anatomy is carried by four \emph{carrier stages}: the planner, the
@@ -1092,7 +1092,7 @@ appendix generation and the reading plan emission (pattern register with code lo
 Section~\ref{sec:impl-hybrid-lager}, Appendix~\ref{app:adr}, ADR-11). Static polymorphism is
 provided by the
 \emph{Curiously Recurring Template Pattern} (CRTP) together with \emph{Template-Method} concept checks;
-the choice between probe and cache-engine default per axis is made by the merge strategy of the
+the choice between candidate under test and cache-engine default per axis is made by the merge strategy of the
 merge plan (\texttt{Verbund1\_CeOnly}, \texttt{Verbund2\_Replace}, \texttt{Verbund2\_Hybrid},
 \texttt{Verbund3\_Union}; Section~\ref{sec:mess-chain}), the axes themselves are monomorphic
 CRTP concept types, and \emph{policy-based design} captures the composition as a tuple of
@@ -1105,7 +1105,7 @@ axis catalogues only
 arithmetically and generates each path individually on demand in mixed radix, rather than blowing up the compiler with the full
 type tree; and the \emph{type-driven source emission}, which extracts fully qualified type names from a compile-time
 axis composition, renders them to C++ source, and loads each permutation as a
-standalone module across the ABI boundary --- thus the probe PRT-ART is compiled, by metaprogramming, in
+standalone module across the ABI boundary --- thus the candidate under test PRT-ART is compiled, by metaprogramming, in
 matrix layers against the cache engine.
 
 How this \emph{one} architecture becomes visible in the code through an ABI-stable hull is deepened in
@@ -1171,7 +1171,7 @@ product space rules out any complete materialization (Section~\ref{sec:mess-chai
 too large for simultaneous changes across several levels; only the fixed contracts make each level individually
 acceptable before the next one begins.
 This principle corresponds to the matrix programming style of the apparatus
-(Section~\ref{sec:anatomy-patterns}): just as the probe is compiled in matrix layers against the cache
+(Section~\ref{sec:anatomy-patterns}): just as the candidate under test is compiled in matrix layers against the cache
 engine, the apparatus itself is developed in interface layers against fixed contracts;
 how each layer is thereby tested individually --- against a substitute of its neighbouring level --- is shown in
 Section~\ref{sec:impl-contracts}.
@@ -1549,9 +1549,9 @@ entry grammar is defined once for all lines: \texttt{axis=algo@X.Y.Z[.flag]*} wi
 composite brackets --- \texttt{c\{p.e\}} is the base \texttt{c} with the sub-members \texttt{p} and
 \texttt{e} and is never read flat as \texttt{cpe}; the bracket depth of an entry is its
 meta-meta level, zero the main axis. The flag \texttt{e} denotes an efficiency-core algorithm.
-A fourth \emph{realm} line for the mixing strategy of a probe, by contrast, cannot exist: a
-probe mixes against the organ axes and is thus already described in the organ line. The mixing becomes
-recognizable there in the axis name, which the probe stamps under its own namespace prefix
+A fourth \emph{realm} line for the mixing strategy of a candidate under test, by contrast, cannot exist: a
+candidate under test mixes against the organ axes and is thus already described in the organ line. The mixing becomes
+recognizable there in the axis name, which the candidate under test stamps under its own namespace prefix
 (pattern \texttt{prt-art.memory.abc=prt\_patricia@2.3.4.c\{p.e\}}), so that different
 mixing constellations remain distinguishable by name --- not by the version numbering. It is exactly on
 this name level that the hybrid and full-join states remain distinguishable at the compiled artefact; byte-different
@@ -1649,21 +1649,21 @@ Four formally separated subsystems with distinct responsibilities form the model
 it resides in the umbrella project repository), the \texttt{CacheEngineBuilder} (an
 autonomous platform-measurement system that executes the seven-phase pipeline of Section~\ref{sec:impl-pipeline}
 via its \texttt{ExperimentDriver}), the \texttt{CacheEngine} (the axis building-block library
-with the default implementations per axis), and the \texttt{probe} PRT-ART (which supplies some axis-organs
-itself and consumes cache-engine services for the rest); cache engine, probe, and this
+with the default implementations per axis), and the \texttt{candidate under test} PRT-ART (which supplies some axis-organs
+itself and consumes cache-engine services for the rest); cache engine, candidate under test, and this
 thesis reside in source repositories of their own --- four repositories in total ---, and the planner role of the
 chain is realized as a binary of its own (\texttt{comdare-experiment-planner}), the builder role as the measurement driver
 (\texttt{comdare-messung-driver}); the self-stamp of the measurement driver (\texttt{--version}) outputs the
 lines of both roles --- the planner line and the line of the CEB contract version --- from one
 driver binary (Chapter~\ref{ch:impl}). The \texttt{ExecutionEngine} is thereby not a
 fifth subsystem but the shared measurable root (the \texttt{IExecutionEngine} interface) through
-which these four are connected: beneath it, the probe and every engine register as
+which these four are connected: beneath it, the candidate under test and every engine register as
 \texttt{IExecutionEngine}, and the builder enumerates the permutation space per registered engine.
 Defining is the \emph{bidirectional}
-cache-engine\,$\leftrightarrow$\,probe relationship: the cache engine instantiates the probe per
-permutation configuration, and the probe calls cache-engine services (telemetry, prefetch,
-heuristics) at runtime during its own lookups. This symmetry founds the \emph{multi-probe} capability,
-with which measurement series~A compares the probe against many SOTA adapters in a single pipeline
+cache-engine\,$\leftrightarrow$\,candidate relationship: the cache engine instantiates the candidate under test per
+permutation configuration, and the candidate under test calls cache-engine services (telemetry, prefetch,
+heuristics) at runtime during its own lookups. This symmetry founds the \emph{multi-candidate} capability,
+with which measurement series~A compares the candidate under test against many SOTA adapters in a single pipeline
 (Figure~\ref{fig:m-model}).
 
 \begin{figure}[!htbp]
@@ -1680,7 +1680,7 @@ with which measurement series~A compares the probe against many SOTA adapters in
     \node[bm] (measure) at (2.5,-2.75) {\textbf{measure}\\{\scriptsize \texttt{perm\_runner} via \texttt{IObservableTier}: measures each tier binary individually (1 DLL / process)}};
     \draw[->,very thick] (build) -- node[above,font=\scriptsize]{binaries} (measure);
     \node[comp] (engine) at (-2.9,-5.3) {\texttt{CacheEngine}\\{\scriptsize axis building blocks (How)}};
-    \node[comp] (probe) at (2.9,-5.3) {probe (PRT-ART)\\{\scriptsize own axis-organs}};
+    \node[comp] (probe) at (2.9,-5.3) {candidate under test (PRT-ART)\\{\scriptsize own axis-organs}};
     \draw[->] (driver) -- node[right,font=\scriptsize]{configs} (bbox.north);
     \draw[->] (engine) -- node[left,font=\scriptsize]{building blocks} (build);
     \draw[->] (measure) -- node[right,font=\scriptsize]{measures} (probe);
@@ -1693,15 +1693,15 @@ with which measurement series~A compares the probe against many SOTA adapters in
   a standalone tier binary per configuration, resumable and RAM-aware) and \textbf{measure}
   (\texttt{perm\_runner} drives and measures each tier binary individually through the observer interface
   \texttt{IObservableTier}). The
-  \texttt{CacheEngine} supplies the default axis building blocks, the probe PRT-ART its own organs;
-  their bidirectional relationship ((a)~instantiates, (b)~calls services) founds the multi-probe capability. The
+  \texttt{CacheEngine} supplies the default axis building blocks, the candidate under test PRT-ART its own organs;
+  their bidirectional relationship ((a)~instantiates, (b)~calls services) founds the multi-candidate capability. The
   \texttt{ExecutionEngine} remains the shared measurable root.}\label{fig:m-model}
 \end{figure}
 
 The builder orchestrates a \emph{three-stage evaluation}: \textbf{Stage~1} (cache-engine only) uses the
-default variant per axis, \textbf{Stage~2} (probe only) replaces the overridden axes by the
-probe variants and otherwise keeps the defaults, and \textbf{Stage~3} (full join, non-redundant)
-combines default and all probe variants; in the code these are the merge strategies of the merge plan
+default variant per axis, \textbf{Stage~2} (candidate only) replaces the overridden axes by the
+candidate variants and otherwise keeps the defaults, and \textbf{Stage~3} (full join, non-redundant)
+combines default and all candidate variants; in the code these are the merge strategies of the merge plan
 --- Stage~1 is \texttt{Verbund1\_CeOnly}, Stage~2 splits into replacing (\texttt{Verbund2\_Replace}) and
 hybrid mixing (\texttt{Verbund2\_Hybrid}), Stage~3 is \texttt{Verbund3\_Union} ---, which summarize the
 three-stage view. Each stage can produce up to thousands of non-redundant
@@ -1714,8 +1714,8 @@ counted (Figure~\ref{fig:three-stage}).
   \begin{tikzpicture}[stage/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt}]
     \node[draw, rounded corners, font=\footnotesize, inner sep=4pt] (b) at (0,0) {\texttt{CacheEngineBuilder}};
     \node[stage] (s1) at (-4.3,-1.8) {\textbf{Stage~1}\\\scriptsize cache-engine only:\\default per axis};
-    \node[stage] (s2) at (0,-1.8) {\textbf{Stage~2}\\\scriptsize probe only:\\overridden axes\\(Replace) or mixing (Hybrid)};
-    \node[stage] (s3) at (4.3,-1.8) {\textbf{Stage~3}\\\scriptsize full join:\\default $\times$ probe};
+    \node[stage] (s2) at (0,-1.8) {\textbf{Stage~2}\\\scriptsize candidate only:\\overridden axes\\(Replace) or mixing (Hybrid)};
+    \node[stage] (s3) at (4.3,-1.8) {\textbf{Stage~3}\\\scriptsize full join:\\default $\times$ candidate};
     \node[draw, rounded corners, align=center, font=\footnotesize, inner sep=4pt] (out) at (0,-3.7) {non-redundant permutation binaries (ABI modules, capped materialization)};
     \draw[->] (b) -- (s1);
     \draw[->] (b) -- (s2);
@@ -1730,7 +1730,7 @@ counted (Figure~\ref{fig:three-stage}).
 \end{figure}
 
 These stages do \emph{not} map one-to-one onto the three mandatory measurement series but feed them: the
-default binaries of Stage~1 (including the reconstructed SOTA profiles) and the probe binaries of
+default binaries of Stage~1 (including the reconstructed SOTA profiles) and the candidate binaries of
 Stage~2 \emph{jointly} form the comparison series~A\@; the non-redundant full join of Stage~3 is
 the basis of the variation series~B\@; and the merge/regression series~C (old vs.\ new) is bound to
 no single stage but runs build-spanning as an old-versus-new comparison --- over
@@ -1745,8 +1745,8 @@ successive states of the same configuration as well as over concrete merge point
     \textbf{Evaluation stage} & \textbf{Content} & \textbf{feeds series} \\
     \midrule
     Stage~1 (cache-engine only) & default building blocks + SOTA profiles & A (baseline also for C) \\
-    Stage~2 (probe only) & overridden axes = probe variants & A \\
-    Stage~3 (full join) & default $\times$ probe, non-redundant & B \\
+    Stage~2 (candidate only) & overridden axes = candidate variants & A \\
+    Stage~3 (full join) & default $\times$ candidate, non-redundant & B \\
     build-spanning & old vs.\ new (regression and merge points) & C \\
     \bottomrule
   \end{tabular}
@@ -1810,35 +1810,35 @@ probe; membership of the ZIH cluster of TU Dresden is declared as a sub-axis of 
 target ISA, a run there is not measured (n/a).
 
 \section{PRT-ART as Demonstrator}\label{sec:prtart-demo}
-PRT-ART is the \emph{probe} on which the load-bearing capacity of the system shows: an abstract living being that supplies some
+PRT-ART is the \emph{candidate under test} on which the load-bearing capacity of the system shows: an abstract living being that supplies some
 axis-organs itself and obtains the rest via the merge strategy of the merge plan from the
 default toolkit of the cache engine (Section~\ref{sec:mess-chain}) --- as monomorphic
 CRTP concept axes, without runtime fallback; the hybrid
 \texttt{PrtArtSearchEngine<Ts\ldots>} API remains unaffected by this, and the runtime binding occurs via
 the execution-engine adapter, not via a search-engine layer of its own. The
-probe repo is loaded via the plugin controller of the cache engine
+candidate repo is loaded via the plugin controller of the cache engine
 (\texttt{COMDARE\_\allowbreak{}CE\_\allowbreak{}PRUEFLINGE}): its entry snippet must expressly give its
 \emph{assurance} via \texttt{comdare\_\allowbreak{}pruefling\_\allowbreak{}deklarieren} ---
 with the single registered capability
-\texttt{pruefling\_\allowbreak{}slots\_\allowbreak{}v1}, the probe slots ---, because
+\texttt{pruefling\_\allowbreak{}slots\_\allowbreak{}v1}, the candidate slots ---, because
 presence may only refute, never permit: the deposited evidence headers can only
-break the assurance, never open a gate, and a requested but non-declaring probe
-breaks the configuration with an error message instead of being skipped silently; a probe-own
+break the assurance, never open a gate, and a requested but non-declaring candidate under test
+breaks the configuration with an error message instead of being skipped silently; a candidate-own
 adapter path is deactivated and not part of this assurance.
-What PRT-ART contributes lies on three levels. First, the \emph{probe slots} in its own repository:
+What PRT-ART contributes lies on three levels. First, the \emph{candidate slots} in its own repository:
 the build axis page type, the prefetch, the value handle (ChainRef), and the telemetry tooling with the
 hypothesis metrics H1/H2/H3 (in the triad a measurement-tooling sub-axis,
 Section~\ref{sec:axis-triad}); the assessment of the hypothesis metrics is contained in
 Chapters~\ref{ch:eval} and~\ref{ch:conclusion}. Second, the reference composition of the cache engine,
 \texttt{PrtArtComposition}, which differs from the ART composition in exactly one axis --- the
 path compression as redirect organ, the \emph{R} in PRT-ART\@; the optimistic lock coupling is inherited from
-ART, not a PRT-ART contribution. Third, the codegen-capable probe composition, which takes sixteen of
+ART, not a PRT-ART contribution. Third, the codegen-capable candidate composition, which takes sixteen of
 eighteen axes from the ART composition and replaces prefetch and value handle by the
-probe slots. Its further own building blocks, the 4+1+2 pool allocator
-(free-list sub-axis) and the MultiLevel layout, reside in the probe repo and run in the measurement path via
+candidate slots. Its further own building blocks, the 4+1+2 pool allocator
+(free-list sub-axis) and the MultiLevel layout, reside in the candidate repo and run in the measurement path via
 the cache-engine default (attachment envisioned as a subsequent implementation step, but not
 implemented); for the remaining axes it reuses existing
-SOTA building blocks via the permutation configuration. Thus the probe demonstrates that the measurement system
+SOTA building blocks via the permutation configuration. Thus the candidate under test demonstrates that the measurement system
 holds: a novel living being arises from a few own organs plus the default toolkit
 (Figure~\ref{fig:prtart-demo}) and is measurable over the same probe dock as every reconstructed
 SOTA method.
@@ -1851,8 +1851,8 @@ SOTA method.
   ce/.style={draw,rounded corners,fill=green!8,minimum width=2.6cm,minimum height=0.62cm,font=\scriptsize},
   rd/.style={draw,rounded corners,fill=red!10,very thick,draw=red!70!black,minimum width=2.6cm,minimum height=0.62cm,font=\scriptsize},
   row/.style={font=\scriptsize,anchor=east,text=gray,align=right}]
-  \node[font=\bfseries\footnotesize] at (2.9,2.55){PRT-ART (probe): 18 axis-organs $+$ build axis page type on three levels};
-  \node[row] at (-3.0,1.6){probe slots\\{\tiny (prt-art repo)}};
+  \node[font=\bfseries\footnotesize] at (2.9,2.55){PRT-ART (candidate under test): 18 axis-organs $+$ build axis page type on three levels};
+  \node[row] at (-3.0,1.6){candidate slots\\{\tiny (prt-art repo)}};
   \node[prt] at (-1.3,1.6){Page-Type\\{\tiny build axis}};
   \node[prt] at (1.5,1.6){Prefetch\\{\tiny redirect prefetch}};
   \node[prt] at (4.3,1.6){Value-Handle\\{\tiny ChainRef}};
@@ -1867,9 +1867,9 @@ SOTA method.
   \node[ce] at (1.5,-0.6){Allocator};
   \node[ce] at (4.3,-0.6){Serialization};
   \node[ce] at (7.1,-0.6){$\ldots$ others};
-  \node[font=\scriptsize,align=center,text width=13.2cm] at (2.0,-1.85){\textcolor{orange}{\textbf{orange}} $=$ probe slot in its own repository; \textcolor{red!70!black}{\textbf{red}} $=$ sole difference of the ce composition to ART; \textcolor{green!50!black}{\textbf{green}} $=$ inherited from ART or cache-engine default (merge strategy of the merge plan). The codegen-capable probe composition takes 16 of 18 axes from ArtComposition and replaces prefetch and value handle.};
+  \node[font=\scriptsize,align=center,text width=13.2cm] at (2.0,-1.85){\textcolor{orange}{\textbf{orange}} $=$ candidate slot in its own repository; \textcolor{red!70!black}{\textbf{red}} $=$ sole difference of the ce composition to ART; \textcolor{green!50!black}{\textbf{green}} $=$ inherited from ART or cache-engine default (merge strategy of the merge plan). The codegen-capable candidate composition takes 16 of 18 axes from ArtComposition and replaces prefetch and value handle.};
 \end{tikzpicture}
-\caption{PRT-ART as a demonstrator in the M-model on three levels: the four probe slots in its own repository (page type as build axis, prefetch, value handle, telemetry as measurement-tooling sub-axis, Section~\ref{sec:axis-triad}); the reference composition of the cache engine, which differs from ART in exactly one axis --- the path compression as redirect organ ---, while the optimistic lock coupling is inherited from ART\@; and the codegen-capable probe composition, which takes sixteen of eighteen axes from the ART composition and replaces prefetch and value handle. The further own building blocks (4+1+2 pool allocator, MultiLevel layout) run in the measurement path via the cache-engine default (attachment: subsequent implementation step, not implemented). Thus a complete, measurable living being arises from a few own plus many default organs.}\label{fig:prtart-demo}
+\caption{PRT-ART as a demonstrator in the M-model on three levels: the four candidate slots in its own repository (page type as build axis, prefetch, value handle, telemetry as measurement-tooling sub-axis, Section~\ref{sec:axis-triad}); the reference composition of the cache engine, which differs from ART in exactly one axis --- the path compression as redirect organ ---, while the optimistic lock coupling is inherited from ART\@; and the codegen-capable candidate composition, which takes sixteen of eighteen axes from the ART composition and replaces prefetch and value handle. The further own building blocks (4+1+2 pool allocator, MultiLevel layout) run in the measurement path via the cache-engine default (attachment: subsequent implementation step, not implemented). Thus a complete, measurable living being arises from a few own plus many default organs.}\label{fig:prtart-demo}
 \end{figure}
 
 \section{Sharpening through Heuristics}\label{sec:heuristics}

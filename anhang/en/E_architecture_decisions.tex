@@ -185,13 +185,13 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   and~\ref{sec:axis-triad}.
 
   \item[ADR-7 --- Four-repository architecture with orthogonal carrier stages]\hfill\\
-  \textbf{Context:} Measurement apparatus, probe, experiment definition including evaluation, and
+  \textbf{Context:} Measurement apparatus, candidate under test, experiment definition including evaluation, and
   the manuscript have separate responsibilities and life cycles; the measured values are built
   directly into the manuscript under version control, which is why the manuscript is a repository
   of its own with its own pipeline.
   \textbf{Decision:} Four repositories --- \texttt{comdare-cache-engine} (\emph{how} measuring is
   done; building-block library and builder in the Pitchfork source-tree layout,
-  Appendix~\ref{app:glossary}), \texttt{comdare-prt-art} (the probe), the project repository
+  Appendix~\ref{app:glossary}), \texttt{comdare-prt-art} (the candidate under test), the project repository
   \texttt{probst-Diplomarbeit-cache-engine} (\emph{what} is tested by the user: experiment
   definition in XML and XSD, measurement driver, evaluation toolchain) and the manuscript
   repository with its own CI, into which the forward channel deposits the generator output as table
@@ -204,7 +204,7 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   host-side by the \texttt{ExperimentDriver}.
   \textbf{Consequence:} Builder and CacheEngine share the engine repository --- the builder as an
   executable above its builder library, the CacheEngine as a library ---; the roles remain cleanly
-  separated, and the probe is not a stage but the transversal supplier of organ building blocks.
+  separated, and the candidate under test is not a stage but the transversal supplier of organ building blocks.
   \textbf{Evidence:} Section~\ref{sec:repos} and Appendix~\ref{app:code};
   Figure~\ref{fig:traeger-stufen}.
 
@@ -274,7 +274,7 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   pattern roles would dilute the architecture.
   \textbf{Decision:} Used are, each with a named code location: \emph{Strategy} with
   CRTP~\cite{coplien1995crtp} per organ axis (the stamp contract of the carriers is a CRTP contract
-  as well, ADR-13), \emph{Abstract Factory} (hybrid docks, composition factory, probe registry),
+  as well, ADR-13), \emph{Abstract Factory} (hybrid docks, composition factory, candidate registry),
   \emph{Director} with \emph{Builder} (plan emission), \emph{Iterator} (the lazily traversed
   experiment tree), \emph{Adapter} (third-party code behind the ABI boundary), \emph{Observer}
   (measurement snapshots per axis), \emph{Visitor} (the measurement seam at the \texttt{dlopen}

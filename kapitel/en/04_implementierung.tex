@@ -44,13 +44,13 @@ The implementation is distributed across four Git repositories with clearly sepa
   \texttt{libs/\allowbreak{}cache\_\allowbreak{}engine/\allowbreak{}heuristik} with six headers (axis
   spline, break-even, measurement-curve loader, offline clustering of the workloads, feature vector,
   optimization catalogue) and \texttt{libs/test\_infra} (benchmark suite, workload generator, test data).
-  \item \texttt{comdare-prt-art} --- the \textbf{probe}: the hybrid \texttt{PrtArtSearchEngine} with the
+  \item \texttt{comdare-prt-art} --- the \textbf{candidate under test}: the hybrid \texttt{PrtArtSearchEngine} with the
   1/2/N parameter rule (one parameter demands the function interfaces of a vector, two those of a map,
   more than two those of a map onto a tuple), its ABI adapters and its building blocks (4+1+2 allocator
   pools --- seven pools: four page pools with the roles trie hull, dense pages, MultiLevel and decision
   span, one rest pool and two value pools for static and dynamic values ---, OLC with reserved blocks,
   MultiLevel layout, path-oriented prefetch, DensityTracker, hypothesis metrics H1/H2/H3) as well as the
-  probe-side comparison re-implementations of the rank-2/3 works (\texttt{legacy\_\allowbreak{}reimpl},
+  candidate-side comparison re-implementations of the rank-2/3 works (\texttt{legacy\_\allowbreak{}reimpl},
   fourteen directories P11--P27 without P15, P20 and P25), which are compared against the actual adapters
   of the cache engine in the SOTA admission test --- rank~1 (centrality rank, Section~\ref{sec:rqs})
   comprises the eight independent search designs --- all with public source code and original adapter ---
@@ -58,7 +58,7 @@ The implementation is distributed across four Git repositories with clearly sepa
   likewise possess original adapters via \texttt{ext/}, the fourteen works in
   \texttt{legacy\_\allowbreak{}reimpl} are re-implemented from the publication without public source code
   (Section~\ref{sec:sota-instances}). Pool, prefetch and layout components are descriptor skeletons
-  without a memory backend of their own; which probe building blocks reach the measurement apparatus is
+  without a memory backend of their own; which candidate building blocks reach the measurement apparatus is
   decided by the slot assignment (Section~\ref{sec:prtart-impl}).
   \item \texttt{probst-Diplomarbeit-cache-engine} --- \textbf{what} is tested by the user: the experiment
   configurations (XML together with the XSD schema), the measurement driver \texttt{messung\_driver}
@@ -83,7 +83,7 @@ stage $N$, never the reverse, and each stage closes onto its predecessor stage w
 configuration check. Implementation status of this order: the subprojects form a scaffold (per stage a
 build description and a description file, planner and CEB with an include directory of their own), and
 the actual implementation lies as a monolith under \texttt{libs/\allowbreak{}cache\_\allowbreak{}engine};
-its partition along the stages is planned but not implemented. The probe is not a stage but the
+its partition along the stages is planned but not implemented. The candidate under test is not a stage but the
 transversal supplier of organ building blocks; builder and CacheEngine share the engine repository ---
 the builder as an executable (\texttt{apps/}) on top of its builder library
 (\texttt{libs/\allowbreak{}cache\_\allowbreak{}engine/\allowbreak{}builder}), the CacheEngine as a library
@@ -175,7 +175,7 @@ problem of multiprocessor caches~\cite{torrellas1994falsesharing} in the researc
 Kuehn~\cite{kuehn2023bplustree}. The DensityTracker and the hypothesis metrics H1/H2/H3 are own
 contributions without an external template.
 
-The probe contributes six key points of its own, two of them on the telemetry axis, which in the
+The candidate under test contributes six key points of its own, two of them on the telemetry axis, which in the
 tripartition is split in two --- a sweep sub-axis of the measurement tooling in the planner and a
 compile-time quantity in the builder (Section~\ref{sec:axis-triad}). On the \emph{allocator axis}, a
 \emph{4+1+2 pool allocator} --- four page pools with the roles trie hull, dense pages, MultiLevel and
@@ -195,7 +195,7 @@ multi-core systems and falsify precisely those measurements they collect. Follow
 line~\cite{kuehn2023bplustree}, PRT-ART therefore offers cache-coherence-aware strategies ---
 \emph{leaf-only counters} (main variant), \emph{sampling} (every $N$th leaf access) and \emph{offline
 recompute} (bottom-up aggregation before the reordering) ---, while the classical per-node counter is
-retained only as a labelled anti-pattern. The probe adds the DensityTracker
+retained only as a labelled anti-pattern. The candidate under test adds the DensityTracker
 (\texttt{density\_\allowbreak{}tracker}) and the hypothesis metrics H1/H2/H3 as telemetry organs of
 its own.
 In the engine source tree, the building-block implementations of these three telemetry strategies
@@ -204,9 +204,9 @@ regime and target ISA are carried in the registry of the system axes and the per
 has an ISA and telemetry bank of its own (Section~\ref{sec:impl-pipeline}); this double location is the
 existing state of the code, not an assignment question of the model.
 
-These key points are \emph{building blocks of the probe repo}; which of them reach the measurement
+These key points are \emph{building blocks of the candidate repo}; which of them reach the measurement
 apparatus is decided by the slot assignment, not by the contribution list
-(Section~\ref{sec:prtart-demo}). The probe provides four slot hulls: the page type of the build axis
+(Section~\ref{sec:prtart-demo}). The candidate under test provides four slot hulls: the page type of the build axis
 (\texttt{PrtArtBPlusPageType}), the prefetch (\texttt{PrtArtRedirectPrefetch}, T7), the ChainRef value
 handle (\texttt{PrtArtChainRefHandle}, T10) and a telemetry wrapper with the per-node counter as
 anti-pattern comparison baseline. Its codegen-capable slot composition \texttt{PrtArtCompositionDemo}
@@ -219,7 +219,7 @@ value handle (together with the build axis page type); the 4+1+2 pool allocator 
 layout (T5) run in the measurement path via the cache-engine default, the reserved OLC value blocks via
 the OLC discipline inherited from ART, and the telemetry strategies appear as a sub-axis of the
 measurement tooling, not as a composition slot. The binding of pool allocator and layout to the
-measurement path is planned but not implemented (update of the probe integration).
+measurement path is planned but not implemented (update of the candidate integration).
 Condensed into a gallery, Figure~\ref{fig:prtart-gallery} shows the six own key points of PRT-ART,
 each located at its axis. The remaining two of the eight building-block layers from the contribution
 list (Section~\ref{sec:contributions}) --- the inline/external/ChainRef value handles and the
@@ -237,9 +237,9 @@ with signalling bits in Appendix~\ref{app:blocks}.
   \node[pa] (p3) at (10.2,0){\textbf{Path-oriented bundle prefetch}\\{\scriptsize axis T7}\\[2pt]{\tiny loads the hot search paths as a bundle ahead of time; entry points from the subtree footprint (\texttt{p27\_bundle\_finder})}};
   \node[pa] (p4) at (0,-2.85){\textbf{MultiLevel layout}\\{\scriptsize axis T5}\\[2pt]{\tiny multi-level memory layout across the node levels; layout-driven stride (CLA 64-byte vs.\ AoS 16-byte)}};
   \node[pa] (p5) at (5.1,-2.85){\textbf{Coherence-aware telemetry}\\{\scriptsize telemetry axis (split in two)}\\[2pt]{\tiny leaf-only counters (main), sampling (every $N$th), offline recompute; per-node counter only as anti-pattern}};
-  \node[pa] (p6) at (10.2,-2.85){\textbf{DensityTracker $+$ H1/H2/H3}\\{\scriptsize telemetry axis (own contributions)}\\[2pt]{\tiny own measurement organs: occupancy-density tracker and the probe's three hypothesis metrics}};
+  \node[pa] (p6) at (10.2,-2.85){\textbf{DensityTracker $+$ H1/H2/H3}\\{\scriptsize telemetry axis (own contributions)}\\[2pt]{\tiny own measurement organs: occupancy-density tracker and the candidate's three hypothesis metrics}};
 \end{tikzpicture}
-\caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a MultiLevel layout (T5) and cache-coherence-aware telemetry together with the DensityTracker and the hypothesis metrics H1/H2/H3 --- the telemetry axis is split in two, a sweep sub-axis of the measurement tooling and a compile-time quantity of the builder (Section~\ref{sec:axis-triad}). The tiles show the \emph{building blocks of the probe repo}; overridden in the apparatus are the path-compression redirect (T3, engine-side reference composition), the prefetch (T7) and the ChainRef value handle (T10, slot composition of the probe) as well as the build axis page type; the building blocks for T5/T6 run in the measurement path via the cache-engine default, OLC is inherited from ART, and the remaining organ axes the slot composition draws from the ART reference of the cache engine (sixteen of eighteen).}\label{fig:prtart-gallery}
+\caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a MultiLevel layout (T5) and cache-coherence-aware telemetry together with the DensityTracker and the hypothesis metrics H1/H2/H3 --- the telemetry axis is split in two, a sweep sub-axis of the measurement tooling and a compile-time quantity of the builder (Section~\ref{sec:axis-triad}). The tiles show the \emph{building blocks of the candidate repo}; overridden in the apparatus are the path-compression redirect (T3, engine-side reference composition), the prefetch (T7) and the ChainRef value handle (T10, slot composition of the candidate under test) as well as the build axis page type; the building blocks for T5/T6 run in the measurement path via the cache-engine default, OLC is inherited from ART, and the remaining organ axes the slot composition draws from the ART reference of the cache engine (sixteen of eighteen).}\label{fig:prtart-gallery}
 \end{figure}
 
 \section{Axis Implementation and Measurement-System Levels}\label{sec:axes-impl}
@@ -272,7 +272,7 @@ original code runs via the library build with the original compiler --- a stub t
 at runtime does not occur in the organ axes (the types thrown there are contract violations such as
 \texttt{invalid\_argument}, \texttt{length\_error} or \texttt{logic\_error} and the allocation errors
 \texttt{bad\_alloc} and \texttt{bad\_array\_new\_length}, no \texttt{runtime\_error}) ---, so that the
-build remains independently runnable. The organ axes not occupied by the probe draw their building
+build remains independently runnable. The organ axes not occupied by the candidate under test draw their building
 block from the cache engine by the same route (Section~\ref{sec:prtart-impl}). The integration of
 hierarchical prefetching~\cite{zhang2025hierarchical} additionally provides a compile-time call-graph
 analyser (\texttt{p27\_bundle\_finder}, a C++23 port of the original tool \texttt{hp\_soft} that
@@ -464,14 +464,14 @@ family-independent loader loads every binary via the same loading route (POSIX
 \texttt{dlopen}~\cite{posix_dlopen}) and can determine the family \emph{before} it constructs an
 instance --- family-independent names with family-specific values; the family is here derived from the
 genus. The ABI carries major version~9, whose seam is the genus interface. The variadic 1/2/N hybrid
-API belongs to the probe: its \texttt{PrtArtSearchEngine<Ts\ldots>} specializes by parameter count ---
+API belongs to the candidate under test: its \texttt{PrtArtSearchEngine<Ts\ldots>} specializes by parameter count ---
 one parameter demands all function interfaces of a \texttt{std::vector}, two those of a
 \texttt{std::map}, more than two those of a \texttt{std::map} onto a tuple ---, and the slot arities of
 the genera of the cache engine (eighteen for the genus SearchAlgorithm, each their own for Set,
 Sequence, Adapter and View from the genus build admission) are to be read separately from it. Complex
 keys are reduced by a fingerprint component of the cache engine
 (\texttt{fixed\_\allowbreak{}length\_\allowbreak{}fingerprint}, FNV-1a base) to 16-byte binary strings
-of fixed length, which the probe uses as the key type of its memory model (\texttt{BinaryKey}); this key
+of fixed length, which the candidate under test uses as the key type of its memory model (\texttt{BinaryKey}); this key
 fingerprint is to be distinguished from the three identity fingerprints of the apparatus --- the 64-bit
 field \texttt{permutation\_\allowbreak{}fingerprint} in the ABI POD of the module, the SHA-512 tier
 fingerprint (format~6, eleven members) and the SHA-256 planner fingerprint
@@ -492,14 +492,14 @@ extern "C" {
 }
 // The hybrid .so exports the same set: exactly one loading route.
 
-// Probe view: variadic 1/2/N API (key K, values V)
+// Candidate view: variadic 1/2/N API (key K, values V)
 //   1 parameter  ->  std::vector<V>
 //   2 parameters ->  std::map<K, V>
 //   N > 2        ->  std::map<K, std::tuple<V1, ..., VN>>
 template<class K, class First, class... Rest> class PrtArtSearchEngine;
 \end{lstlisting}
   \caption{The ABI-stable C module boundary (seven mandatory symbols; the hybrid \texttt{.so} exports the same set
-  and reports its target genus via \texttt{genus}) and the variadic 1/2/N API as the view of the probe.
+  and reports its target genus via \texttt{genus}) and the variadic 1/2/N API as the view of the candidate under test.
   Complex keys are reduced by a fingerprint component to 16-byte binary strings of fixed length; the
   identity of a binary is carried separately from this by the \texttt{permutation\_fingerprint} field of
   the ABI POD, the SHA-512 tier fingerprint and the SHA-256 planner fingerprint.}\label{fig:abi}
@@ -1378,7 +1378,7 @@ schema; the version lock binds the axis sources to digest and stamped
 version.}\label{tab:lager-schluessel}
 \end{table}
 
-With this, the apparatus is fully described --- from the four repositories through the probe, the
+With this, the apparatus is fully described --- from the four repositories through the candidate under test, the
 eighteen organ axes and the carrier-stage chain to the chain from plan to tier binary, its contract
 surfaces, the layer-wise quality assurance, the realm roots in code, the pattern register, the hybrid
 stage and the store. Chapter~\ref{ch:eval} lays out the methodology by which this apparatus is

@@ -47,7 +47,7 @@ special properties such as cache-line awareness --- thereby become comparable as
 design space; non-tree-like methods occupy a restricted \emph{subset} of the dimensions over the same
 search-algorithm interface, as if they formed the sole branch beneath the root. PRT-ART, a Probst
 Redirect Tree / ART hybrid and an abstract, incomplete collection of novel search-algorithm
-constituents, serves as the probe --- the candidate under test --- for state-of-the-art membership.
+constituents, serves as the candidate under test --- the new search algorithm to be integrated on trial --- for state-of-the-art membership.
 
 \section{Problem Statement}\label{sec:problem}
 In today's search structures, cache awareness is either hard-wired or ignored entirely; above all, however,
@@ -253,7 +253,7 @@ measure and evaluate cache-line-aware behaviour both per constituent and for the
 on a common CPU-only basis, and deliver the best overall algorithm --- following an autonomous
 heuristic-profile evaluation and heuristic-function modelling --- as a standalone binary.
 The code of the diploma thesis is here the \emph{formal consumer and driver} of the cache engine: it loads the
-probe PRT-ART, compiles it via metaprogramming against the core constituents of the cache engine, delivers
+candidate under test PRT-ART, compiles it via metaprogramming against the core constituents of the cache engine, delivers
 ABI-stable \emph{living beings} (search-algorithm instances), and drives them to measurement via the probe dock --- the
 measurement interface of the family (Chapter~\ref{ch:measurement}).
 The underlying architecture model
@@ -264,7 +264,7 @@ fixed axis set, in code the tier subclass\footnote{\emph{Tier} is the German wor
 axis organs), the four subsystems, and the ABI-stable delivery of the search-algorithm \emph{living beings}
 --- is developed by
 Chapter~\ref{ch:measurement} and Chapter~\ref{ch:impl}. Meant here are the four carrier subsystems
-measurement driver, \texttt{CacheEngineBuilder}, \texttt{CacheEngine}, and probe; to be distinguished from them are
+measurement driver, \texttt{CacheEngineBuilder}, \texttt{CacheEngine}, and candidate under test; to be distinguished from them are
 the twelve stages of the recommendation pipeline in code. The concept of the axis architecture itself is adopted from
 prior work by the author --- the axis concept of this predecessor implementation UltiHash (on its origin see
 Section~\ref{sec:anatomy-patterns}) ---; the contribution of this thesis is
@@ -278,7 +278,7 @@ central contributions are:
   (\texttt{IAnatomyBase} $\to$ \texttt{IExecutionEngine}) above the axis organs. The delimitation of the
   search-engine module is conceptually fixed but not implemented as a module of its own; its
   provider is expressly deferred, and the search-engine module is realized as a
-  topic namespace within the cache engine. The probe's search core specializes its hybrid API variadically by
+  topic namespace within the cache engine. The candidate's search core specializes its hybrid API variadically by
   parameter count (1~parameter $\Rightarrow$ \texttt{std::vector} API\@;
   2~parameters $\Rightarrow$ \texttt{std::map} API\@; $N>2 \Rightarrow$
   \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}), as the task description demands across all variants
@@ -295,9 +295,9 @@ central contributions are:
   it stamps in the bracket appendage of the organ line and remains outside the
   permutation identity. The matrix is realized with Boost.MP11 compile-time type-list building blocks ---
   runtime tags and \texttt{std::variant} are excluded in the tier binaries as a principle of this thesis
-  (\texttt{[[no-runtime-switch]]}) --- together with a compile-time fallback between the probe stack and the
+  (\texttt{[[no-runtime-switch]]}) --- together with a compile-time fallback between the candidate stack and the
   state-of-the-art stack, which takes over sixteen of the eighteen axes from the cache-engine frame and
-  replaces two by probe slots.
+  replaces two by candidate slots.
   \item Thirty-three state-of-the-art profiles as persisted XML configurations (P01--P33):
   30~full profiles of standalone search designs --- 8~Rank-1 and 22~Rank-2/3 --- as well as 3~abstract profiles
   (OLC, LOUDS, VAMPIR), which enter only dissected, as organs or as measurement technology. The
@@ -308,19 +308,19 @@ central contributions are:
   stack~\cite{schmidt2006modeldriven}; that declarative configuration descriptions drive the
   automated construction of modular system variants is an established
   construct~\cite{czarnecki2000generative, apel2013feature}.
-  \item PRT-ART as a probe with eight building-block layers of its own (4+1+2 pool allocator, optimistic
+  \item PRT-ART as a candidate under test with eight building-block layers of its own (4+1+2 pool allocator, optimistic
   lock coupling with reserved blocks, MultiLevel layout, path-oriented prefetch,
   DensityTracker, hypothesis metrics H1/H2/H3, Inline/External/ChainRef value handles,
-  signalling-bit serialization). In the measurement apparatus the probe registers four probe slots --- page type
+  signalling-bit serialization). In the measurement apparatus the candidate under test registers four candidate slots --- page type
   (\texttt{page\_type}, in the cache engine the axis \texttt{node\_type}), prefetch, telemetry, and the
   ChainRef value handle --- as well as a merge organ for path compression, which contains the cache engine's own
   Patricia strategy; in the codegen-capable measurement path two of them take effect (prefetch and
   value handle), while MultiLevel layout, pool allocator, and serialization run via the
   cache-engine default (Section~\ref{sec:prtart-demo}). In the cache engine, telemetry is
-  a system axis and not a composition slot; the probe slot of the same name is a
-  remaining holdover. The OLC concurrency is a building-block layer of the probe, not a registered slot.
-  Note that the slot numbers of the probe do not follow the slot order T00--T17 of the
-  cache engine. The deployment of the probe demonstrates the extensibility of the system by example ---
+  a system axis and not a composition slot; the candidate slot of the same name is a
+  remaining holdover. The OLC concurrency is a building-block layer of the candidate under test, not a registered slot.
+  Note that the slot numbers of the candidate under test do not follow the slot order T00--T17 of the
+  cache engine. The deployment of the candidate under test demonstrates the extensibility of the system by example ---
   towards the efficient advancement of novel approaches in dealing with cache-aware algorithms and
   accelerated search.
   \item A measurement driver with a defined-/full-mode distinction (supplemented by a deterministically
@@ -365,9 +365,9 @@ hardware properties of the memory hierarchy, the workload conventions of the com
 software means of abstraction, and the notion of a heuristic. Chapter~\ref{ch:measurement} develops
 from them the concepts of a cache-aware measurement system: the problem statement and its
 requirements, the state of the art as axis instances, the anatomy model with its layers, the
-measurement system itself, the probe PRT-ART as demonstrator, and the heuristic evaluation
+measurement system itself, the candidate under test PRT-ART as demonstrator, and the heuristic evaluation
 with its operating modes. Chapter~\ref{ch:impl} realizes this concept as a software architecture ---
-repositories, the probe in code, the axis architecture and compilation pipeline, layer
+repositories, the candidate under test in code, the axis architecture and compilation pipeline, layer
 contracts with contract tests, and the system axes in code. Chapter~\ref{ch:eval} evaluates along the
 research questions, including the heuristic counter-evidence; Chapter~\ref{ch:conclusion} closes with
 conclusion and outlook. The appendices deepen alongside: the measurement-series documentation

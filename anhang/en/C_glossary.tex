@@ -47,7 +47,7 @@ introduces the term.
   the PRT-ART B$^+$ node by occupancy density: the array-indexed page addresses entries directly
   via an array (8- or 16-bit index, density up to 50~\%), the vector page holds sorted key-value
   vectors (density above 50~\%); the boundary at 50~\% is the page-type boundary, the three
-  switching rules of the probe are called \emph{density thresholds}.
+  switching rules of the candidate under test are called \emph{density thresholds}.
   \item[ART] Adaptive Radix Tree~\cite{leis2013art}; reference design with adaptive node sizes
   (Node4/16/48/256).
   \item[Autonomous profile-driven heuristic evaluation]
@@ -87,6 +87,11 @@ introduces the term.
   stamp contains the measurement and the system line but no organ line (the static barrier); its
   SHA-512 fingerprint is provenance, not a reuse criterion
   (cf.\ Sections~\ref{sec:mess-chain} and~\ref{sec:impl-pipeline}).
+  \item[Candidate under test] (\emph{Prüfling}) The new search algorithm to be integrated on trial
+  (here PRT-ART); it is compiled by the builder against the core constituents of the cache engine.
+  The measurement instrumentation is called \emph{measurement sensor} or, by its literature alias,
+  \emph{probe} (see \emph{Measurement sensor}); the fixed names \emph{probe dock} and
+  \emph{probe effect} keep their meaning (see \emph{Probe dock}, \emph{Instrumentation artefact}).
   \item[Carrier stage] (\emph{Träger-Stufe}) One of the four stages that carry the anatomy, in the
   order of the chain: planner, CacheEngineBuilder (CEB), tier binary, hybrid tier binary. No stage
   passes through layers --- each contains its layer firmly compiled in; only the configuration
@@ -125,10 +130,10 @@ introduces the term.
   its analogously mirrored counterpart; via XML the workbook, the CSV tree or both are deposited at
   the same target. Implementation status: the seam writes the CSV projection as one flat file; the
   tree form is not implemented (Section~\ref{sec:eval-dataflow}).
-  \item[Density thresholds] (\emph{Dichte-Schwellen}) The three fixed switching rules of the probe
+  \item[Density thresholds] (\emph{Dichte-Schwellen}) The three fixed switching rules of the candidate under test
   PRT-ART between its four page representations by occupancy density, in the order
   Array$_{256}$ (up to 25~\%) $\to$ Array$_{65535}$ (25 to 50~\%) $\to$ Vector$\langle$u8,u8$\rangle$
-  (50 to 75~\%) $\to$ Vector$\langle$u16,u16$\rangle$ (above 75~\%); the probe switches by these
+  (50 to 75~\%) $\to$ Vector$\langle$u16,u16$\rangle$ (above 75~\%); the candidate under test switches by these
   fixed thresholds; the platform-calibrated rules are not available, their determination
   presupposes the measurement runs (sub-question RQ3.a, Section~\ref{sec:rqs};
   Section~\ref{sec:prtart-demo}). The threshold at 50~\% is at the same time the page-type boundary
@@ -182,7 +187,7 @@ introduces the term.
   abstract profile provides only individual organs (OLC as concurrency
   organ~\cite{leis2016olc}, LOUDS as memory-layout organ~\cite{jacobson1989louds}, VAMPIR as
   measurement technology~\cite{berthold2023vampir}) and leaves the remaining ones to the standard
-  construction kit --- the same type that the probe PRT-ART corresponds to. Of the 33 profiles,
+  construction kit --- the same type that the candidate under test PRT-ART corresponds to. Of the 33 profiles,
   30 are full profiles and 3 abstract.
   \item[Genus] The second level beneath a family, with a fixed axis set (code:
   \texttt{AnatomyGenus}). Six genera: SearchAlgorithm under Map --- in the metaphor canon of this
@@ -200,7 +205,7 @@ introduces the term.
   \item[Gitlink] The commit of a submodule recorded in the superordinate repository (entry mode
   160000); \texttt{.gitmodules} declares per submodule the path, the URL and optionally the
   branch~\cite{git2026gitmodules}. The super-repository thus carries the authoritative state of
-  engine, probe and manuscript.
+  engine, candidate under test and manuscript.
   \item[GoF] \enquote{Gang of Four} --- the canonical design patterns after Gamma et
   al.~\cite{gamma1994patterns}.
   \item[golden reference catalogue] (\emph{golden-Referenzkatalog}) The fixed regression detector
@@ -220,7 +225,7 @@ introduces the term.
   evaluation the distribution view of the latencies, whereas the percentiles are determined
   nearest-rank from the raw values (see \emph{nearest-rank median}).
   \item[header-only] Library form whose entire code lies in header files and is compiled upon
-  inclusion; no separate library artefact arises. The probe PRT-ART and the hybrid stage exist in
+  inclusion; no separate library artefact arises. The candidate under test PRT-ART and the hybrid stage exist in
   this form.
   \item[HOT] Height Optimized Trie~\cite{binna2018hot}.
   \item[HybridAware] The sixth core mode of the measurement model and value \texttt{HybridAware}
@@ -297,12 +302,14 @@ introduces the term.
   tier binary (measurement cut-through, observers, PMC counters); its assignment is encoded in the
   measurement-gates member of the fingerprint, so that the binary with and the binary without
   measurement sensors possess different identities and both lie in the store. The difference of
-  their run times is the instrumentation artefact. The word \emph{probe} is not used for the
-  sensor in this thesis, because it denotes the candidate under test (see \emph{Probe}).
-  \item[Merge strategy] (\emph{Verbund-Strategie}) The manner, declared per axis, in which a probe
-  slot is joined with the engine axis: \texttt{Verbund1\_CeOnly} (only the engine, no probe
-  directive), \texttt{Verbund2\_Replace} (the probe axis replaces the engine axis, with fallback;
-  the default), \texttt{Verbund2\_Hybrid} (engine and probe hybrid per probe) and
+  their run times is the instrumentation artefact. The word \emph{probe} is used in this thesis as
+  an alias of the measurement sensor; the candidate under test is never called \emph{probe} (see
+  \emph{Candidate under test}).
+  \item[Merge strategy] (\emph{Verbund-Strategie}) The manner, declared per axis, in which a candidate
+  slot is joined with the engine axis: \texttt{Verbund1\_CeOnly} (only the engine, no candidate
+  directive), \texttt{Verbund2\_Replace} (the candidate axis replaces the engine axis, with fallback;
+  the default), \texttt{Verbund2\_Hybrid} (engine and candidate under test hybrid per candidate
+  under test) and
   \texttt{Verbund3\_Union} (the non-redundant union); the XML tokens are \texttt{replace},
   \texttt{merge} and \texttt{union}. Alias: stage~1 to~3 (old name), full join (for
   \texttt{union}).
@@ -347,9 +354,9 @@ introduces the term.
   overlay member of the tier fingerprint hashes: per axis the files of its own implementation plus
   the shared tier substance, concatenated in fixed order per axis category and hashed once with
   SHA-512; the same set is the population of the version lock.
-  \item[Page type] (\emph{Seitentyp}) The probe slot \texttt{page\_type} (prt-art
+  \item[Page type] (\emph{Seitentyp}) The candidate slot \texttt{page\_type} (prt-art
   \texttt{axis\_01}): the node form of the PRT-ART B$^+$ tree; in the canon of the engine it
-  corresponds to the organ main axis \texttt{node\_type} (slot T04). The slot numbers of the probe
+  corresponds to the organ main axis \texttt{node\_type} (slot T04). The slot numbers of the candidate under test
   do not follow the slot order T00--T17 of the engine.
   \item[Pareto front] Set of the configurations that cannot be improved in any metric without
   deteriorating in another (Pareto dominance)~\cite{emmerich2018multiobjective}; in the measurement
@@ -376,11 +383,6 @@ introduces the term.
   is a building block of the collector axis (regime PmcCounter); the model-bound raw events are
   supplied by a catalogue per microarchitecture, and in the axis typology PMC counts among the
   meta-meta measurement axes.
-  \item[Probe] (\emph{Prüfling}) The new search algorithm to be integrated on trial (here
-  PRT-ART); it is compiled by the builder against the core constituents of the cache engine. In
-  this thesis \emph{probe} always denotes this candidate under test, never the measurement
-  instrumentation (see \emph{Measurement sensor}); the fixed names \emph{probe dock} and
-  \emph{probe effect} keep their meaning (see \emph{Probe dock}, \emph{Instrumentation artefact}).
   \item[Probe dock] (\emph{Prüf-Dock}) The builder-side measurement orchestration per genus:
   exactly one dock per genus (SearchAlgorithm, Set, Sequence, Adapter, View) loads a living being,
   drives it through the interface operations and measures it; hybrid docks bind attached tiers.
@@ -391,7 +393,7 @@ introduces the term.
   configured-measured, SPD-JEDEC base value or declared-not-measured --- carried by every result
   together with its collection timestamp; a lower level displaces a higher one only with the label
   travelling along (cf.\ Section~\ref{sec:hw-probe}).
-  \item[PRT-ART] Probst Redirect Tree / ART hybrid --- the probe of this thesis.
+  \item[PRT-ART] Probst Redirect Tree / ART hybrid --- the candidate under test of this thesis.
   \item[Rank] (\emph{Rang}) Centrality classification of the state-of-the-art publications
   (rank-1/2/3); explained in Section~\ref{sec:rqs}. Not to be confused with the ranking of the
   measurement (see \emph{Ranking}).
@@ -461,7 +463,7 @@ introduces the term.
   conformance subset of the interface operations, which the comparison gate checks before every
   measurement (Appendix~\ref{app:interfaces}).
   \item[Subsystem] In this thesis the four carrier subsystems of the chain (measurement driver,
-  CacheEngineBuilder, CacheEngine, probe); in the code, by contrast, the twelve
+  CacheEngineBuilder, CacheEngine, candidate under test); in the code, by contrast, the twelve
   \texttt{ISubEngine} stages of the recommendation pipeline behind the facade
   \texttt{ICacheEngine}. The two meanings are not mixed in the text.
   \item[SuRF] Succinct Range Filter~\cite{zhang2018surf}.
