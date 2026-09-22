@@ -101,7 +101,7 @@ Figure~\ref{fig:traeger-stufen} shows it with its binaries, legend forms and sur
   \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s3); \draw[->,thick] (s3)--(s4);
   \node[fl] (f1) at (0,-2.95){Surface 2 (stamp): self-version X.Y.Z, fingerprint SHA-256, overall stamp};
   \node[fl] (f2) at (3.95,-2.95){Surface 2 (stamp): measurement and system line, fingerprint SHA-512; own measurement-gate assignment};
-  \node[fl] (f3) at (7.9,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement pass-through \texttt{IMessVisitor}};
+  \node[fl] (f3) at (7.9,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
   \node[fl] (f4) at (11.85,-2.95){Surfaces 1--3 as for the tier, plus the attached stamp lines (runtime hook)};
   \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
 \end{tikzpicture}
@@ -521,7 +521,7 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   \node[comp] (body) at (-4.9,0.75){SearchAlgorithmAnatomy<C>};
   \node[comp] (abi) at (-4.9,-0.25){SearchAlgorithmAbiAdapter<A>};
   \node[iface,fill=orange!10] (drive) at (-4.9,-1.35){IDriveableTier / IObservableTier};
-  \node[iface,fill=orange!10] (mess) at (-4.9,-2.35){IMessVisitor\\{\normalfont\scriptsize surface 3: measurement pass-through}};
+  \node[iface,fill=orange!10] (mess) at (-4.9,-2.35){IMessVisitor\\{\normalfont\scriptsize surface 3: measurement cut-through}};
   \draw[->] (exec)--(anat); \draw[->] (exec.east) to[bend left=10] (virus.west);
   \draw[->] (anat)--(gatt); \draw[->] (gatt)--(genus); \draw[->] (genus)--(body); \draw[->] (body)--(abi); \draw[->] (abi)--(drive); \draw[->] (drive)--(mess);
   \node[font=\bfseries\scriptsize] at (4.9,5.8){Implementation pattern per axis ($\times$18)};
@@ -550,7 +550,7 @@ the deterministic walk of the \texttt{ExperimentPlanDirector} --- separated alon
 \emph{Director} and \emph{Builder}~\cite{gamma1994patterns}: the director owns the \emph{one}
 enumeration walk over measurement combinations, system permutations and organ steps, and per output
 syntax (text plan, CI pipeline description, CMake fragment) a concrete builder emits via hook methods
----; two runs are byte-identical, and the plan header annotates the registry trio of the three offer
+---; two runs are byte-identical, and the plan header annotates the registry trio of the three offering
 catalogues organ/system/measurement. \texttt{check-size} and \texttt{simulate} compute the measurement
 set before the run from the inputs of the walk (Section~\ref{sec:impl-contracts}). Stage~2, the CEB
 role, is the measurement driver \texttt{comdare-messung-driver} in the project repository with the
@@ -740,14 +740,14 @@ concern~M, which crosses all levels host-side without touching the binary identi
 The contracts between the carrier stages are partitioned into surfaces at the binaries. The
 three-surface model (Section~\ref{sec:anatomy-levels}) is present in code by name: surface~1 is the
 genus interface of the tier binary (runtime, abstract factory), surface~2 the stamp (compile time,
-ABI-stable) and surface~3 the measurement pass-through \texttt{IMessVisitor} --- a visitor at the
+ABI-stable) and surface~3 the measurement cut-through \texttt{IMessVisitor} --- a visitor at the
 \texttt{dlopen} transition with double dispatch, which exists \emph{so that} family and genus interfaces
 remain unchanged: the measurement crosses as a seam of its own instead of forcing measurement fields
 into the domain interfaces. The stamp contract is executed as a matrix of seven interfaces and four
-carriers --- 28~cells with tri-valued admission (mandatory, permitted, forbidden), of which the existing
+carriers --- 28~cells with three-valued admission (mandatory, permitted, forbidden), of which the existing
 code occupies only mandatory and forbidden (Table~\ref{tab:stempel-matrix}): the static self-version is
 carried only by the planner; measurement and system line are carried by CEB, tier and hybrid; the organ
-line is carried only by tier and hybrid --- the absence at the CEB is the static bar \enquote{the CEB
+line is carried only by tier and hybrid --- the absence at the CEB is the static barrier \enquote{the CEB
 carries no organ axes} ---; fingerprint and overall stamp are carried by all four, and the attached
 stamp lines are carried only by the hybrid as runtime hook. The contract is checked not in the base but
 beneath every heir: the base is empty, and only a
@@ -769,9 +769,9 @@ Interface & Content & Planner & CEB & Tier & Hybrid \\
 \texttt{Angeschlossene} & attached stamp lines (runtime hook)               & F & F & F & M \\
 \bottomrule
 \end{tabular}
-\caption{The stamp contract as a matrix of seven interfaces and four carriers (28 cells, tri-valued
+\caption{The stamp contract as a matrix of seven interfaces and four carriers (28 cells, three-valued
 admission M = mandatory, P = permitted, F = forbidden; P is unoccupied in the existing code). The
-forbidden cell of the organ line at the CEB is the static bar \enquote{the CEB carries no organ axes};
+forbidden cell of the organ line at the CEB is the static barrier \enquote{the CEB carries no organ axes};
 the cells are checked per heir via \texttt{static\_assert}.}\label{tab:stempel-matrix}
 \end{table}
 
@@ -957,7 +957,7 @@ dimensions, the load framework a meta-meta main axis of the measurement realm --
 re-enters one of the three breaks the build and must revoke the assignment explicitly instead of
 silently revising it. The build version identifier of the system line (Section~\ref{sec:stamp-model})
 likewise draws from a single declarative source: the ordered eight-segment sequence
-\texttt{kSuffixSegmentOrder} of the build steering quantities --- compiler identifier, optimization,
+\texttt{kSuffixSegmentOrder} of the build control quantities --- compiler identifier, optimization,
 SIMD extension, CEB, target ISA, telemetry, build type and gate contribution ---, in which an empty
 member produces no segment and the gate segment stands at the end, so that every suffix comparison
 sees an unchanged beginning and an appendage (prefix stability); the four-part cell path of the storage
@@ -1017,12 +1017,12 @@ collects the input parameters at a \emph{point in time}; the first layer, the wa
 of a time-measuring, otherwise parameter-empty checkpoint and thus the minimal measuring instrument of
 the CEB\@. If macro or micro benchmarking is active, the wallclock checkpoint also performs the
 parameter bracket --- a compile-time special case, because in macro and micro, parameters and time
-measurement always coincide. The first switch-off stage switches off the parameter collection in macro
+measurement always coincide. The first shut-off level switches off the parameter collection in macro
 and micro, so that the wallclock remains in place for \texttt{measure} and \texttt{compare}; the
-second, permutative switch-off stage lets the wallclock fall away as well for \texttt{release}, and with
+second, permutative shut-off level lets the wallclock fall away as well for \texttt{release}, and with
 it the surfaces and interfaces of the measurement fall away: for the release only the core code of the
 binary remains standing. Implementation status: the code contains the gates G2 and G3 and the release
-mode without instrumentation (\texttt{measurement\_on} off); the two-stage switch-off as a permutation
+mode without instrumentation (\texttt{measurement\_on} off); the two-level shut-off as a permutation
 quantity is planned but not implemented.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,
@@ -1044,7 +1044,7 @@ quantity is planned but not implemented.
   \node[ze,fill=gray!18] at (4.3,-3.4){falls away};
   \node[ze,fill=gray!18] at (8.6,-3.4){falls away: only the core code of the binary};
 \end{tikzpicture}
-\caption[The two switch-off stages of the measurement]{The two switch-off stages of the measurement over the three measurement levels:
+\caption[The two shut-off levels of the measurement]{The two shut-off levels of the measurement over the three measurement levels:
 \texttt{checkpoint\_measure} collects at a point in time; the wallclock is the parameter-empty minimum
 but, with macro or micro active, also performs the parameter bracket; stage~1 switches off the
 parameter collection, stage~2 lets the wallclock together with the measurement surfaces fall away as
@@ -1265,7 +1265,7 @@ facade over the libraries 04 and 05, in-process) and the purely reading plan emi
   \node[mu] (m1) at (0,0){\textbf{Strategy $+$ CRTP}\\{\scriptsize per axis}\\[2pt]{\tiny interchangeable building blocks behind a concept; \texttt{topics/axis}, \texttt{AxisBase<Derived>}; bound at compile time}};
   \node[mu] (m2) at (3.85,0){\textbf{Director $+$ Builder}\\{\scriptsize plan emission}\\[2pt]{\tiny one deterministic walk, one builder per syntax (text, CI YAML, CMake); \texttt{experiment\_plan\_director}, \texttt{plan\_legend}}};
   \node[mu] (m3) at (7.7,0){\textbf{Abstract Factory}\\{\scriptsize hybrid docks, result workbooks}\\[2pt]{\tiny single construction site of the docks (\texttt{hybrid\_dock\_factory}); xlsx workbook, CSV tree as selectable strategy (\texttt{ergebnis\_mappe})}};
-  \node[mu] (m4) at (11.55,0){\textbf{Visitor}\\{\scriptsize measurement pass-through (surface 3)}\\[2pt]{\tiny \texttt{IMessVisitor} at the \texttt{dlopen} transition: the host passes the sink, the tier calls \texttt{visit}; double dispatch}};
+  \node[mu] (m4) at (11.55,0){\textbf{Visitor}\\{\scriptsize measurement cut-through (surface 3)}\\[2pt]{\tiny \texttt{IMessVisitor} at the \texttt{dlopen} transition: the host passes the sink, the tier calls \texttt{visit}; double dispatch}};
   \node[mu] (m5) at (0,-3.0){\textbf{Chain of Responsibility}\\{\scriptsize acquisition, selection}\\[2pt]{\tiny hardware chain boot cache $\to$ SPD $\to$ declaration as type list (\texttt{ram\_probe\_chain}); selection filter chain of the CEB}};
   \node[mu] (m6) at (3.85,-3.0){\textbf{Memento}\\{\scriptsize state per tier}\\[2pt]{\tiny \texttt{memento\_all} rolls back the state of stateful axes after the warm-up; plan: state takeover of the hybrid stage}};
   \node[mu] (m7) at (7.7,-3.0){\textbf{Command}\\{\scriptsize axis base, complex axis}\\[2pt]{\tiny \texttt{axis\_command\_base} with measurement-visitor slot and limitation report; \texttt{build\_target\_complex} as command wrapper}};

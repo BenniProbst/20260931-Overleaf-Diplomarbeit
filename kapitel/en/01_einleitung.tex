@@ -45,9 +45,9 @@ interchangeable design dimensions of a large \emph{design space}~\cite{idreos201
 Structurally different search methods --- from tree-like indexes to non-tree-like hash tables, including
 special properties such as cache-line awareness --- thereby become comparable as points of the same
 design space; non-tree-like methods occupy a restricted \emph{subset} of the dimensions over the same
-search-algorithm interface, as if they formed the sole branch beneath the root. As the probe for
-state-of-the-art membership serves PRT-ART, a Probst Redirect Tree / ART hybrid and an abstract,
-incomplete collection of novel search-algorithm constituents.
+search-algorithm interface, as if they formed the sole branch beneath the root. PRT-ART, a Probst
+Redirect Tree / ART hybrid and an abstract, incomplete collection of novel search-algorithm
+constituents, serves as the probe --- the candidate under test --- for state-of-the-art membership.
 
 \section{Problem Statement}\label{sec:problem}
 In today's search structures, cache awareness is either hard-wired or ignored entirely; above all, however,
@@ -77,8 +77,8 @@ individual axes and whole algorithms on a uniform, fair basis.
 \end{figure}
 
 \section{Research Questions}\label{sec:rqs}
-From the task description and the goal of cache-line optimization arise --- owing to the
-ubiquity of the influence of the cache-line settings --- one main question (RQ0) and four
+The task description and the goal of cache-line optimization give rise --- owing to the
+ubiquity of the influence of the cache-line settings --- to one main question (RQ0) and four
 measurable research questions (RQ1--RQ4); complementary aspects are assigned to them as deepening \emph{sub-questions}.
 Across all five questions lies a categorization question that this thesis carries along as a coinage
 of terms: the task description already distinguishes what is measured (the design constituents of the
@@ -88,7 +88,7 @@ interchangeable design constituents of the algorithm), \emph{system axes} (the c
 and target platform), and \emph{measurement axes} (the concerns of measuring itself) --- and
 how such a separation is to be accomplished if a design does not yet provide
 it --- is laid out as a question in this thesis; the sub-questions are therefore named along these three
-\emph{axis categories}. The actual state on this is unambiguous: the thesis lays out the triad as
+\emph{axis categories}. The current state here is unambiguous: the thesis lays out the triad as
 three separate axis registries\footnote{An axis registry is the directory of the axes of one
   category together with the building blocks offered per axis (in code a Registry).} --- an
 organ-axis registry, a system-axis registry, and a
@@ -131,7 +131,7 @@ RQ3.a, RQ3.b, RQ4.a, and RQ4.E.
   or by unequal measurement conditions.} such that the
   state-of-the-art methods become reconstructable bias-free as profiles --- as far as possible from
   their original code --- and arbitrarily permutable? \emph{Sub-question RQ1.a (category cut):} Does
-  the canonical decomposition itself fall apart along the three axis categories --- must platform and
+  the canonical decomposition itself divide along the three axis categories --- must platform and
   measurement concerns be kept out of the permutation matrix so that the decomposition of the
   design constituents remains orthogonal ---, and how is such a cut to be accomplished
   if it is not yet laid out in the design? \emph{Sub-question RQ1.b (organ couplings and
@@ -200,19 +200,19 @@ RQ3.a, RQ3.b, RQ4.a, and RQ4.E.
   a key prefix), and prefix enumeration (enumeration of all keys for a prefix),
   measured under the three mandatory measurement series A (probe vs.\ state of the
   art), B (systematic variation of the design decisions), and C (merge/regression old vs.\
-  new)? \emph{Sub-question RQ3.a (organ axes):} Which local page representation (8-/16-bit point page ---
-  the direct-index pages Array$_{256}$ and Array$_{65535}$ --- versus the compact page --- the
+  new)? \emph{Sub-question RQ3.a (organ axes):} Which local page representation (8-/16-bit array-indexed page ---
+  the direct-index pages Array$_{256}$ and Array$_{65535}$ --- versus the vector page --- the
   vector pages Vector$\langle$u8,u8$\rangle$ and Vector$\langle$u16,u16$\rangle$) is cheapest per
   branch point (per node at which the search path branches), and by which
   platform-calibrated
   switching rules --- including the order
   Array$_{256}\to$Array$_{65535}\to$Vector$\langle$u8,u8$\rangle\to$Vector$\langle$u16,u16$\rangle$
   by occupancy density and access type --- should switching occur adaptively? The probe currently switches by fixed
-  density thresholds of 25, 50, and 75~percent\footnote{Point page and compact page are the two
-  page forms of the PRT-ART B\textsuperscript{+} node: the point page addresses entries directly via a field with an 8-
-  or 16-bit index, the compact page holds sorted key-value vectors. The density thresholds
+  density thresholds of 25, 50, and 75~percent\footnote{Array-indexed page and vector page are the two
+  page forms of the PRT-ART B\textsuperscript{+} node: the array-indexed page addresses entries directly via an array with an 8-
+  or 16-bit index, the vector page holds sorted key-value vectors. The density thresholds
   are the probe's switching rules between the page representations; the 50~percent boundary named in the
-  glossary is the page-type boundary between point and compact page, not a further
+  glossary is the page-type boundary between array-indexed and vector page, not a further
   switching rule.} (Section~\ref{sec:prtart-demo}).
   \emph{Sub-question RQ3.b (compile-time force):} Do latency-critical measurements force decisions that are
   in principle selectable at run time --- such as those adaptive switching rules --- to be
@@ -258,7 +258,9 @@ ABI-stable \emph{living beings} (search-algorithm instances), and drives them to
 measurement interface of the family (Chapter~\ref{ch:measurement}).
 The underlying architecture model
 --- the three levels (\emph{family} as the outer algorithm interface, \emph{genus} as the family subclass with a
-fixed axis set, in code the tier subclass \texttt{AnatomyGenus}, and the
+fixed axis set, in code the tier subclass\footnote{\emph{Tier} is the German word for \emph{animal}: in the
+  metaphor canon of this thesis it names the fully composed module --- the living being with all its
+  organs (see \emph{Tier binary} in the glossary) ---, not a level or layer.} \texttt{AnatomyGenus}, and the
 axis organs), the four subsystems, and the ABI-stable delivery of the search-algorithm \emph{living beings}
 --- is developed by
 Chapter~\ref{ch:measurement} and Chapter~\ref{ch:impl}. Meant here are the four carrier subsystems
@@ -280,7 +282,7 @@ central contributions are:
   parameter count (1~parameter $\Rightarrow$ \texttt{std::vector} API\@;
   2~parameters $\Rightarrow$ \texttt{std::map} API\@; $N>2 \Rightarrow$
   \texttt{std::map<K,\,std::tuple<V$_1$\ldots V$_N$>>}), as the task description demands across all variants
-  of the well-known \texttt{std::map} and \texttt{std::vector} container shells; for this, the cache engine
+  of the well-known \texttt{std::map} and \texttt{std::vector} container hulls; for this, the cache engine
   provides the family arities of its genera.
   \item An axis permutation matrix in a three-part order: eighteen organ main axes in fixed
   slot order (T00--T17) form the binary permutation; three system main axes --- target ISA,

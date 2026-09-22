@@ -9,7 +9,7 @@ and the measurement system built upon it --- demonstrated on the probe PRT-ART\@
 chapter newly introduces three orderings that Chapters~\ref{ch:impl} to~\ref{ch:conclusion} presuppose:
 the triad of the axes into measurement, system, and organ axes, the four carrier stages of the
 apparatus --- planner, CacheEngineBuilder, tier binary, and hybrid tier binary --- with their identity
-stamp, and the repository in which what is built and what is measured lies under stamp keys.
+stamp, and the store in which what is built and what is measured lies under stamp keys.
 
 \section{Problem Statement and Requirements for a Measurement System}\label{sec:task-concerns}
 The starting point is the finding of the foundations (Chapter~\ref{ch:foundations}): the performance of
@@ -235,7 +235,7 @@ their own (the sub-axis PC1 carries the granularity \texttt{multi-byte} as a tag
 Node4/16/48/256~\cite{leis2013art}; HOT compound~\cite{binna2018hot}, Internal/Border~\cite{mao2012masstree},
 Decision/Span~\cite{schmeisser2022b2tree}, LOUDS-Dense/Sparse~\cite{zhang2018surf}, and the
 CSS/CSB\textsuperscript{+}/Hankins nodes are paper node formats (reconstruction targets of this
-thesis, not a CE baseline); the PRT-ART family is brought in by the probe via its build axis page type.
+thesis, not a CE baseline); the PRT-ART profile family is brought in by the probe via its build axis page type.
 
 The \emph{memory-layout axis} (T5) ranges in the code from the cache-line-aligned AoS
 (\texttt{AoS\allowbreak{}Strict\allowbreak{}Memory\allowbreak{}Layout},
@@ -248,7 +248,7 @@ tree~\cite{schmeisser2022b2tree} are related literature of the axis (Appendix~\r
 sub-axes --- from free-list topology through thread locality/NUMA affinity~\cite{ungethuem2017survey}
 and the allocation strategy to reclamation (epoch, RCU~\cite{mckenney2001rcu},
 hazard pointers~\cite{michael2004hazard}, QSBR); the code provides 26 allocator implementations for the
-23-work corpus (individual works contribute several variants); the 23 allocator profiles with license
+23-work corpus (individual works contribute several variants); the 23 allocator profiles with licence
 and workload affinity are listed by Table~\ref{tab:allocator-profiles}, ten of them attached with
 adapter and original code. The \emph{value axis} (T10) distinguishes inline value~\cite{leis2013art}, external
 pool~\cite{wu2019wormhole}, versioned pointer~\cite{mao2012masstree}, immutable
@@ -258,11 +258,11 @@ raw binary, succinct LOUDS/FST, and
 varint~\cite{leis2013art}.
 
 \begin{table}[!htbp]
-  \caption{Allocator profiles (23, all with \texttt{expected\_workload} tag) with license, workload affinity, and attachment state}\label{tab:allocator-profiles}
+  \caption{Allocator profiles (23, all with \texttt{expected\_workload} tag) with licence, workload affinity, and attachment state}\label{tab:allocator-profiles}
   \centering\small
   \begin{tabular}{lllll}
     \toprule
-    \textbf{Profile} & \textbf{Family} & \textbf{License} & \textbf{expected\_workload} & \textbf{Code} \\
+    \textbf{Profile} & \textbf{Family} & \textbf{Licence} & \textbf{expected\_workload} & \textbf{Code} \\
     \midrule
     hoard & A01 & Apache-2.0 & YCSB\_A & yes \\
     slab & A02 & none & YCSB\_A & --- \\
@@ -291,7 +291,7 @@ varint~\cite{leis2013art}.
   \end{tabular}
 
   \smallskip
-  {\footnotesize \texttt{expected\_workload} = YCSB workload class (A/B/C/E); license verbatim from the profile
+  {\footnotesize \texttt{expected\_workload} = YCSB workload class (A/B/C/E); licence verbatim from the profile
   (none = no OSS code, unknown = not recorded in the profile); Code = adapter and original code present in the
   repository (yes) or documentation dossier without adapter (---). Two reference quantities: 23 profiles A01--A23
   (profile count of this table) versus 26 allocator wrappers of the code (wrapper count,
@@ -466,7 +466,7 @@ follows a provenance table (sources checked against the original publications) o
 roughly 110~organ algorithms; every
 state-of-the-art algorithm thereby appears as a point in the Cartesian product of the axes
 (Figure~\ref{fig:design-space}). That the axis framework also accommodates non-tree-like methods is shown by
-a pure hash table as a counter-check within the Map genus --- as two selectable
+a pure hash table as a counter-check within the Map family --- as two selectable
 T0 building blocks, of which exactly one is chosen per permutation and both of which are permuted: an
 open-addressing hash after Knuth (S14, implemented) and the SwissTable~\cite{abseil_swisstable}
 (S22, present as a scalar re-implementation of the Swiss-table principle, disabled by
@@ -482,7 +482,7 @@ the pass-through variant (\texttt{None}), the node type (T4) possesses no None v
 regularly assigned one of the four ART node formats, which the hash building block does not use for its search,
 and the ordered range iteration is not an organ axis but the additive scan capability of the
 module boundary (Appendix~\ref{app:interfaces}), which the hash building block does not offer; the counter-check
-thus requires no genus of its own.
+thus requires no family of its own.
 
 The publications stem from six thematic \emph{origin clusters} that here serve only the holistic
 placement of each living being before it is decomposed into its organs. The
@@ -528,7 +528,7 @@ which it makes its main contribution; all thus appear as points in the common de
   \node[so] (a4) at (12.15,0){\textbf{CoCo-Trie} {\scriptsize(P04)}\\{\tiny Succinct}\\[1pt]{\tiny compact-collapsed trie, succinct-encoded paths}\\{\tiny\itshape axes T3, T4}};
   \node[so] (b1) at (0,-2.4){\textbf{START} {\scriptsize(P05)}\\{\tiny Trie}\\[1pt]{\tiny self-tuning adaptive radix span}\\{\tiny\itshape axes T0, T4}};
   \node[so] (b2) at (4.05,-2.4){\textbf{B\textsuperscript{2}-Tree} {\scriptsize(P06)}\\{\tiny Hybrid}\\[1pt]{\tiny B\textsuperscript{+} with binary inner nodes, cache-aware}\\{\tiny\itshape axes T4, T5}};
-  \node[so] (b3) at (8.1,-2.4){\textbf{Wormhole} {\scriptsize(P07)}\\{\tiny Hybrid}\\[1pt]{\tiny trie $+$ hash $+$ B\textsuperscript{+}-leaf, $O(\log L)$ point query}\\{\tiny\itshape axes T0, T2}};
+  \node[so] (b3) at (8.1,-2.4){\textbf{Wormhole} {\scriptsize(P07)}\\{\tiny Hybrid}\\[1pt]{\tiny trie $+$ hash $+$ B\textsuperscript{+}-leaf, $O(\log L)$ exact lookup}\\{\tiny\itshape axes T0, T2}};
   \node[so] (b4) at (12.15,-2.4){\textbf{LOUDS} {\scriptsize(P09)}\\{\tiny Succinct}\\[1pt]{\tiny unary degree sequence, bitmap-encoded trie}\\{\tiny\itshape axes T9, T5}};
   \node[so] (c1) at (0,-4.8){\textbf{SuRF} {\scriptsize(P10)}\\{\tiny Succinct}\\[1pt]{\tiny succinct range filter over LOUDS}\\{\tiny\itshape axes T14, T9}};
   \node[so] (c2) at (4.05,-4.8){\textbf{CSS-Tree} {\scriptsize(P11)}\\{\tiny cache-sensitive}\\[1pt]{\tiny pointerless implicit tree, arithmetic navigation}\\{\tiny\itshape axes T4, T5}};
@@ -685,11 +685,11 @@ sorted key--value list is, strictly speaking, a single leaf of a tree whose valu
 references to data leaves. The main differences between the algorithm expressions thereby come down to the fan-out of the nodes, the tree depth, the tree filters and rule sets, and the implementation details of the serialization of memory pages, search pages, and tree nodes. The tree structure is thus universal across all search-algorithm architectures and forms the canvas on which the axes are placed.
 
 Non-tree-like search methods --- such as the hash counter-check of Section~\ref{sec:sota-instances} ---
-remain the same genus with a restricted profile, for a separate genus would arise only if the
+remain the same family with a restricted profile, for a separate family would arise only if the
 base axis set differed fundamentally: a hash table, too, is a tree that searches from the root
 of its interface over a fan-out of hashes --- only the core algorithm of the node is a
 different one. Therefore every method that translates a key into a value, no matter how, belongs to the
-genus Map and its genus subclass \texttt{SearchAlgorithm} (Section~\ref{sec:anatomy-levels}). Second,
+family Map and its genus \texttt{SearchAlgorithm} (Section~\ref{sec:anatomy-levels}). Second,
 a vivid metaphor treats a concrete algorithm as a \emph{living being} whose
 \emph{organs} are the axes. The metaphor is canonically cast: the \emph{blood} is the liquid
 organ that connects all organ axes and is condensed in the planner into a compile-time configuration;
@@ -726,7 +726,7 @@ vividness; from here on the thesis works consistently with this model.
   \draw[red!60!black,thick] (4.15,1.15) -- (4.15,-1.45);
   \foreach \y in {0.9,0.2,-0.5,-1.2}{\draw[red!60!black,thick] (4.15,\y) -- (4.3,\y);}
   \node[font=\tiny,text=red!60!black,rotate=90] at (3.95,-0.15){blood $=$ connection of the organ axes};
-  \node[habitat,minimum width=8.2cm] (hab) at (2.7,-2.45){\textbf{habitat} (system axes): the planet with its resources --- always present, belonging to no genus};
+  \node[habitat,minimum width=8.2cm] (hab) at (2.7,-2.45){\textbf{habitat} (system axes): the planet with its resources --- always present, belonging to no family};
   \node[draw, fill=blue!8, font=\scriptsize, align=center] (mess) at (8.3,-0.15){measurement system\\(\enquote{laboratory})};
   \draw[->,blue] (mess) -- (a1); \draw[->,blue] (mess) -- (a2);
   \draw[->,blue] (mess) -- (a3); \draw[->,blue] (mess) -- (a4);
@@ -770,16 +770,16 @@ memory needs (Figure~\ref{fig:axis-organ}); the hub of this wiring is in the cod
 the storage organ \texttt{LayoutAwareChunkedStore}, which composes node type, layout, and allocator
 (\enquote{storage-organ interface} is the concept name, not a code type). The usage rules are broadly
 drawn: an axis may use foreign axis interfaces, call itself recursively, and use other
-genera --- the search genus accesses axes in its interface functions and uses
-container genus subclasses of its own, and parts of the axis pool are reused for the containers
+families --- the search family accesses axes in its interface functions and uses
+container genera of its own, and parts of the axis pool are reused for the containers
 (Section~\ref{sec:measurement-system}). In software-engineering terms this is the \emph{feature interaction}
 of feature-oriented software product lines~\cite{apel2013feature,batory1992hierarchical}.
 
-An axis corresponds to a feature, a living being to a feature composition. The \emph{genus} is the
-feature \emph{core} composition: the shared interface core that all genus subclasses of a genus share and
+An axis corresponds to a feature, a living being to a feature composition. The \emph{family} is the
+feature \emph{core} composition: the shared interface core that all genera of a family share and
 that is used identically in the metaprogramming across all variations --- just as different
 map categories (hash map, flat map) share a common core of interface functions; for the
-container genus this core consists of identity, axis observation, and size. The \emph{genus subclass}
+container family this core consists of identity, axis observation, and size. The \emph{genus}
 (alias: tier subclass, Section~\ref{sec:anatomy-levels}) is the feature \emph{special} composition:
 the real tier interface beyond the core --- \texttt{SearchAlgorithm}, \texttt{Set},
 \texttt{Sequence}, \texttt{Adapter}, \texttt{View}, and \texttt{FunctionInterfaceReroute} --- and thus
@@ -806,7 +806,7 @@ axis uses which is shown by the inter-organ usage graph (Figure~\ref{fig:usage})
 
 Composing these pairwise \emph{organ couplings} --- an organ coupling is the mutual
 dependency of two axes in which the one uses the interface of the other (mandatorily or
-optionally) or restricts its admissible assignments; sub-question FF1.b (Section~\ref{sec:rqs})
+optionally) or restricts its admissible assignments; sub-question RQ1.b (Section~\ref{sec:rqs})
 addresses it for node type, SIMD, and path compression --- across all organs together yields a
 directed inter-organ usage graph.
 \begin{figure}[htbp]\centering
@@ -840,18 +840,18 @@ and the telemetry (measurement instrumentation, Section~\ref{sec:axis-triad}) re
 store is not connected (dotted). The graph is an example wiring of the storage organ,
 not a structure evaluated in the code.}\label{fig:usage}
 \end{figure}
-\subsection{The Three-Level Model and the Four Genera}\label{sec:anatomy-levels}
+\subsection{The Three-Level Model and the Four Families}\label{sec:anatomy-levels}
 These organs are embedded in \emph{one} architecture --- a single, self-contained hierarchy
 without parallel trees. At its root stands the \texttt{ExecutionEngine} as the common, measurable
 abstraction over everything measurable --- it persists because \texttt{IExecutionEngine} forms the
 common measurable root and \texttt{IAnatomyBase} the anatomy-bearing view immediately beneath it;
-beneath that, three levels can be distinguished: the \emph{genus} as the outward-visible
-algorithm interface (the \emph{probe dock}), beneath it the \emph{genus subclass} (alias: \emph{tier subclass})
+beneath that, three levels can be distinguished: the \emph{family} as the outward-visible
+algorithm interface (the \emph{probe dock}), beneath it the \emph{genus} (alias: \emph{tier subclass})
 with a fixed axis set, beneath that the \emph{organs} themselves (Figure~\ref{fig:three-levels})\@. The
 separation of levels can be read off at the ABI boundary: every tier binary exports two letter-identical
-C symbols that answer genus and genus subclass without an instance, whereby the genus is not maintained as a second datum
-but derived from the genus subclass --- the loader thus determines the genus via a
-genus-independent symbol, without knowing it in advance\@. \enquote{Living being} and \texttt{SearchAlgorithm} denote the same
+C symbols that answer family and genus without an instance, whereby the family is not maintained as a second datum
+but derived from the genus --- the loader thus determines the family via a
+family-independent symbol, without knowing it in advance\@. \enquote{Living being} and \texttt{SearchAlgorithm} denote the same
 entity --- metaphor and technical term ---; the anatomy is not a second model but the
 \emph{body} of this living being: the fixed composition of its eighteen axis-organs.
 \begin{figure}[htbp]\centering
@@ -859,15 +859,15 @@ entity --- metaphor and technical term ---; the anatomy is not a second model bu
   box/.style={draw,rounded corners,inner sep=3pt,minimum height=0.7cm},
   lvl/.style={font=\scriptsize,text=gray,anchor=east,align=right}]
   \node[box] (root) at (1.1,0){\texttt{IExecutionEngine} (measurable root) $\to$ \texttt{IAnatomyBase} (anatomy-bearing)};
-  \node[lvl] at (-5.1,-1.6){Level 1: genus\\{\tiny feature core composition}};
+  \node[lvl] at (-5.1,-1.6){Level 1: family\\{\tiny feature core composition}};
   \node[box] (sa) at (-3.0,-1.6){Map};
   \node[box] (co) at (0,-1.6){Container};
   \node[box] (gr) at (2.6,-1.6){Graph};
   \node[box] (ha) at (5.3,-1.6){HeuristikAdapter};
-  \node[lvl] at (-5.1,-3.3){Level 2: genus subclass\\{\tiny feature special composition}};
+  \node[lvl] at (-5.1,-3.3){Level 2: genus\\{\tiny feature special composition}};
   \node[box] (tier) at (-3.0,-3.3){\texttt{SearchAlgorithm}\\{\scriptsize mammal, 18 organ axes}};
   \node[box] (cont2) at (0,-3.3){\texttt{Set}, \texttt{Sequence},\\\texttt{Adapter}, \texttt{View}};
-  \node[box,dashed,fill=gray!8] (gr2) at (2.6,-3.3){no genus\\subclass\\{\scriptsize implemented}};
+  \node[box,dashed,fill=gray!8] (gr2) at (2.6,-3.3){no genus\\{\scriptsize implemented}};
   \node[box] (ha2) at (5.3,-3.3){\texttt{FunctionInterface}-\\\texttt{Reroute}};
   \node[lvl] at (-5.1,-4.75){Level 3: organs};
   \node[box,fill=green!8] (org) at (-3.0,-4.75){axes T0--T17};
@@ -876,26 +876,26 @@ entity --- metaphor and technical term ---; the anatomy is not a second model bu
   \draw[->] (sa)--(tier);\draw[->] (co)--(cont2);\draw[->,dashed] (gr)--(gr2);\draw[->] (ha)--(ha2);
   \draw[->] (tier)--(org);\draw[->] (cont2)--(org2);
 \end{tikzpicture}
-\caption{The three-level model: genus (level~1, outer interface, feature core composition) $\to$ genus subclass (level~2, fixed axis set, feature special composition) $\to$ organs/axes (level~3). Four genera: \texttt{Map} possesses as its sole genus subclass \texttt{SearchAlgorithm}, the \enquote{mammal} with the eighteen organ axes; \texttt{Container} the genus subclasses Set/Sequence/Adapter/View, which are formed from the same axis pool; \texttt{Graph} is laid out as an interface, a genus subclass is not implemented; \texttt{HeuristikAdapter} possesses the reroute genus subclass \texttt{FunctionInterfaceReroute} of the hybrid tier.}\label{fig:three-levels}
+\caption{The three-level model: family (level~1, outer interface, feature core composition) $\to$ genus (level~2, fixed axis set, feature special composition) $\to$ organs/axes (level~3). Four families: \texttt{Map} possesses as its sole genus \texttt{SearchAlgorithm}, the \enquote{mammal} with the eighteen organ axes; \texttt{Container} the genera Set/Sequence/Adapter/View, which are formed from the same axis pool; \texttt{Graph} is laid out as an interface, a genus is not implemented; \texttt{HeuristikAdapter} possesses the reroute genus \texttt{FunctionInterfaceReroute} of the hybrid tier.}\label{fig:three-levels}
 \end{figure}
 
-At the topmost level stand four genera. The \texttt{Map} genus --- the
-key-value-oriented probe dock and the focus of this thesis --- possesses as its sole genus subclass
-\texttt{SearchAlgorithm}, the full eighteen-axis \enquote{mammal}; the \texttt{Container} genus
-(keyless storage) fans out into the genus subclasses Set, Sequence, Adapter, and View, which are likewise formed from
-axes of the shared pool and whose slot count per genus subclass is fixed
-compile-statically; the \texttt{Graph} genus is laid out as an interface, a genus subclass is not implemented; and
-the \texttt{HeuristikAdapter} genus possesses the reroute genus subclass \texttt{FunctionInterfaceReroute} --- the
-genus of the hybrid tier (Section~\ref{sec:heuristics-modes}), which by metaprogramming inherits the
-interfaces of a genus together with a genus subclass and passes requests through to the actual tier binaries;
-classification (of which kind the reroute is) and pass-through (the inherited target genus subclass that the binary
+At the topmost level stand four families. The \texttt{Map} family --- the
+key-value-oriented probe dock and the focus of this thesis --- possesses as its sole genus
+\texttt{SearchAlgorithm}, the full eighteen-axis \enquote{mammal}; the \texttt{Container} family
+(keyless storage) fans out into the genera Set, Sequence, Adapter, and View, which are likewise formed from
+axes of the shared pool and whose slot count per genus is fixed
+compile-statically; the \texttt{Graph} family is laid out as an interface, a genus is not implemented; and
+the \texttt{HeuristikAdapter} family possesses the reroute genus \texttt{FunctionInterfaceReroute} --- the
+family of the hybrid tier (Section~\ref{sec:heuristics-modes}), which by metaprogramming inherits the
+interfaces of a family together with a genus and passes requests through to the actual tier binaries;
+classification (of which kind the reroute is) and pass-through (the inherited target genus that the binary
 reports outwardly) lie on separate levels (Figure~\ref{fig:genera}). Mnemonic:
-\enquote{Adapter} without prefix always means the container genus subclass; the hybrid genus is always called
+\enquote{Adapter} without prefix always means the container genus; the hybrid family is always called
 HeuristikAdapter. The kingdom \enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}) shown there as the root
 is the anatomy-bearing view immediately beneath the measurable root \texttt{IExecutionEngine} of
 Figure~\ref{fig:three-levels}; the code separation of the two interfaces is deepened in Chapter~\ref{ch:impl}.
-Non-tree-like methods thus require no genus of their own but occupy a restricted
-axis subset of the same genus.
+Non-tree-like methods thus require no family of their own but occupy a restricted
+axis subset of the same family.
 \begin{figure}[htbp]\centering
 % No \resizebox: the drawing is only ~14cm wide; blowing it up to \linewidth would inflate
 % the \scriptsize font beyond the body text. Rule: resizebox only to SHRINK (cf. fig:m-model).
@@ -905,38 +905,38 @@ axis subset of the same genus.
   tbd/.style={draw,dashed,fill=gray!12,minimum width=2.5cm,minimum height=0.7cm,font=\scriptsize},
   band/.style={draw,rounded corners,fill=orange!9,minimum width=13.6cm,minimum height=1.05cm,text width=13.2cm,align=left,font=\scriptsize}]
   \node[draw,rounded corners,fill=red!6,font=\footnotesize] (root) at (1.3,1.6){kingdom \enquote{Animalia} ($\equiv$ \texttt{IAnatomyBase}, anatomy-bearing)};
-  % Level 1 --- genera (outer interface)
+  % Level 1 --- families (outer interface)
   \node[gen] (g1) at (-4.0,0){Map};
   \node[gen] (g2) at (0.6,0){Container};
   \node[gen] (g3) at (4.3,0){Graph};
   \node[gen,minimum width=2.9cm] (g4) at (7.4,0){HeuristikAdapter};
   \draw[->] (root)--(g1); \draw[->] (root)--(g2); \draw[->] (root)--(g3); \draw[->] (root)--(g4);
-  % Level 2 --- genus subclasses (tier subclasses)
+  % Level 2 --- genera (tier subclasses)
   \node[sub,fill=green!18] (s1) at (-4.0,-1.3){\textbf{mammal} $=$ \texttt{SearchAlgorithm}\\{\scriptsize \texttt{map} hull $\cdot$ 18 organ axes}};
   \node[sub,anchor=west] (c1) at (-1.2,-1.15){bird $=$ Set {\scriptsize(\texttt{set})}};
   \node[sub,anchor=west] (c2) at (-1.2,-1.95){reptile $=$ Sequence {\scriptsize(\texttt{vector})}};
   \node[sub,anchor=west] (c3) at (-1.2,-2.75){invertebrate $=$ Adapter {\scriptsize(\texttt{stack})}};
   \node[sub,anchor=west] (c4) at (-1.2,-3.55){plant $=$ View {\scriptsize(\texttt{span})}};
-  \node[tbd,text width=2.4cm,anchor=north] (gr1) at (4.3,-0.7){interface laid out,\\{\scriptsize no genus subclass}\\{\scriptsize implemented}};
-  \node[sub,minimum width=2.9cm,text width=2.9cm,anchor=north] (h1) at (7.4,-0.7){\texttt{FunctionInterface}\\\texttt{Reroute}\\{\scriptsize hybrid tier:}\\{\scriptsize inherited target genus subclass}};
+  \node[tbd,text width=2.4cm,anchor=north] (gr1) at (4.3,-0.7){interface laid out,\\{\scriptsize no genus}\\{\scriptsize implemented}};
+  \node[sub,minimum width=2.9cm,text width=2.9cm,anchor=north] (h1) at (7.4,-0.7){\texttt{FunctionInterface}\\\texttt{Reroute}\\{\scriptsize hybrid tier:}\\{\scriptsize inherited target genus}};
   \draw[->] (g1)--(s1); \draw[->,dashed] (g3)--(gr1); \draw[->] (g4)--(h1);
   \draw (g2.south) -- ++(0,-0.3) -| (-1.5,-3.55);
   \draw[->] (-1.5,0 |- c1.west) -- (c1.west); \draw[->] (-1.5,0 |- c2.west) -- (c2.west);
   \draw[->] (-1.5,0 |- c3.west) -- (c3.west); \draw[->] (-1.5,0 |- c4.west) -- (c4.west);
   % Levels 3--5 --- mammal branch down to the compiled individual
-  \node[band] (l3) at (1.3,-4.75){\textbf{Level 3 --- organs:} the 18 organ axes (node type, layout, allocator, prefetch, \dots) \emph{permute}; the container genus subclasses are formed from the same axis pool.};
+  \node[band] (l3) at (1.3,-4.75){\textbf{Level 3 --- organs:} the 18 organ axes (node type, layout, allocator, prefetch, \dots) \emph{permute}; the container genera are formed from the same axis pool.};
   \node[band] (l4) at (1.3,-6.15){\textbf{Level 4 --- concrete animal:} one assignment of \emph{all} axes $=$ one individual (ART, HOT, Masstree, SuRF, START, Wormhole, \dots; 30 full profiles) --- an abstract profile (PRT-ART, OLC, LOUDS, VAMPIR) assigns only some axes itself.};
   \node[band,fill=orange!20,very thick,minimum height=1.25cm] (l5) at (1.3,-7.7){\textbf{Level 5 --- tier binary (carrier stage):} compiled per permutation to \texttt{comdare\_perm\_\-<fp>.dll}\,/\,\texttt{.so}, refined by the probe build axis page type; the platform is stamped by the three system axes, the measurement choice by the measurement line; every tier binary offers the three interface surfaces (Figure~\ref{fig:traeger-flaechen}).};
   \draw[->,thick] (s1.south) -- (s1.south |- l3.north);
   \draw[->,thick] (l3.south) -- (l4.north); \draw[->,thick] (l4.south) -- (l5.north);
 \end{tikzpicture}
-\caption[The four genera and the tier hierarchy down to the compiled binary]{The genus/tier hierarchy across five levels. \texttt{Map}, \texttt{Container}, \texttt{Graph}, and \texttt{HeuristikAdapter} are the four \emph{genera} (level~1, outer interface). Each genus hosts its \emph{own} genus subclasses (level~2, alias tier subclasses): \texttt{Map} exclusively the \enquote{mammal} (genus subclass \texttt{SearchAlgorithm}, full eighteen-axis anatomy), \texttt{Container} every \emph{non}-mammal genus subclass (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} a laid-out interface without an implemented genus subclass, \texttt{HeuristikAdapter} the reroute genus subclass of the hybrid tier. The mammal branch is drawn out down to the individual: the eighteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone tier binary (level~5, the carrier stage of the tier binary, additionally refined by the probe build axis page type and platform-stamped by the three system axes, Section~\ref{sec:axis-triad})\@. \emph{Every tier binary is thus an animal of its own with an actual binary genus-subclass interface and three interface surfaces}; the hierarchy reaches from the genus down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
+\caption[The four families and the tier hierarchy down to the compiled binary]{The family/tier hierarchy across five levels. \texttt{Map}, \texttt{Container}, \texttt{Graph}, and \texttt{HeuristikAdapter} are the four \emph{families} (level~1, outer interface). Each family hosts its \emph{own} genera (level~2, alias tier subclasses): \texttt{Map} exclusively the \enquote{mammal} (genus \texttt{SearchAlgorithm}, full eighteen-axis anatomy), \texttt{Container} every \emph{non}-mammal genus (bird/reptile/invertebrate/plant $=$ Set/Sequence/Adapter/View), \texttt{Graph} a laid-out interface without an implemented genus, \texttt{HeuristikAdapter} the reroute genus of the hybrid tier. The mammal branch is drawn out down to the individual: the eighteen axis organs (level~3) permute into a concrete axis composition $=$ one concrete animal (level~4, e.g.\ ART, HOT, Masstree), which is compiled per permutation into a standalone tier binary (level~5, the carrier stage of the tier binary, additionally refined by the probe build axis page type and platform-stamped by the three system axes, Section~\ref{sec:axis-triad})\@. \emph{Every tier binary is thus an animal of its own with an actual binary genus interface and three interface surfaces}; the hierarchy reaches from the family down to the single compiled permutation. Cf.\ the condensed model in Figure~\ref{fig:three-levels}.}\label{fig:genera}
 \end{figure}
 
 The anatomy is carried by four \emph{carrier stages}: the planner, the
 \emph{CacheEngineBuilder} (CEB) --- the measurement tool that the planner generates per target platform and
 measurement task ---, the tier binary, and the hybrid tier binary. The planner resolves the user XML against the three
-offer catalogues and chooses the measurement axes at its runtime; the CEB contains this measurement choice
+offering catalogues and chooses the measurement axes at its runtime; the CEB contains this measurement choice
 compiled in, knows the platform, and permutes system and organ axes into tier binaries; the
 tier binary contains the organ permutation; the hybrid tier binary additionally carries its attached
 tiers. Control sits in the planner, and the chain of releases is directed: the measurement axes
@@ -944,9 +944,9 @@ determine the CEB type, the CEB defines the system axes and releases the build s
 permutes system and organ axes into the tier binary. No stage passes through layers --- each
 contains its layer compiled in fixedly; only the configuration travels from the XML to the finished
 tier binary. The interfaces of the carriers follow a three-surface model: surface~1 is the
-genus-subclass interface of a tier binary (runtime, Abstract Factory), surface~2 the stamp (compile time,
+genus interface of a tier binary (runtime, Abstract Factory), surface~2 the stamp (compile time,
 ABI-stable, Section~\ref{sec:stamp-model}), surface~3 the measurement cut-through (\texttt{IMessVisitor}), which
-crosses the measurement as a seam of its own, so that genus and genus-subclass interfaces remain unchanged. On tier
+crosses the measurement as a seam of its own, so that family and genus interfaces remain unchanged. On tier
 and hybrid tier binary all three surfaces are pronounced; planner and CEB possess the stamp surface, and
 the CEB additionally carries its own measurement-gate assignment, whose coverage against the tier gates (CEB off,
 tier on) is proven by a test. The contracts between planner, CEB, tier, and hybrid are distributed per stage locally
@@ -985,22 +985,22 @@ overall stamp are carried by all four, and the attached tiers are carried only b
   \node[lab,font=\bfseries\scriptsize] at (-1.2,-5.25){surfaces};
   \node[fl] at (0,-5.25){2 stamp\\{(version, ISA, OS $+$ SHA-256)}};
   \node[fl] at (2.5,-5.25){2 stamp (measurement choice)\\3 own measurement gates\\{(CEB off / tier on)}};
-  \node[fl] at (5.0,-5.25){1 genus-subclass interface\\2 stamp\\3 measurement cut-through \texttt{IMessVisitor}};
-  \node[fl] at (7.5,-5.25){1 inherited target genus subclass\\2 stamp $+$ attached\\3 measurement cut-through};
+  \node[fl] at (5.0,-5.25){1 genus interface\\2 stamp\\3 measurement cut-through \texttt{IMessVisitor}};
+  \node[fl] at (7.5,-5.25){1 inherited target genus\\2 stamp $+$ attached\\3 measurement cut-through};
   \node[font=\tiny,anchor=north] at (3.15,-6.25){realm lines in the metaphor: measurement line $=$ laboratory, system line $=$ habitat, organ line $=$ the organs connected by the blood};
 \end{tikzpicture}
-\caption{Carrier stages and interface surfaces: the three-valued admission matrix of the seven stamp interfaces over the four carrier stages planner, CacheEngineBuilder (CEB), tier binary, and hybrid tier binary (28 cells; green $=$ mandatory, grey $=$ forbidden; the cell organ line/CEB is the static barrier \enquote{the CEB carries no organ axes}) and beneath it the interface surfaces per stage --- surface~1 genus-subclass interface (runtime), surface~2 stamp (compile time, ABI-stable), surface~3 measurement cut-through. The configuration travels from the XML via planner and CEB to the tier binary; no stage passes through layers, each contains its layer compiled in.}\label{fig:traeger-flaechen}
+\caption{Carrier stages and interface surfaces: the three-valued admission matrix of the seven stamp interfaces over the four carrier stages planner, CacheEngineBuilder (CEB), tier binary, and hybrid tier binary (28 cells; green $=$ mandatory, grey $=$ forbidden; the cell organ line/CEB is the static barrier \enquote{the CEB carries no organ axes}) and beneath it the interface surfaces per stage --- surface~1 genus interface (runtime), surface~2 stamp (compile time, ABI-stable), surface~3 measurement cut-through. The configuration travels from the XML via planner and CEB to the tier binary; no stage passes through layers, each contains its layer compiled in.}\label{fig:traeger-flaechen}
 \end{figure}
 
 Across the carrier stages runs a \emph{run chain} of four work modes, which is registered in the
 measurement realm as a sub-axis and is traversed cumulatively in fixed order:
 \emph{build} builds the binaries and does not measure; \emph{measure} is the deterministic
-single-thread measurement run whose result fills the measurement-value repository; \emph{compare} reads the measurement-value repository
+single-thread measurement run whose result fills the measurement store; \emph{compare} reads the measurement store
 with options of its own and computes which tier binary or hybrid recombination must, according to the measurement, be the
 best; \emph{release} generates from that the fully optimized binary without measurement instrumentation
 and re-measures its wall clock. On the hybrid level the same chain repeats synchronously
 (Figure~\ref{fig:modi-kette}). There is no debug state: \texttt{--debug} is a switch of
-the planner shell for the wiring check --- a flag, not a work mode. Implementation state: the
+the planner shell for the wiring check --- a flag, not a work mode. Implementation status: the
 four modes are selectable and validatable and take effect on the build of the binaries; the mode-specific procedure
 of compare (replay comparison instead of measuring) and release (generation of the optimal binary from the
 measured values) is envisioned but not implemented --- compare and release are
@@ -1013,8 +1013,8 @@ selectable, validatable labels with release-equivalent build semantics.
   lab/.style={font=\scriptsize,text=gray,anchor=east,align=right}]
   \node[lab] at (-1.55,0){tier level\\{\tiny CEB $\to$ tier binary}};
   \node[built] (b) at (0,0){\textbf{build}\\builds, does not measure};
-  \node[built] (m) at (3.1,0){\textbf{measure}\\1 thread, deterministic, fills the repository};
-  \node[plan] (c) at (6.2,0){\textbf{compare}\\reads the repository, computes the best binary};
+  \node[built] (m) at (3.1,0){\textbf{measure}\\1 thread, deterministic, fills the store};
+  \node[plan] (c) at (6.2,0){\textbf{compare}\\reads the store, computes the best binary};
   \node[plan] (r) at (9.3,0){\textbf{release}\\optimal binary without measurement sensors, wall clock re-measured};
   \draw[->] (b)--(m); \draw[->] (m)--(c); \draw[->] (c)--(r);
   \node[lab] at (-1.55,-2.0){hybrid level\\{\tiny repeated synchronously}};
@@ -1026,7 +1026,7 @@ selectable, validatable labels with release-equivalent build semantics.
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
   \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug} is a flag of the planner shell, not a mode.};
 \end{tikzpicture}
-\caption{The run chain of the four work modes build $\to$ measure $\to$ compare $\to$ release as a registered sub-axis of the measurement realm, cumulative in this order and repeated synchronously on the hybrid level; compare reads the measurement-value repository and computes the best binary or recombination, release generates the fully optimized binary without measurement sensors and re-measures its wall clock. A debug state does not exist. The assignment to the operating target pictures measurement, evaluation, working, and hybrid mode is given by Section~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
+\caption{The run chain of the four work modes build $\to$ measure $\to$ compare $\to$ release as a registered sub-axis of the measurement realm, cumulative in this order and repeated synchronously on the hybrid level; compare reads the measurement store and computes the best binary or recombination, release generates the fully optimized binary without measurement sensors and re-measures its wall clock. A debug state does not exist. The assignment to the operating target pictures measurement, evaluation, working, and hybrid mode is given by Section~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
 
 \subsection{Design Patterns and Compile-Time Patterns}\label{sec:anatomy-patterns}
@@ -1080,7 +1080,7 @@ and in the organ axes are \emph{Singleton}, \emph{Flyweight}, and \emph{Bridge}:
 use Meyers singletons (the one instance as a function-local static
 object)~\cite{meyers2005effective}, the catalogue generation flyweight tables per axis, and
 \enquote{Bridge} occurs in the code only as a colloquial designation for connecting pieces ---
-in comments on ABI adapters of the genus subclasses, platform probe, code generation, permutation commands,
+in comments on ABI adapters of the genera, platform probe, code generation, permutation commands,
 CMake lists, and comparison pipeline, for the CI bridge jobs of the planner, and the microarchitecture
 Sandy Bridge as well as in a version constant of the cache-line seam ---, not as a pattern in the sense of the
 catalogue. The \emph{Command} pattern
@@ -1126,7 +1126,7 @@ and prepares them into tables and diagrams.\ \emph{E3} is the
 permutation B\textsuperscript{+}-tree: it unfolds the declared assignment into the experiment tree, where
 the compile-static axes determine the identity of the binary to be built and the dynamic
 axes span the runtime dimension.\ \emph{E2} are the tier binaries themselves: per permutation one
-standalone binary loaded across the ABI-stable interface (level~5 of the genus hierarchy,
+standalone binary loaded across the ABI-stable interface (level~5 of the family hierarchy,
 Figure~\ref{fig:genera}).\ \emph{E1} is the runtime configuration --- the most precise
 detail layer, in which the dynamic sub-axis parameters are varied on the already-loaded binary.\ \emph{E0}, finally, is the infrastructure (build, tooling, and platform substrate); its
 completion forms the last step of the order. The E identifiers are a concept ordering of the pipeline, not a
@@ -1178,11 +1178,11 @@ Section~\ref{sec:impl-contracts}.
 
 The E-layers are expressly to be distinguished from the three-level model (Section~\ref{sec:anatomy-levels}),
 however similar both may look at first glance: the three-level model is the
-\emph{anatomy view} --- it orders \emph{one} living being from the genus through the genus subclass to the
+\emph{anatomy view} --- it orders \emph{one} living being from the family through the genus to the
 organs and thus describes the structure of the measured. The E-layers are the \emph{pipeline view}
 --- they order the path of an experiment from the definition through tree, binary, and runtime back to the
 evaluation and thus describe the process of measuring. Both views are orthogonal to each other:
-the same living being that anatomically decomposes into genus, genus subclass, and organs is \emph{configured}
+the same living being that anatomically decomposes into family, genus, and organs is \emph{configured}
 through the layers --- its axis assignment travels from the XML via the tree into the
 build order, while each carrier stage contains its layer compiled in fixedly
 (Section~\ref{sec:anatomy-levels}). Now that it is settled what is composed and in which
@@ -1192,7 +1192,7 @@ composed can be measured fairly.
 \section{The Measurement System}\label{sec:measurement-system}
 To compare structurally different search algorithms \emph{fairly}, the thesis maps them all
 onto a single, well-understood interface: the C++ contract of the ordered map hull
-\texttt{std::map<Key,\,Value>} with point query (\texttt{find}), insertion/update (\texttt{insert},
+\texttt{std::map<Key,\,Value>} with exact lookup (\texttt{find}), insertion/update (\texttt{insert},
 \texttt{emplace}), deletion (\texttt{erase}), and order-based navigation
 (\texttt{lower\_bound}/\texttt{upper\_bound}, range iteration)~\cite{iso_cpp}. The axes describe the
 \emph{inner} behaviour behind this fixed interface, so that the comparison of two conformant
@@ -1201,13 +1201,13 @@ onto a single, well-understood interface: the C++ contract of the ordered map hu
 container comparison case, to check whether an axis composite also satisfies the container and not only the
 search semantics. Behind the fixed outer interface the system distinguishes several \emph{levels
 of dynamics} that determine \emph{when} an axis decision is made: the topmost split of
-compile time versus run time; the genus subclass, which occupies only a subset of the axes; the axis algorithms
+compile time versus run time; the genus, which occupies only a subset of the axes; the axis algorithms
 compiled into a binary at compile time (static recombination); the
 dynamic sub-axes, whose runtime parameters --- the registered dynamic dimensions
 prefetch distance, pool budget, batch size, inline threshold, thread count, and workload --- are varied without
 recompilation; and the static sub-axes as a compile-time
 choice among partial algorithms of differing complexity. Therein lies the structure of every axis
-that sub-question FF3.b (Section~\ref{sec:rqs}) addresses: the \emph{main axis} is the
+that sub-question RQ3.b (Section~\ref{sec:rqs}) addresses: the \emph{main axis} is the
 compile-time-fixed choice --- for organ axes a segment of the \texttt{binary\_id}, for
 system axes a stamp entry together with build version tag ---, the \emph{sub-axes} are its
 refinement, dynamically as runtime-variable parameters that the measurement registry carries as dynamic
@@ -1225,20 +1225,20 @@ design-space enumeration of the Data Calculator and classical
 runtime-variable axis levels together; an established name for this
 grading is not documented in the literature reviewed (cf.\ Section~\ref{sec:anatomy-patterns}).
 
-The container genus subclasses are formed from the same axis pool as the search algorithms and are no
+The container genera are formed from the same axis pool as the search algorithms and are no
 standard containers --- out of necessity, not convenience: only thus do the axes permitted in the compilate of a
 tier binary remain controllable, only thus does the micro measurement reproduce the same runtime on every
 run, and only thus do the properties of \texttt{SearchAlgorithm} and container that
 resemble each other remain seamlessly comparable over a uniform interface; with the standard containers of the
-C++ library this control would be lost. The shared core of the container genus consists of
-identity, axis observation, and size (Section~\ref{sec:anatomy-metaphor}); the genus subclasses Set, Sequence,
+C++ library this control would be lost. The shared core of the container family consists of
+identity, axis observation, and size (Section~\ref{sec:anatomy-metaphor}); the genera Set, Sequence,
 Adapter, and View are implemented. The hulls \texttt{std::map} (\texttt{SearchAlgorithm}) and
 \texttt{std::vector} (container) are to be carried out completely in the implementation; the measurement
 concentrates on the required interface functions, the implementation of all functions is
 envisioned. The order-based and iterative operations --- \texttt{find} is a
 member function of the \texttt{std::map} contract~\cite{iso_cpp}, range searches are not ---
-are bundled by a library of its own over the iterators of the genus-subclass interfaces, which covers all Cartesian products
-of the axes equally at compile time; this genus-subclass iterator library is not implemented.
+are bundled by a library of its own over the iterators of the genus interfaces, which covers all Cartesian products
+of the axes equally at compile time; this genus iterator library is not implemented.
 
 These building blocks are only as meaningful as their measurement. Scientific measurement is subject to
 established quality criteria~\cite{hoefler2015benchmarking}: \emph{reproducibility} (fixed seeds,
@@ -1274,14 +1274,14 @@ concrete technologies in Section~\ref{sec:sota-instances}.
 The measurement-tooling main axis spans three \emph{measurement levels}, in exactly this
 and no other order: \emph{wallclock} (w) --- the wall clock of the overall runs in the
 CacheEngineBuilder over the load frameworks; \emph{macro} (ma) --- the time of the
-genus-subclass interface functions of the tier binary; \emph{micro} (mi) --- the time and the success parameters per
+genus interface functions of the tier binary; \emph{micro} (mi) --- the time and the success parameters per
 axis interface. Subsets of the three levels are permitted per stage, every other order is
 syntactically wrong; w/ma/mi is the registered alias. Every interface call is measured from beginning to end
 for its \emph{success parameters} and its overall runtime; the measuring instrument is the
 measurement checkpoint (\texttt{checkpoint\_measure}), which collects the axis-specific
 success parameters in the mi layers, and from the ma level on all parameters including the PMC counters
 are merged (full join of the mi success parameters). A measurement channel is always addressed via its path axis
-$\to$ genus subclass $\to$ category, never via a free name. Three points are not
+$\to$ genus $\to$ category, never via a free name. Three points are not
 implemented at this point: the catalogue of the success parameters per axis (subject of future work), the
 attachment of the checkpoint to the measurement loop, and the collector mechanics that
 gathers the parameters.
@@ -1291,12 +1291,12 @@ Within these definitional classes the measurement system answers the categorizat
 question in the introduction (Section~\ref{sec:rqs}): the axes of the design space separate
 along the three concerns named there --- the measuring itself, the build and target platform, the
 measured --- into \emph{three} axis categories, which are developed in the following as standalone \emph{realms}
-with one class root each, one offer catalogue each, and one stamp line each
+with one class root each, one offering catalogue each, and one stamp line each
 (Section~\ref{sec:stamp-model}). Binding is the canonical overall order
 of all main axes, and in it the realms are presented here: first the measurement tooling, then the
 three system axes in their fixed order, then the organ slots T0--T17. Two terms are anticipated
 here: every tier binary possesses an identity \emph{stamp} --- one line per realm plus a
-fingerprint --- and is stored under this fingerprint in the \emph{repository}, the stock of binaries
+fingerprint --- and is stored under this fingerprint in the \emph{store}, the stock of binaries
 and measured values from which the apparatus recognizes what exists instead of building or measuring it anew
 (Sections~\ref{sec:stamp-model} and~\ref{sec:lager}). This triad is the second shape of the
 separability problem: not only the design decisions among one another, but also the measured, the
@@ -1334,13 +1334,13 @@ exclusively the collecting hub of the hardware meta axes (SIMD/vector extensions
 external accelerators), and the three are bundled by the command wrapper
 \texttt{build\_target\_complex} (Section~\ref{sec:complex-axis}). In the anatomy metaphor the
 system axes are not another organ but the \emph{habitat} of the animal: always present as soon as
-measurement takes place, belonging to no genus --- and an animal is the better, the more precisely it is adapted to
+measurement takes place, belonging to no family --- and an animal is the better, the more precisely it is adapted to
 it. From this follow three invariants. First, system axes never touch the binary identity
 (in the registry: \texttt{binary\_id} $=$ \texttt{never}) --- no measurement instrument and no platform quantity
 changes \emph{what} is built in terms of organs; conversely, the effects of the organ axes must never be blended with the
 effects of the platform and the measurement instruments. Second, they are nevertheless
 permutable: the planner releases which system-axis assignments the CacheEngineBuilder builds ---
-this is the release of a target platform for building, which sub-question FF1.b (Section~\ref{sec:rqs})
+this is the release of a target platform for building, which sub-question RQ1.b (Section~\ref{sec:rqs})
 presupposes ---, and
 the build space of the CEB permutes system and organ axes together into tier binaries; the
 system sub-axes permute as well --- the scheduling with its five dimensions on the wrapper of the target ISA
@@ -1350,7 +1350,7 @@ such as optimization level and SIMD extension therefore multiply only the \emph{
 appear in the build version tag of the binary and in the toolchain member of the fingerprint
 (Section~\ref{sec:stamp-model}) ---, never the organ permutation space.
 
-The \emph{organ axes} are the \emph{measured}: organs of the living being, part of the genera,
+The \emph{organ axes} are the \emph{measured}: organs of the living being, part of the families,
 permutable --- every assignment changes the identity of the tier binary. Canonically there are
 \emph{eighteen} organ main axes in fixed slot order T0--T17
 (Table~\ref{tab:axes-overview}); the T~numbers denote the slots of the composition, not an
@@ -1363,9 +1363,9 @@ and runtime implementation of the main and sub-axes, M2 the literal classificati
 carried under their term --- in the code the registry line ---, M3 the
 meta-meta axes; the assignment of M3 is set, the cut between M2 and M1 is a reading)
 meta-meta is the topmost stage M3; in the stamp the meta-meta level of an entry is its bracket depth --- a main axis
-is bracketless, a meta-meta hangs as a bracket appendix on its realm line
+is bracketless, a meta-meta hangs as a bracket appendage on its realm line
 (Section~\ref{sec:stamp-model}) ---, and the bit encoding of this level in the entry is described by
-Section~\ref{sec:impl-system-axes} ---, the disk I/O \texttt{disk\_io}: it stamps in the bracket appendix of the organ line,
+Section~\ref{sec:impl-system-axes} ---, the disk I/O \texttt{disk\_io}: it stamps in the bracket appendage of the organ line,
 does not touch the \texttt{binary\_id}, takes effect only with a disk-writeback target, and is
 disabled; in the golden reference catalogue its appendix remains empty.
 
@@ -1373,7 +1373,7 @@ Conceptually the triad has two realm roots: the system realm is rooted at the
 \texttt{CacheEngineBuilder}, which knows the platform and builds the tier binaries; the measurement realm
 is rooted at the experiment \emph{planner}, which resolves the experiments from the XML description
 (Section~\ref{sec:mess-chain}). Each of the three categories thus possesses its own abstract
-class root and its own offer catalogue (three registry XML); the code shape of these roots
+class root and its own offering catalogue (three registry XML); the code shape of these roots
 is developed in Section~\ref{sec:impl-system-axes}.
 
 The assignment of the further quantities is unambiguous: the compiler is a sub-axis group of the
@@ -1442,7 +1442,7 @@ measures there with the counter set belonging to the core kind; unlike \texttt{P
 \texttt{ECoresOnly} it does not fix the core kind for the whole run, unlike \texttt{None}
 it does not run unpinned.}. The cache-line-awareness measurement presupposes the HybridAware mode, because
 cache-line effects otherwise cannot be measured deliberately at specific hybrid cores; the mode
-is therefore a mandatory constituent of the measurement model, not an option. Implementation state: the
+is therefore a mandatory constituent of the measurement model, not an option. Implementation status: the
 pinning actuator is implemented; the attachment of the core modes to the run profile --- for prod2, the Intel
 Core i9-12900K (Alder Lake) with P- and E-cores --- is missing.
 \begin{figure}[htbp]\centering
@@ -1540,7 +1540,7 @@ The \emph{system line} holds the three system main axes; as their version they c
 extension, and further build control quantities, in which an empty member simply produces no segment
 ---, because a platform axis has no algorithm version. The \emph{measurement line} carries the
 set of compiled-in measurement toolings as bracketless segments and appends the load framework ---
-the meta-meta main axis of the measurement realm --- as a bracket appendix at its \emph{end} (pattern
+the meta-meta main axis of the measurement realm --- as a bracket appendage at its \emph{end} (pattern
 \texttt{measurement\_tooling=wallclock@1.0.0.c;\allowbreak{}[load\_framework=ycsb@1.0.0.c]}); an
 \emph{empty} measurement line is thereby an explicitly declared statement --- no measurement tooling compiled in --- and
 remains empty even without this appendix. A
@@ -1558,13 +1558,13 @@ this name level that the hybrid and full-join states remain distinguishable at t
 mixed builds therefore never possess organ segments of the same name.
 
 The stamp is closed per carrier stage by a \emph{fingerprint}; the stamp thereby takes on, besides the
-identity, the roles of cache, repository, and recognition key as well as classification. The tier binary carries a
+identity, the roles of cache, store, and recognition key as well as classification. The tier binary carries a
 SHA-512 over a preimage of eleven members in fixed order: the format identifier
 (\texttt{fingerprint\_format=6}), the measurement, system, and organ line in this order, the
 sub-axis value set, the toolchain member, the enabled sets of the build axes, the
 overlay source hash, the actually effective measurement-gate state of the translation unit, the
 hybrid composite line, and the base of the build version; on this one comparable value hangs the
-recognition of an already built permutation in the repository (Section~\ref{sec:lager}), and the
+recognition of an already built permutation in the store (Section~\ref{sec:lager}), and the
 format identifier as the first member leads, on every layout evolution, deterministically to a mismatch
 instead of a silent collision. The planner carries a SHA-256 over its version, the target ISA, and the operating system;
 the CacheEngineBuilder carries a SHA-512 as the provenance of its compiled-in measurement choice, which is
@@ -1572,12 +1572,12 @@ expressly not a reuse criterion, because it deliberately does not contain toolch
 Measured \emph{values} --- say, a collected RAM rate --- never appear in stamp or
 \texttt{binary\_id}: what is stamped is the compile-time platform \emph{class}, never a measured value
 (Section~\ref{sec:hw-probe}).
-\subsection{The Repository: Stocks under Stamp Keys}\label{sec:lager}
-The \emph{repository} is the persistent stock of the apparatus, in which what is built and what is measured lies
-under stamp keys (Figure~\ref{fig:lager-bestaende}). The repository tree is organized by genus,
-genus subclass, and realm --- \texttt{gattung=} $\to$ \texttt{genus=} $\to$ \texttt{realm=}
-(\texttt{binaries} or \texttt{messdaten}) ---, and the hybrid genus is sorted into it like every other
-genus. Four stocks are fixed compile-statically in the key schema:
+\subsection{The Store: Stocks under Stamp Keys}\label{sec:lager}
+The \emph{store} is the persistent stock of the apparatus, in which what is built and what is measured lies
+under stamp keys (Figure~\ref{fig:lager-bestaende}). The store tree is organized by family,
+genus, and realm --- \texttt{gattung=} $\to$ \texttt{genus=} $\to$ \texttt{realm=}
+(\texttt{binaries} or \texttt{messdaten}) ---, and the hybrid family is sorted into it like every other
+family. Four stocks are fixed compile-statically in the key schema:
 stock~1 are the tier binaries, keyed by their SHA-512 fingerprint, the measurement cell bracketed
 beside it; stock~2 are the measured values, keyed by the fingerprint of the measured binary and
 the hardware identity of the measuring machine (a class property of CPU fabrication and
@@ -1585,20 +1585,20 @@ RAM pair, never the host name), the platform cell bracketed beside it --- a meas
 its own key; stock~3 are the synthesis batches, the synthesized measurement curves as
 files, keyed by machine, full stamp, and the reference to measurement level and channel; stock~4
 are the solutions, keyed by the canonicalized hash of the user XML, the machine, and the
-references to the participating stocks. Measurement is always switched on; in the repository only what is missing there
+references to the participating stocks. Measurement is always switched on; in the store only what is missing there
 is re-measured, and a permutation is recognized via its fingerprint instead of being built
 anew. Because the measurement-gate state is a fingerprint member, per permutation the binary with and
 the binary without measurement sensors lie side by side as two entries of stock~1 --- the precondition for a
 release without measurement sensors to be re-measured against the measured version
 (Section~\ref{sec:heuristics-modes}).
 
-Two consequences are properties of the repository, not of its implementation: an
+Two consequences are properties of the store, not of its implementation: an
 algorithm version change alters the organ line and thus the fingerprint, hence triggers the rebuild of the
-affected repository stack together with re-measurement; and because the hardware identity is part of the
+affected store stack together with re-measurement; and because the hardware identity is part of the
 measured-value key, every machine configuration has its own measured-value stock.
-Implementation state: stock~1 and~2 as well as the key schema of all four stocks are implemented; the
+Implementation status: stock~1 and~2 as well as the key schema of all four stocks are implemented; the
 mechanics of stock~3 and~4, the curve facet, the storage path of the hybrid tier, and the target selection
-via the XML form the full repository build-out and are not implemented.
+via the XML form the full store build-out and are not implemented.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\scriptsize,>=Stealth,thick,align=center,
   lvl/.style={draw,rounded corners,fill=blue!8,minimum width=2.6cm,minimum height=0.62cm},
@@ -1615,9 +1615,9 @@ via the XML form the full repository build-out and are not implemented.
   \node[plan] (b3) at (1.8,-4.0){\textbf{stock 3: synthesis batches}\\synthesized measurement curves as files\\key: machine $\times$ full stamp $\times$ measurement level/channel};
   \node[plan] (b4) at (5.4,-4.0){\textbf{stock 4: solutions}\\key: XML hash $\times$ machine $\times$ stock/stamp references};
   \draw[->] (r1)--(b1); \draw[->] (r2)--(b2); \draw[->,dashed] (r2)--(b3); \draw[->,dashed] (ge.east) -| (b4.north);
-  \node[font=\tiny,text=blue!60!black,align=center] at (0,-5.6){recognition via the fingerprint: never rebuild what lies there --- only re-measure what is missing\\green $=$ implemented (key and mechanics); dashed $=$ key schema implemented,\\mechanics $=$ full repository build-out, not implemented};
+  \node[font=\tiny,text=blue!60!black,align=center] at (0,-5.6){recognition via the fingerprint: never rebuild what lies there --- only re-measure what is missing\\green $=$ implemented (key and mechanics); dashed $=$ key schema implemented,\\mechanics $=$ full store build-out, not implemented};
 \end{tikzpicture}
-\caption{The repository: the repository tree is organized by genus, genus subclass, and realm; beneath lie four stocks under stamp keys --- stock~1 the tier binaries (SHA-512 fingerprint; the binary with and the one without measurement sensors are two entries, because the measurement-gate state is a fingerprint member), stock~2 the measured values (fingerprint of the binary plus hardware identity of the machine), stock~3 the synthesis batches with the synthesized measurement curves as files, and stock~4 the solutions per user XML\@. The apparatus recognizes what exists via the fingerprint and re-measures only what is missing.}\label{fig:lager-bestaende}
+\caption{The store: the store tree is organized by family, genus, and realm; beneath lie four stocks under stamp keys --- stock~1 the tier binaries (SHA-512 fingerprint; the binary with and the one without measurement sensors are two entries, because the measurement-gate state is a fingerprint member), stock~2 the measured values (fingerprint of the binary plus hardware identity of the machine), stock~3 the synthesis batches with the synthesized measurement curves as files, and stock~4 the solutions per user XML\@. The apparatus recognizes what exists via the fingerprint and re-measures only what is missing.}\label{fig:lager-bestaende}
 \end{figure}
 
 \subsection{Subsystems and the Chain from the XML to the Tier Binary}\label{sec:mess-chain}
@@ -1627,7 +1627,7 @@ procedures are to be carried out, while per realm a \emph{registry} catalogue ho
 exists --- the declarative configuration model of Section~\ref{sec:software-means},
 modelled on the Java POM\@: a declarative manifest that is resolved against a repository;
 an unregistered reference is a hard validation error, not a silent omission. The
-experiment \emph{planner} resolves the XML against the three offer catalogues and builds, per
+experiment \emph{planner} resolves the XML against the three offering catalogues and builds, per
 target platform and measurement task, \emph{one} \texttt{CacheEngineBuilder} (CEB), into which the chosen
 measurement axes are compiled; this builder orchestrates with them the build of the tier binaries
 and stamps them with its platform (Section~\ref{sec:stamp-model}); the tier binary,
@@ -1773,7 +1773,7 @@ collected in three granularities that correspond to the three measurement levels
 over its \emph{axis interface} --- the set of functions that \emph{all} algorithms of this axis must
 supply (every allocator provides memory, whichever one it is): the axis-specific
 main properties, measured internally. The axis is thereby \emph{not} an interface function of the
-search algorithm; its genus interface functions \emph{use} the axis interfaces ---
+search algorithm; its family interface functions \emph{use} the axis interfaces ---
 just as axis algorithms may use foreign axis interfaces, since containers, say, are
 needed everywhere.\ \emph{Macro-benchmarking} (level macro) measures the individual
 \texttt{std::map} interface operations (insertion, point and range lookup, update,
@@ -1781,7 +1781,7 @@ deletion) against example loads, and \emph{overall benchmarking} (level wallcloc
 over the load frameworks) runs the YCSB load profiles over every recombination --- w/ma/mi, in this
 order. As a counter-check to the internal micro measurement, the apparatus additionally measures three
 \emph{wallclock levels}: the wallclock of the axis interfaces under each algorithm, the
-wallclock of the genus interface functions, and the wallclock of a test load from the
+wallclock of the family interface functions, and the wallclock of a test load from the
 load frameworks. The architectural obligation of this cut is that all axis algorithms
 use exclusively axis interfaces instead of generic operating-system calls --- compiled in inline by
 metaprogramming, without \texttt{std::variant} ---, so that the micro measurement of
@@ -1904,7 +1904,7 @@ child document but an ordered tree of CSV files generated from the workbook with
 sub-axis sweeps) ---, ranks per
 interface function and metric over the valid two-phase rows (median, nearest rank), determines with
 competing target quantities the Pareto front of the non-dominated candidates instead of a single winner,
-resolves the \texttt{binary\_id} to the binary in the repository, and delivers binary, version sidecar, and manifest
+resolves the \texttt{binary\_id} to the binary in the store, and delivers binary, version sidecar, and manifest
 as a standalone artifact. The heuristic curves arise as natural cubic splines over the
 sampling points per axis and $x$-dimension; a decision lambda tree reads the break-even thresholds
 from the spline intersections and chooses at a query coordinate backwards the leading binary ---
@@ -1947,7 +1947,7 @@ hybrid mode is thereby an extended, optional construct: the core of the thesis i
 and generating of the tier binaries together with break-even analysis before every application of the hybrid, and the thesis
 does not go in the chain beyond the comparison stage of the hybrid level (\texttt{hybrid-compare}) after the
 delivery stage of the single binary (\texttt{single-release}). To be distinguished from these four
-operating modes is the \emph{paper isolation mode} asked for in sub-question FF2.c (Section~\ref{sec:rqs}):
+operating modes is the \emph{paper isolation mode} asked for in sub-question RQ2.c (Section~\ref{sec:rqs}):
 an operating mode that offers the design constituents of exactly one
 publication as an \emph{axis set} --- the closed axis set of this one reference design,
 with measurement and system axes still free-standing --- in isolation, in order to measure the publication
@@ -1960,7 +1960,7 @@ admitted load-profile frameworks and workloads. The \emph{evaluation mode} conde
 measurements: from them emerge minimal strands of the permutations of all properties against one another
 for certain \emph{workload clusters} --- for groups of similar loads, the small set of
 axis compositions that dominates them remains. For this, workloads are clustered according to sequences,
-as similar as possible, of equal access patterns on the genus and genus-subclass interfaces of the tier binaries: every
+as similar as possible, of equal access patterns on the family and genus interfaces of the tier binaries: every
 load framework runs through its planned strategy once dry, and sequence, frequency, and
 requirements of its interface calls are noted --- what a run of the framework statically
 gives of itself. From this arises per profile a directed transition graph of the interface accesses with
@@ -1975,12 +1975,12 @@ fourth evaluation component of the hybrid tier (Section~\ref{sec:heuristics-curv
 
 The \emph{working mode} is the production goal: the builder interface keeps all tier binaries relevant for the currently
 stochastically frequent workload load and interface function preloaded in
-main memory and switches internally the tier binary with its specifically optimal
+main memory and internally switches the tier binary with its specifically optimal
 axis permutations at the ABI-stable interface --- the same binary-switching mechanism that the
-measurement mode uses, only load-driven instead of measurement-driven. Level-correctly the
-compile-time principle remains preserved: there is no runtime switch \emph{inside} the tier --- the binaries
+measurement mode uses, only load-driven instead of measurement-driven. In this, the
+compile-time principle remains preserved at the correct level: there is no runtime switch \emph{inside} the tier --- the binaries
 themselves remain compile-time-permuted; switching happens \emph{between} preloaded binaries at
-the deliberate ABI boundary. The probe dock of the genus (Section~\ref{sec:anatomy-levels}) is called in this
+the deliberate ABI boundary. The probe dock of the family (Section~\ref{sec:anatomy-levels}) is called in this
 mode the \emph{working dock}: the same interface through which the measurement mode tests now delivers the
 productive answers. The dock layer of this switch is implemented --- the dock contracts, the probe dock,
 the dock factory as the sole construction site, the dock field with attachment and detachment, the parser
@@ -2004,19 +2004,19 @@ tier binaries and then passes the request through to the chosen tier binary. Sta
 are not implemented.
 
 The \emph{hybrid mode}, finally --- the goal of this thesis --- combines working mode and measurement. Its
-centrepiece is that the heuristic adapter is a \emph{genus} of its own with its own genus subclass --- the fourth
-genus \texttt{HeuristikAdapter} with the reroute genus subclass \texttt{FunctionInterfaceReroute}
-(Section~\ref{sec:anatomy-levels}): it adopts by metaprogramming the genus and
-genus-subclass interfaces of its tier binaries, is itself compiled into a tier binary, and docks at the
+centrepiece is that the heuristic adapter is a \emph{family} of its own with its own genus --- the fourth
+family \texttt{HeuristikAdapter} with the reroute genus \texttt{FunctionInterfaceReroute}
+(Section~\ref{sec:anatomy-levels}): it adopts by metaprogramming the family and
+genus interfaces of its tier binaries, is itself compiled into a tier binary, and docks at the
 probe dock of the builder like every single tier; it passes commands via the
 \emph{Command} pattern~\cite{gamma1994patterns} on to the single tier binaries statically assigned to it.
 To the outside it is indistinguishable from a single binary, because its binary exports the same
-mandatory symbols as every other and reports as genus subclass the inherited target genus subclass --- classification
+mandatory symbols as every other and reports as genus the inherited target genus --- classification
 (the kind of the reroute) and pass-through lie on separate levels. The recombination of the
 heuristic tier binaries to be used is thereby itself permutable against the existing single
 tier binaries; the heuristic adapter can therefore use the measurement function curves for estimates and
 compile an optimal multidimensional recombination that is unambiguously usable as a search-algorithm hull
-through its ABI-stable genus interface --- to the outside a \emph{virtual whole
+through its ABI-stable family interface --- to the outside a \emph{virtual whole
 tier binary}. At the same time the hybrid mode measures along: over the optimized
 recombination the combined wall-clock time as well as macro- and micro-benchmarks are logged per measurement command
 across all tier binaries and operations.
@@ -2026,7 +2026,7 @@ heuristic tier binary is measured anew --- its wall-clock behaviour in compariso
 single binaries and against the reconstructed paper algorithms decides whether the heuristic
 recombination reaches the performance predicted by the curves. The curves that the counter-proof checks are the
 spline curves per axis and $x$-dimension with their break-even intersections
-(Section~\ref{sec:heuristics-loop}); in the stage compare it is computed from the measurement-value repository which
+(Section~\ref{sec:heuristics-loop}); in the stage compare it is computed from the measurement store which
 tier binary or hybrid recombination must, according to the measurement, be the best, and in the stage release
 the maximally optimized compiled binary without compiled-in measurement sensors is measured through once more ---
 whether its wall clock without measurement insight even undercuts the previously measured total time. The
@@ -2053,7 +2053,7 @@ runtime-dynamically, so that every axis receives a complete overview of its
 properties and individual measurements. Taken together over all permutations there thus arises per
 tier binary a multidimensional measurement database, from which the heuristic curves of the loop
 (Section~\ref{sec:heuristics-loop}) are read; the synthesized curves are kept as files in the
-repository (Section~\ref{sec:lager}). The cardinality of every dimension of this
+store (Section~\ref{sec:lager}). The cardinality of every dimension of this
 type system is to be organized strategically into classes and hierarchies: design-fixed constants (say the
 eighteen organ axes), registered, dynamically growing quantities (the measurement categories,
 Section~\ref{sec:axis-triad}), profile-bound products (what an experiment profile admits as assignments),
@@ -2088,7 +2088,7 @@ of the paper comparison over the Pareto selection.
 
 Finally, the hybrid mode needs a control of the measurement error that the measurement instances themselves
 introduce --- observers cost time. The three measurement facilities --- the wall clock in the
-CacheEngineBuilder, the genus-subclass interface time of the tier binary (macro), and the axis interface time
+CacheEngineBuilder, the genus interface time of the tier binary (macro), and the axis interface time
 (micro) --- can be built as a three-phase contract construction between CEB and tier binary in all
 arrangements: with three facilities $3! = 6$ probe-dock constellations, which only need to be measured at the tier binary,
 with an interposed hybrid tier binary $4! = 24$ constellations of the chain

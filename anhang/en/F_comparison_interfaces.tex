@@ -17,11 +17,11 @@ parameters to the hull: one template parameter demands all function interfaces o
 \texttt{std::map<K,\,std::tuple<\ldots>>} (Section~\ref{sec:impl-architecture}). The cache engine
 derives the types from the same rule --- with one parameter the key is assigned implicitly as a
 monotonically counted 64-bit value, with $N>2$ the value becomes the tuple ---; its two contract
-hulls are implemented as separate genus adapters: the Map genus via the functional drive of the
+hulls are implemented as separate family adapters: the Map family via the functional drive of the
 module boundary with the five operations \texttt{tier\_insert}, \texttt{tier\_lookup},
-\texttt{tier\_erase}, \texttt{tier\_clear}, and \texttt{tier\_size}, the Sequence genus via the
+\texttt{tier\_erase}, \texttt{tier\_clear}, and \texttt{tier\_size}, the Sequence family via the
 sequence drive with \texttt{tier\_push\_back}, \texttt{tier\_at}, \texttt{tier\_size}, and
-\texttt{tier\_clear}; an adapter cutting across the genus is ruled out by the type system. The case
+\texttt{tier\_clear}; an adapter cutting across the family is ruled out by the type system. The case
 $N>2$ is type derivation without an adapter of its own; the module boundary carries key and value
 throughout as 64-bit values. The shared functions (iteration,
 \texttt{size}/\texttt{empty}/\texttt{clear}, \texttt{swap}, \texttt{get\_allocator}) have the same
@@ -52,9 +52,9 @@ of the cache engine; it records, per standard function, the hop path and the sta
 boundary.
 
 \emph{Conformance subset.} Before each measurement, the conformance gate
-(Section~\ref{sec:measurement-system}) checks, per genus, a core subset of the hull operations
-against an oracle of the standard library --- \texttt{std::map} for the Map genus,
-\texttt{std::deque} for the Sequence genus ---, so that only comparable things are compared; the
+(Section~\ref{sec:measurement-system}) checks, per family, a core subset of the hull operations
+against an oracle of the standard library --- \texttt{std::map} for the Map family,
+\texttt{std::deque} for the Sequence family ---, so that only comparable things are compared; the
 subset is marked with $\dagger$ in both tables.
 
 \section{\texttt{std::map} (ordered associative)}\label{asec:if-map}
@@ -68,11 +68,11 @@ reference~\cite{cppreference_map}. The seventeen marked operations are exactly t
 the gate's twelve core check blocks: no marked operation remains unchecked, no checked operation is
 unmarked (\texttt{size} is checked as well within the blocks, but belongs to the randomized core
 block and is therefore not marked). Four of the marked operations correspond directly to operations
-of the module boundary (\texttt{insert\_or\_assign} to the insert drive, \texttt{find} to the point
-query, \texttt{erase} and \texttt{clear} to their drives); \texttt{at}, \texttt{operator[]},
+of the module boundary (\texttt{insert\_or\_assign} to the insert drive, \texttt{find} to the exact
+lookup, \texttt{erase} and \texttt{clear} to their drives); \texttt{at}, \texttt{operator[]},
 \texttt{count}, \texttt{contains}, \texttt{empty} as well as \texttt{insert}, \texttt{emplace}, and
 \texttt{try\_emplace} are composed host-side --- \texttt{empty} from the size, the others from
-point query and insertion; the three non-overwriting forms run over one path and are set against
+exact lookup and insertion; the three non-overwriting forms run over one path and are set against
 three different oracle calls; \texttt{begin}/\texttt{end}, \texttt{lower\_bound},
 \texttt{upper\_bound}, and \texttt{equal\_range} are synthesized by the host in order via the
 additive scan capability of the module boundary, and if a loaded binary lacks it, the gate logs
@@ -174,7 +174,7 @@ reference~\cite{cppreference_vector}). All members are \texttt{constexpr} since
 C++20\footnote{Since C++20, all member functions of \texttt{std::vector} are \texttt{constexpr}; a
 \texttt{constexpr} object itself usually fails on the dynamic
 storage~\cite{dionne2019constexprvector}.}. A $\dagger$ marks the core operations that the
-conformance gate of the Sequence genus checks before each measurement against a
+conformance gate of the Sequence family checks before each measurement against a
 \texttt{std::deque} oracle (append, index access, size, clear; for these four operations the
 \texttt{deque} semantics coincide with those of \texttt{std::vector}): the sequence hull of this
 work offers exactly these four functions across the module boundary, and index access is checked
@@ -265,20 +265,20 @@ measurement hull of this work deliberately deviates from it in two places, becau
 conformance contract demands \texttt{noexcept} and a throwing hull counts as non-conformant:
 \texttt{at} delivers a status return instead of the exception (hit flag and output value at the
 module boundary, \texttt{std::optional} in the organ), and \texttt{operator[]} is not a call of its
-own at the module boundary but is composed host-side from point query and default insertion ---
+own at the module boundary but is composed host-side from exact lookup and default insertion ---
 with the ISO semantics (insertion on absence, no \texttt{out\_of\_range}), but without a reference
 return across the binary boundary; the write path runs via \texttt{insert\_or\_assign}. In the
 sequence hull, \texttt{operator[]} is moreover checked rather than undefined
 (Section~\ref{asec:if-vector}). For this thesis that is the central observation: all map accessors
-and modifiers of the hull rest on a single query primitive of the module boundary --- the point
-query, flanked by insertion and deletion ---; an axis implementation therefore only needs to
-provide a correct point query together with node linking, and the rest follows as a fixed
+and modifiers of the hull rest on a single query primitive of the module boundary --- the exact
+lookup, flanked by insertion and deletion ---; an axis implementation therefore only needs to
+provide a correct exact lookup together with node linking, and the rest follows as a fixed
 composition. The ordered operations --- \texttt{begin}/\texttt{end}, \texttt{lower\_bound},
 \texttt{upper\_bound}, \texttt{equal\_range} --- additionally require an ordered search and are
 therefore carried as a separate, additive capability of the module boundary; unordered axes
 satisfy the same hull without it and pay for the missing order with linear effort on ordered
 reading. Exactly this interchangeability is the object of the measurement
-(Section~\ref{sec:measurement-system}). The conformance gate checks, per genus, the core subset
+(Section~\ref{sec:measurement-system}). The conformance gate checks, per family, the core subset
 marked with $\dagger$ in Tables~\ref{tab:if-map} and~\ref{tab:if-vector}.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{3.1cm}@{}}
@@ -305,10 +305,10 @@ marked with $\dagger$ in Tables~\ref{tab:if-map} and~\ref{tab:if-vector}.
 \end{longtable}
 
 \noindent At the module boundary, the order of primitiveness of this table is reversed: the one
-insert drive of the Map genus carries the semantics of \texttt{insert\_or\_assign} --- insert or
+insert drive of the Map family carries the semantics of \texttt{insert\_or\_assign} --- insert or
 update, the return reports whether a new key arose ---, so that \texttt{insert\_or\_assign} is the
 pass-through and the non-overwriting forms \texttt{insert}, \texttt{emplace}, and
-\texttt{try\_emplace} are composed host-side as a point query followed by insertion only on a
+\texttt{try\_emplace} are composed host-side as an exact lookup followed by insertion only on a
 missing key: one path for three standard functions, which the gate sets against three oracle calls.
 The ISO contract carries it the other way round (\texttt{insert} as the basic form,
 \texttt{insert\_or\_assign} as the composition); both views are correct and describe different
@@ -322,7 +322,7 @@ semantics in the map, position/index semantics in the vector; \texttt{operator[]
 inserts in the map, but is an unchecked index access in the vector --- checked in the sequence
 hull of this work (Section~\ref{asec:if-vector}), composed host-side in the map hull of this work
 (see above). This separation is structurally enforced in the cache engine: the Map and Sequence
-genera have separate drive interfaces and separate oracles, and an adapter foreign to its genus is
+families have separate drive interfaces and separate oracles, and an adapter foreign to its family is
 ruled out by the type system. Which of these functions the module boundary provides, which the host
 composes, and which are not wired up is recorded, per function with its hop path, by the developer
 document named at the outset.
