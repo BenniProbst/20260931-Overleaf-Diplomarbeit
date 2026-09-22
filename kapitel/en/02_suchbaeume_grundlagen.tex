@@ -52,36 +52,71 @@ reduces the number of pointer indirections per search step.\ \emph{Digital} stru
 rather than by comparison, so that the search-path length depends on the key length and not on the
 number of keys: the \emph{trie}~\cite{delabriandais1959trie,fredkin1960trie} as the basic form, in which every root
 path spells out a key and common prefixes are shared, the
-path-compressed radix/PATRICIA trees~\cite{morrison1968patricia} that collapse sparse one-child chains,
+path-compressed radix/PATRICIA trees~\cite{morrison1968patricia}\footnote{PATRICIA
+(\emph{Practical Algorithm To Retrieve Information Coded in Alphanumeric}): Morrison's path-compressed
+binary trie whose inner nodes record only the bit position at which the keys of the respective subtree
+first differ~\cite{morrison1968patricia}.}, which collapse sparsely populated
+one-child chains,
 and the \emph{Adaptive Radix Tree}
-(ART)~\cite{leis2013art}, which adapts the node representation to the actual fanout and serves throughout
-this thesis as the reference design.
+(ART)~\cite{leis2013art}, which adapts the node representation to the actual fanout.
+ART serves this thesis as the reference design: its design decisions --- the node classes Node4, Node16,
+Node48, and Node256 graded by fanout, as well as the linear search within small nodes --- recur in
+Chapter~\ref{ch:measurement} as individually measurable partial decisions, whereas the ART tree as a
+whole appears as a probe and not as a structure measured alongside throughout.
 
 Beyond the tree-like methods, \emph{hashing} maps keys directly via a hash function and has no inherent
 order, which makes range queries expensive~\cite{knuth1998taocp3}; cuckoo hashing~\cite{pagh2004cuckoo},
 which unlike open addressing and chaining guarantees constant worst-case lookups, and tables such as
 SwissTable~\cite{abseil_swisstable}, which achieve high practical density thanks to SIMD group probing,
-stand alongside this work as a
-non-tree-like baseline.\ \emph{Spatial} structures (k-d tree~\cite{bentley1975kdtree},
+form the non-tree-like comparison class of the
+literature\@. \emph{Spatial} structures (k-d tree~\cite{bentley1975kdtree},
 quadtree~\cite{finkel1974quadtree}, R-tree~\cite{guttman1984rtree}) partition a multidimensional key
 space and lie outside the scope, as do the theoretical \enquote{exotics} --- the van Emde Boas
 tree~\cite{vanemdeboas1975} and the y-fast trie~\cite{willard1983yfast} with $O(\log\log u)$ over a
-universe of size~$u$, or the Fusion Tree~\cite{fredman1993fusion} that undercuts the comparison bound ---
-as well as the randomized skip list~\cite{pugh1990skiplist}, the flat, sorted array with binary or interpolation search~\cite{knuth1998taocp3} --- strictly speaking the single leaf
+universe of size~$u$, or the Fusion Tree~\cite{fredman1993fusion} that undercuts the comparison
+bound\@. The flat class comprises the randomized skip list~\cite{pugh1990skiplist}, the flat, sorted
+array with binary or interpolation search~\cite{knuth1998taocp3} --- strictly speaking the single leaf
 of a tree --- and the suffix array, which generalizes this layout on string keys into a space-saving
 full-text index and whose lightweight, memory-budgeted construction counts as a textbook example of
-algorithm engineering~\cite{manzini2002suffixarray}. This thesis concentrates on the
-tree-like structures of the comparison- and digital-based classes (Figure~\ref{fig:search-map}); as
-outwardly different as the classes appear, they share recurring, mutually separable partial decisions.
+algorithm engineering~\cite{manzini2002suffixarray}.
+
+The scope of this thesis is structured along this landscape in three stages. The objects of investigation
+are, first, the tree-like structures of the comparison- and digital-based classes
+(Figure~\ref{fig:search-map}) and with them the elementary search methods on sorted arrays, of which
+tree nodes consist: binary and k-ary search~\cite{knuth1998taocp3,schlegel2009kary}, interpolation
+search~\cite{perl1978interpolation}, the Eytzinger
+layout~\cite{khuong2017eytzinger}\footnote{Eytzinger layout: the implicit, pointer-free arrangement of a
+sorted array in the level order of a complete binary tree --- the children of the element at
+position~$i$ lie at positions $2i$ and $2i+1$ ---, so that the search path is computable without pointers
+and the memory accesses of the search become predictable for
+prefetching~\cite{khuong2017eytzinger}.} and the linear search within small nodes~\cite{leis2013art};
+the flat, sorted array thus does not lie outside the scope but is, as the node interior, its smallest
+building block. Second, approximate membership filters belong to the scope as upstream building
+blocks --- the Bloom filter~\cite{bloom1970}, the cuckoo filter~\cite{fan2014cuckoo}, the xor
+filter~\cite{graf2020xor}, and SuRF~\cite{zhang2018surf} as a range-capable filter; cuckoo hashing thus
+appears in this thesis not as a hash table but in its filter form. Third, further representatives ---
+the skip list, hash search, the binary search tree, the B-tree, the whole trees
+ART~\cite{leis2013art}, HOT~\cite{binna2018hot}, START~\cite{fent2020start},
+Wormhole~\cite{wu2019wormhole}, and SuRF~\cite{zhang2018surf}, as well as a scalar replica of the
+SwissTable --- are available as switchable building blocks that are not activated in the reference run;
+the SwissTable replica permits no measurement statement about the SIMD-based original. Outside the
+scope remain the spatial structures, the theoretical exotics, and the suffix array. As outwardly
+different as the classes appear, they share recurring, mutually separable partial decisions; which
+building blocks are actually measured in the reference run is stated in Chapter~\ref{ch:measurement}
+together with implementation status and source.
 
 Orthogonal to this search-algorithm view stands the established taxonomy of the \emph{containers} of the
 C++ standard library~\cite{iso_cpp}: sequence containers (\texttt{std::vector}) order by insertion
 position, ordered-associative ones (\texttt{std::map}, \texttt{std::set}) by key order, unordered ones
 (\texttt{std::unordered\_map}) map via a hash function. These standardized interface contracts form the
-common basis against which structurally different methods can be measured uniformly --- the ordered map
-as the common denominator of a contract shell for comparison- and digital-based search structures, the \texttt{std::vector} as
-the sequence view, and the hash table as the unordered counter-check; their placement in the conceptual
-framework of this thesis is developed in Chapter~\ref{ch:measurement}.
+common basis against which structurally different methods can be measured uniformly. This thesis rests
+on two of them as contract shells: on the ordered map as the common denominator of comparison- and
+digital-based search structures alike and on the \texttt{std::vector} as the sequence view; the hash
+table remains, as the unordered counter-check, the conceptual counterpole of the literature, but it is no
+contract shell of its own in this thesis --- its building blocks, where present, are subordinate to the
+ordered map shell and merely switchable (preceding paragraph). The placement of both shells in the
+conceptual framework of this thesis is developed in Chapter~\ref{ch:measurement}; their complete
+elaboration in the implementation is shown in Chapter~\ref{ch:impl}.
 
 All methods named so far are \emph{statically designed} structures: their inner organization is fixed
 before the first query arrives. An established line of research, by contrast, moves the design into run
@@ -107,7 +142,7 @@ transfers~\cite{aggarwal1988io}. Transferred to the cache hierarchy, a design is
 \emph{cache-aware} when it knows and explicitly uses the concrete parameters of the target platform
 --- block size, capacity; \emph{cache-conscious} has, since Chilimbi, Hill, and Larus, denoted the
 same attitude from the data structure's point of view: its layout is deliberately adapted to cache
-blocks through clustering, coloring, and compression~\cite{chilimbi1999layout}.
+blocks through clustering, colouring, and compression~\cite{chilimbi1999layout}.
 \emph{Cache-oblivious} is the counter-position of Frigo, Leiserson, Prokop, and Ramachandran: the
 algorithm knows no parameters at all; analysis takes place in the \emph{ideal-cache model} --- two
 levels, capacity~$Z$, line length~$L$, full associativity, optimal replacement ---, and an optimal
@@ -128,7 +163,7 @@ Section~\ref{sec:heuristics-basics}.
 \section{Hardware: Historical Adaptation to Search Performance}\label{sec:hardware-history}
 The performance of search structures has always been driven by hardware. We trace the historical advent of
 cache-near hardware --- cache hierarchy, cache line, address translation, coherence --- focusing on the
-\emph{static and compile-time-relevant} properties that later carry the abstraction in
+\emph{static and compile-time-relevant} properties that later support the abstraction in
 Section~\ref{sec:software-means}.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize, align=center]
@@ -148,12 +183,19 @@ per microarchitecture --- 64\,bytes on x86-64 and common ARM cores (such as Cort
 narrower 32\,bytes on older or embedded
 cores~\cite{hennessy2019architecture,intel_optimization,amd_sog}. Programs can
 \emph{read} it at runtime --- via \texttt{CPUID} (x86), \texttt{CTR\_EL0} (ARM), or \texttt{riscv\_hwprobe}
-(RISC-V\@; restricted, among other things to CBO block sizes)~\cite{arm_arm,intel_sdm} --- but not change
-it; the depth of the hierarchy also varies (simple
+(RISC-V\@; restricted, among other things CBO block
+sizes)~\cite{arm_arm,intel_sdm,linux_riscv_hwprobe}\footnote{\texttt{CTR\_EL0} is the \emph{Cache Type
+Register} of the ARM architecture, a system register that encodes, among other things, the smallest line
+size of the instruction and the data caches~\cite{arm_arm}; \texttt{riscv\_hwprobe} is the Linux system
+call through which a RISC-V program queries properties of the running core, among them the block sizes
+of the cache-block operations (CBO) for zeroing, managing, and prefetching cache
+blocks~\cite{linux_riscv_hwprobe}.} ---,
+but not change it; the depth of the hierarchy also varies (simple
 RISC-V cores such as the SiFive~U74 end at L2, some AMD processors bring a stacked 3D V-Cache L3). For a
 cache-line-aware layout,
-the line size determined per target platform is therefore an \emph{input to compilation}, not a fixed
-assumption. Moreover, the transfer of a line does not proceed strictly block-at-once: \emph{critical-word-first} delivers
+the line size determined per target platform is therefore an \emph{input parameter of compilation}, not
+a fixed assumption; how this input parameter is bound in this thesis is shown in
+Chapter~\ref{ch:measurement}. Moreover, the transfer of a line does not proceed strictly block-at-once: \emph{critical-word-first} delivers
 the requested word first, and DDR5 splits the memory channel into two independent 32-bit
 sub-channels~\cite{micron_ddr5}; non-temporal or write-combining stores additionally bypass the normal
 write-allocate path instead of pulling the affected cache line into the cache
@@ -170,7 +212,7 @@ classify misses into three classes (the \emph{3-C model}): \emph{compulsory} (fi
 line was never in the cache), \emph{capacity} (the working set exceeds the capacity), and
 \emph{conflict} (more hot lines fall onto one set than it has ways)~\cite{hill1989associativity};
 the textbook presentation adds \emph{coherence} misses as a fourth class in multi-core
-systems~\cite{hennessy2019architecture}. The classification is more than bookkeeping, since it
+systems~\cite{hennessy2019architecture}. The classification guides action, since it
 separates the countermeasures: compulsory misses are addressed by prefetching
 (Section~\ref{subsec:prefetching}), capacity misses by more compact layouts, and conflict misses
 arise precisely with the regular address patterns of large node arrays --- if hot elements lie
@@ -202,8 +244,12 @@ size, and Samuel et al.~\cite{samuel2005procaware} make the node processor-aware
 Tree~\cite{leis2013art} grades node size cache-line-orientedly with Node4/16/48/256, and Schmidt et
 al.~\cite{schmidt2025hbm} measure stride versus sequential accesses on high-bandwidth memory. As
 concrete layout options, the literature knows the dense and the cache-line-aligned array-of-structs,
-the column-oriented struct-of-arrays, the bit-packed LOUDS~\cite{jacobson1989louds}, and the SIMD-tiled
-AoSoA. The multi-level hierarchy itself is moreover the subject of software/hardware-cooperative
+the column-oriented struct-of-arrays, the bit-packed, succinct layout as used by LOUDS-based
+tries~\cite{jacobson1989louds} and SuRF~\cite{zhang2018surf}, and the SIMD-tiled
+AoSoA\footnote{AoSoA (\emph{Array of Structures of Arrays}): a hybrid layout that groups the records into
+tiles of fixed width and stores them field-wise within each tile, so that a SIMD register loads exactly
+one tile column; it combines the access locality of the array-of-structs with the vectorizability of the
+struct-of-arrays.}. The multi-level hierarchy itself is moreover the subject of software/hardware-cooperative
 prefetching methods such as the hierarchical instruction prefetcher for server applications of Zhang et
 al.~\cite{zhang2025hierarchical}, which enters this thesis as a prefetching instance and not as a data-structure-specific
 tree data prefetch.
@@ -246,8 +292,8 @@ interleaved so that the load chain of one fills the waiting time of the others -
 that recur as parameters in Section~\ref{subsec:cc-structures}.
 
 \subsection{Main Memory and Address Translation: DRAM, NUMA, and TLB}\label{subsec:memory-numa-tlb}
-Behind the last cache lies the DRAM main memory, whose characteristics the JEDEC standard fixes for
-the current generation DDR5 (JESD79-5)~\cite{jedec_jesd79_5}. Two quantities are frequently
+Behind the last cache lies the DRAM main memory, whose characteristics for the DDR5 generation are
+fixed by the JEDEC standard JESD79-5~\cite{jedec_jesd79_5}. Two quantities are frequently
 conflated: the \emph{data rate} in megatransfers per second (MT/s\@; two transfers per clock)
 measures the bandwidth of the interface, while the \emph{CAS latency} (CL) counts clock cycles
 until the first response of an opened row --- since the CL cycle count grows with the nominal rate,
@@ -264,7 +310,7 @@ the module.
 In multi-socket and chiplet systems, topology is added: with \emph{NUMA} (non-uniform memory
 access), each node owns local memory, and accesses to remote nodes cost noticeably more than local
 ones. By default the operating system places pages according to the \emph{first-touch} policy ---
-a page ends up on the node of the thread that first writes it~\cite{lameter2013numa}. For
+a page is placed on the node of the thread that first writes it~\cite{lameter2013numa}. For
 measurements on search structures this is a silent precondition: whoever builds the structure on a
 different node than the one measuring it measures the interconnect latency as well.
 
@@ -277,10 +323,13 @@ and lay it out in multiple stages (L1 dTLB plus a shared L2 STLB)~\cite{intel_sd
 structures the dTLB is the second, independent boundary alongside the cache line, since large or widely
 scattered nodes raise dTLB pressure independently of cache utilization. In the state of the art the dTLB appears mainly as a
 \emph{measurement target}; algorithmically it is addressed by large pages (huge pages, 2\,MiB/1\,GiB),
-which enlarge the TLB reach, are supported by several allocators
-(mimalloc, jemalloc, TCMalloc, snmalloc), and which Schmidt et al.~\cite{schmidt2025hbm} use
-empirically with 2-MiB pages --- a standalone dTLB optimization nevertheless remains
-underrepresented in the search-algorithm papers, an observation to which the research gap in
+which enlarge the TLB reach, are supported by several allocators --- mimalloc~\cite{leijen2019mimalloc},
+jemalloc~\cite{evans2006jemalloc}, TCMalloc~\cite{hunter2021temeraire}, and
+snmalloc~\cite{lietar2019snmalloc} --- and which Schmidt et al.~\cite{schmidt2025hbm} use empirically
+with 2-MiB pages; these four allocators are available in this thesis as interchangeable allocator
+building blocks, and which allocator building blocks are activated in the reference run is stated in
+Chapter~\ref{ch:measurement}. A standalone dTLB optimization nevertheless remains underrepresented in
+the search-algorithm publications, an observation to which the research gap in
 Chapter~\ref{ch:measurement} (Section~\ref{sec:task-concerns}) returns.
 
 \subsection{Write Path, Replacement, and Coherence}\label{subsec:write-coherence}
@@ -345,6 +394,7 @@ they explicitly bind into the design.
   \caption{Cache-near structure designs and the hardware parameters they explicitly bind into the
   design.}\label{tab:structure-parameters}
   \centering\footnotesize
+  \setlength{\tabcolsep}{4pt}%
   \begin{tabular}{@{}l c c c c c@{}}
     \toprule
     \textbf{Design} & \textbf{Cache line} & \textbf{Page/TLB} & \textbf{SIMD width} &
@@ -366,7 +416,7 @@ they explicitly bind into the design.
   size); --- = not addressed. Classification by this thesis based on the cited original works.
 \end{table}
 
-Two observations on the table carry further. First, every design binds a \emph{handful} of
+Two observations on the table lead further. First, every design binds only \emph{few}
 parameters firmly --- no known design treats the parameter set of the previous sections as an open
 input space. Second, both philosophies leave the same question open: how can \emph{measured}
 locality knowledge of the concrete target platform --- whose cache properties are predominantly
@@ -378,7 +428,8 @@ taken up again in Chapter~\ref{ch:measurement} (Section~\ref{sec:task-concerns})
 Whether a search structure makes good use of the hardware properties from
 Section~\ref{sec:hardware-history} only shows under load; for this, fixed terms and benchmark
 conventions have become established. A \emph{load} (operation) is a single call of the search
-interface --- a point query, an insertion, a deletion, or a range scan. A \emph{workload} (in this
+interface --- an exact lookup (also called a point query: the search for exactly one key), an
+insertion, a deletion, or a range scan. A \emph{workload} (in this
 thesis synonymously: \emph{load profile}) is a
 structured profile of such operations: an operation mix (e.g.\ 50\,\% read / 50\,\% update) over a key
 access distribution (uniform, Zipf-distributed, latest values) on a dataset of defined size and key
@@ -421,8 +472,8 @@ miss) is assigned via event selection; they are made accessible by tools such as
 well documented: counter values are not strictly deterministic across repetitions and, depending on
 the event, systematically overcount~\cite{weaver2008counters}, and if more events are to be
 observed than registers exist, the tool multiplexes the counters --- the result is then an
-extrapolation, not a count. A reliable comparison therefore needs repetitions and an honest
-statement of dispersion~\cite{hoefler2015benchmarking,weaver2008counters}. Which of these metrics
+extrapolation, not a count. A reliable comparison therefore needs repetitions and an explicitly
+reported dispersion figure~\cite{hoefler2015benchmarking,weaver2008counters}. Which of these metrics
 this thesis collects and how they are ordered into measurement categories is developed in
 Chapter~\ref{ch:measurement}.
 
@@ -432,19 +483,29 @@ properties from Section~\ref{sec:hardware-history} --- can the abstraction left 
 \emph{realized}? Available are the
 established means of software-engineering design: the named design
 patterns~\cite{gamma1994patterns}, the static polymorphism of the \emph{Curiously Recurring Template
-Pattern} together with \emph{policy-based design}~\cite{alexandrescu2001modern}, and the composition from
+Pattern} (CRTP)~\cite{coplien1995crtp,vandevoorde2017templates}\footnote{CRTP\@: a class derives from a
+class template to which it passes itself as the template argument (\texttt{class Derived: Base<Derived>});
+the base can thereby access members of the derived class already at compile time and replaces virtual
+calls with statically resolved ones --- without run-time indirection and without a table of virtual
+functions. The pattern was named and described by Coplien in 1995 in the
+\emph{C++ Report}~\cite{coplien1995crtp}.} together with \emph{policy-based
+design}~\cite{alexandrescu2001modern}, and the composition from
 interchangeable building blocks as described by invasive software composition from gray-box
 components~\cite{assmann2003invasive}, generative programming~\cite{czarnecki2000generative}, and the
 feature-oriented software product lines~\cite{apel2013feature,batory1992hierarchical}; C++23 modules
 structure the translation units of such building-block compositions but by themselves do not yet guarantee portable ABI
 stability~\cite{wg21_modules_abi} --- relevant as soon as pre-compiled building blocks are to be
-exchanged.
+exchanged; how this thesis instead keeps the binary interface of its pre-compiled building blocks stable
+is shown in Chapter~\ref{ch:impl}.
 
 For interchangeable building blocks to become a concrete system, what is needed besides the
 composition techniques is a \emph{form of description} for the configuration chosen in each case.
-The established answer are \emph{declarative configuration models}: feature models have described
-configurable variant spaces as feature hierarchies with selection constraints since the FODA
-study~\cite{kang1990foda}, generative programming produces the system variant in the solution
+The established answer is \emph{declarative configuration models}: feature models have, since the
+FODA study\footnote{FODA (\emph{Feature-Oriented Domain Analysis}): the domain-analysis method of the
+Software Engineering Institute, which captures the common and the variable characteristics
+(\emph{features}) of a product family in a feature tree with mandatory, optional, and alternative nodes
+together with selection constraints~\cite{kang1990foda}.}, described configurable variant spaces as
+feature hierarchies with selection constraints~\cite{kang1990foda}, generative programming produces the system variant in the solution
 space from such configuration knowledge in the problem space~\cite{czarnecki2000generative}, and
 the product-line literature systematizes the associated binding times from compile time to run
 time~\cite{apel2013feature}. Industrial tooling follows the same principle: Maven's \emph{Project
@@ -487,13 +548,13 @@ configuration: $h: \mathcal{M} \rightarrow \mathcal{K}$, where $\mathcal{M}$ den
 collected features (measurements, load-profile metrics) and $\mathcal{K}$ the space of admissible
 configurations. The present thesis first measures this relationship systematically
 (Chapter~\ref{ch:measurement}); the \emph{automated} determination of $h$ itself --- the mechanism
-that derives the respective best configuration from the measurement results --- is an objective and
+that derives the respective best configuration from the measurement results --- is the objective and
 outlook of this thesis (Section~\ref{sec:outlook}).
 
 Finally, the terms used partly synonymously in the literature must be delimited\@. A heuristic is
 called \emph{adaptive} if it adjusts its decision to changing conditions; \emph{dynamic} refers more
 narrowly to the moment --- evaluation at run time rather than at compile time; and
-\emph{measurement-driven} emphasizes the data source --- the decision rests on collected measurements
+\emph{measurement-driven} (equivalently \emph{measured-value-driven}) emphasizes the data source --- the decision rests on collected measurements
 rather than on fixed model assumptions. An adaptive heuristic is thus always dynamic, a dynamic one
 not necessarily adaptive, and both may, but need not, be measurement-driven.
 
