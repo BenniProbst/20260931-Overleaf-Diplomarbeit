@@ -1,219 +1,591 @@
 \chapter{Conclusion and Outlook}\label{ch:conclusion}
 
-This chapter takes stock: it answers the research questions RQ0--RQ4 from Section~\ref{sec:rqs}
-together with their sub-questions, names the limits of the state reached, and sketches the next
-steps.
+This chapter takes stock: for each research question RQ0--RQ4 (Section~\ref{sec:rqs}) it puts the
+sub-questions first, names the state of their answer in three grades --- answered, structurally
+answered, open ---, traces per question the chain of evidence through the chapters and its
+consequences, assigns the hypotheses to the target path, names the limits of the system from the
+user's point of view, and sketches the next steps.
 
 \section{Answering the Research Questions}\label{sec:answers}
-Orthogonal to all five questions, the introduction had deliberately left a categorization question
-open: whether the axes of the design space separate cleanly into organ, system, and measurement
-axes --- and how such a separation is to be accomplished where it does not yet exist. Both are
+The answers follow the scheme claim, evidence, validation~\cite{shaw2003writing}: a question counts as
+\emph{answered} when a test or a measurement substantiates it; as \emph{structurally answered} when
+the apparatus that delivers the answer is implemented and tested but the measurement is not
+available; as \emph{open} when neither structure nor measurement is available. Three kinds of
+evidence occur: the structure (a code object that supports the answer), the test (a static check or a
+contract test that secures it), and the measurement (a number together with its run); for the
+question about the state of the art of the workloads (RQ2.d) the literature evidence is added. A
+\enquote{structurally answered} does not replace the number: without measured values the main question
+remains unanswered even if its structure is sound. Table~\ref{tab:ff-beweiskette} lists status,
+evidence, and remainder per main and sub-question; the form of reporting follows the rules of empirical
+software and systems research~\cite{wohlin2012experimentation,runeson2009guidelines} and the demand to
+state the reference quantity, the platform, and the values not collected at every
+result~\cite{blackburn2016truth,hoefler2015benchmarking}.
+
+Orthogonal to all five questions, the introduction posed a categorization question as a question:
+whether the axes of the design space separate cleanly into organ, system, and measurement axes ---
+and how such a separation is to be accomplished where a design does not provide for it. Both are
 answered (Section~\ref{sec:axis-triad}): the axes separate along the three concerns into three
-\emph{realms} with one class root each, one offer catalog each, and one stamp line each at the
-binary (Section~\ref{sec:stamp-model}). The separation was accomplished not by renaming but by
-datable \emph{relocations}: telemetry and the ISA left the organ count for the system sphere,
-compiler and scheduling moved from the former five-item system list into the complex bracket and
-onto the ISA wrapper respectively, and the load framework left the system world without replacement
-towards the measurement realm; in the code, compile-time departure guards fix these relocations
-(Section~\ref{sec:impl-system-axes}). This triad is the second shape of the separability problem
-and carries the answers to the following sub-questions.
+\emph{realms} --- organ, system, measurement --- with one class root each, one offer catalogue each
+(three generated registries: the organ-axis registry of the cache engine, the system-axis registry,
+and the measurement-axis registry), and one stamp line each at the binary
+(Section~\ref{sec:stamp-model}); the three line carriers of the fingerprint --- organ, system, and
+measurement line --- are, as types, pairwise unconstructible from one another, so that a swap does
+not compile. Only the organ main axes enter the \texttt{binary\_id}; system and measurement axes are
+declared binary-id-neutral in their registries. The separation is held by compile-time
+\emph{re-entry guards} (Section~\ref{sec:impl-system-axes}): \texttt{static\_assert} checks reject
+compiler, scheduling, and load framework as system main axes --- the scheduling is a sub-axis of the
+target ISA \texttt{target\_isa} with five dimensions, the compiler a sub-axis group of the complex
+bracket \texttt{build\_target\_complex}, the load framework the meta-meta axis of the measurement
+realm ---, and the flag grammar of the version stamps admits only catalogued flag chains. This triad
+is the second shape of the separability problem and supports the answers to the following
+sub-questions.
 
-\paragraph{RQ0 (Main question).} By how much active, measurement-driven cache-aware decisions
-outperform their passive, statically dimensioned counterparts can be quantified conclusively only
-after the end-to-end runs per platform (Section~\ref{sec:outlook}). What is prepared is the
-apparatus that isolates exactly this difference: the same axis-constant structure is permuted once
-actively (measurement-driven page-type, layout, prefetch, and value-placement decision) and once
-passively (statically dimensioned) and compared under an identical compiler and flag basis on
-hybrid CPUs and Sapphire Rapids.
-The extension sub-question --- whether a measured gain can be
-attributed unambiguously at all --- is answered structurally, and the separation it requires is
-precisely the triad: an organ effect permutes the \texttt{binary\_id}, a platform concern stands at
-the binary as system stamp and build version identifier without permuting it, and a measurement
-concern remains strictly binary-id-neutral --- no measurement instrument may change \emph{what} is
-built.
+\paragraph{RQ0 (Main question).} The question is by how much active, measurement-driven cache-aware
+decisions --- page type, memory layout, value placement, prefetching --- outperform their passive,
+statically dimensioned counterparts on different CPU platforms; the extension RQ0.E asks whether a
+measured gain can be attributed unambiguously to the organ, the system, or the measurement concern.
+The \emph{status}: RQ0 is open. Without the end-to-end runs per platform there is no number; the
+structure that delivers the number is implemented. The same axis-constant structure is built once
+actively --- with a runtime-dynamic cache-line policy (the policy selector derives the cache-line
+adaptation from an evaluated profile aggregate of operation mix and working set) and
+measurement-driven selection of the best binary --- and once passively --- with a statically fixed
+organ choice of memory layout, prefetch, value placement, and node type as segments of the
+\texttt{binary\_id} --- and the two are compared under an identical compiler and flag basis
+(default \texttt{-O2}; \texttt{-O3} only as an opt-in under warning and with its own toolchain
+identity). The measurement machines surveyed are the three registered machine signatures: prod1
+(AMD Zen~5, Ryzen~9~9950X3D), prod2 (Intel Core i9-12900K, Alder Lake --- a hybrid CPU with % chktex 29
+P- and E-cores, without AVX-512), and an ODROID board with Intel Gracemont cores; the server
+platform Sapphire Rapids named in the question is provided for in the platform detection (ZIH node
+Barnard, Xeon~8470) but not measured (n/a; Section~\ref{sec:eval-platforms}). RQ0.E is structurally
+answered, and the separation it requires is the triad: an organ effect permutes the
+\texttt{binary\_id}, a platform concern stands at the binary as system stamp line and build version
+identifier without permuting it, and a measurement concern remains binary-id-neutral --- no
+measurement instrument changes \emph{what} is built. The \emph{evidence} is
+Section~\ref{sec:axis-triad} (triad; structure), Section~\ref{sec:impl-system-axes} (re-entry
+guards; test), and Section~\ref{sec:eval-method} (measurement plan; structure). The
+\emph{consequence}: a quantification presupposes the full build and the run of series~A
+(Section~\ref{sec:outlook}); the effect of cache-line awareness from the synthesized measurement
+curves is the first evaluation step after the first measurement run
+(Section~\ref{sec:heuristics-curves}).
 
-\paragraph{RQ1 (Composition).} The canonical decomposition carries: \emph{eighteen} organ main
-axes in fixed slot order T0--T17 span the permutation matrix (Section~\ref{sec:axis-triad}); the
-former nineteen-axis count (interim state of July 2026) is a historical precursor of this order.
-The canonical measurement catalog --- two enabled representatives per organ axis, the persistence
-axis pinned to its in-memory representative --- counts $2^{17} = 131072$ binary identities per
-system permutation, each with a full eighteen-segment path; the raw variant product space across
-all axis catalogs including their sub-axes lies orders of magnitude above that
-(Section~\ref{sec:mess-chain}). State-of-the-art designs are reconstructed unambiguously through
-algorithm-profile XMLs: 30 SOTA profiles (8 Rank-1 + 22 Rank-2/3) demonstrate that the axis
-decomposition carries P01--P33, and the variadic API specialization (1/2/$N$ parameters onto
-\texttt{std::vector}/\texttt{std::map}/tuple) makes both algorithm- and container-oriented
-patterns expressible on one engine. The sub-question on the category cut is answered in the
-affirmative: the decomposition remains orthogonal only because platform and measurement concerns
-are kept out of the permutation matrix --- the cut was accomplished by the dated relocations and
-is held by the departure guards in the code (Section~\ref{sec:impl-system-axes}). The
-non-fully-orthogonal organ couplings (node type $\times$ SIMD $\times$ path compression) are
-marked as such and explicitly restricted during permutation. The sub-question on cache-update and
-cache-line-fill behaviour under a solely varied ISA/SIMD axis is answered methodically ---
-precisely \emph{because} the SIMD extension is not an organ axis: as a build control quantity it
-multiplies only the build matrix, so that one and the same \texttt{binary\_id} can be built under
-several system permutations and compared with an otherwise unchanged structure
-(Section~\ref{sec:axis-triad}); the empirical answer follows with the full-build runs
-(Section~\ref{sec:outlook}).
+\paragraph{RQ1 (Composition).} The question is how a search-algorithm design can be canonically
+decomposed into orthogonal axes and systematized in a permutation matrix, such that
+state-of-the-art methods become reconstructible bias-free as profiles, ideally from their original
+code, and arbitrarily permutable; RQ1.a asks about the category cut of the decomposition, RQ1.b
+about the organ couplings and the behaviour under a solely varied ISA/SIMD axis. The \emph{status}:
+RQ1 is structurally answered, RQ1.a answered, RQ1.b open in its empirical part. The canonical
+decomposition carries: \emph{eighteen} organ main axes in fixed slot order T0--T17 --- as the
+constant name array of the axis-path serialization they are code, not convention --- span the
+permutation matrix (Section~\ref{sec:axis-triad}); to these is added an optional
+\emph{organ meta-meta axis} for disk input/output \texttt{disk\_io}, carried in the organ registry
+as the nineteenth entry (a compile-time stage with the runtime option \texttt{staging},
+binary-id-neutral), but not selectable via experiment profile, because the profile parser does not
+read its registry block; the profile connection is planned but not implemented. It is the thesis's
+example of the meta-meta level M3, the indirection of a description: it stamps in the bracket
+appendage of the organ line, and the bracket depth of an entry is its meta-meta level
+(Section~\ref{sec:stamp-model}). Two reference quantities are to be kept apart: the golden
+reference catalogue varies seventeen axes over two values each and pins the persistence target to
+one value --- $2^{17} = 131072$ binary identities per system permutation as a regression detector
+with a fixed CRC-64 checksum\footnote{CRC-64: a cyclic redundancy check with a 64-bit checksum
+(here the variant ECMA-182), computed over all identities in canonical order; a changed identity
+changes the checksum.} over all identities (Section~\ref{sec:impl-contracts}) ---, whereas the
+cardinality of a planned space is not a constant but the planner's computation per profile and
+platform (subcommand \texttt{simulate}); all eighteen axes are planned for variation (not
+measured). The 33 corpus works P01--P33 each possess a profile XML, among them 30 full profiles of
+standalone search designs (eight Rank-1 and 22 Rank-2/3) and three abstract profiles (OLC, LOUDS,
+VAMPIR) that occupy only individual axes (Section~\ref{sec:sota-instances}); the registry of the
+paper probes holds this translation at compile time against duplicates and gaps. The variadic
+mapping --- one template parameter for the \texttt{std::vector} API, two for \texttt{std::map},
+$N>2$ for \texttt{std::map<K,\,std::tuple<\ldots>>} (Appendix~\ref{app:interfaces}) --- makes
+algorithm- as well as container-oriented patterns expressible on one engine, and the family triad
+Map, Container, Graph orders the genera beneath it (Section~\ref{sec:anatomy-levels}). RQ1.a is
+answered in the affirmative: the decomposition remains orthogonal only because platform and
+measurement concerns are kept out of the permutation matrix, and the re-entry guards hold this cut
+(Section~\ref{sec:impl-system-axes}). On RQ1.b: the coupling node type $\times$ SIMD $\times$ path
+compression named by the question falls apart --- node type $\times$ path compression remains a
+not-fully-orthogonal organ coupling that is marked as such and restricted during permutation,
+whereas SIMD is not an organ axis but a build control quantity of the system axis
+\texttt{external\_utils} (a runtime sub-axis with the options \texttt{no\_extension},
+\texttt{avx2}, and \texttt{avx512} and a feature catalogue of 23 flags, binary-id-neutral): one and
+the same \texttt{binary\_id} is built under several system permutations and compared with an
+otherwise unchanged structure; the empirical answer on cache-update and cache-line fill behaviour
+is a measurement and is not available. The \emph{evidence} is Section~\ref{sec:axis-triad}
+(decomposition and realms; structure), Section~\ref{sec:mess-chain} (catalogue and reference
+quantity; structure), and Section~\ref{sec:impl-contracts} (catalogue checks and golden checksum;
+test). The \emph{consequence}: RQ1 structurally answered; RQ1.b (fill behaviour) presupposes the
+full build.
 
-\paragraph{RQ2 (Measurement methodology).} Measurement is split into a production mode
-(\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} disabled, no overhead) and an
-experiment mode: the \texttt{ResultAggregator} is kept host-side in the \texttt{ExperimentDriver}
-(phases~5--7), and the experiment mode activates the measurement hooks and the observer coupling
-in the ABI adapter. Profile-aware workload routing selects the workload per permutation from the
-traversal tag, ensuring fair comparison between range-query- and point-lookup-oriented designs;
-this routing concerns only the default assignment of series~A, while the answer to the home-field
-bias remains the bias-free full matrix, which in whole-system benchmarking runs all load profiles
-as a dynamic axis against all living-being binaries (Chapter~\ref{ch:measurement}). Each series is
-collected at three granularities: micro-benchmarking measures each axis over its \emph{axis
-interface}, macro- and whole-system benchmarking add the genus interface operations and the
-load-profile level, and three wall-clock levels check the internal micro-measurement from the
-outside (Section~\ref{sec:mess-chain}). The sub-question on the measurement axes is answered in
-the affirmative: the measurement instruments are a realm of their own in the planner --- the load
-framework as its first main axis, the measurement tooling with the sixteen categories as a
-sub-axis ---, always present as soon as measurement is on, and strictly binary-id-neutral; this
-separation was accomplished by the double root cut --- the system realm is rooted at the builder,
-the measurement realm at the planner (Section~\ref{sec:axis-triad}). Contradictory findings in the
-literature on the optimal node/cache-line size (one versus up to sixteen cache lines) are thus not
-adopted from incompatible original setups but re-measured axis-isolated, with all else held equal.
-The extensibility sub-question is answered in concept and honestly unfinished in build-out: a new
-probe joins as a living being of its genus --- it docks at the probe dock, passes the three-stage
-check, and its measurement schema (replace, hybrid, or full-join mode) remains distinguishable at
-the binary via the \texttt{e} suffix of the version tag and the hierarchically extended algorithm
-names of the organ line --- no stamp line of its own is needed for that, because the probe mixes
-against the organ axes (Section~\ref{sec:eval-results}); whether it matches an
-existing category, founds a new one, or constitutes a hybrid form is decided by the genus cut --- a genus
-of its own would arise only with a fundamentally different base axis set
-(Section~\ref{sec:anatomy-levels}). The operating mode asked for there, which offers the design
-components of exactly \emph{one} publication as a closed axis set in isolation, is by contrast not
-built and remains outlook (Section~\ref{sec:outlook}). A platform counts as successfully verified
-only once the conformance gate confirms the \texttt{std::map} contract per module and the platform
-probe covers the reported axis subset; the platform-calibrated thresholds themselves are fixed
-with the real runs.
+\paragraph{RQ2 (Measurement methodology).} The question is how a reproducible measurement pipeline
+with hardware-counter collection must be designed so that every axis permutation is measured
+fairly --- under an identical compiler and flag basis --- in three measurement series over three
+granularities, and under which platform-calibrated criteria a platform counts as verified; RQ2.a
+asks whether the measurement instruments themselves must be axes of their own, RQ2.b about the
+re-measurement of contradictory literature findings, RQ2.c about extensibility, RQ2.d about the
+workloads that belong to the state of the art specifically for search algorithms. The
+\emph{status}: RQ2 is structurally answered, RQ2.a and RQ2.d answered. Measurement is split into a
+production mode and an experiment mode, switched via the master switch of the measurement
+compilation (\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}): the experiment mode
+always measures --- a release build without measurement sensors is a separate, deliverable
+artefact that forces the switch off, not a measurement run that has been switched off ---, and in
+the store only what is missing there is re-measured; the compile-time-static key schema of the four
+stocks is the design of this recognition, the full build-out of the store is not implemented
+(Section~\ref{sec:lager}). The \texttt{ExperimentDriver} controls the sequence host-side: the
+runner loads the modules and runs the phases load, execute, measure, and teardown, the driver runs
+execution and measurement per module and collects the results in the \texttt{ResultAggregator}.
+Every series is collected on three \emph{measurement levels}, in exactly this order: the wall-clock
+level (\texttt{wallclock}; the overall runs in the CacheEngineBuilder over the load frameworks),
+the macro level (\texttt{macro}; the family and genus interface operations of the tier binary), and
+the micro level (\texttt{micro}; axis interface and success parameters); w/ma/mi is the registered
+alias, and the three levels are the measurement-tooling main axis, which per choice is compiled
+into one CacheEngineBuilder route (Section~\ref{sec:mess-chain}). RQ2.a is answered in the
+affirmative: the measurement instruments are a realm of their own in the planner --- the load
+framework as meta-meta axis, the measurement tooling as main axis, the measurement categories as
+sub-axis (sixteen building blocks in the registry; planned is the collection per axis-interface
+parameter set, whose catalogue per axis is not implemented) ---, always present as soon as
+measurement takes place, and binary-id-neutral. The separation is accomplished by the double root
+cut: the system realm is rooted at the CacheEngineBuilder, the measurement realm at the planner, and
+the measurement axis drives, via the system-axis root, the release of the measurement source in the
+form of the CacheEngineBuilder type --- the legend chain measurement axis $\to$ CacheEngineBuilder
+type $\to$ system axes $\to$ tier binary is code as a naming scheme
+(Section~\ref{sec:axis-triad}). For the workload, the driver passes a default workload through per
+module, and a profile brings its own; planned is the full permutation over all available workloads,
+so that no design wins only under its self-chosen load profile --- the apparatus counters the
+\emph{load-profile selection bias}\footnote{Load-profile selection bias (workload selection bias):
+the distortion of a comparison that arises because the load profiles are chosen such that one
+design performs preferentially well under them; the benchmarking literature therefore demands a
+broad, justified set of load profiles~\cite{blackburn2006dacapo,blackburn2016truth}.} with the full
+matrix of all load profiles against all living-being binaries, because even inconspicuous setup
+decisions systematically distort measurement results~\cite{mytkowicz2009wrongdata}; implementation
+status: the full permutation is not implemented.
 
-\paragraph{RQ3 (Probe comparison).} The concrete comparison of PRT-ART against the 30 SOTA
-profiles is pending the first measurement runs (Section~\ref{sec:outlook}). The architecture is
-fully prepared: the PRT-ART profile, the three mandatory series templates, the
-\texttt{ExperimentDriver} with auto-pickup of the SOTA profiles, and the ABI-conformant adapter
-with the \texttt{std::map} core contract (conformance subset, Appendix~\ref{app:interfaces}); the
-full expansion to all seventeen contract operations including the notify hooks is designated as a
-follow-up step. The cheapest local page representation per branch point (point versus compact
-page) and its platform-calibrated switching rules are likewise part of the PRT-ART profile. The
-compile-time sub-question --- whether latency-critical measurement forces decisions selectable at
-run time as such into compile time --- is answered in the affirmative and has become the
-construction principle: every axis divides into a compile-time-fixed \emph{main} decision and
-runtime-variable \emph{sub}-decisions; the main axes are compiled in statically --- for organ axes
-as a \texttt{binary\_id} segment, for system axes as stamp plus build version identifier ---,
-while dynamic sub-axes vary their runtime parameters without recompilation
-(Section~\ref{sec:measurement-system}). Exactly the division the sub-question conjectured is thus
-the carrying doctrine of the apparatus; RQ4 continues it.
+On RQ2.b (organ axes): the contradictory literature findings on the optimal node/cache-line size
+--- one cache line per node for CSS and CSB\textsuperscript{+} trees~\cite{rao1999css,rao2000csb}
+versus sixteen and more cache lines for Hankins and Patel~\cite{hankins2003nodesize} (nodes of
+512 bytes and larger at 32-byte cache lines) as well as several per node for the prefetching
+B\textsuperscript{+}-trees of Chen, Gibbons, and Mowry~\cite{chen2001prefetch} --- are not adopted
+from their original setups but re-measured axis-isolated under otherwise equal conditions: node
+type, memory layout, and prefetch are organ axes that are varied individually while system and
+measurement axes stay constant; the number is a measurement and is not available. On RQ2.c
+(extensibility): a new probe joins as a living being of its family into the genus --- family is the
+first level (Map, Container, Graph), genus the second, and the genus build admission carries the
+slot sets per family as a compile-time verdict ---; it docks at the probe dock, passes the
+three-stage evaluation (Section~\ref{sec:mess-chain}), and its merge with the cache engine bears
+one of the registered names: \texttt{Verbund1\_CeOnly} (no probe directive),
+\texttt{Verbund2\_Replace} (the probe axis replaces the cache-engine axis, with fallback),
+\texttt{Verbund2\_Hybrid} (cache engine and probe hybrid per probe; declared, not materialized ---
+the validator blocks the token \texttt{merge} as long as the strategy value is not implemented), or
+\texttt{Verbund3\_Union} (union of all variants; prepared interface,
+Section~\ref{sec:eval-series}). At the binary the merge remains distinguishable via the
+hierarchically extended algorithm names and flags of the organ line --- a probe organ carries its
+namespace prefix in the entry ---; a stamp line of its own is not needed, and a version suffix does
+not denote the mixture: the flag \texttt{e} denotes an efficiency-core algorithm
+(Section~\ref{sec:stamp-model}). Whether the probe matches an existing family, founds a new one, or
+constitutes a hybrid form is decided by the family cut (Section~\ref{sec:anatomy-levels}); a family
+of its own would arise only with a fundamentally different base axis set. The operating mode asked
+for in RQ2.c, which offers the design constituents of exactly one publication as a closed axis set
+in isolation, is not implemented and remains a subject of the outlook
+(Section~\ref{sec:outlook}). On RQ2.d (workload state of the art): the state of the art of the
+workloads for search algorithms is formed by the key-value convention YCSB with its six load
+profiles A--F (each an operation mix over a key access distribution, from 50/50 read/update
+Zipf-distributed to short range scans and read-modify-write), the index benchmark SOSD, the TPC
+family (TPC-C, TPC-DS), the integration into real systems (SuRF in RocksDB), real string corpora
+(URLs, DNA, dictionary terms), as well as SPEC~CPU and CloudSuite in the hardware-near works
+(Section~\ref{sec:workload-basics-known}); these frameworks generate loads that are not directly
+comparable with one another, and each publication typically chooses the load profile under which
+its own design performs best. From these the thesis adopts YCSB as the registered load framework
+(the meta-meta axis \texttt{load\_framework} of the measurement realm) with the runtime dimension
+\texttt{workload} over the six tokens \texttt{YCSB\_A} to \texttt{YCSB\_F}, routed per permutation
+from the traversal tag of the profile or its \texttt{<expected\_workload>} tag, and runs them over
+real string datasets with a reproducibility record (\texttt{url}, \texttt{protein},
+\texttt{tpcds-id}, \texttt{trec-terms}, \texttt{dna}, \texttt{xml};
+Section~\ref{sec:eval-workloads}), where \texttt{xml} possesses only a specification without
+checksum because the file is not available locally (n/a); the remaining conventions are not
+registered as load frameworks (n/a). Implementation status: for profile-less modules the driver
+falls back to exactly one workload, the workload option of the run; the full permutation over all
+load profiles is planned but not implemented (Section~\ref{sec:eval-workloads}). On platform
+verification: a platform counts as verified when the conformance gate confirms, per loaded tier
+binary, the seventeen \texttt{std::map} operations marked in Appendix~\ref{app:interfaces} --- the
+operation set of its twelve core check blocks, among them \texttt{at}, \texttt{contains},
+\texttt{count}, \texttt{insert\_or\_assign}, \texttt{erase}, \texttt{clear}, \texttt{lower\_bound},
+and \texttt{upper\_bound} --- against \texttt{std::map} as oracle and the platform probe covers the
+reported axis subset; the five drive operations of the module boundary (\texttt{insert},
+\texttt{lookup}, \texttt{erase}, \texttt{clear}, \texttt{size}) are the ABI primitives from which
+the host composes the remaining operations, not the scope of the check, and the full build-out to
+the complete \texttt{std::map} interface is not implemented; the platform-calibrated thresholds are
+not available, their determination presupposes the measurement runs. The \emph{evidence} is
+Section~\ref{sec:mess-chain} (three-stage evaluation and merge; structure),
+Section~\ref{sec:measurement-system} (measurement levels and realm; structure),
+Section~\ref{sec:anatomy-levels} (family cut; structure), Appendix~\ref{app:interfaces} (contract
+subset; test), and, for RQ2.d, Section~\ref{sec:workload-basics-known} (workload conventions;
+literature) and Section~\ref{sec:eval-workloads} (workload routing and records; structure). The
+\emph{consequence}: RQ2 structurally answered, RQ2.c conceptually answered, RQ2.d answered; the
+isolation mode, the number for RQ2.b, and the full permutation of the workloads are open.
 
-\paragraph{RQ4 (Compile time vs.\ run time).} The boundary between compile time and run time runs
-along the axis categories, and the system extension sub-question is thereby answered in the
-affirmative: the platform concerns --- the three system main axes together with their complex
-bracket (Section~\ref{sec:complex-axis}) --- belong to the compile-time identity of the binary;
-they appear as system stamp line and build version identifier, never as a \texttt{binary\_id}
-segment, and produce provenance-verifiable binaries per permutation (SHA256-validated original
-bodies --- whose full implementation Section~\ref{sec:limitations} lists as open ---,
-\texttt{get\_compiler()} identifier). Measurement choices remain runtime-variable, and layout and
-page selection remain selectable at run time via a bit-encoded permutation identifier, without
-violating the common compiler and flag basis. Where an axis needs both sides of the boundary, it
-is \emph{two-way-split}: load framework, telemetry, and hardware detection run across the runtime
-of the planner \emph{and} the compile time of the builder --- the sub-axis release of the earlier
-stage becomes the main-axis assumption of the later one (Section~\ref{sec:axis-triad}) ---, and
-the two-way-split hardware detection uses its level~2 to set the compile-time stamps of the tier
-binaries correctly from the actual properties acquired at builder runtime
-(Section~\ref{sec:hw-probe}). What is stamped is always the compile-time platform \emph{class},
-never a measured value; as a \emph{design}, the concept of a \emph{fit stamp} follows on from
-this: it would check the stamped platform class on every measurement run against the named runtime
-verdict of the hardware detection (Section~\ref{sec:impl-system-axes}) --- the fit between machine
-and binary would thereby itself become a checked quantity; in the state of this work this concept
-is design, not built (Section~\ref{sec:outlook}). The forward-looking sub-question of whether the
-measurement itself can tailor ISA- and operating-system-optimized binaries for a recombination is
-taken up by the outlook as heuristics automation (Section~\ref{sec:outlook}); the
-operating-system dimension is already anchored in the measurement plan via the two measurement
-regimes from Chapter~\ref{ch:eval}.
+\paragraph{RQ3 (Probe comparison).} The question is whether the probe PRT-ART wins against the
+eight Rank-1 designs --- ART~\cite{leis2013art}, HOT~\cite{binna2018hot}, Masstree, CoCo-Trie,
+START, B\textsuperscript{2}-tree, Wormhole, SuRF --- and the Rank-2/3 SOTA \emph{not} through
+asymptotic novelty but through better microarchitectural properties --- higher cache-line
+utilization, fewer LLC and dTLB misses, lower branch cost, smaller hot search paths --- for exact
+lookup, prefix lookup, and prefix enumeration, measured in the mandatory measurement series A, B,
+and C\@; RQ3.a asks about the cheapest local page representation per branch point, RQ3.b about
+the compile-time force. The \emph{status}: RQ3 is open, RQ3.b answered, RQ3.a structurally
+answered (prescription without measurement evidence). The comparison is not available and
+presupposes the first measurement runs; the apparatus for it is implemented: the PRT-ART profile,
+the three mandatory measurement series --- the series is derived mechanically from the merge stage
+(\texttt{Verbund1} and \texttt{Verbund2} yield series~A, \texttt{Verbund3} series~B, series~C is
+cross-build; Table~\ref{tab:stage-series}) ---, the \texttt{ExperimentDriver} with auto-pickup of
+the 33 profile XMLs from the profile directory, and the ABI-conformant adapter with the
+\texttt{std::map} core contract as a host-side composition layer over the point-lookup primitive
+of the module boundary, flanked by insertion and deletion, with ordered iteration as an additive
+scan capability (Appendix~\ref{app:interfaces}). The conformance gate checks the seventeen
+operations marked in Appendix~\ref{app:interfaces} in twelve core check blocks against
+\texttt{std::map} as oracle; the full build-out to the complete interface is planned but not
+implemented. The notification hook of the measurement layer is a single-slot hook per axis, not
+compiled in by default (opt-in), and not part of the contract. On RQ3.a: point page --- the
+direct-index pages Array$_{256}$ and Array$_{65535}$ --- versus compact page --- the vector pages
+Vector$\langle$u8,u8$\rangle$ and Vector$\langle$u16,u16$\rangle$ --- per branch point and the
+switching rules by occupancy density and access type are part of the PRT-ART profile; the probe
+switches at fixed density thresholds of 25, 50, and 75~percent (Section~\ref{sec:prtart-demo}),
+and the platform-calibrated rules are prescriptions without measurement evidence as long as the
+runs do not substantiate them. RQ3.b is answered in the affirmative and has become the
+construction principle: every axis divides into a compile-time-fixed \emph{main axis} and
+runtime-variable \emph{sub-axes} --- the main axes are compiled in statically, for organ axes as a
+\texttt{binary\_id} segment, for system axes as stamp together with the build version identifier,
+while sub-axes with the stage \texttt{runtime} vary their parameters without recompilation; the
+organ registry carries the stage per sub-axis, the system registry the sub-axis group
+\texttt{build\_toolchain} of the complex bracket (Section~\ref{sec:measurement-system}). The
+\emph{evidence} is Section~\ref{sec:prtart-demo} (probe and page representation; structure),
+Section~\ref{sec:sota-instances} (33 profiles; structure), Section~\ref{sec:measurement-system}
+(main and sub-axis; structure), and Appendix~\ref{app:interfaces} (core contract; test). The
+\emph{consequence}: the number presupposes series~A\@; the hypotheses H1--H3 supply the evaluation
+criteria.
+
+\paragraph{Hypotheses and target path.} The evaluation hypotheses H1--H3
+(Section~\ref{sec:eval-hypotheses}) were formulated before the apparatus; the target path developed
+across the chapters --- triad of the realms, stamp identity, measurement levels --- has not laid
+them as a foundation but ranks them as touchstones of the evaluation: H1 (page-type cost) and H3
+(distribution of the value placement) are checked in series~A per load profile, H2 (code quality
+per source) via the tool-computed quality record. Its data basis is the weighted
+\texttt{cppcheck} finding density per thousand physical lines over the vendored original sources;
+the record carries 33 entries, 22 of them as n/a because a reconstruction possesses no vendored
+original source, and PRT-ART possesses no original repository (n/a). The hypothesis check follows
+the requirement to name criterion and threshold before the measurement~\cite{wohlin2012experimentation},
+and the number of repetitions per cell follows the required confidence~\cite{kalibera2013rigorous}.
+H2 counts as accepted if, over the full profiles with a vendored original source, the Spearman rank
+correlation between finding density and measured throughput per load profile and cell (platform,
+workload, regime) is negative with $|\rho| \geq 0.5$ at $\alpha = 0.05$; as rejected at
+$|\rho| < 0.3$; in between as undecided; below eight profiles with a score H2 is not testable. The
+manual audit over seven assessment axes remains the qualitative classification. The PRT-ART
+telemetry metrics H1--H3 are measurement organs of the probe, not these hypotheses
+(Section~\ref{sec:eval-hypotheses}); and the variant ChainRef of the value placement is the subject
+of H3, it is no abort criterion for H2.
+
+\paragraph{RQ4 (Compile time vs.\ run time).} The question is which axis properties must be fixed
+at compile time to produce platform-optimized, provenance-verifiable binaries per permutation, and
+which can or must be selected at run time (bit-encoded binary identity per permutation,
+runtime-adaptive layout selection) without violating comparability (identical compiler and flag
+basis) --- and whether the measurement makes it possible to generate ISA+OS-optimized binaries for
+a search-algorithm recombination whose heuristic optimization is perfectly tailored to its runtime
+environment; RQ4.a asks whether the entire sequence --- from the platform-specific build of all
+binary permutations via the measurement run and the selection of the best measured binary or
+binary recombination up to the evaluation in CSV/xlsx files, LaTeX, and diagrams --- can be
+generated end to end from one XML description of the experiment; the extension RQ4.E asks whether
+the boundary runs along the axis categories.
+The \emph{status}: RQ4 is structurally answered, RQ4.a structurally answered, RQ4.E answered. The
+boundary runs along the categories: the three system main axes \texttt{target\_isa},
+\texttt{operating\_system}, and \texttt{external\_utils} together with their complex bracket
+\texttt{build\_target\_complex} (Section~\ref{sec:complex-axis}; no fourth main axis) belong to the
+compile-time identity of the binary; they appear as system stamp line and build version
+identifier, never as a \texttt{binary\_id} segment. Provenance is secured by the tier fingerprint:
+a SHA-512 over eleven members (fingerprint format~6), among them the overlay member as a SHA-512
+over the concatenated source files of the overlay cut --- per axis the file set of its own
+implementation plus the shared anatomy substance ---, so that a pure source-text change yields a
+new identity, and the toolchain member with the build-compiler identifier and the optimization
+identity; the planner fingerprint is a SHA-256 over its own preimage. The query
+\texttt{get\_compiler()} of an axis, by contrast, returns the original compiler of the publication
+from the manifest of the vendored source --- a statement of origin, not a build identifier.
+Measurement choices remain runtime-variable; layout and page selection remain selectable via the
+mixed-radix order of the \texttt{binary\_id} (the static binary view) and the runtime-dynamic
+cache-line policy, without violating the common compiler and flag basis. Where an axis needs both
+sides of the boundary, it is two-way split: load framework, telemetry, and hardware detection run
+across the runtime of the planner \emph{and} the compile time of the builder --- the sub-axis
+release of the earlier stage becomes the main-axis assumption of the later stage
+(Section~\ref{sec:axis-triad}) ---, and the hardware detection sets the compile-time stamps of the
+tier binaries from the actual properties acquired at builder runtime (Section~\ref{sec:hw-probe}).
+What is stamped is always the platform \emph{class}, never a measured value; the \emph{fit stamp},
+which checks the stamped class on every measurement run against the runtime verdict of the
+hardware detection, is designed but not implemented (Section~\ref{sec:outlook}). The
+forward-looking sub-question of whether the measurement itself can tailor ISA- and
+operating-system-optimized binaries for a recombination is taken up by the outlook as heuristics
+automation; the operating-system dimension is provided for with three declared values of the
+system axis (\texttt{linux}, \texttt{windows}, \texttt{macos}, each with its own probe) and the two
+measurement regimes in the measurement plan --- the second regime, an immutable operating system,
+is designed, not implemented (Section~\ref{sec:eval-platforms}). On RQ4.a (declarative chain): the
+chain is laid out declaratively end to end and built as two binaries. The planner
+\texttt{comdare-experiment-planner} checks the user XML read-only against the compiled-in registry
+catalogues and emits the deterministic plan from the one director walk --- two runs are
+byte-identical, the plan header annotates the registry trio, and every build step reports the
+actually generated file stem from the same orchestrator function that the build also calls ---;
+the measurement driver \texttt{comdare-messung-driver} emits the system permutations and tier
+build orders of its released build space and runs the seven-phase measurement pipeline from
+\textsc{Enumerate} to \textsc{Persist} (CSV and JSON); the downstream nine-stage toolchain
+renders from that the xlsx workbook, the booktabs tables, the TikZ diagrams, and the appendix
+files that the manuscript includes --- one XML source, one build channel, no step by hand
+(Section~\ref{sec:impl-pipeline}, Figure~\ref{fig:eval-xml-kette}). The selection of the best
+binary or recombination is registered and validatable as the work mode \texttt{compare} of the run
+chain; its mode-specific sequence and the \texttt{release} are planned but not implemented ---
+both are selectable, validatable labels with \texttt{release}-equivalent build semantics
+(Section~\ref{sec:anatomy-levels}).
+Implementation status: the chain is demonstrated in a first end-to-end run --- the smoke
+measurement series over 43 permutations in the appendix is its product ---; the headless service,
+the XML creation mode, the \texttt{<publish>} section, and the CSV tree form are planned but not
+implemented. The \emph{evidence} is Section~\ref{sec:complex-axis} (complex bracket; structure),
+Section~\ref{sec:hw-probe} (two-way split detection; structure), Section~\ref{sec:stamp-model}
+(stamp lines; structure), Section~\ref{sec:impl-system-axes} (re-entry guards and order checks;
+test), and, for RQ4.a, Section~\ref{sec:impl-pipeline} (planner, driver, and measurement pipeline;
+structure) and Section~\ref{sec:mess-chain} (chain from the XML to the tier binary; structure).
+The \emph{consequence}: RQ4 and RQ4.a structurally answered; heuristics automation, fit stamp, and
+the sequence of \texttt{compare} and \texttt{release} open.
+
+\begin{table}[htbp]\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.3cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.3cm}@{}}
+\toprule
+Question & Sub-question & Status & Evidence (sections; kind) & Remainder \\
+\midrule
+RQ0 & main question: active, measurement-driven versus passive, static & open & {\ref{sec:axis-triad}} (structure), {\ref{sec:impl-system-axes}} (test), {\ref{sec:eval-method}} (measurement plan) & number from series~A after the full build \\
+RQ0.E & attributability of a gain to organ, system, measurement & structurally answered & {\ref{sec:axis-triad}}, {\ref{sec:stamp-model}} (structure) & measurement that exercises the attribution \\
+RQ1 & canonical decomposition, permutation matrix, profiles & structurally answered & {\ref{sec:axis-triad}}, {\ref{sec:mess-chain}} (structure), {\ref{sec:impl-contracts}} (test) & run over all eighteen axes; profile connection of the meta-meta axis \\
+RQ1.a & category cut of the decomposition & answered & {\ref{sec:axis-triad}} (structure), {\ref{sec:impl-system-axes}} (test) & --- \\
+RQ1.b & organ couplings, ISA/SIMD variation & open (measurement) & {\ref{sec:axis-triad}} (structure) & cache-line fill behaviour per system permutation \\
+RQ2 & measurement pipeline, three series, three levels, verification & structurally answered & {\ref{sec:mess-chain}}, {\ref{sec:measurement-system}} (structure) & full permutation of the workloads; calibrated thresholds \\
+RQ2.a & measurement axes as a realm of their own & answered & {\ref{sec:axis-triad}} (structure), {\ref{sec:impl-system-axes}} (test) & catalogue of the success parameters per axis \\
+RQ2.b & node/cache-line size axis-isolated & structurally answered & {\ref{sec:measurement-system}} (structure) & measurement over node type, layout, prefetch \\
+RQ2.c & extensibility, integration of new probes & answered (conceptually) & {\ref{sec:anatomy-levels}}, {\ref{sec:mess-chain}} (structure), {\ref{app:interfaces}} (test) & paper-isolation mode; materialization of \texttt{Verbund2\_Hybrid} \\
+RQ2.d & workload state of the art & answered & {\ref{sec:workload-basics-known}} (literature), {\ref{sec:eval-workloads}} (structure) & full permutation of the workloads; only YCSB registered as load framework \\
+RQ3 & PRT-ART against SOTA in series A--C & open & {\ref{sec:prtart-demo}}, {\ref{sec:sota-instances}} (structure) & series~A\@; full build-out of the contract \\
+RQ3.a & page representation, switching rules & structurally answered (prescription without measurement evidence) & {\ref{sec:prtart-demo}} (structure) & platform-calibrated rules from the runs \\
+RQ3.b & compile-time force & answered & {\ref{sec:measurement-system}} (structure), {\ref{sec:impl-contracts}} (test) & --- \\
+RQ4 & compile time versus run time, provenance & structurally answered & {\ref{sec:stamp-model}}, {\ref{sec:hw-probe}} (structure), {\ref{sec:impl-system-axes}} (test) & fit stamp; heuristics automation \\
+RQ4.a & declarative chain from the XML to the evaluation & structurally answered & {\ref{sec:impl-pipeline}}, {\ref{sec:mess-chain}} (structure) & sequence of \texttt{compare} and \texttt{release}; service, creation mode, CSV tree \\
+RQ4.E & boundary along the axis categories & answered & {\ref{sec:complex-axis}}, {\ref{sec:stamp-model}} (structure) & --- \\
+\bottomrule
+\end{tabular}
+\caption{The chain of evidence per main and sub-question: status in three grades (answered,
+structurally answered, open), the supporting sections with their kind of evidence (structure, test,
+measurement; for RQ2.d the literature evidence), and the open remainder without a
+number.}\label{tab:ff-beweiskette}
+\end{table}
+
+\paragraph{Implementation status.} The declared build scope --- per system permutation the 131072
+organ permutations of the golden reference catalogue; the catalogue comment estimates roughly
+224~GB and roughly 24~hours per complete build, an estimate, not a measured value --- has not been
+carried out; the end-to-end runs of the measurement driver across the target platforms (x86-64
+with AVX2 and AVX-512, aarch64 with NEON and SVE\footnote{NEON and SVE\@: the SIMD extensions of
+the ARM architecture --- NEON with a fixed 128-bit width, SVE (Scalable Vector Extension) with an
+implementation-dependent vector width.}) are not available, nor is the delivery measurement over
+the 320-identity catalogue. Substantiated by a run are two partial executions: the first
+end-to-end run of the chain from the experiment XML via build and measurement to the included
+appendix (Section~\ref{sec:eval-xml}) --- a measurement job of the smoke stage on the AMD Zen~5
+machine\footnote{Provenance of the smoke run: pipeline 15800, measurement job 377503, host prod1
+(Appendix~\ref{app:measurements}); a preceding first end-to-end run of the same chain (pipeline
+15764, job 376333) yielded 1199.047~ns per operation at 10000 operations, its measuring machine is
+not documented and the difference not assessed.} with 10000 operations and 671.5~ns per operation
+(p50 of the \texttt{lookup} operation 750~ns) as the real measured value of the path --- and the
+calibration run on the AMD machine, which built 250 of 250 tier binaries and calibrated the build
+cadence to 0.521~s per binary and the space requirement to roughly 457~kB per binary; from this
+follows a storage requirement of roughly 240~GB for the complete build of 524288 tier binaries over
+the four system permutations of the golden profile (two optimization levels times two SIMD
+options). The smoke series --- 43 permutations in two sub-blocks: 27 Cartesian
+SIMD$\times$layout$\times$allocator combinations plus 16 over node width, path compression,
+internal search, and telemetry --- is available in Appendix~\ref{app:measurements}; its provenance
+is the data state under which it was collected: seven varied axes of that count, of which SIMD and
+telemetry are no longer organ axes in the canonical order. It approximates axis effects partly via
+wall-clock proxies, and individual effects are instrumentation artefacts\footnote{Instrumentation
+artefact (probe effect): the change of the observed behaviour by the measuring instrument
+itself~\cite{gait1986probe}.} rather than organ effects; the caveats per series are listed in
+Table~\ref{tab:le:limitierung} (Section~\ref{sec:measurements:limitations}). The apparatus-side
+acceptance per package runs through the two-gate protocol (Section~\ref{sec:impl-contracts}). The
+\emph{consequence}: RQ0 and RQ3 remain open as long as series~A has not run; all eighteen axes are
+planned for variation (not measured).
 
 \section{Limitations}\label{sec:limitations}
+The following limits describe what a user cannot achieve with the system --- apart from the
+natural and self-chosen limits of the machine on which they work; caveats of individual measurement
+series are listed in the measurement appendix (Table~\ref{tab:le:limitierung}), implementation
+states in the implementation chapter (Chapter~\ref{ch:impl}), and the implementation status of the
+full build and the smoke series is stated in Section~\ref{sec:answers}. Two limits follow from the
+store principle, the rest are derived from the architecture: machine-specific empirical
+optimization is the essential trait of cache-aware methods --- ATLAS~\cite{whaley2001atlas} and
+FFTW~\cite{frigo1998fftw} survey the machine before they choose the code ---, and cache-oblivious
+methods~\cite{frigo1999cache} are the opposite pole without machine binding; an apparatus that
+makes machine binding its principle inherits its costs. The module bodies are not a limit: the code
+generator of the measurement path emits per permutation the eighteen fully qualified axis types
+together with the umbrella include, the legacy path with the probe stub is separated from the
+measurement path by a strict barrier, and the zero statements of the fixed-assigned pool families
+are explicitly coded non-observation with reason (Section~\ref{sec:impl-pipeline};
+Table~\ref{tab:le:limitierung}).
 \begin{itemize}
-  \item \textbf{Module bodies:} the ad-hoc codegen of the active measurement path emits real
-  axis-library bodies per permutation (in the state of this work the eighteen fully qualified axis
-  types plus the umbrella include); only the legacy profile codegen still produces ABI-conformant
-  skeleton modules, and the remaining gaps are the PRT-ART probe stub and the honestly
-  zero-reported storage/prefetch axes of the pool families.
-  \item \textbf{Full build and delivery measurement pending:} the declared build target
-  (Section~\ref{sec:eval-method}) --- per system permutation the $2^{17}$ organ permutations of
-  the canonical catalog --- has not yet been run, nor has the delivery measurement over the small,
-  materializable 320-identity catalog (Section~\ref{sec:impl-contracts}); the end-to-end
-  \texttt{messung\_driver} runs across the target platforms (AVX2/AVX-512, ARM NEON/SVE) are
-  outstanding, while the apparatus-side acceptance per package already runs through the two-gate
-  protocol.
-  \item \textbf{Results chapter:} currently methodological; concrete measurements follow. A first
-  real smoke measurement series (43 permutations) is available in Appendix~\ref{app:measurements},
-  but does not replace the mandatory measurement series.
-  \item \textbf{Hardware counters off by default and partly source-dependent:} PMC capture (L1, L3,
-  dTLB, and, since M-3a, branch misses via \texttt{perf\_event\_open}) is disabled by default;
-  L2 misses and coherence invalidations stay structurally at zero regardless of the switch for
-  lack of a portable counter, the last-level counter can additionally fail to open on individual
-  AMD platforms, and energy capture via RAPL is wired up best-effort but stays empty without root
-  or zone read access\@; IPC is planned as an extension of the
-  counter set and is currently not captured.
-  In the smoke series so far
-  the hardware columns are zero --- the cache-aware node/data/index measurement component is thus
-  still pending (Figure~\ref{fig:measurement-triangle}).
-  \item \textbf{Hardware detection in partial build-out:} the first two build-out stages ---
-  provenance vocabulary, SPD parser, and error domain as well as acquisition chain, compile-time
-  factory, and runtime verdict --- are available as code (Section~\ref{sec:impl-system-axes});
-  outstanding are the wiring into runner and probe dock, the additive result write-back including
-  its consumers, the provenance round trip of the machine declarations, and the fit-stamp check
-  (Sections~\ref{sec:hw-probe} and~\ref{sec:answers}).
-  \item \textbf{Evaluation encoding:} CSV is the implemented state; the xlsx factory writer
-  decided as the future default (one sheet per selected sub-axis permutation plus an info sheet,
-  Section~\ref{sec:eval-results}) is not yet built.
-  \item \textbf{Smoke series with apparatus caveats:} the real measurements so far vary seven axes
-  of the then nineteen-axis count (interim state of July 2026) in two sub-blocks (27
-  SIMD$\times$layout$\times$allocator combinations plus 16 combinations over node width, path
-  compression, internal search, and telemetry), and partly approximate axis effects via wall-clock
-  proxies; single effects are apparatus rather than organ artefacts (\enquote{shadowing}). The
-  complete limitation table is given in Section~\ref{sec:measurements:limitations}.
+  \item \textbf{Version change of an axis algorithm:} If the user changes the version of an axis
+  algorithm, every tier binary whose overlay cut contains the file becomes a new identity --- the
+  overlay member of the fingerprint hashes all sources of the cut, and the version lock demands the
+  deliberate regeneration commit for every change to a recorded file
+  (Section~\ref{sec:impl-contracts}); the store's stock of these binaries together with measurement
+  and evaluation has to be regenerated, because the fingerprint of the CacheEngineBuilder is
+  provenance, not a reuse criterion. What the user cannot do: exchange a single algorithm and keep
+  the measurements of the remaining binaries.
+  \item \textbf{Store per machine type and hardware configuration:} Measured values are keyed to
+  the hardware identity of the measuring machine --- stock~2 of the store is addressed via the
+  fingerprint of the measured binary and the hardware identity, the platform cell bracketed beside
+  it (Section~\ref{sec:lager}) ---; the entire store has to be measured separately per machine type
+  and hardware configuration. What the user cannot do: transfer measured values from one machine
+  to another. That is the price of machine-specific optimization (ATLAS~\cite{whaley2001atlas},
+  FFTW~\cite{frigo1998fftw}) and the reason for the three machine signatures of the system
+  registry.
+  \item \textbf{Coverage of the hardware counters per microarchitecture:} In the measurement path
+  the counter collection is active --- the emitted measurement jobs set the PMC switch, only the
+  test build builds without hardware access. Collected are four generic counters (L1, last-level,
+  dTLB, and branch misses via \texttt{perf\_event\_open}\footnote{\texttt{perf\_event\_open}(2): the
+  Linux system call that opens a hardware or software counter as a file descriptor; generic events
+  are mapped by the kernel per microarchitecture, model-specific ones require a raw encoding.})
+  and two model-bound raw counters (L2 demand misses and fills from the cache of a foreign CCX as
+  coherence observables), the latter only where the encoding is cross-checked by measurement ---
+  AMD Zen~5; without a catalogue entry the fields carry an explicitly coded
+  non-observation\footnote{Explicitly coded non-observation: the missing value is a state of its own
+  (n/a with reason), never a zero; statistics speaks of planned missing data whose missingness
+  mechanism is known and which therefore introduces no bias~\cite{graham2006planned,graham2009missing}.}
+  (n/a), never a zero, and for Intel there is no raw assignment until an Intel host provides the
+  cross-check. The last-level event fails to open on Zen~5 (no generic mapping),
+  RAPL\footnote{RAPL (Running Average Power Limit): the energy counters of the processor packages,
+  readable under Linux via the powercap sysfs zone; the zone is often readable only with root
+  privileges.} is best-effort and empty without zone read permission, and IPC is declared as a
+  category, not collected. In the smoke series the hardware columns are not collected (n/a); the
+  tabulated zeros of the appendix tables are presentation, not measurement
+  (Table~\ref{tab:le:limitierung}, row~1). What the user cannot do: obtain L2 and coherence
+  counters on models other than Zen~5 (Figure~\ref{fig:measurement-triangle}).
+  \item \textbf{Hardware fit without automatic check:} The hardware detection is available in
+  three functions: the acquisition (the ISA complex axis with the SPD/XMP declaration of the memory
+  clocking and the planner probe, which asks the host for its counters per run), the compile-time
+  factory (the tier stamps from the actual properties), and the runtime verdict; the machine
+  declarations of the system registry are declarations with a preserved source
+  (\texttt{dmidecode}). Not present are the wiring into runner and probe dock, the additive result
+  write-back, the provenance round trip of the declarations, and the fit stamp. What the user
+  cannot do: have the fit between machine and binary checked automatically
+  (Sections~\ref{sec:hw-probe} and~\ref{sec:impl-system-axes}).
+  \item \textbf{Output without sheet fan-out:} The result workbook arises unconditionally in
+  memory; xlsx is the default, the CSV form its selectable counterpart, always generated from it
+  --- not a single child document but an ordered tree of CSV files with one folder per sheet ---,
+  and both together are selectable
+  (Section~\ref{sec:eval-identity}). The workbook possesses a constant sheet key --- all rows in
+  one sheet ---; the fan-out into one sheet per sub-axis permutation plus an info sheet is planned
+  as a filter chain of the evaluation but not implemented; the CSV projection is a flat file, the
+  tree form not implemented. What the user cannot do: obtain results per sub-axis permutation as
+  separate sheets or obtain the CSV storage as a tree.
+  \item \textbf{Permutation space and budget:} A complete build of the golden reference catalogue
+  costs, per system permutation, roughly 224~GB and roughly 24~hours according to the catalogue's
+  estimate, roughly 457~kB and 0.521~s per tier binary according to the calibration
+  (Section~\ref{sec:answers}); the planner computes the cardinality per profile and offers budget
+  inputs in the subcommand \texttt{simulate} (bytes per binary, store budget, measurement subset,
+  candidates). What the user cannot do: materialize the full product space of all axis catalogues
+  --- they choose catalogues or subsets, and the number of repetitions per measurement remains a
+  trade-off between effort and confidence~\cite{kalibera2013rigorous}.
+  \item \textbf{No runtime switch between tier binaries:} The hybrid stage is implemented as
+  classification, dock layer, XML parser, and binary proxy
+  (Section~\ref{sec:impl-hybrid-lager}); the \texttt{.so} export of the hybrid stage, the eviction,
+  and the router are not implemented --- reroute and router presuppose measurement curves. What the
+  user cannot do: operate a hybrid tier that switches between preloaded binaries at run time; the
+  state handover on switching --- the memento reconciliation with the two release artefacts single
+  and hybrid in the store --- is likewise designed, not implemented.
+  \item \textbf{Operating-system regime:} The system axis \texttt{operating\_system} is declared
+  with \texttt{linux}, \texttt{windows}, and \texttt{macos} and possesses one probe each;
+  measurement takes place under root Linux with full counter access, the second regime (immutable
+  operating system) is designed, not implemented (Section~\ref{sec:eval-platforms}), and a Windows
+  counter driver is not available (Table~\ref{tab:le:limitierung}, row~1). What the user cannot
+  do: collect measurement series under Windows or macOS or without perf permissions
+  (\texttt{perf\_event\_paranoid}, RAPL zones).
+  \item \textbf{No isolated re-measurement of a single publication:} An operating mode that offers
+  the design constituents of exactly one publication as a closed axis set is not implemented; per
+  publication there exist the profile XML (33) and the replacement merge, not the isolation against
+  all remaining axes. What the user cannot do: measure a publication in isolation, faithfully to
+  the original (Section~\ref{sec:outlook}).
+  \item \textbf{No automatic selection of the best configuration:} The heuristics-driven full
+  automation (classifier and binary packager) is not implemented; present are the
+  measurement-driven increment of the binary selection (ranking per metric from the evaluation
+  output) and the runtime-dynamic cache-line policy. What the user cannot do: have an axis
+  configuration recommended automatically from load-profile and hardware features; the
+  recommendation remains a manual derivation from the evaluation (Section~\ref{sec:outlook}).
 \end{itemize}
 
 \section{Outlook}\label{sec:outlook}
-In the short term: the full build following the declared target (Section~\ref{sec:eval-method}),
-the delivery measurement over the 320-identity catalog, the end-to-end run of the three mandatory
-series on real hardware including the generation of the measurement diagrams, the build-out of the
-hardware detection by wiring, result write-back, and fit stamp, the decided xlsx factory writer,
-and the closing of the remaining module-body gaps (PRT-ART stub, honest-0 storage/prefetch axes of
-the pool families).
-To this is added the paper-isolation mode designated as outlook in RQ2: an
-operating mode that offers the design components of exactly one publication as a closed axis set
-in isolation, in order to measure them faithfully to the original --- with measurement and system
-axes remaining free-standing.
+In the short term the following steps are due; implemented parts appear with their open remainder,
+designed parts with their implementation status:
+\begin{enumerate}[label=(\arabic*)]
+  \item the complete build according to the declared scope (Section~\ref{sec:eval-build-scope}) and
+  the delivery measurement over the 320-identity catalogue;
+  \item the end-to-end run of the three mandatory measurement series on the registered measurement
+  machines together with the generation of the measurement diagrams;
+  \item the full build-out of the store: the binaries \emph{with} and \emph{without} measurement
+  sensors as two stored release artefacts and the synthesized function curves as files ---
+  measurement is always switched on, in the store only what is missing is re-measured
+  (Section~\ref{sec:lager}); the build-out is not implemented;
+  \item the hardware detection: wiring into runner and probe dock, result write-back, provenance
+  round trip, and fit stamp;
+  \item the sheet fan-out of the xlsx workbook per sub-axis permutation plus info sheet --- the
+  workbook writer is implemented, the fan-out is not implemented;
+  \item the cross-check of the Intel raw counters on prod2, so that L2 and coherence counters are
+  collected there as well;
+  \item the second operating-system regime (immutable operating system) and the Windows counter
+  driver;
+  \item the paper-isolation mode from RQ2.c: an operating mode that offers the design constituents
+  of exactly one publication as a closed axis set in isolation, in order to measure them --- with
+  measurement and system axes remaining free-standing --- faithfully to the original;
+  \item the profile connection of the organ meta-meta axis \texttt{disk\_io} and the permutation
+  build over the scheduling sub-axis;
+  \item the full permutation of the workloads against all living-being binaries (RQ2);
+  \item the evaluation of the H2 criterion after the run of series~A\@.
+\end{enumerate}
 
-\paragraph{Heuristic automation and binary delivery.} The mechanism demanded by the thesis assignment
-(sub-task~7), which automatically derives the best configuration from the measurement results, is
-deliberately not yet implemented in its heuristics-driven \emph{full} automation and is reserved for a
-follow-up phase; a first increment of the automatic selection and binary shipping, however, is
-already available as a standalone tool (\texttt{best\_binary\_selector}) that ranks and delivers the
-best permutation per metric from the measurement CSVs. The full expansion presupposes three
-components; the second is already implemented, and toward the first and the third this tool
-provides a first, purely measurement-driven increment: (i) a \emph{heuristic/ML classifier} that maps the load-profile and axis
-features (operation mix, key characteristics, hardware identifier) to the recommended axis configuration;
-(ii) the already implemented \emph{XML parser} (import and export including the extractor) for the heuristic policies stored as an XML load-profile result and reusable per
-architecture focus; and (iii) a \emph{binary packager} that delivers the thus-selected overall algorithm
-as a standalone binary behind the unified search-algorithm interface. A prerequisite for all three is that
-the end-to-end measurement series be fully available beforehand --- only the robust data basis across all
-permutations and load profiles makes a measurement-driven, automatically controlled selection meaningful;
-until then, the configuration recommendations of the evaluation scheme from
-Section~\ref{sec:eval-results} will initially be derived manually once the data are available.
+\paragraph{Heuristic automation and binary delivery.} The mechanism demanded by the thesis
+assignment (sub-task~7), which automatically derives the best configuration from the measurement
+results, is not implemented in its heuristics-driven \emph{full} automation and is a subject of
+future work; a first increment of the automatic selection and binary shipping is available as a
+standalone tool (\texttt{best\_binary\_selector}) that ranks and delivers the best permutation per
+metric from the evaluation output --- the xlsx workbook is the output and the default, the CSV form
+its ordered tree of CSV files generated from it (one folder per sheet, no single child document),
+and the tool reads the CSV projection, which the seam writes as one flat file (the tree form is
+planned but not implemented). Besides the selection (commitment~1), the same tool strand
+comprises the runtime-dynamic cache-line adaptation (commitment~2), which is pertinent to the
+cache-line awareness of the thesis: from an evaluated profile aggregate the policy selector derives
+the cache-line policy. The full build-out presupposes three components; the second is available,
+and toward the first as well as the third the tool provides a first, purely measurement-driven
+increment: (i) a \emph{heuristic/ML classifier} that maps from the load-profile and axis features
+(operation mix, key characteristics, hardware identifier) to the recommended axis configuration;
+(ii) the implemented \emph{XML parser} (import and export including the profile loader) for the
+heuristic policies stored as an XML load-profile result and reusable per architecture focus; and
+(iii) a \emph{binary packager} that delivers the overall algorithm selected in this way as a
+standalone binary behind the unified search-algorithm interface. A prerequisite for all three is
+that the end-to-end measurement series are fully available --- only the robust data basis across
+all permutations and load profiles makes a measurement-driven, automatically controlled selection
+meaningful; without this automation the configuration recommendations of the evaluation scheme
+from Section~\ref{sec:eval-results} are derived manually once the data are available.
 
 \medskip
-In the medium to long term: a GPU adapter (Grace Hopper cluster, ZIH), PIM-allocator integration (A16),
-and formal verification of selected permutation classes (StarMalloc-style, A13). The three-repository
-architecture lets future students add further probe algorithms analogously to PRT-ART without modifying the
-cache-engine building-block library --- a key design principle for the scalability of the research infrastructure.
-Beyond the tree-like search structures treated here, the anatomy principle extends through higher-level
-abstractions to the further structure classes of Section~\ref{sec:overview} --- hash-based, spatial,
-and flat structures ---, so that the same measurement and permutation apparatus
-can be applied to entirely new classes without rebuilding it; herein lies a key lever for future
-experimental progress.
+In the medium to long term: the measurement of the PIM allocator family on PIM
+hardware\footnote{PIM (Processing-in-Memory): memory devices with computing units of their own,
+such as UPMEM DPUs or Samsung's HBM-PIM\@; a PIM allocator requires such hardware.} --- the
+allocator A16 is integrated as an axis building block and falls back to the portable aligned
+allocation without PIM hardware~\cite{pimmalloc2026} ---; the formal verification of selected
+permutation classes in the style of StarMalloc~\cite{reitz2024starmalloc}\footnote{StarMalloc is
+verified in F\textsuperscript{$\ast$} with the framework Steel, a separation logic for concurrent
+programs; the verification of an axis building block in this style is outlook.} --- the allocator
+family A13 is integrated, the verification itself is open ---; the transfer of the anatomy
+principle to accelerator memory hierarchies (GPU), without a commitment of cluster availability;
+and the hybrid components live ranking, state handover, and measurement-error interpolation
+(Section~\ref{sec:heuristics-modes}). The four-repository architecture (Section~\ref{sec:repos})
+--- cache engine, probe, super-repository, manuscript --- allows further probes to be brought in
+analogously to PRT-ART without changing the building-block library: the probe contract of the
+build configuration checks the code path and the registry path against each other, so that both
+halves of the integration point to the same place. Beyond the tree-like search structures treated
+here, the anatomy principle is extensible via higher-level abstractions to the further structure
+classes from Section~\ref{sec:overview} --- hash-based, spatial, and flat structures ---, so that
+the same measurement and permutation apparatus can be applied to new classes without a rebuild;
+herein lies an essential lever for future experimental progress.
