@@ -2,37 +2,82 @@
 
 % [AP-G5-Anhang / AP-EN] Mirror of anhang/de/F_comparison_interfaces.tex. Full standard interface tables (C++23).
 This appendix presents --- complementing Section~\ref{sec:measurement-system} --- the complete
-listing of all standard interface functions of the two comparison shells \texttt{std::map} (ordered
+listing of all standard interface functions of the two comparison hulls \texttt{std::map} (ordered
 associative) and \texttt{std::vector} (sequence) as of C++23, with their officially expected
-semantics and complexity guarantee per the ISO C++ standard~\cite{iso_cpp}. It also serves as a
-central reference for the further development of the cache engine: because the search-algorithm
-shell replaces its internals with dynamically interchangeable axis algorithms
-(Section~\ref{sec:measurement-system}), it becomes explanation-worthy, per standard function, what
-behaviour the external contract guarantees.
+semantics and their complexity guarantee per the ISO C++ standard~\cite{iso_cpp}. It also serves as
+the central reference for the further development of the cache engine: because the search-algorithm
+hull exchanges its internals at compile time --- each axis choice yields a compiled binary of its own
+---, while at run time only the parameters of the dynamic sub-axes are readjusted (the registered
+dynamic dimensions of the measurement realm, Section~\ref{sec:measurement-system}), it becomes
+necessary to explain, per standard function, which behaviour the outer contract guarantees.
 
-\emph{Variadic mapping.} One template parameter provides the \texttt{std::vector} API, two
-parameters the \texttt{std::map} API, and $N>2$ a \texttt{std::map<K,\,std::tuple<\ldots>>}
-(Section~\ref{sec:impl-architecture}); the shared functions (iteration,
-\texttt{size}/\texttt{empty}/\texttt{clear}, \texttt{swap}, \texttt{get\_allocator}) carry the same
-semantics in both shells.
+\emph{Variadic mapping.} The hybrid search engine of the probe PRT-ART ties the number of
+parameters to the hull: one template parameter demands all function interfaces of a
+\texttt{std::vector}, two those of a \texttt{std::map}, and $N>2$ those of a
+\texttt{std::map<K,\,std::tuple<\ldots>>} (Section~\ref{sec:impl-architecture}). The cache engine
+derives the types from the same rule --- with one parameter the key is assigned implicitly as a
+monotonically counted 64-bit value, with $N>2$ the value becomes the tuple ---; its two contract
+hulls are implemented as separate genus adapters: the Map genus via the functional drive of the
+module boundary with the five operations \texttt{tier\_insert}, \texttt{tier\_lookup},
+\texttt{tier\_erase}, \texttt{tier\_clear}, and \texttt{tier\_size}, the Sequence genus via the
+sequence drive with \texttt{tier\_push\_back}, \texttt{tier\_at}, \texttt{tier\_size}, and
+\texttt{tier\_clear}; an adapter cutting across the genus is ruled out by the type system. The case
+$N>2$ is type derivation without an adapter of its own; the module boundary carries key and value
+throughout as 64-bit values. The shared functions (iteration,
+\texttt{size}/\texttt{empty}/\texttt{clear}, \texttt{swap}, \texttt{get\_allocator}) have the same
+name and the same role in both hulls; of these, both hulls pass \texttt{size} and \texttt{clear}
+across the module boundary, \texttt{empty} is derived host-side, iteration and \texttt{swap} do not
+cross the boundary, and \texttt{get\_allocator} is, on the map side, an optional proxy sub-interface
+outside the oracle (Section~\ref{asec:if-decomp}).
 
-\emph{Composite functions.} Some functions arise ``under the hood'' as a composition of more
-primitive operations --- e.g.\ \texttt{operator[]} as \texttt{lower\_bound} followed by default
+\emph{Composite functions.} Some functions arise internally as a composition of more primitive
+operations --- for instance \texttt{operator[]} as \texttt{lower\_bound} followed by default
 insertion on a missing key, or \texttt{at} as \texttt{find} with a thrown
-\texttt{std::out\_of\_range} exception on absence ---; such cases are marked in the ``Note'' column.
-The ``Since'' column names the introducing standard version. The exact cache-engine-internal
-function-handle hops are documented in a dedicated cache-engine developer document.
+\texttt{std::out\_of\_range} exception on absence ---; such cases are marked in the
+\enquote{Note} column. The \enquote{Since} column names the introducing standard version. Three
+terms of the tables stem from the more recent development of the standard: the node
+handle\footnote{Since C++17, a node of an associative container can be unlinked with
+\texttt{extract} as a node handle, without copy or move, and spliced into another container with
+\texttt{insert} or \texttt{merge}~\cite{talbot2016splicing}.}, the deduction guides
+(CTAD)\footnote{\emph{Class template argument deduction}, since C++17: the template arguments of a
+class template are deduced from the constructor arguments, via guides formed implicitly from the
+constructors or stated explicitly~\cite{spertus2016ctad}.}, and the transparent key
+(Section~\ref{asec:if-map}). The exact cache-engine-internal function hops
+(\emph{function-handle hops}\footnote{Project-internal term of the cache engine for the sequence of
+internal function hops (handles) from the entry at the module boundary through the axis organs to
+the result; the developer document records them per standard function and marks functions that
+are not wired up as such.}) are documented in the developer document
+\texttt{docs/\allowbreak{}ENTWICKLER-\allowbreak{}FUNCTION-\allowbreak{}HANDLE-\allowbreak{}HOPS.md}
+of the cache engine; it records, per standard function, the hop path and the status at the module
+boundary.
 
-\emph{Conformance subset.} The conformance gate (Section~\ref{sec:measurement-system}) checks a
-core subset of the \texttt{std::map} operations before each measurement, so that only comparable
-things are compared; it is marked as such in the \texttt{std::map} table.
+\emph{Conformance subset.} Before each measurement, the conformance gate
+(Section~\ref{sec:measurement-system}) checks, per genus, a core subset of the hull operations
+against an oracle of the standard library --- \texttt{std::map} for the Map genus,
+\texttt{std::deque} for the Sequence genus ---, so that only comparable things are compared; the
+subset is marked with $\dagger$ in both tables.
 
 \section{\texttt{std::map} (ordered associative)}\label{asec:if-map}
 Table~\ref{tab:if-map} lists the complete interface of
 \texttt{std::map<Key,\,T,\,Compare,\,Allocator>} as of C++23. A $\dagger$ marks the core operations
 that the conformance gate (Section~\ref{sec:measurement-system}) checks before each measurement,
 so that only comparable things are compared. Complexities refer to $n=\texttt{size()}$; for range
-operations $N$ is the number of input elements.
+operations $N$ is the number of input elements; version markers and complexities follow the
+standard text~\cite{iso_cpp} and are cross-checked against the online
+reference~\cite{cppreference_map}. The seventeen marked operations are exactly the operation set of
+the gate's twelve core check blocks: no marked operation remains unchecked, no checked operation is
+unmarked (\texttt{size} is checked as well within the blocks, but belongs to the randomized core
+block and is therefore not marked). Four of the marked operations correspond directly to operations
+of the module boundary (\texttt{insert\_or\_assign} to the insert drive, \texttt{find} to the point
+query, \texttt{erase} and \texttt{clear} to their drives); \texttt{at}, \texttt{operator[]},
+\texttt{count}, \texttt{contains}, \texttt{empty} as well as \texttt{insert}, \texttt{emplace}, and
+\texttt{try\_emplace} are composed host-side --- \texttt{empty} from the size, the others from
+point query and insertion; the three non-overwriting forms run over one path and are set against
+three different oracle calls; \texttt{begin}/\texttt{end}, \texttt{lower\_bound},
+\texttt{upper\_bound}, and \texttt{equal\_range} are synthesized by the host in order via the
+additive scan capability of the module boundary, and if a loaded binary lacks it, the gate logs
+these blocks as skipped, not as passed; \texttt{key\_comp} is established at the oracle (key order
+less-than on 64-bit values), because the hull carries no comparator across the boundary.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
   \caption{Complete \texttt{std::map} interface (C++23)}\label{tab:if-map}\\
@@ -46,7 +91,7 @@ operations $N$ is the number of input elements.
 \endhead%
   \multicolumn{4}{@{}l}{\textbf{Construction, assignment, allocator}}\\
   \addlinespace[2pt]
-  \texttt{(constructor)} & empty; from \texttt{Compare}/\texttt{Allocator}; range; copy/move (incl.\ allocator-extended); \texttt{initializer\_list}; C++23 \texttt{from\_range} & $O(1)$ to $O(N\log N)$ & C++98 \\
+  \texttt{(constructor)} & empty; from \texttt{Compare}/\texttt{Allocator}; range; copy/move (incl.\ allocator-extended); \texttt{initializer\_list}; \texttt{from\_range} since C++23 & $O(1)$ to $O(N\log N)$ & C++98 \\
   \texttt{(destructor)} & destroys all elements and nodes & $O(n)$ & C++98 \\
   \texttt{operator=} & copy/move/\texttt{initializer\_list} assignment with allocator propagation & $O(n)$ & C++98 \\
   \texttt{get\_allocator} & copy of the associated allocator & $O(1)$ & C++98 \\
@@ -54,7 +99,7 @@ operations $N$ is the number of input elements.
   \multicolumn{4}{@{}l}{\textbf{Element access}}\\
   \addlinespace[2pt]
   \texttt{at}\,$\dagger$ & reference to the mapped value; throws \texttt{std::out\_of\_range} on absence & $O(\log n)$ & C++11 \\
-  \texttt{operator[]}\,$\dagger$ & reference; inserts a value-initialized element on absence (never throws) & $O(\log n)$ & C++98 \\
+  \texttt{operator[]}\,$\dagger$ & reference; inserts a value-initialized element on absence (no \texttt{std::out\_of\_range}; the insertion can throw \texttt{std::bad\_alloc} or constructor exceptions) & $O(\log n)$ & C++98 \\
   \addlinespace[3pt]
   \multicolumn{4}{@{}l}{\textbf{Iterators}}\\
   \addlinespace[2pt]
@@ -70,7 +115,7 @@ operations $N$ is the number of input elements.
   \multicolumn{4}{@{}l}{\textbf{Modifiers}}\\
   \addlinespace[2pt]
   \texttt{clear}\,$\dagger$ & remove all elements & $O(n)$ & C++98 \\
-  \texttt{insert}\,$\dagger$ & element(s) without overwriting (value, \texttt{P\&\&}, hint, range, \texttt{initializer\_list}, node handle since C++17) & $O(\log n)$; hint amort.\ $O(1)$ & C++98 \\
+  \texttt{insert}\,$\dagger$ & element(s) without overwriting (value, \texttt{P\&\&}, hint, range, \texttt{initializer\_list}, node handle since C++17) & $O(\log n)$; hint amort.\ $O(1)$; range $O(N\log(n{+}N))$ & C++98 \\
   \texttt{insert\_range} & insert an input range, no overwrite & $O(N\log(n{+}N))$ & C++23 \\
   \texttt{insert\_\allowbreak{}or\_\allowbreak{}assign}\,$\dagger$ & insert, or assign to an existing value; \texttt{bool} reports insertion & $O(\log n)$ & C++17 \\
   \texttt{emplace}\,$\dagger$ & construct in place, only if the key is absent (otherwise discarded) & $O(\log n)$ & C++11 \\
@@ -101,20 +146,45 @@ operations $N$ is the number of input elements.
   \texttt{operator<=>} & lexicographical three-way comparison; synthesizes \texttt{<\,<=\,>\,>=} & $O(n)$ & C++20 \\
   \texttt{std::swap} & specialization; calls \texttt{lhs.swap(rhs)} & $O(1)$ & C++98 \\
   \texttt{std::erase\_if} & removes all elements with \texttt{pred==true}; returns the count & $O(n)$ & C++20 \\
-  Deduction guides & CTAD from range/\allowbreak\texttt{initializer\_list}/\allowbreak\texttt{from\_range} & --- (compile time) & C++17 \\
+  Deduction guides & CTAD from range/\allowbreak\texttt{initializer\_list}/\allowbreak\texttt{from\_range} (\texttt{from\_range} since C++23) & --- (compile time) & C++17 \\
   \bottomrule
 \end{longtable}
 
-\noindent The pre-C++20 standalone relational operators \texttt{<\,<=\,>\,>=} are synthesized from
-\texttt{operator<=>} since C++20, and \texttt{!=} is rewritten from \texttt{operator==}. The
-heterogeneous (transparent-key) overloads of \texttt{operator[]}, \texttt{at},
-\texttt{try\_emplace}, and \texttt{insert\_or\_assign} belong to C++26 and are excluded here; the
-C++23 additions are exactly the \texttt{from\_range} constructor, \texttt{insert\_range}, and the
-transparent-key overloads of \texttt{erase}/\texttt{extract}.
+\noindent The comparison operators \texttt{<\,<=\,>\,>=}, standalone before C++20, are synthesized
+from \texttt{operator<=>} since C++20, and \texttt{!=} is rewritten from \texttt{operator==}. The
+heterogeneous overloads of \texttt{operator[]}, \texttt{at}, \texttt{try\_emplace}, and
+\texttt{insert\_or\_assign} (transparent key\footnote{Heterogeneous lookup since C++14: if the
+comparator carries the type \texttt{is\_transparent}, the lookup functions accept arguments of a
+type other than \texttt{key\_type} without forming a temporary key
+object~\cite{wakely2013heterogeneous}; C++23 extends this to
+\texttt{erase}/\texttt{extract}~\cite{boyarinov2021erasure}, C++26 to \texttt{operator[]},
+\texttt{at}, \texttt{try\_emplace}, and
+\texttt{insert\_or\_assign}~\cite{boyarinov2023heterogeneous}.}) belong only to C++26 and remain
+excluded here; the C++23 additions are the \texttt{from\_range} constructor,
+\texttt{insert\_range}, the transparent-key overloads of
+\texttt{erase}/\texttt{extract}, and the associated \texttt{from\_range} deduction
+guides~\cite{jabot2022ranges,boyarinov2021erasure}. The \texttt{constexpr} capability of
+\texttt{std::map} likewise belongs only to C++26 and remains excluded~\cite{cppreference_map}.
 
 \section{\texttt{std::vector} (sequence)}\label{asec:if-vector}
 Table~\ref{tab:if-vector} lists the complete interface of \texttt{std::vector<T,\,Allocator>} as of
-C++23 ($n=\texttt{size()}$). All members are \texttt{constexpr} since C++20.
+C++23 ($n=\texttt{size()}$, for range operations $N$ the number of input elements; version markers
+and complexities follow the standard text~\cite{iso_cpp} and are cross-checked against the online
+reference~\cite{cppreference_vector}). All members are \texttt{constexpr} since
+C++20\footnote{Since C++20, all member functions of \texttt{std::vector} are \texttt{constexpr}; a
+\texttt{constexpr} object itself usually fails on the dynamic
+storage~\cite{dionne2019constexprvector}.}. A $\dagger$ marks the core operations that the
+conformance gate of the Sequence genus checks before each measurement against a
+\texttt{std::deque} oracle (append, index access, size, clear; for these four operations the
+\texttt{deque} semantics coincide with those of \texttt{std::vector}): the sequence hull of this
+work offers exactly these four functions across the module boundary, and index access is checked
+there rather than undefined (status return: hit flag and output value at the module boundary,
+\texttt{std::optional} in the organ). All other functions of the table --- capacity control,
+position and range operations, \texttt{front}/\texttt{back}/\texttt{pop\_back}, \texttt{data},
+iterators, \texttt{swap}, and the non-members --- do not cross the module boundary; growth at the
+front end (\texttt{push\_front}), which the \texttt{deque} oracle would additionally offer, is
+envisaged as an extension of the module boundary but not implemented, and is logged in the gate as
+skipped, not as passed.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{1.1cm}@{}}
   \caption{Complete \texttt{std::vector} interface (C++23)}\label{tab:if-vector}\\
@@ -128,16 +198,16 @@ C++23 ($n=\texttt{size()}$). All members are \texttt{constexpr} since C++20.
 \endhead%
   \multicolumn{4}{@{}l}{\textbf{Construction, assignment, allocator}}\\
   \addlinespace[2pt]
-  \texttt{(constructor)} & empty/\texttt{Allocator}; $n\times$ default/value; range; copy/move (incl.\ allocator-extended); \texttt{initializer\_list}; C++23 \texttt{from\_range} & $O(1)$ or $O(n)$ & C++98 \\
+  \texttt{(constructor)} & empty/\texttt{Allocator}; $n\times$ default/value; range; copy/move (incl.\ allocator-extended); \texttt{initializer\_list}; \texttt{from\_range} since C++23 & $O(1)$ or $O(n)$ & C++98 \\
   \texttt{(destructor)} & destroys all elements, frees storage & $O(n)$ & C++98 \\
   \texttt{operator=} & copy/move/\texttt{initializer\_list} & $O(n)$ & C++98 \\
-  \texttt{assign} & replace contents with $n\times$ value/range/\texttt{initializer\_list} & $O(n)$ & C++98 \\
+  \texttt{assign} & replace contents with $n\times$ value/\allowbreak{}range/\allowbreak{}\texttt{initializer\_\allowbreak{}list} & $O(n)$ & C++98 \\
   \texttt{assign\_range} & replace contents with an input range & $O(n)$ & C++23 \\
   \texttt{get\_allocator} & copy of the associated allocator & $O(1)$ & C++98 \\
   \addlinespace[3pt]
   \multicolumn{4}{@{}l}{\textbf{Element access}}\\
   \addlinespace[2pt]
-  \texttt{at} & bounds-checked access; throws \texttt{std::out\_of\_range} & $O(1)$ & C++98 \\
+  \texttt{at}\,$\dagger$ & bounds-checked access; throws \texttt{std::out\_of\_range} & $O(1)$ & C++98 \\
   \texttt{operator[]} & unchecked access (UB out of range) & $O(1)$ & C++98 \\
   \texttt{front}/\texttt{back} & reference to first/last element (UB if empty) & $O(1)$ & C++98 \\
   \texttt{data} & pointer to the contiguous storage (not in \texttt{vector<bool>}) & $O(1)$ & C++11 \\
@@ -148,21 +218,21 @@ C++23 ($n=\texttt{size()}$). All members are \texttt{constexpr} since C++20.
   \addlinespace[3pt]
   \multicolumn{4}{@{}l}{\textbf{Capacity}}\\
   \addlinespace[2pt]
-  \texttt{empty}/\allowbreak\texttt{size}/\allowbreak\texttt{max\_size} & empty test, element count, maximum size & $O(1)$ & C++98 \\
+  \texttt{empty}/\allowbreak\texttt{size}\,$\dagger$/\allowbreak\texttt{max\_size} & empty test, element count, maximum size & $O(1)$ & C++98 \\
   \texttt{reserve} & capacity $\ge n$; reallocates and invalidates; throws \texttt{length\_error} if $n>$\texttt{max\_size()} & $O(n)$ & C++98 \\
   \texttt{capacity} & currently allocated capacity & $O(1)$ & C++98 \\
   \texttt{shrink\_to\_fit} & non-binding reduction of capacity toward \texttt{size()} & $O(n)$ & C++11 \\
   \addlinespace[3pt]
   \multicolumn{4}{@{}l}{\textbf{Modifiers}}\\
   \addlinespace[2pt]
-  \texttt{clear} & remove all elements (capacity unchanged) & $O(n)$ & C++98 \\
-  \texttt{insert} & before a position: value/$n\times$/range/\allowbreak\texttt{initializer\_list}; shifts the tail & $O(n)$ & C++98 \\
-  \texttt{insert\_range} & insert an input range before a position & $O(n)$ & C++23 \\
+  \texttt{clear}\,$\dagger$ & remove all elements (capacity unchanged) & $O(n)$ & C++98 \\
+  \texttt{insert} & before a position: value/$n\times$/range/\allowbreak\texttt{initializer\_list}; shifts the tail & $O(n)$; range forms $O(n{+}N)$ & C++98 \\
+  \texttt{insert\_range} & insert an input range before a position & $O(n{+}N)$ & C++23 \\
   \texttt{emplace} & construct an element in place before a position & $O(n)$ & C++11 \\
   \texttt{erase} & remove a position/range, shift the tail down & $O(n)$ & C++98 \\
-  \texttt{push\_back} & append an element (copy/move) & amort.\ $O(1)$ & C++98 \\
+  \texttt{push\_back}\,$\dagger$ & append an element (copy/move) & amort.\ $O(1)$ & C++98 \\
   \texttt{emplace\_back} & append in place; returns a reference since C++17 & amort.\ $O(1)$ & C++11 \\
-  \texttt{append\_range} & append an input range & amort.\ $O(n)$ & C++23 \\
+  \texttt{append\_range} & append an input range & amort.\ $O(N)$ & C++23 \\
   \texttt{pop\_back} & remove the last element (UB if empty) & $O(1)$ & C++98 \\
   \texttt{resize} & truncate to $n$, or fill with default/value & $O(n)$ & C++98 \\
   \texttt{swap} & exchange contents and capacity with another vector & $O(1)$ & C++98 \\
@@ -174,33 +244,45 @@ C++23 ($n=\texttt{size()}$). All members are \texttt{constexpr} since C++20.
   \texttt{std::swap} & specialization; calls \texttt{lhs.swap(rhs)} & $O(1)$ & C++98 \\
   \texttt{std::erase} & removes all elements equal to a value; returns the count & $O(n)$ & C++20 \\
   \texttt{std::erase\_if} & removes all elements with \texttt{pred==true}; returns the count & $O(n)$ & C++20 \\
-  Deduction guides & CTAD from range/\texttt{from\_range} & --- (compile time) & C++17 \\
+  Deduction guides & CTAD from range/\allowbreak\texttt{from\_range} (\texttt{from\_range} since C++23) & --- (compile time) & C++17 \\
   \bottomrule
 \end{longtable}
 
 \noindent The specialization \texttt{std::vector<bool>} packs boolean values bitwise: it has no
-\texttt{data()} and no contiguity guarantee, returns a proxy type \texttt{reference} instead of
-\texttt{bool\&} via \texttt{operator[]}/\allowbreak\texttt{at}/\allowbreak\texttt{front}/\allowbreak\texttt{back}, and additionally offers
-\texttt{flip()} (at the vector and the \texttt{reference} level), a static
-\texttt{swap(reference,\allowbreak\ reference)}, and a \texttt{std::hash} specialization. The
-comparison operators behave as for \texttt{std::map}.
+\texttt{data()} and no contiguity guarantee, returns via \texttt{operator[]}/\allowbreak%
+\texttt{at}/\allowbreak\texttt{front}/\allowbreak\texttt{back} a proxy
+type\footnote{Stand-in object: \texttt{vector<bool>::reference} behaves in an expression like
+\texttt{bool\&}, but denotes a single bit instead of an addressable object, which is why
+\texttt{data()} and the contiguity guarantee are dropped~\cite{iso_cpp}.} \texttt{reference}
+instead of \texttt{bool\&}, and additionally offers \texttt{flip()} (at the vector and at the
+\texttt{reference} level), a static \texttt{swap(reference,\allowbreak\ reference)}, and a
+\texttt{std::hash} specialization. The comparison operators behave as for \texttt{std::map}.
 
 \section{Composite Functions and the Conformance Subset}\label{asec:if-decomp}
-Several interface functions are ``under the hood'' compositions of more primitive operations
-(Table~\ref{tab:if-decomp}); the table describes the ISO standard contract. The measurement wrapper of
-this work deliberately deviates in two places, because the ABI conformance contract demands
-\texttt{noexcept} and a throwing wrapper counts as non-conformant: there, \texttt{operator[]} is a
-non-mutating \texttt{std::optional} read (the write path goes through
-\texttt{set()}/\texttt{insert\_or\_assign}), and \texttt{at} does not throw (\texttt{optional}/status
-return). For this thesis that is the central observation: all map accessors and
-modifiers rest on a single ordered-search primitive (\texttt{lower\_bound}/\texttt{find}); an axis
-implementation therefore only needs to provide a correct ordered search plus node linking, and the
-rest follows as a fixed composition --- exactly the substitutability whose comparison is the central
-measurement act (Section~\ref{sec:measurement-system}). The conformance gate checks the core subset
-marked with $\dagger$ in Table~\ref{tab:if-map}.
+Several interface functions are internally compositions of more primitive operations of the same
+interface (Table~\ref{tab:if-decomp}); the table describes the ISO standard contract. The
+measurement hull of this work deliberately deviates from it in two places, because the ABI
+conformance contract demands \texttt{noexcept} and a throwing hull counts as non-conformant:
+\texttt{at} delivers a status return instead of the exception (hit flag and output value at the
+module boundary, \texttt{std::optional} in the organ), and \texttt{operator[]} is not a call of its
+own at the module boundary but is composed host-side from point query and default insertion ---
+with the ISO semantics (insertion on absence, no \texttt{out\_of\_range}), but without a reference
+return across the binary boundary; the write path runs via \texttt{insert\_or\_assign}. In the
+sequence hull, \texttt{operator[]} is moreover checked rather than undefined
+(Section~\ref{asec:if-vector}). For this thesis that is the central observation: all map accessors
+and modifiers of the hull rest on a single query primitive of the module boundary --- the point
+query, flanked by insertion and deletion ---; an axis implementation therefore only needs to
+provide a correct point query together with node linking, and the rest follows as a fixed
+composition. The ordered operations --- \texttt{begin}/\texttt{end}, \texttt{lower\_bound},
+\texttt{upper\_bound}, \texttt{equal\_range} --- additionally require an ordered search and are
+therefore carried as a separate, additive capability of the module boundary; unordered axes
+satisfy the same hull without it and pay for the missing order with linear effort on ordered
+reading. Exactly this interchangeability is the object of the measurement
+(Section~\ref{sec:measurement-system}). The conformance gate checks, per genus, the core subset
+marked with $\dagger$ in Tables~\ref{tab:if-map} and~\ref{tab:if-vector}.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{3.1cm}@{}}
-  \caption{Composite functions (``under the hood'')}\label{tab:if-decomp}\\
+  \caption{Composite functions (internal composition of primitive operations)}\label{tab:if-decomp}\\
   \toprule
   \textbf{Function} & \textbf{Composition} & \textbf{Note} \\
   \midrule
@@ -209,8 +291,8 @@ marked with $\dagger$ in Table~\ref{tab:if-map}.
   \textbf{Function} & \textbf{Composition} & \textbf{Note} \\
   \midrule
 \endhead%
-  \texttt{map::}\allowbreak\texttt{operator[]} & \texttt{lower\_bound} + default insertion on absence $\to$ reference & mutates on absence; never throws \\
-  \texttt{map::at} & \texttt{find} + throw \texttt{std::out\_of\_range} on absence & the only throwing access; never mutates \\
+  \texttt{map::}\allowbreak\texttt{operator[]} & \texttt{lower\_bound} + default insertion on absence $\to$ reference & mutates on absence; no \texttt{out\_of\_range}, the insertion can throw \\
+  \texttt{map::at} & \texttt{find} + throw \texttt{std::out\_of\_range} on absence & the only access that throws on absence; never mutates \\
   \texttt{map::insert} / \texttt{emplace} & ordered search + link a node only if the key is absent & no overwrite; \texttt{emplace} may still consume arguments on a hit \\
   \texttt{map::try\_\allowbreak{}emplace} & like \texttt{emplace}, but arguments untouched on a hit & preserves move-only arguments \\
   \texttt{map::insert\_\allowbreak{}or\_\allowbreak{}assign} & ordered search + insert or assign & overwrites (unlike \texttt{insert}) \\
@@ -222,9 +304,25 @@ marked with $\dagger$ in Table~\ref{tab:if-map}.
   \bottomrule
 \end{longtable}
 
-\noindent Functions that both shells \emph{share} by name --- \texttt{size}, \texttt{empty}, \texttt{clear},
-the iterator families, \texttt{swap}, \texttt{get\_allocator}, and \texttt{insert}/\texttt{emplace}/%
-\texttt{erase} --- carry key semantics in the map and position/index semantics in the vector;
-\texttt{operator[]}, for instance, inserts in the map but is an unchecked index access in the
-vector. The exact cache-engine-internal function-handle hops behind these contracts are documented
-in a dedicated cache-engine developer document.
+\noindent At the module boundary, the order of primitiveness of this table is reversed: the one
+insert drive of the Map genus carries the semantics of \texttt{insert\_or\_assign} --- insert or
+update, the return reports whether a new key arose ---, so that \texttt{insert\_or\_assign} is the
+pass-through and the non-overwriting forms \texttt{insert}, \texttt{emplace}, and
+\texttt{try\_emplace} are composed host-side as a point query followed by insertion only on a
+missing key: one path for three standard functions, which the gate sets against three oracle calls.
+The ISO contract carries it the other way round (\texttt{insert} as the basic form,
+\texttt{insert\_or\_assign} as the composition); both views are correct and describe different
+levels --- exactly the contrast that makes the interchangeability behind a fixed interface
+concrete.
+
+\noindent Functions that both hulls \emph{share} by name --- \texttt{size}, \texttt{empty},
+\texttt{clear}, the iterator families, \texttt{swap}, \texttt{get\_allocator}, and
+\texttt{insert}/\texttt{emplace}/\texttt{erase} --- have the same role but different referents: key
+semantics in the map, position/index semantics in the vector; \texttt{operator[]}, for instance,
+inserts in the map, but is an unchecked index access in the vector --- checked in the sequence
+hull of this work (Section~\ref{asec:if-vector}), composed host-side in the map hull of this work
+(see above). This separation is structurally enforced in the cache engine: the Map and Sequence
+genera have separate drive interfaces and separate oracles, and an adapter foreign to its genus is
+ruled out by the type system. Which of these functions the module boundary provides, which the host
+composes, and which are not wired up is recorded, per function with its hop path, by the developer
+document named at the outset.
