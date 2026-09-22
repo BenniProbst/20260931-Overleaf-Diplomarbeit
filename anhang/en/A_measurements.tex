@@ -1,4 +1,12 @@
 \chapter{Complete Measurement Series}\label{app:measurements}
+% Order 272 T3 (V-270-5/6 b): placeholder families as a table, empty longtables as one line instead
+% of figure-less figures; return path after the measurement series = \PlatzhalterAlsTabellefalse
+% (RUECKWEG-REGISTER-270). EN twin of the DE switch definition: per build only ONE language file is
+% included (\include{anhang/\thesislang/A_measurements}), so the definition cannot collide.
+\newif\ifPlatzhalterAlsTabelle%
+\PlatzhalterAlsTabelletrue%
+% Reference only when the referenced generator table is included (otherwise Reference undefined).
+\newcommand{\PlatzhalterTabRef}[1]{\ifPlatzhalterAlsTabelle\else{} (Table~\ref{#1})\fi}
 
 % AUTO-FILLED: the tables + diagrams below are produced by the orchestrator
 % generate_measurement_appendix.ps1 from a measurements.csv (16-column schema,
@@ -7,30 +15,149 @@
 % To add a measurement series: run the orchestrator with -SpecId <id> and add the
 % two \input lines (table + diagram) here.
 
-This appendix contains the complete measurement series of the pre-configured organism permutations.
-Table~\ref{tab:measurements:v5_pipeline_demo} lists the metrics tabulated per permutation
-(operations; clock cycles approximated; cache misses L1--L3 are 0 in this PMC-less measurement
-series -- the measurement chain collects L1D, last-level, dTLB and, since M-3a, branch misses for
-real when built with
-\texttt{COMDARE\_ENABLE\_PMC}, cf.\ limitation~1 in Section~\ref{sec:measurements:limitations}); Figure~\ref{fig:measurements:v5_pipeline_demo}
-compares the clock cycles graphically.
-The series documented in this appendix are smoke proofs of the complete chain run with axis
-variation; they do not replace the mandatory measurement series A--C
-(Section~\ref{sec:eval-method}), whose full-build results are still pending.
+This appendix documents the measurement series and evaluation artefacts of the measurement chain
+(Section~\ref{sec:mess-chain}). Table~\ref{tab:measurements:v5_pipeline_demo} lists, per
+pre-configured living-being permutation, the metrics of the 16-column schema: the operation count
+(\texttt{op\_count}), the representative p50 latency in nanoseconds --- carried in the schema under
+the legacy column name \texttt{total\_cycles} and headed \enquote{cycles} in the table; these are
+not clock cycles\footnote{\texttt{total\_cycles}: the field of the snapshot schema holds the
+representative latency of the measurement in nanoseconds (the merged p50 value), not counted
+processor cycles; the column name is a legacy of the first schema version; the column is therefore
+headed \enquote{cycles} and denotes the p50 latency in nanoseconds.} --- as well as the columns of
+the cache misses L1--L3, which are not collected in this series (\texttt{pmc\_available} $= 0$) and
+are therefore tabulated as 0: they are to be read as explicitly coded non-observation (principle
+of explicitly coded non-observation, Section~\ref{sec:axis-triad}), not as a measured zero; an
+output of these cells as n/a is not implemented. With the switch
+\texttt{COMDARE\_ENABLE\_PMC} set (build option, default off so that the unit tests build without
+hardware access; the CI sets it in the PMC paths), the measurement chain collects L1D, last-level,
+dTLB and branch misses generically via
+\texttt{perf\_event\_open}\footnote{\texttt{perf\_event\_open}(2): the Linux system call that opens a
+hardware or software counter as a file descriptor; generic events are mapped by the kernel per
+microarchitecture, model-specific ones require the raw encoding of the event
+(\texttt{PERF\_TYPE\_RAW}: event number and mask as the hardware counts
+them).}~\cite{demelo2010perf} as well as L2 demand misses and fills from the cache of a foreign
+CCX\footnote{CCX (core complex): a core complex with its own L3 cache; demand fills from the cache
+of another CCX are the coherence observable of the core PMU, a literal invalidation counter does
+not exist in the event set.} model-bound via the RAW event catalogue --- cross-checked by
+measurement for the AMD Zen~5 microarchitecture (CPUID family
+26)~\cite{linux_perf_amdzen5,weaver2008counters}; models without a catalogue entry (all Intel
+models) carry n/a (limitation~1 in Section~\ref{sec:measurements:limitations};
+Section~\ref{sec:eval-counters}). Figure~\ref{fig:measurements:v5_pipeline_demo} compares the same
+metric graphically; its axis label \enquote{Cycles} follows the legacy column name. The series
+documented here are smoke proofs of the complete chain run with axis variation; they do not replace
+the mandatory measurement series A--C (Section~\ref{sec:eval-available},
+Table~\ref{tab:stage-series}), whose complete runs are not available (n/a) because the full build
+has not been carried out.
+
+The two permutation tables (Tables~\ref{tab:measurements:v5_pipeline_demo}
+and~\ref{tab:measurements:cartesian_smoke43}) originate from the in-process path
+(\texttt{run\_workload}) of a chain run on the development machine
+(Section~\ref{sec:eval-available}). All other artefacts of this appendix stem from \emph{one} smoke
+run of the measurement pipeline on the AMD Zen~5 machine --- stage \texttt{measure:smoke} of the
+first end-to-end run of the chain\footnote{Provenance of the smoke run: pipeline 15800, measurement
+job 377503, host prod1 (AMD Zen~5); these details come from the run log of the pipeline, the
+artefacts themselves contain none of them.}, system permutation optimisation level O3 with SIMD
+option \texttt{no\_extension} ---, and this run contains exactly \emph{one} cell: one search method
+(\texttt{k\_ary}), one load profile (\texttt{ycsb\_c}), one tier binary, one working set $n = 4096$,
+$N = 1$. The measured composition is identified by its \texttt{binary\_id} with 18 segments (header
+row of Table~\ref{tab:appendix:observer-detail}); stamp version line, fingerprint, host, date and
+run identifier are not carried by the generator outputs (n/a in the artefact) --- a provenance line
+per artefact that would make the identity stamps of Section~\ref{sec:stamp-model} readable in
+tables and diagrams is not implemented in the generator; the supporting record is the chain of
+evidence in this paragraph. PMC metrics appear in this appendix only as table columns (not
+collected); a PMC figure type does not exist in the generator. Every number in this appendix comes
+from these artefacts; no other measurement is cited.
+
+The metrics of this appendix are distributed over the three measurement levels of the
+measurement-tooling main axis --- wallclock (w), macro (ma) and micro (mi) in exactly this order
+(Section~\ref{sec:measurement-system}): \texttt{ns\_per\_op} $=$
+\texttt{total\_ns}/\texttt{timed\_ops} is the host wall-clock of the measurement across the load
+framework (w); \texttt{op\_<kind>\_p50} and \texttt{op\_<kind>\_p99} are the latencies of the family
+interface operations \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{scan} and
+\texttt{rmw} of the tier binary (ma); \texttt{seg\_<axis>\_ns} and \texttt{stat\_<axis>\_<field>}
+are the per-axis times and observer counters across the axis interfaces (mi); the PMC columns
+belong to the micro instrumentation (mi). This appendix does not redefine the levels, it assigns
+them: Table~\ref{tab:measurements:artefakt-ebenen} names, per artefact, the metric, its level and
+the data basis that the present corpus contains. In every section the design statement (what a
+representation delivers) is separated from the corpus statement (what the present run contains).
+
+\begin{footnotesize}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}p{1.1cm}>{\raggedright\arraybackslash}p{5.3cm}@{}}
+\caption{Artefacts of the measurement appendix: metric, measurement level (w/ma/mi) and the data
+basis contained in the present corpus; numbers only from the embedded artefacts}\label{tab:measurements:artefakt-ebenen}\\
+\toprule
+Artefact & Metric & Level & Data basis in the corpus \\
+\midrule
+\endfirsthead%
+\multicolumn{4}{@{}l}{\tablename\ \thetable{} --- continued}\\
+\toprule
+Artefact & Metric & Level & Data basis in the corpus \\
+\midrule
+\endhead%
+\midrule
+\multicolumn{4}{r@{}}{continued on next page}\\
+\endfoot%
+\bottomrule
+\endlastfoot%
+Table~\ref{tab:measurements:v5_pipeline_demo}, Figure~\ref{fig:measurements:v5_pipeline_demo} & \texttt{op\_count}; p50 latency (ns) under \enquote{cycles}; HW columns L1--L3 & w (HW columns: mi) & 6 permutations, 2000 operations per row; HW columns 0 = not collected \\
+Table~\ref{tab:measurements:cartesian_smoke43}, Figure~\ref{fig:measurements:cartesian_smoke43} & as above & w (HW columns: mi) & 43 permutations (27 + 16), 1000 operations per row; HW columns 0 = not collected \\
+Bias-break matrix (Table~\ref{tab:bias:search-algo-workload}) & median \texttt{ns\_per\_op} (nearest-rank), only \texttt{two\_phase\_valid} & w & $1{\times}1$ (\texttt{k\_ary} $\times$ \texttt{ycsb\_c}): 672 ns/op \\
+Heatmaps \texttt{lc\_\allowbreak{}surface\_*} (6) & \texttt{ns\_per\_op}; \texttt{op\_*\_p50} & w; ma &
+  \texttt{ns\_per\_op} and \texttt{lookup} measured, but $1{\times}1$ below the $2{\times}2$ minimum;
+  \texttt{insert}, \texttt{erase}, \texttt{scan}, \texttt{rmw} not executed --- six notes, no surface
+  \ifPlatzhalterAlsTabelle{}(represented by Table~\ref{tab:t3:surfaces} until the complete
+  measurement series)\fi \\
+3D views \texttt{lc\_\allowbreak{}surface3d\_*} (6) & as above & w; ma & two views with one support point
+  each (671.5 ns/op; 750 ns), four notes (not executed)
+  \ifPlatzhalterAlsTabelle{}(represented by Table~\ref{tab:t3:surfaces3d} until the complete
+  measurement series)\fi \\
+Sweep curves \texttt{ld\_\allowbreak{}sweep\_*} (3) & \texttt{ns\_per\_op}, \texttt{op\_insert\_p50},
+  \texttt{op\_lookup\_p50} over $n$ & w; ma & one measured $n$ (4096): one data point each for
+  \texttt{ns\_per\_op} and \texttt{lookup}; \texttt{insert} not executed (note)
+  \ifPlatzhalterAlsTabelle{}(represented by Table~\ref{tab:t3:sweep} until the complete
+  measurement series)\fi \\
+Per-axis attribution \texttt{seg\_\allowbreak{}attribution} & \texttt{seg\_\allowbreak{}<axis>\_\allowbreak{}ns} against \texttt{seg\_\allowbreak{}run\_\allowbreak{}total\_\allowbreak{}ns} & mi & one bar (\texttt{k\_ary}); 19 segments = 18 organ axes + framework remainder \\
+Observer detail (Table~\ref{tab:appendix:observer-detail}) & \texttt{stat\_\allowbreak{}<axis>\_\allowbreak{}<field>} & mi & one tier binary (\texttt{binary\_id} with 18 segments) \\
+Range bars \texttt{latency\_\allowbreak{}range} & \texttt{op\_*\_p50} and \texttt{op\_*\_p99} & ma & one category (\texttt{k\_ary}/\texttt{lookup}): p50 750 ns, p99 1170 ns \\
+ECDF \texttt{latency\_\allowbreak{}ecdf} & \texttt{ns\_per\_op} across the configurations & w & $N = 1$: single-step staircase at 671.5 ns/op \\
+Pareto scatter \texttt{latency\_\allowbreak{}tradeoff} & \texttt{op\_*\_p50} against \texttt{op\_*\_p99} & ma & one point (750/1170 ns); no front \\
+Exchangeability \texttt{ld\_\allowbreak{}exchange\_*} (4 longtables) & median rel.\ $\Delta$ ns/op per
+  sibling pair, IQR & w; ma & 0 of 480/480/480/640 sibling pairs: empty shells
+  \ifPlatzhalterAlsTabelle{}(represented by a substitute line until the complete
+  measurement series)\fi \\
+Forest plots \texttt{exchange\_\allowbreak{}forest}, \texttt{exchange\_\allowbreak{}forest\_\allowbreak{}vs\_\allowbreak{}reference} & as above, aggregated & w & no file (0 pairs; reference not measured): substitute text \\
+Ratio matrices \texttt{lc\_\allowbreak{}surface\_\allowbreak{}ratio\_*} (6) & quotient median/reference median &
+  w; ma & reference \texttt{linear\_scan} not measured: six notes
+  \ifPlatzhalterAlsTabelle{}(represented by Table~\ref{tab:t3:ratio} until the complete
+  measurement series)\fi \\
+Normalised bars \texttt{lc\_\allowbreak{}normbar\_*} (6) & as above, per search algorithm & w; ma & no file (reference not measured): substitute texts \\
+Limitations (Table~\ref{tab:le:limitierung}) & list of caveats, no measured number & --- & 16 rows \\
+\end{longtable}
+\end{footnotesize}
 
 \input{anhang/en/tabellen/v5_pipeline_demo_table.tex}
 \input{anhang/en/tabellen/v5_pipeline_demo_diagram.tex}
 
-\section{Cartesian smoke series (43 permutations, real DLL measurement)}
+\section[head={Cartesian smoke series (43 permutations)}]{Cartesian smoke series (43 permutations, DLL measurement)}
 
-The following series results from the full end-to-end chain: the built permutation DLLs (43
-combinations in two sub-blocks: 27 cartesian SIMD$\times$layout$\times$allocator combinations plus 16
-more over node width, path compression, internal search, and telemetry ($2^4$) --- in total seven
-varied axes of the then nineteen-axis numbering, interim state of July 2026) were measured at the
-test dock,
-persisted as binary measurement records, converted via pipeline stage~03 into the 16-column schema,
-and embedded here automatically. Table~\ref{tab:measurements:cartesian_smoke43} and
-Figure~\ref{fig:measurements:cartesian_smoke43} show the results.
+The following measurement series arose from the complete chain run: 43 built permutation DLLs in
+two sub-blocks --- 27 cartesian combinations SIMD $\times$ memory layout $\times$ allocator
+(\texttt{avx2}, \texttt{scalar}, \texttt{sse4} $\times$ \texttt{aos}, \texttt{hybrid}, \texttt{soa}
+$\times$ \texttt{jemalloc}, \texttt{mimalloc}, \texttt{std}) and 16 combinations over four
+two-valued quantities (node width \texttt{compact}/\texttt{wide}, path compression
+\texttt{lazy}/\texttt{none}, internal search \texttt{binary}/\texttt{linear}, telemetry
+\texttt{leaf\_only}/\texttt{sampling}; $2^4$) --- were measured at the probe dock, persisted as
+binary measurement records, converted via pipeline stage~03 into the 16-column schema and embedded
+automatically. The variant names are the build matrix of this series; in the axis model of the
+code, SIMD is a system axis (option \texttt{avx2} of the registry of the system axes), memory
+layout and allocator are organ axes (\texttt{memory\_layout}, \texttt{allocator}), and telemetry is
+not a \texttt{binary\_id} axis (limitation~2 in Table~\ref{tab:le:limitierung}); the remaining
+names do not coincide in name with registry building blocks and are not equated with them. The
+series thus varies seven quantities; the complete measurement series varies all 18 composition
+axes, plus the optional organ meta-meta axis \texttt{disk\_io} without a \texttt{binary\_id} share.
+Table~\ref{tab:measurements:cartesian_smoke43} and Figure~\ref{fig:measurements:cartesian_smoke43}
+show the results; the HW columns stand at 0 = not collected, and the axis label \enquote{Cycles} of
+the figure follows the legacy column name (see above).
 
 \input{anhang/en/tabellen/cartesian_smoke43_table.tex}
 \input{anhang/en/tabellen/cartesian_smoke43_diagram.tex}
@@ -46,26 +173,68 @@ Figure~\ref{fig:measurements:cartesian_smoke43} show the results.
 
 \section{Bias-break matrix}\label{sec:measurements:bias}
 
-Table~\ref{tab:bias:search-algo-workload} summarises the median latency (ns/op, nearest-rank)
-measured per search method and load profile across all dynamic settings and repetitions; only the
-runs marked \texttt{two\_phase\_valid} are taken into account. The matrix reveals under which load
-profiles a given method breaks its systematic bias.
+Table~\ref{tab:bias:search-algo-workload} summarises the median latency (ns/op,
+nearest-rank\footnote{Nearest-rank: the $q$-quantile is the smallest sample value below which at
+least the share $q$ of the sample lies (Hyndman and Fan, type~1); there is no interpolation, every
+percentile is an actually measured value~\cite{hyndman1996quantiles}.}) measured per search method
+and load profile across all dynamic settings and repetitions; only the runs marked
+\texttt{two\_phase\_valid}\footnote{%
+\texttt{two\_phase\_valid}: the validity flag of the two-phase operation loop --- only a measurement
+whose second (warm) phase completed validly enters the evaluation
+(Section~\ref{sec:measurement-system}).} are taken into account. The matrix makes visible under
+which load profiles a given method breaks its systematic bias. In the present corpus the matrix
+contains one cell (\texttt{k\_ary} $\times$ \texttt{ycsb\_c}, 672~ns/op --- formatted as an
+integer; the same cell stands in the diagrams as 671.5~ns/op); a break pattern across load
+profiles cannot be read from a $1{\times}1$ matrix --- any explanatory power presupposes the
+complete measurement series (n/a).
 
 \input{anhang/en/tabellen/bias_matrix_table.tex}
 
 \section{Latency surfaces per interface function}\label{sec:measurements:surfaces}
 
-The following six heatmaps show the latency surface (search algorithm $\times$ load profile) per
-interface function: the overall latency (\texttt{ns\_per\_op}) and the p50 latencies of the
-individual operations \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{scan} and
-\texttt{rmw}.
+For each of the six metrics --- the overall latency (\texttt{ns\_per\_op}) as well as the p50
+latencies of the individual operations \texttt{insert}, \texttt{lookup}, \texttt{erase},
+\texttt{scan} and \texttt{rmw} --- a heatmap\footnote{Heatmap: a matrix whose cells represent the
+value colour-coded; the form goes back to the clustered heat map of
+statistics~\cite{wilkinson2009heatmap}.} of the latency surface search algorithm $\times$ load
+profile is provided. In the present corpus none of the six contains a drawable surface, for two
+different reasons: the overall latency and the p50 latency of \texttt{lookup} are measured but
+lie, as a $1{\times}1$ matrix, below the $2{\times}2$ minimum of the pgfplots surface form; the
+operations \texttt{insert}, \texttt{erase}, \texttt{scan} and \texttt{rmw} were not executed in
+the corpus (\texttt{op\_<kind>\_n} $= 0$). Both cases stand in the artefact as explicitly coded
+non-observation --- as a note naming the reason ---, never as a zero surface.
 
+\ifPlatzhalterAlsTabelle%
+Table~\ref{tab:t3:surfaces} summarises the six notes; the note artefacts of the generator are
+retained and appear at this position as heatmaps after the complete measurement series.
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{7.0cm}@{}}
+\toprule
+Metric & Status in the corpus & Reason (note of the artefact) \\
+\midrule
+Overall latency (\texttt{ns\_per\_op}) & measured, not drawable & $1{\times}1$ matrix (\texttt{k\_ary} $\times$ \texttt{ycsb\_c}) below the $2{\times}2$ minimum of the pgfplots surface form; measured value present in the corpus (Table~\ref{tab:bias:search-algo-workload}) \\
+Insert latency p50 (\texttt{op\_insert\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_insert\_n} $= 0$) \\
+Lookup latency p50 (\texttt{op\_lookup\_p50}) & measured, not drawable & $1{\times}1$ matrix below the $2{\times}2$ minimum of the pgfplots surface form; measured value present in the corpus (Table~\ref{tab:measurements:artefakt-ebenen}) \\
+Erase latency p50 (\texttt{op\_erase\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_erase\_n} $= 0$) \\
+Scan latency p50 (\texttt{op\_scan\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_scan\_n} $= 0$) \\
+RMW latency p50 (\texttt{op\_rmw\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_rmw\_n} $= 0$) \\
+\bottomrule
+\end{tabular}
+\caption{Non-collected metrics of the heatmap family \texttt{lc\_surface\_*} (search algorithm $\times$
+load profile): six notes instead of surfaces --- two metrics measured but not drawable as a
+$1{\times}1$ matrix, four not collected}%
+\label{tab:t3:surfaces}
+\end{table}
+\else
 \input{anhang/en/tabellen/lc_surface_ns_per_op.tex}
 \input{anhang/en/tabellen/lc_surface_op_insert_p50_ns.tex}
 \input{anhang/en/tabellen/lc_surface_op_lookup_p50_ns.tex}
 \input{anhang/en/tabellen/lc_surface_op_erase_p50_ns.tex}
 \input{anhang/en/tabellen/lc_surface_op_scan_p50_ns.tex}
 \input{anhang/en/tabellen/lc_surface_op_rmw_p50_ns.tex}
+\fi
 
 % =====================================================================
 %  CI-interactive (2026-07, #24): the figures below are regenerated
@@ -92,69 +261,135 @@ individual operations \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{
 
 \section{Three-dimensional raw-data view}\label{sec:measurements:surfaces3d}
 
-The same six surfaces are additionally plotted as a true 3D surface over the plane (search algorithm
-$\times$ load profile). Both surface axes are \emph{nominal}: the spanned surface deliberately
-carries \emph{no} interpolation or trend claim and is to be read solely as a raw-data and inspection
-view alongside the heatmap.
+The same six metrics are additionally provided as a 3D raw-data view over the plane (search
+algorithm $\times$ load profile). In the corpus two views contain one support point each
+(\texttt{ns\_per\_op}: 671.5~ns/op; \texttt{lookup} p50: 750~ns) and four the note of the operation
+not executed; the corpus does not span a surface. Both surface axes are \emph{nominal}: the spanned
+surface deliberately carries \emph{no} interpolation or trend claim and is to be read solely as a
+raw-data and inspection view alongside the heatmap.
 
 \InputIfFileExists{anhang/en/tabellen/lc_surface3d_ns_per_op.tex}{}{%
   \emph{(This is where the 3D raw-data view of the \textbf{overall latency} (\texttt{ns\_per\_op})
-  over the plane search algorithm $\times$ load profile would stand. It is not present: the
-  appendix generator produces this file from the WIDE matrix of a full measurement run, and that
-  run is still outstanding at the editorial deadline of this version.)}}
+  over the plane search algorithm $\times$ load profile would stand. It is missing only if the
+  appendix generator wrote no file for this metric; if the file is present, it states itself
+  whether it carries a support point or the operation was not executed.)}}
+\ifPlatzhalterAlsTabelle\else
 \InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_insert_p50_ns.tex}{}{%
   \emph{(This is where the same 3D view for the \textbf{p50 latency of \texttt{insert}} would
-  stand; it too awaits the outstanding full measurement run.)}}
+  stand. It is missing only if the appendix generator wrote no file for this metric; if the file
+  is present, it names either the support point or the non-execution itself.)}}
+\fi
 \InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_lookup_p50_ns.tex}{}{%
   \emph{(This is where the same 3D view for the \textbf{p50 latency of \texttt{lookup}} would
-  stand; it too awaits the outstanding full measurement run.)}}
+  stand. It is missing only if the appendix generator wrote no file for this metric; if the file
+  is present, it names either the support point or the non-execution itself.)}}
+\ifPlatzhalterAlsTabelle\else
 \InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_erase_p50_ns.tex}{}{%
   \emph{(This is where the same 3D view for the \textbf{p50 latency of \texttt{erase}} would
-  stand; it too awaits the outstanding full measurement run.)}}
+  stand. It is missing only if the appendix generator wrote no file for this metric; if the file
+  is present, it names either the support point or the non-execution itself.)}}
 \InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_scan_p50_ns.tex}{}{%
   \emph{(This is where the same 3D view for the \textbf{p50 latency of \texttt{scan}} would
-  stand; it too awaits the outstanding full measurement run.)}}
+  stand. It is missing only if the appendix generator wrote no file for this metric; if the file
+  is present, it names either the support point or the non-execution itself.)}}
 \InputIfFileExists{anhang/en/tabellen/lc_surface3d_op_rmw_p50_ns.tex}{}{%
   \emph{(This is where the same 3D view for the \textbf{p50 latency of \texttt{rmw}} would
-  stand; it too awaits the outstanding full measurement run.)}}
+  stand. It is missing only if the appendix generator wrote no file for this metric; if the file
+  is present, it names either the support point or the non-execution itself.)}}
+\fi
+\ifPlatzhalterAlsTabelle%
+Table~\ref{tab:t3:surfaces3d} summarises the four notes; the note artefacts of the generator are
+retained and appear at this position as 3D views after the complete measurement series.
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{7.0cm}@{}}
+\toprule
+Metric & Status in the corpus & Reason (note of the artefact) \\
+\midrule
+Insert latency p50 (\texttt{op\_insert\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_insert\_n} $= 0$) \\
+Erase latency p50 (\texttt{op\_erase\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_erase\_n} $= 0$) \\
+Scan latency p50 (\texttt{op\_scan\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_scan\_n} $= 0$) \\
+RMW latency p50 (\texttt{op\_rmw\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_rmw\_n} $= 0$) \\
+\bottomrule
+\end{tabular}
+\caption{Non-collected metrics of the 3D family \texttt{lc\_surface3d\_*} (search algorithm $\times$
+load profile): four notes instead of views; the two measured metrics (overall latency, lookup
+latency p50) are shown by the two views of this section with one support point each}%
+\label{tab:t3:surfaces3d}
+\end{table}
+\fi
 
 \section{Working-set sweep}\label{sec:measurements:working-set-sweep}
 
 The following curves plot the latency over the working-set size $n$ (keys) --- one curve per swept
-axis value, for the overall latency (\texttt{ns\_per\_op}) as well as the p50 latencies of
-\texttt{insert} and \texttt{lookup}. Measurement series without a \texttt{working\_set\_n} column
-deliberately produce \emph{no} curve; no support point is fabricated.
+axis value, namely for the overall latency (\texttt{ns\_per\_op}) as well as the p50 latencies of
+\texttt{insert} and \texttt{lookup}. In the corpus one measured value of $n$ is present (4096):
+\texttt{ns\_per\_op} and \texttt{lookup} p50 contain one support point each (\enquote{1 sample}),
+\texttt{insert} was not executed and carries the note instead of a curve. Without a measured value
+no support point arises: a measurement series without a \texttt{working\_set\_n} column deliberately
+produces \emph{no} curve, an operation not executed (\texttt{op\_<kind>\_n} $= 0$) no point.
 
 \InputIfFileExists{anhang/en/tabellen/ld_sweep_ns_per_op.tex}{}{%
   \emph{(This is where the sweep curve of the \textbf{overall latency} (\texttt{ns\_per\_op}) over
-  the working-set size $n$ would stand. It is not present: none of the measurement series available
-  so far carries a \texttt{working\_set\_n} column, and without that column no support point is
-  fabricated.)}}
+  the working-set size $n$ would stand. It is missing only if the generator run wrote no file for
+  this metric --- for instance because the measurement series carries no \texttt{working\_set\_n}
+  column; if the file is present, it names either support points or non-execution itself.)}}
+\ifPlatzhalterAlsTabelle\else
 \InputIfFileExists{anhang/en/tabellen/ld_sweep_op_insert_p50_ns.tex}{}{%
   \emph{(This is where the same sweep curve for the \textbf{p50 latency of \texttt{insert}} would
-  stand; it too awaits a series with a \texttt{working\_set\_n} column.)}}
+  stand. It is missing only if the generator run wrote no file for this metric --- for instance
+  because the measurement series carries no \texttt{working\_set\_n} column; if the file is
+  present, it names either support points or non-execution itself.)}}
+\fi
 \InputIfFileExists{anhang/en/tabellen/ld_sweep_op_lookup_p50_ns.tex}{}{%
   \emph{(This is where the same sweep curve for the \textbf{p50 latency of \texttt{lookup}} would
-  stand; it too awaits a series with a \texttt{working\_set\_n} column.)}}
+  stand. It is missing only if the generator run wrote no file for this metric --- for instance
+  because the measurement series carries no \texttt{working\_set\_n} column; if the file is
+  present, it names either support points or non-execution itself.)}}
+\ifPlatzhalterAlsTabelle%
+Table~\ref{tab:t3:sweep} names the note of the sweep metric not collected; the note artefact of the
+generator is retained and appears at this position as a curve after the complete measurement series.
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{7.0cm}@{}}
+\toprule
+Metric & Status in the corpus & Reason (note of the artefact) \\
+\midrule
+Insert latency p50 over $n$ (\texttt{op\_insert\_p50}) & not collected & operation not executed in the corpus (\texttt{op\_insert\_n} $= 0$): no support point, no curve \\
+\bottomrule
+\end{tabular}
+\caption{Non-collected metrics of the sweep family \texttt{ld\_sweep\_*} (latency over the
+working-set size $n$): one note instead of a curve; the two measured metrics (overall latency,
+lookup latency p50) are shown by the two curves of this section with one support point each}%
+\label{tab:t3:sweep}
+\end{table}
+\fi
 
 \section{Per-axis latency attribution}\label{sec:measurements:seg-attribution}
 
 The following figure decomposes the segment runtime per search method into the contributions of the
 individual organ axes (stacked bars). The 100\,\% whole per bar is the wall-clock of the separate
 segment run (\texttt{seg\_run\_total\_ns}), \emph{not} the real-workload latency
-(\texttt{total\_ns}); the segments --- twenty in the data state of the then nineteen-axis numbering
-(interim state of July 2026): nineteen organ axes plus the framework remainder --- sum exactly to
-this base (coverage $\approx 1.0$).
+(\texttt{total\_ns}); the 19 segments --- the 18 organ axes of the canonical composition order plus
+the framework remainder --- sum exactly to this base (coverage $\approx 1.0$). The corpus contains
+one bar (\texttt{k\_ary}).
 
 \InputIfFileExists{anhang/en/tabellen/seg_attribution.tex}{}{%
   \emph{(This figure appears after the next measurement run with \texttt{seg\_*\_ns} columns.)}}
 
 \subsection{Per-axis observer detail}\label{sec:measurements:observer-detail}
 
-The following longtable lists, per tier binary, the actually measured observer counters
-(\texttt{stat\_*} columns from the DLL-side axis schema) --- per axis and observer field the
-measured uint64 counter value; fields that were not collected (\texttt{n/a}) are omitted (no
-fabricated 0 value).
+The following longtable lists, per tier binary, the measured observer counters (\texttt{stat\_*}
+columns from the DLL-side axis schema) --- per axis and observer field the measured uint64 counter
+value; fields not collected (\texttt{n/a}) are omitted (no synthetically added 0 value). Zeros in
+the table are measured counter readings of inactive sub-functions of pinned strategies (for
+instance \texttt{budget\_reject}, \texttt{fail}, \texttt{register}; limitation~4 in
+Table~\ref{tab:le:limitierung}), not fields not collected --- the latter are absent from the
+table. The axis schema is single-source (18 axes times 8 field slots, emitted DLL-side, read
+header-driven host-side); the corpus contains one tier binary whose \texttt{binary\_id} the header
+row of Table~\ref{tab:appendix:observer-detail} names.
 
 \InputIfFileExists{anhang/en/tabellen/observer_detail.tex}{}{%
   \emph{(This table appears after the next measurement run with \texttt{stat\_*} columns.)}}
@@ -162,32 +397,48 @@ fabricated 0 value).
 \section{Latency distribution}\label{sec:measurements:latency-distribution}
 
 The range bars show the p50--p99 span per search method and operation (dot at p50, whisker to p99);
-since only these two percentiles are measured, no box plot with interpolated quartiles is drawn on
-purpose. The ECDF shows the distribution of the overall latency \emph{across configurations} (share
-of permutations with \texttt{ns\_per\_op} $\le x$) --- not a per-operation CDF, as raw per-operation
-samples are not available.
+since per operation only the percentiles p50, p99 and p999 are measured and the schema carries no
+quartile bounds, deliberately \emph{no}
+box plot\footnote{Box plot: the distribution display of median, quartiles and whiskers after
+Tukey; it presupposes the quartile bounds that the schema does not carry~\cite{mcgill1978boxplots}.}
+with interpolated quartiles is drawn. The ECDF\footnote{ECDF (empirical cumulative distribution
+function): the share of observations less than or equal to $x$, as a step function over $x$; the
+probability display of raw data without a distributional assumption~\cite{wilk1968probability}.}
+shows the distribution of the overall latency \emph{across the configurations} (share of
+permutations with \texttt{ns\_per\_op} $\le x$) --- not a per-operation CDF, as the raw samples per
+operation are not available. In the corpus one category is present (\texttt{k\_ary}/\texttt{lookup}:
+p50 750~ns, p99 1170~ns) and one configuration ($N = 1$): the ECDF is a single-step staircase at
+671.5~ns/op.
 
 \InputIfFileExists{anhang/en/tabellen/latency_range.tex}{}{%
   \emph{(The p50--p99 range figure appears after the next measurement run.)}}
 \InputIfFileExists{anhang/en/tabellen/latency_ecdf.tex}{}{%
   \emph{(The configuration ECDF appears after the next measurement run.)}}
 
-Finally, the Pareto scatter plots the median against the tail latency (one point per configuration
-and operation kind). This makes the lower left front visible: those configurations that are
-favourable in both metrics at once and are therefore not surpassed by any other configuration in
-both metrics simultaneously.
+Finally, the Pareto scatter plots, per configuration and operation kind, the median against the
+tail latency (p50 against p99). The lower left front would be the set of configurations that are
+not surpassed by any other in both metrics at once (Pareto dominance\footnote{Pareto dominance: a
+solution dominates another if it is worse in no objective and better in at least one; the
+non-dominated solutions form the Pareto
+front~\cite{emmerich2018multiobjective,ehrgott2005multicriteria}.}). In the corpus one point is
+present (\texttt{k\_ary}/\texttt{lookup}: 750/1170~ns), so a front cannot be stated. The three
+latency numbers of this appendix are three metrics of the same cell: the overall latency per
+operation across the run (671.5~ns/op), the p50 latency of the \texttt{lookup} operation (750~ns)
+and its p99 (1170~ns, as $750 + 420$ in the range bar).
 
 \InputIfFileExists{anhang/en/tabellen/latency_tradeoff.tex}{}{%
   \emph{(The Pareto scatter appears after the next measurement run with p99 columns.)}}
 
 \section{Reference-relative evaluation}\label{sec:measurements:reference}
 
-The figures below relate all measured values to \emph{one} reference. That reference is a measured
-axis value of the corpus itself (default \texttt{search\_algo}/\texttt{linear\_scan}) and expressly
-\emph{not} an external library baseline: a measured \texttt{std::map} performance series does not
-exist, because every \texttt{std::map} in the corpus is the conformance oracle of the test dock and
-thus a correctness, not a performance data point. If the reference does not occur in a measurement
-series, the figures of this section are omitted without substitute.
+The following representations relate all measured values to \emph{one} reference. That reference is
+a measured axis value of the corpus itself (default \texttt{search\_algo}/\texttt{linear\_scan})
+and expressly \emph{not} an external library baseline: a measured \texttt{std::map} performance
+series does not exist, because every \texttt{std::map} in the corpus is the conformance oracle of
+the probe dock and thus a correctness, not a performance data point. If the reference axis value
+does not occur in a measurement series, the representations of this section carry the note of the
+missing reference or its substitute text; in the present corpus \texttt{linear\_scan} is not
+measured alongside, all ratio representations are therefore without a denominator (n/a).
 
 \subsection{Ratio matrices}\label{sec:measurements:ratio-matrices}
 
@@ -195,8 +446,39 @@ Per interface function, one matrix shows the quotient of the measured median and
 median. The diverging colour scale is centred on equality (ratio~1), so that advantage and
 disadvantage relative to the reference are distinguishable without comparing numbers. In the
 analysis role this matrix supersedes the heatmap of Section~\ref{sec:measurements:surfaces}; the raw
-heatmap remains alongside it as the raw-value view.
+heatmap remains alongside it as the raw-value view. In the present corpus neither the ratio matrix
+nor the heatmap carries data (reference not measured; surface below $2{\times}2$). Where ratios
+are aggregated, this is done geometrically, never as an arithmetic mean of
+quotients\footnote{The arithmetic mean of normalised ratios depends on the choice of reference and
+can reverse the ranking; the geometric mean, by contrast, is
+reference-invariant~\cite{fleming1986statistics}.} --- this also holds for the normalised bars of
+the next subsection.
 
+\ifPlatzhalterAlsTabelle%
+Table~\ref{tab:t3:ratio} summarises the six notes; the note artefacts of the generator are retained
+and appear at this position as ratio matrices after the complete measurement series with a measured
+reference.
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{7.0cm}@{}}
+\toprule
+Metric & Status in the corpus & Reason (note of the artefact) \\
+\midrule
+Overall latency (\texttt{ns\_per\_op}) & n/a (no denominator) & reference \texttt{linear\_scan} not measured \\
+Insert latency p50 (\texttt{op\_insert\_p50}) & n/a (no denominator) & reference \texttt{linear\_scan} not measured; operation moreover not executed \\
+Lookup latency p50 (\texttt{op\_lookup\_p50}) & n/a (no denominator) & reference \texttt{linear\_scan} not measured \\
+Erase latency p50 (\texttt{op\_erase\_p50}) & n/a (no denominator) & reference \texttt{linear\_scan} not measured; operation moreover not executed \\
+Scan latency p50 (\texttt{op\_scan\_p50}) & n/a (no denominator) & reference \texttt{linear\_scan} not measured; operation moreover not executed \\
+RMW latency p50 (\texttt{op\_rmw\_p50}) & n/a (no denominator) & reference \texttt{linear\_scan} not measured; operation moreover not executed \\
+\bottomrule
+\end{tabular}
+\caption{Non-collected metrics of the ratio family \texttt{lc\_surface\_ratio\_*} (quotient
+median/reference median): six notes instead of matrices, because the reference axis value
+\texttt{search\_algo}/\texttt{linear\_scan} is not measured alongside in the corpus}%
+\label{tab:t3:ratio}
+\end{table}
+\else
 \InputIfFileExists{anhang/en/tabellen/lc_surface_ratio_ns_per_op.tex}{}{%
   \emph{(This is where the ratio matrix of the \textbf{overall latency} (\texttt{ns\_per\_op})
   against the reference median would stand. It is not present: in the measurement series available
@@ -217,6 +499,7 @@ heatmap remains alongside it as the raw-value view.
 \InputIfFileExists{anhang/en/tabellen/lc_surface_ratio_op_rmw_p50_ns.tex}{}{%
   \emph{(This is where the same ratio matrix for the \textbf{p50 latency of \texttt{rmw}} would
   stand; it too lacks the reference axis value measured alongside.)}}
+\fi
 
 \subsection{Normalised bars}\label{sec:measurements:normalised-bars}
 
@@ -247,26 +530,46 @@ overall statement per search algorithm.
 
 \section{Axis exchangeability}\label{sec:measurements:exchange}
 
-The four following longtables provide the exchangeability evidence per variable axis from the
-sibling-pair differences (median rel.\ $\Delta$ ns/op w.r.t.\ $v$): \texttt{search\_algo}
-(Table~\ref{tab:ld:exchange:search_algo}), \texttt{node\_type}
-(Table~\ref{tab:ld:exchange:node_type}), \texttt{memory\_layout}
-(Table~\ref{tab:ld:exchange:memory_layout}) and \texttt{prefetch}
-(Table~\ref{tab:ld:exchange:prefetch}). The least confounded are \texttt{search\_algo} and
-\texttt{prefetch}.
+The four \ifPlatzhalterAlsTabelle{}longtables of the generator family \texttt{ld\_exchange\_*}\else
+following longtables\fi{} are the carriers of the exchangeability evidence per variable axis from
+the sibling-pair differences (median rel.\ $\Delta$ ns/op with respect to $v$):
+\texttt{search\_algo}\PlatzhalterTabRef{tab:ld:exchange:search_algo}, \texttt{node\_type}%
+\PlatzhalterTabRef{tab:ld:exchange:node_type}, \texttt{memory\_layout}%
+\PlatzhalterTabRef{tab:ld:exchange:memory_layout} and \texttt{prefetch}%
+\PlatzhalterTabRef{tab:ld:exchange:prefetch}; the aggregate per value pair and interface function is
+the nearest-rank median of the relative delta with its IQR\footnote{IQR (interquartile range): the
+width between the 25\,\% and the 75\,\% percentile, here as p75 $-$ p25 of the relative delta.}
+across all sibling pairs and valid load profiles. Evidence presupposes sibling pairs --- the
+generator expects 480/480/480/640 (\texttt{search\_algo}, \texttt{node\_type}, \texttt{prefetch},
+\texttt{memory\_layout}); the present corpus delivers 0, the four tables are therefore empty and
+prove nothing; the same generator run fills them as soon as the complete measurement series is
+available. That \texttt{search\_algo} and \texttt{prefetch} are the least confounded is a caveat of
+the measurement setup (limitation~10 in Table~\ref{tab:le:limitierung}), not a measurement
+result.\ifPlatzhalterAlsTabelle{}
+Until the complete measurement series, the following line stands in place of the four tables.\fi
 
+\ifPlatzhalterAlsTabelle%
+\emph{(0 sibling pairs in the corpus (state of the measurement series); the four longtables
+\texttt{ld\_exchange\_*} appear at this position after the generator re-run of the complete
+measurement series.)}
+\else
 \input{anhang/en/tabellen/ld_exchange_search_algo.tex}
 \input{anhang/en/tabellen/ld_exchange_node_type.tex}
 \input{anhang/en/tabellen/ld_exchange_memory_layout.tex}
 \input{anhang/en/tabellen/ld_exchange_prefetch.tex}
+\fi
 
-The following forest plot summarises the exchangeability of the \texttt{ns\_per\_op} metric (dot =
-median rel.\ $\Delta$, whisker = IQR, zero reference line; small-$n$ rows greyed out). The whisker
-is symmetric around the median (via the IQR width), as the aggregate stores only the IQR width, not
-the quartile bounds.
+The following forest plot\footnote{Forest plot: the display of several effect estimates as dots
+with uncertainty whiskers stacked at a common reference line, adopted from
+meta-analysis~\cite{lewis2001forest}.} summarises the exchangeability of the \texttt{ns\_per\_op}
+metric (dot = median rel.\ $\Delta$, whisker = IQR, zero reference line; small-$n$ rows greyed
+out). The whisker lies symmetrically around the median (via the IQR width), as the aggregate
+carries only the IQR width, not the quartile bounds.
 
 \InputIfFileExists{anhang/en/tabellen/exchange_forest.tex}{}{%
-  \emph{(The forest plot appears after the next measurement run.)}}
+  \emph{(This is where the forest plot of the \texttt{ns\_per\_op} exchangeability would stand. It
+  is not present: without sibling pairs (0 of 480/480/480/640) the generator writes no file --- no
+  empty figure, no synthetically produced aggregate.)}}
 
 The second forest plot shows the same aggregates, but turns all pairs onto \emph{one} fixed
 reference axis value in the sense of Section~\ref{sec:measurements:reference}, so that the yardstick
@@ -276,13 +579,23 @@ reference value; a mere sign inversion would be an arithmetic error here. Points
 mapped this way are omitted, not substituted.
 
 \InputIfFileExists{anhang/en/tabellen/exchange_forest_vs_reference.tex}{}{%
-  \emph{(The reference-relative forest plot appears after the next measurement run, provided the
-  reference axis value was measured.)}}
+  \emph{(The reference-relative forest plot is not present: it presupposes sibling pairs \emph{and}
+  a reference axis value measured alongside; in the present corpus both are missing.)}}
 
 \section{Limitations}\label{sec:measurements:limitations}
 
-Table~\ref{tab:le:limitierung} lists all unresolved caveats of the measurement series, so that no
-finding silently lapses; row~1 names the remaining PMC gaps of the core metric (L2 and coherence
-without a portable counter; energy best-effort).
+Table~\ref{tab:le:limitierung} lists the caveats of the measurement artefacts that are maintained
+in the generator and not resolved (16 rows), so that every caveat remains documented; the
+limitations of the thesis from the user's perspective are stated in the conclusion
+(Section~\ref{sec:limitations}).
 
 \input{anhang/en/tabellen/le_limitierung.tex}
+
+Row~1 names the situation of the core metric cache misses: L1D, last-level and dTLB misses only
+with the PMC switch set; L2 demand misses and foreign-CCX fills model-bound via the RAW event
+catalogue --- cross-checked by measurement for the AMD Zen~5 microarchitecture (CPUID family 26)
+(\texttt{PERF\_TYPE\_RAW}
+\texttt{0x964} and \texttt{0x1443})~\cite{linux_perf_amdzen5}, for models without a catalogue entry % chktex 29
+n/a (all Intel models); energy best-effort via RAPL~\cite{david2010rapl}. A re-layout of the table
+with a three-valued status per row and a revision of the terms of its rows~4 and~10 are not
+implemented in the generator.
