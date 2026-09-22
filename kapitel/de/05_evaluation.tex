@@ -337,7 +337,7 @@ Kern-Modi an das Lauf-Profil ist vorgesehen, aber nicht implementiert (Abschnitt
 Die Messungen zielen auf drei registrierte Messmaschinen: prod1, die AMD-Maschine mit Zen-5-Kernen
 (Signatur \texttt{prod1\_zen5}, mit AVX-512), prod2, die Intel-Maschine mit Alder Lake (Signatur
 \texttt{prod2\_alder\_lake}, ohne AVX-512, mit P- und E-Kernen), und ein ODROID-Board mit
-Intel-Gracemont-Kernen (\texttt{odroid\_gracemont}). Der ZIH-Cluster~\cite{zih_hpc_compendium_hardware}
+Intel-Gracemont-Kernen (\texttt{odroid\_gracemont}). Der ZIH-Cluster (Sapphire Rapids)~\cite{zih_hpc_compendium_hardware}
 ist als Unter-Achse IS3 der Ziel-ISA deklariert, in keiner Signatur registriert und nicht gemessen (n/a);
 eine HBM-Plattform ist nirgends registriert. Eine \texttt{IPlatformProbe} meldet je Plattform die
 lauffähige Teilmenge der Achsen; der Ausschluss einer fehlenden Erweiterung fällt stets
@@ -626,9 +626,11 @@ Commit-Stände der vier Repositories gehen zur Konfigurationszeit in das Proveni
 je einzelner Fremdbibliothek ist nicht implementiert. Die Latenz-Perzentile bestimmt der Auswertungs-Baum
 nearest-rank (Hyndman und Fan, Typ~1, ohne Interpolation~\cite{hyndman1996quantiles}); die
 Darstellungs-Werkzeuge besitzen eigene Kopien der Umrechnung (eine ausgewiesene Lücke), und das
-HDR-Histogramm~\cite{tene_hdrhistogram} ist ein eigenes Verfahren der Verteilungssicht. Der
-Layout-Bias~\cite{mytkowicz2009wrongdata} bleibt eine Grenze: Eine randomisierte
-Layout-Stabilisierung~\cite{curtsinger2013stabilizer} fehlt (Abschnitt~\ref{sec:eval-validity}).
+HDR-Histogramm~\cite{tene_hdrhistogram} (High Dynamic Range: Klassen fester relativer Auflösung über
+mehrere Größenordnungen) ist ein eigenes Verfahren der Verteilungssicht. Layout- und Umgebungs-Effekte,
+die ohne erkennbaren Fehler falsche Schlüsse erzeugen~\cite{mytkowicz2009wrongdata}, bleiben eine Grenze:
+Eine randomisierte Layout-Stabilisierung~\cite{curtsinger2013stabilizer} fehlt
+(Abschnitt~\ref{sec:eval-validity}).
 \end{nurkurz}
 
 \begin{nurlang}
@@ -947,11 +949,11 @@ Beobachter in \emph{allen} Tier-Binaries und im Hybrid-Tier, \emph{nur} im Heuri
 \texttt{hm}/\texttt{hmi} (Hybrid-Ebene), Aus-Zustand \texttt{mg=m0;s0;st0;x0;tw0;tm0;tmi0;hm0;hmi0}. Die
 Differenzen der Varianten beziffern den Beobachter-Overhead nach Ursprung und ergeben je Workload und
 Plattform ein \emph{Unsicherheitsband} aus Wiederholungen mit Konfidenzintervall~\cite{georges2007rigorous};
-Gültigkeitskriterium ist $t_1 \ge t_2 \ge t_3$, eine Verletzung ist ein Mess-Defekt der Zelle, kein
-Ergebnis. Umsetzungsstand: Die Prüfung ist nicht
-implementiert; sie schließt an die Messfehler-Interpolation als fünfte Auswertungs-Komponente der
-compare-Stufe an (Abschnitt~\ref{sec:heuristics-curves}), deren Konstellationen der Planer dynamisch
-berechnet, nie als feste Anzahl.
+Gültigkeitskriterium ist $t_1 \ge t_2 \ge t_3$ für die Wall-Clock-Zeiten der drei Varianten (mit
+Messfühler muss langsamer sein als ohne), eine Verletzung ist ein Mess-Defekt der Zelle, kein Ergebnis.
+Umsetzungsstand: Die Prüfung ist nicht implementiert; sie schließt an die Messfehler-Interpolation als
+fünfte Auswertungs-Komponente der compare-Stufe an (Abschnitt~\ref{sec:heuristics-curves}), deren
+Konstellationen der Planer dynamisch berechnet, nie als feste Anzahl.
 \end{nurkurz}
 
 \begin{nurlang}
