@@ -105,19 +105,16 @@
 \hbadness=10000  % kosmetische Underfull-\hbox-Meldungen (lockerer Zeilensatz) im Log unterdruecken
 \vbadness=10000  % kosmetische Underfull-\vbox-Meldungen (Seitenausgleich) im Log unterdruecken
 \usepackage{csquotes}                 % \enquote{...} — language-aware quotation marks
-% Umfang-Umgebungen (Order 346, Schalter-Variante V3 + V1): Bloecke, die nur in einer Fassung gesetzt werden.
-% Verschieben statt Streichen: ein Vertiefungs-Block liegt als Fragment unter anhang/<lang>/vertiefungen/ und wird
-% in der Langfassung an seinem Kapitel-Ort, in der Kurzfassung in Anhang G (Vertiefungen) per \input gesetzt;
-% Labels bleiben in beiden Fassungen erhalten (CI-Warnungs-Gate 0). \begin/\end der Umgebungen je auf eigener Zeile.
+% Umfang-Umgebungen (Orders 346 + 393/394, 22.09.2026): NUR Schalter, kein Verschieben, kein Anhang G.
+% nurlang = Block steht nur in der Langfassung (IF); nurlang + nurkurz = Kurzfassung setzt an derselben Stelle
+% eine eigene, gekuerzte Formulierung (IF-ELSE). Nichts geht verloren: die Langfassung baut jeden Block weiter,
+% ein Dokument baut alle vier Fassungen. \begin/\end der Umgebungen je auf eigener Zeile, nur an Absatzgrenzen.
 \usepackage{comment}
 \ifthesiskurz% chktex 1
   \excludecomment{nurlang}\includecomment{nurkurz}
 \else
   \includecomment{nurlang}\excludecomment{nurkurz}
 \fi
-% \vertiefung{<pfad ohne anhang/<lang>/vertiefungen/ und ohne .tex>}: Langfassung setzt das Fragment hier,
-% Kurzfassung setzt es in Anhang G (siehe anhang/<lang>/G_vertiefungen.tex und die Kapitel-Listen K<n>.tex).
-\newcommand{\vertiefung}[1]{\ifthesiskurz\else\input{anhang/\thesislang/vertiefungen/#1}\fi} % chktex 27
 % Das Literal-Zeichen → (via inputenc auf \textrightarrow gemappt) fehlt in Times' TS1-Encoding
 % und loest sonst je Vorkommen eine Font-Substitutions-Meldung aus. Auf den Math-Pfeil abbilden,
 % der in jeder Schrift verfuegbar ist (behebt die Warnungen auch in auto-generierten Tabellen).
@@ -406,7 +403,5 @@ und weitere); Fernziel ist die Auslieferung der besten Rekombination als eigenst
 \include{anhang/\thesislang/D_building_block_matrix} % chktex 27
 \include{anhang/\thesislang/E_architecture_decisions} % chktex 27
 \include{anhang/\thesislang/F_comparison_interfaces} % chktex 27 % chktex 17
-% Anhang G (Order 346): nur in der Kurzfassung -- die aus dem Kerntext verschobenen Vertiefungen.
-\ifthesiskurz\include{anhang/\thesislang/G_vertiefungen}\fi % chktex 27
 
 \end{document} % chktex 17
