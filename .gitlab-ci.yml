@@ -82,7 +82,7 @@ thesis:pdf:
     - 'command -v latexmk >/dev/null 2>&1 || { echo "latexmk (texlive) fehlt — Infra-Voraussetzung (P1c)"; exit 1; }'
     # Sprachwahl exakt wie build.ps1: \def\thesislang{<lang>} VOR \input gewinnt gegen \providecommand (config/language.tex).
     # REV 5 (Order 389, 22.09.2026): reproduzierbare PDF-Bytes -- pdfTeX nimmt Datum/Trailer-ID aus SOURCE_DATE_EPOCH
-    # (Commit-Zeit), damit byte-gleiche Quellen byte-gleiche PDFs liefern und pdf:writeback nur echte Aenderungen committet.
+    # (Commit-Zeit): byte-gleiche Quellen -> byte-gleiche PDFs, pdf:writeback committet nur echte Aenderungen.
     - 'export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct) FORCE_SOURCE_DATE=1; echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH"'
     - 'latexmk -pdf -interaction=nonstopmode -halt-on-error -jobname=diplomarbeit-${THESIS_LANG}-${THESIS_UMFANG} -usepretex="\def\thesislang{${THESIS_LANG}}\def\thesisumfang{${THESIS_UMFANG}}" diplomarbeit.tex'
     # ── §7 Hard-Gate: 0 Fehler (latexmk -halt-on-error oben) + <= bekannte Warnings + .blg ohne Repeated-entry/Warning ──
