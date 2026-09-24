@@ -8,6 +8,7 @@ Heuristik-Begriff, mit denen sich ihre Entwurfsentscheidungen abstrahieren und a
 bleibt bei \emph{bekannten} Begriffen, Konzepten und Veröffentlichungen; die systematischen Kataloge und
 das eigene Begriffsgerüst folgen in Kapitel~\ref{ch:measurement}.
 
+\begin{nurlang}
 \section{Konzept und Überblick über den Stand der Technik}\label{sec:overview}
 Zunächst wird die Landschaft der Suchstrukturen kartiert --- vergleichsbasierte Bäume, digitale und
 präfixbasierte Verfahren, Hashing, räumliche und flache Strukturen --- und die bekannten Vertreter
@@ -63,7 +64,48 @@ ART dient dieser Arbeit als Referenzentwurf: Seine Entwurfsentscheidungen --- di
 gestaffelten Knotenklassen Node4, Node16, Node48 und Node256 sowie die lineare Suche innerhalb kleiner
 Knoten --- kehren in Kapitel~\ref{ch:measurement} als einzeln vermessbare Teilentscheidungen wieder,
 während der ART-Gesamtbaum als Prüfling und nicht als durchgängig mitgemessene Struktur auftritt.
+\end{nurlang}
+\begin{nurkurz}
+\section{Konzept und Überblick über den Stand der Technik}\label{sec:overview}
+Zunächst wird die Landschaft der Suchstrukturen kartiert --- vergleichsbasierte Bäume, digitale und
+präfixbasierte Verfahren, Hashing, räumliche und flache Strukturen. Die Gesamtheit der jeweils besten
+veröffentlichten Verfahren bezeichnet die Literatur als \emph{Stand der Technik} (englisch \emph{State of the Art},
+kurz SOTA): die publizierten Suchstruktur-Entwürfe, an denen sich ein neuer Entwurf messen lassen muss. Hier deutet
+sich bereits an, dass sich jeder Algorithmus in einem gemeinsamen Entwurfsraum verorten lässt; wie sich dieser
+Entwurfsraum systematisch aufspannt, entwickelt Kapitel~\ref{ch:measurement}.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center, >=Stealth,
+  cat/.style={draw, rounded corners, fill=orange!10, inner sep=3pt}]
+  \node[cat] (root) at (0,0){Suchstrukturen};
+  \node[cat] (a) at (-5,-1.5){vergleichs-\\basiert};
+  \node[cat] (b) at (-2.5,-1.5){digital /\\präfix};
+  \node[cat] (c) at (0,-1.5){Hashing};
+  \node[cat] (d) at (2.5,-1.5){räumlich};
+  \node[cat] (e) at (5,-1.5){flach /\\exotisch};
+  \foreach \x in {a,b,c,d,e} \draw[->] (root)--(\x);
+  \node[font=\scriptsize, text=gray] at (-5,-2.5){B-Baum, AVL};
+  \node[font=\scriptsize, text=gray] at (-2.5,-2.5){Trie, ART, HOT};
+  \node[font=\scriptsize, text=gray] at (0,-2.5){Cuckoo, Swiss};
+  \node[font=\scriptsize, text=gray] at (2.5,-2.5){R-Baum, k-d};
+  \node[font=\scriptsize, text=gray] at (5,-2.5){Skip-Liste};
+\end{tikzpicture}
+\caption{Die Landschaft der Suchstrukturen: fünf Klassen mit typischen Vertretern.}\label{fig:search-map}
+\end{figure}
+Suchstrukturen lassen sich danach einordnen, mit welchem Mechanismus sie einen Schlüssel auf einen Datensatz
+abbilden~\cite{knuth1998taocp3}\@. \emph{Vergleichsbasierte} Strukturen setzen eine totale Ordnung voraus: die
+selbstbalancierenden AVL-Bäume~\cite{adelsonvelsky1962avl} und Rot-Schwarz-Bäume~\cite{bayer1972symmetric,guibas1978redblack},
+die B-/B\textsuperscript{+}-Bäume~\cite{bayer1972btree,comer1979btree} mit Knoten in Cache- oder
+Speicherblock-Größe~\cite{graefe2001btree,hankins2003nodesize} und der T-Baum~\cite{lehman1986ttree}\@. \emph{Digitale}
+Strukturen verzweigen nach den Bytes des Schlüssels, sodass die Suchpfadlänge von der Schlüssellänge statt von der
+Schlüsselanzahl abhängt: der \emph{Trie}~\cite{delabriandais1959trie,fredkin1960trie}, die pfadkomprimierten
+Radix-/PATRICIA-Bäume~\cite{morrison1968patricia} und der \emph{Adaptive Radix Tree} (ART)~\cite{leis2013art}. ART
+dient dieser Arbeit als Referenzentwurf: Seine nach Verzweigungsgrad gestaffelten Knotenklassen Node4, Node16,
+Node48 und Node256 sowie die lineare Suche innerhalb kleiner Knoten kehren in Kapitel~\ref{ch:measurement} als
+einzeln vermessbare Teilentscheidungen wieder, während der ART-Gesamtbaum als Prüfling und nicht als durchgängig
+mitgemessene Struktur auftritt.
+\end{nurkurz}
 
+\begin{nurlang}
 Jenseits der baumartigen Verfahren bildet \emph{Hashing} Schlüssel direkt über eine Hashfunktion ab und
 kennt keine inhärente Ordnung, weshalb Bereichsabfragen teuer sind~\cite{knuth1998taocp3};
 Cuckoo-Hashing~\cite{pagh2004cuckoo}, das im Gegensatz zu offener und verketteter Adressierung konstante
@@ -80,7 +122,20 @@ Array mit Binär- oder Interpolationssuche~\cite{knuth1998taocp3} --- streng gen
 eines Baumes --- und das Suffix-Array, das dieses Layout auf String-Schlüsseln zu einem platzsparenden
 Volltext-Index verallgemeinert und dessen leichtgewichtige, speicher-budgetierte Konstruktion als
 Musterbeispiel des Algorithm-Engineerings gilt~\cite{manzini2002suffixarray}.
+\end{nurlang}
+\begin{nurkurz}
+Jenseits der baumartigen Verfahren bildet \emph{Hashing} Schlüssel direkt über eine Hashfunktion ab und kennt
+keine inhärente Ordnung, weshalb Bereichsabfragen teuer sind~\cite{knuth1998taocp3}; Cuckoo-Hashing~\cite{pagh2004cuckoo}
+und SIMD-gestützte Tabellen wie SwissTable~\cite{abseil_swisstable} bilden die nicht-baumartige Vergleichsklasse der
+Literatur\@. \emph{Räumliche} Strukturen (k-d-Baum~\cite{bentley1975kdtree}, Quadtree~\cite{finkel1974quadtree},
+R-Baum~\cite{guttman1984rtree}) und die theoretischen \enquote{Exoten} van-Emde-Boas-Baum~\cite{vanemdeboas1975},
+y-fast Trie~\cite{willard1983yfast} und Fusion Tree~\cite{fredman1993fusion} liegen außerhalb des Umfangs dieser
+Arbeit; zur flachen Klasse zählen die randomisierte Skip-Liste~\cite{pugh1990skiplist}, das sortierte Array mit Binär-
+oder Interpolationssuche~\cite{knuth1998taocp3} --- streng genommen das einzelne Blatt eines Baumes --- und das
+Suffix-Array~\cite{manzini2002suffixarray}.
+\end{nurkurz}
 
+\begin{nurlang}
 %% INTERN-272: KA-006
 Der Umfang dieser Arbeit gliedert sich entlang dieser Landschaft in drei Stufen. Untersuchungsgegenstand
 sind erstens die baumartigen Strukturen der vergleichs- und der digitalbasierten Klasse
@@ -106,6 +161,24 @@ Umfangs bleiben die räumlichen Strukturen, die theoretischen Exoten und das Suf
 die Klassen äußerlich wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen;
 welche Bausteine im Referenzlauf tatsächlich vermessen werden, nennt Kapitel~\ref{ch:measurement} mit
 Implementierungsstand und Quelle.
+\end{nurlang}
+\begin{nurkurz}
+Der Umfang dieser Arbeit gliedert sich entlang dieser Landschaft in drei Stufen. Untersuchungsgegenstand sind
+erstens die baumartigen Strukturen der vergleichs- und der digitalbasierten Klasse (Abbildung~\ref{fig:search-map})
+samt den elementaren Suchmethoden auf sortierten Feldern, aus denen Baumknoten bestehen: Binär- und k-äre
+Suche~\cite{knuth1998taocp3,schlegel2009kary}, Interpolationssuche~\cite{perl1978interpolation}, das
+Eytzinger-Layout~\cite{khuong2017eytzinger} als implizite, zeigerfreie Baum-Anordnung eines sortierten Feldes und
+die lineare Suche in kleinen Knoten~\cite{leis2013art}; das flache, sortierte Feld ist damit als Knoteninneres der
+kleinste Baustein. Zweitens gehören approximative Mitgliedschaftsfilter als vorgeschaltete Bausteine zum Umfang:
+Bloom-Filter~\cite{bloom1970}, Cuckoo-Filter~\cite{fan2014cuckoo}, Xor-Filter~\cite{graf2020xor} und der
+bereichsfähige SuRF~\cite{zhang2018surf}. Drittens liegen weitere Vertreter --- Skip-Liste, Hash-Suche, binärer
+Suchbaum, B-Baum, die Gesamtbäume ART~\cite{leis2013art}, HOT~\cite{binna2018hot}, START~\cite{fent2020start},
+Wormhole~\cite{wu2019wormhole} und SuRF~\cite{zhang2018surf} sowie eine skalare SwissTable-Nachbildung ohne
+Messaussage über die SIMD-basierte Vorlage --- als zuschaltbare, im Referenzlauf nicht aktivierte Bausteine vor;
+räumliche Strukturen, theoretische Exoten und Suffix-Array bleiben außerhalb. So verschieden die Klassen äußerlich
+wirken, teilen sie doch wiederkehrende, voneinander trennbare Teilentscheidungen; welche Bausteine im Referenzlauf
+tatsächlich vermessen werden, nennt Kapitel~\ref{ch:measurement}.
+\end{nurkurz}
 
 Quer zu dieser Suchalgorithmus-Sicht steht die etablierte Untergliederung der \emph{Container} der
 C++-Standardbibliothek~\cite{iso_cpp}: Sequenz-Container (\texttt{std::vector}) ordnen nach
@@ -121,6 +194,7 @@ Bausteine sind, soweit vorhanden, der geordneten Map-Hülle untergeordnet und nu
 Kapitel~\ref{ch:measurement}; ihre vollständige Ausführung in der Implementierung zeigt
 Kapitel~\ref{ch:impl}.
 
+\begin{nurlang}
 Alle bisher genannten Verfahren sind \emph{fest entworfene} Strukturen: ihr innerer Aufbau steht fest,
 bevor die erste Anfrage eintrifft. Eine etablierte Forschungslinie verlagert den Entwurf dagegen in die
 Laufzeit\@. \emph{Database Cracking}~\cite{idreos2007cracking} baut den Index als Nebenprodukt der
@@ -136,6 +210,18 @@ konfigurierbaren, sich anpassenden Entwürfen. Für die vorliegende Arbeit sind 
 bekannten Ansätze, denn sie belegen, dass die Entwurfsentscheidungen einer Suchstruktur veränderlich
 gehalten werden können; wie sich solche Entscheidungen systematisch zerlegen und einzeln vermessen
 lassen, entwickelt Kapitel~\ref{ch:measurement}.
+\end{nurlang}
+\begin{nurkurz}
+Alle bisher genannten Verfahren sind \emph{fest entworfene} Strukturen; eine etablierte Forschungslinie verlagert
+den Entwurf dagegen in die Laufzeit: \emph{Database Cracking}~\cite{idreos2007cracking} baut den Index adaptiv als
+Nebenprodukt der Anfrageverarbeitung auf, \emph{Stochastic Cracking}~\cite{halim2012stochastic} macht dies gegen
+ungünstige Anfragefolgen robust, \emph{gelernte Indizes}~\cite{kraska2018learned} ersetzen die Suchstruktur durch
+ein Modell der Schlüsselverteilung, und VEGA~\cite{li2025vega} tunt einen gelernten Index zur Laufzeit nach,
+AirIndex~\cite{chockchowwat2023airindex} entwirft die Index-Hierarchie aus dem Daten- und Speicher-I/O-Profil des
+Zielsystems. Für die vorliegende Arbeit sind diese aktiven beziehungsweise adaptiven Ansätze die nächstverwandten
+bekannten Ansätze: sie belegen, dass Entwurfsentscheidungen veränderlich gehalten werden können; wie sie sich
+systematisch zerlegen und einzeln vermessen lassen, entwickelt Kapitel~\ref{ch:measurement}.
+\end{nurkurz}
 
 Für die cache-bezogenen Eigenschaften dieser Entwürfe hat die Literatur eine gestufte
 Begriffs-Taxonomie herausgebildet, die diese Arbeit durchgängig verwendet. Ihr Ausgangspunkt ist das
@@ -163,6 +249,7 @@ verlagern und aus beobachtetem Verhalten nachführen. Beide Unterscheidungen ---
 Entscheidungs-Zeitpunkt --- sind voneinander unabhängig; der Heuristik-Begriff, der sie später
 verbindet, folgt in Abschnitt~\ref{sec:heuristics-basics}.
 
+\begin{nurlang}
 \section{Hardware: historische Anpassung an die Suchleistung}\label{sec:hardware-history}
 Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben. Nachgezeichnet wird die
 historische Einführung cache-naher Hardware --- Cache-Hierarchie, Cache-Line, Adressübersetzung, Kohärenz ---
@@ -203,7 +290,35 @@ angefragte Wort, und DDR5 unterteilt den Speicherkanal in zwei unabhängige
 32-Bit-Sub-Kanäle~\cite{micron_ddr5}; nicht-temporale bzw.\ Write-Combining-Schreibzugriffe umgehen
 überdies den normalen Write-Allocate-Pfad, statt die betroffene Cache-Line in die Cache-Hierarchie zu
 holen~\cite{intel_sdm}.
+\end{nurlang}
+\begin{nurkurz}
+\section{Hardware: historische Anpassung an die Suchleistung}\label{sec:hardware-history}
+Die Leistung von Suchstrukturen wird seit jeher von der Hardware getrieben; nachgezeichnet werden die
+\emph{statischen und übersetzungszeit-relevanten} Eigenschaften cache-naher Hardware, die später die Abstraktion
+in Abschnitt~\ref{sec:software-means} stützen.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize, align=center]
+  \foreach \i in {0,...,7} { \draw (\i*0.55,0) rectangle (\i*0.55+0.55,0.55); }
+  \foreach \i in {0,1,2} { \fill[green!30] (\i*0.55+0.03,0.03) rectangle (\i*0.55+0.52,0.52); }
+  \node[anchor=west, align=left] at (4.8,0.27){64-Byte-Cache-Line:\\nur 3 von 8 Einheiten genutzt $\Rightarrow$ niedrige Auslastung};
+\end{tikzpicture}
+\caption{Cache-Line-Auslastung: eine Cache-Line wird stets vollständig geladen; werden nur wenige ihrer Bytes genutzt, sinkt die effektive Bandbreite --- cache-bewusstes Layout hebt die Auslastung.}\label{fig:cache-line}
+\end{figure}
+Moderne Prozessoren schalten mehrere Cache-Ebenen (L1, L2, meist L3) zwischen die Register und den
+Hauptspeicher~\cite{hennessy2019architecture}; ein Fehlzugriff bis zum Hauptspeicher kostet einige hundert
+Zyklen~\cite{drepper2007memory}. Die Übertragungseinheit zwischen den Ebenen ist die \emph{Cache-Line}
+(Abbildung~\ref{fig:cache-line}); ihre Größe ist je Mikroarchitektur fest verdrahtet --- 64\,Byte
+auf x86-64 und gängigen ARM-Kernen, 128\,Byte etwa bei Apple Silicon~\cite{apple_optimization}, 32\,Byte auf älteren
+oder eingebetteten Kernen~\cite{hennessy2019architecture,intel_optimization,amd_sog} ---, zur Laufzeit
+\emph{auslesbar} (\texttt{CPUID}, \texttt{CTR\_EL0}, \texttt{riscv\_hwprobe})~\cite{arm_arm,intel_sdm,linux_riscv_hwprobe},
+aber nicht veränderbar. Für ein cache-line-bewusstes Layout ist die je Zielplattform ermittelte Line-Größe daher
+ein \emph{Eingabeparameter der Übersetzung}, keine feste Annahme; wie er in dieser Arbeit gebunden wird, zeigt
+Kapitel~\ref{ch:measurement}. Der Transfer einer Line erfolgt zudem nicht streng am Stück
+(\emph{critical-word-first}, DDR5-Zweiteilung des Kanals in zwei unabhängige 32-Bit-Sub-Kanäle~\cite{micron_ddr5},
+Write-Combining~\cite{intel_sdm}).
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Cache-Organisation: Assoziativität, Fehlzugriffs-Klassen und Parallelität}\label{subsec:cache-organisation}
 Wo eine Line im Cache liegen darf, bestimmt die \emph{Assoziativität}: Der Cache ist in \emph{Sets}
 gegliedert, von denen jedes $n$ \emph{Ways} (Line-Plätze) hält; die Speicheradresse zerfällt in Tag,
@@ -221,7 +336,21 @@ ist handlungsleitend, denn sie trennt die Gegenmittel: Compulsory-Misses adressi
 Conflict-Misses entstehen gerade bei den regelmäßigen Adressmustern großer Knoten-Arrays --- liegen
 heiße Elemente um Zweierpotenz-Abstände auseinander, konkurrieren sie um dieselben
 Sets~\cite{hennessy2019architecture,drepper2007memory}.
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Cache-Organisation: Assoziativität, Fehlzugriffs-Klassen und Parallelität}\label{subsec:cache-organisation}
+Wo eine Line im Cache liegen darf, bestimmt die \emph{Assoziativität}: Der Cache ist in \emph{Sets} gegliedert, von
+denen jedes $n$ \emph{Ways} (Line-Plätze) hält, und jede Adresse kann nur in den $n$ Plätzen \emph{ihres} Sets
+liegen; gängige Daten-Caches sind 4- bis 16-fach assoziativ~\cite{hennessy2019architecture,intel_optimization,amd_sog}.
+Hill und Smith klassifizieren Fehlzugriffe im \emph{3-C-Modell} als \emph{compulsory} (Erstzugriff),
+\emph{capacity} (Arbeitsmenge übersteigt die Kapazität) und \emph{conflict} (mehr heiße Lines je Set als
+Ways)~\cite{hill1989associativity}; Mehrkern-Systeme kennen \emph{coherence}-Fehlzugriffe als vierte
+Klasse~\cite{hennessy2019architecture}. Die Klassifikation trennt die Gegenmittel: Prefetching gegen Compulsory-Misses
+(Abschnitt~\ref{subsec:prefetching}), kompaktere Layouts gegen Capacity-Misses; Conflict-Misses entstehen, wenn heiße
+Elemente in Zweierpotenz-Abständen um dieselben Sets konkurrieren~\cite{hennessy2019architecture,drepper2007memory}.
+\end{nurkurz}
 
+\begin{nurlang}
 Ein Fehlzugriff blockiert einen modernen Cache zudem nicht: Seit Krofts
 \emph{lockup-free}-Organisation führt der Cache je ausstehendem Miss ein Statusregister
 (\emph{Miss-Status-Holding-Register}, MSHR) und bedient währenddessen weitere
@@ -232,6 +361,16 @@ gleichzeitig unterwegs sein können: die \emph{Memory-Level-Parallelität}
 überhaupt anbieten kann, ist eine Entwurfsfrage --- der Suchpfad eines Baumes ist eine Kette
 voneinander abhängiger Zugriffe und nutzt sie ohne Weiteres nicht
 (Abschnitt~\ref{subsec:prefetching}).
+\end{nurlang}
+\begin{nurkurz}
+Ein Fehlzugriff blockiert einen modernen Cache nicht: Seit Krofts \emph{lockup-free}-Organisation führt der Cache
+je ausstehendem Miss ein \emph{Miss-Status-Holding-Register} (MSHR\@; bei Intel als \emph{Line-Fill-Buffer} zwischen
+L1 und L2 realisiert)~\cite{kroft1981lockupfree}; die feste Zahl dieser Register begrenzt die gleichzeitig
+ausstehenden Speicherzugriffe --- die \emph{Memory-Level-Parallelität}
+(MLP)~\cite{hennessy2019architecture,intel_optimization}. Ob eine Suchstruktur sie anbieten kann, ist eine
+Entwurfsfrage, denn der Suchpfad eines Baumes ist eine Kette voneinander abhängiger Zugriffe
+(Abschnitt~\ref{subsec:prefetching}).
+\end{nurkurz}
 
 Zwei weitere Eigenschaften wirken an den Line-Grenzen: \emph{Ausrichtung} (Alignment) --- ein Objekt,
 das eine Line-Grenze überspannt, kostet zwei Transfers statt einem, weshalb cache-bewusste Layouts
@@ -240,6 +379,7 @@ Knoten an Line-Grenzen ausrichten --- und \emph{False Sharing}: Schreiben zwei K
 Kernen hin und her, weil die Kohärenz (Abschnitt~\ref{subsec:write-coherence}) stets ganze Lines
 verwaltet~\cite{drepper2007memory,intel_optimization}.
 
+\begin{nurlang}
 \subsection{Cache-line-orientierte Layout-Forschung}\label{subsec:layout-research}
 Eben dieses cache-line-orientierte Layout ist der historische Leitgedanke der einschlägigen Forschung:
 Der CSS-Baum~\cite{rao1999css} führt den Cache-Line-Knoten ein, der
@@ -259,6 +399,19 @@ software-/hardware-kooperativer Prefetch-Verfahren wie dem hierarchischen Instru
 Server-Anwendungen von
 Zhang et al.~\cite{zhang2025hierarchical}, der in diese Arbeit als Prefetching-Instanz und nicht als
 datenstruktur-spezifischer Baum-Datenprefetch eingeht.
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Cache-line-orientierte Layout-Forschung}\label{subsec:layout-research}
+Das cache-line-orientierte Layout ist der Leitgedanke der einschlägigen Forschung. Als Layout-Optionen kennt die
+Literatur das dichte und das cache-line-ausgerichtete Array-of-Structs (AoS), das spaltenorientierte
+Struct-of-Arrays (SoA), das bit-gepackte, succinct LOUDS-Layout~\cite{jacobson1989louds,zhang2018surf} und das
+SIMD-gekachelte AoSoA (\emph{Array of Structures of Arrays}: Datensätze in Kacheln fester Breite, innerhalb jeder
+Kachel feldweise, sodass ein SIMD-Register genau eine Kachelspalte lädt --- die Zugriffslokalität des AoS mit der
+Vektorisierbarkeit des SoA); die Referenz-Entwürfe CSS/CSB\textsuperscript{+}~\cite{rao1999css,rao2000csb}
+(Cache-Line-Knoten, Geschwister-Cluster) und ART~\cite{leis2013art} (nach Verzweigungsgrad gestaffelte Knoten) legen
+den Knoten cache-line-orientiert aus (Abschnitt~\ref{subsec:cc-structures}). Schmidt et al.~\cite{schmidt2025hbm}
+vermessen Stride- gegen Sequenz-Zugriffe auf High-Bandwidth-Memory (HBM).
+\end{nurkurz}
 
 \subsection{Prefetching}\label{subsec:prefetching}
 Prefetching holt Daten \emph{vor} ihrer Verwendung in den Cache und ist das wichtigste Gegenmittel
@@ -274,6 +427,7 @@ Hersteller-Handbücher~\cite{intel_optimization,amd_sog}. Bewertet wird ein Pref
 wurden vermieden) und \emph{Rechtzeitigkeit} --- zu späte Prefetches verdecken die Latenz nur
 teilweise, zu frühe verdrängen noch benötigte Lines~\cite{mittal2016prefetching}.
 
+\begin{nurlang}
 Ergänzend stellen die Architekturen \emph{Software}-Prefetch-Instruktionen bereit (x86:
 \texttt{PREFETCHh}-Familie samt nicht-temporaler Variante; ARM\@: \texttt{PRFM}), mit denen das
 Programm eine Adresse samt Ziel-Ebene selbst ankündigt~\cite{intel_sdm,arm_arm}. Ihre zentrale
@@ -285,6 +439,15 @@ breitere B\textsuperscript{+}-Knoten: Werden alle Lines eines mehrzeiligen Knote
 vorangekündigt, sinkt die effektive Knoten-Ladezeit, und die optimale Knotenbreite wächst über die
 eine Cache-Line hinaus~\cite{chen2001prefetch}; Fractal Prefetching überträgt dasselbe Prinzip
 ebenen-übergreifend auf Platten-Seiten~\cite{chen2002fractal}.
+\end{nurlang}
+\begin{nurkurz}
+Ergänzend stellen die Architekturen \emph{Software}-Prefetch-Instruktionen bereit (x86: \texttt{PREFETCHh}-Familie;
+ARM\@: \texttt{PRFM}), mit denen das Programm eine Adresse samt Ziel-Ebene selbst ankündigt~\cite{intel_sdm,arm_arm};
+ihre Stellgröße, die \emph{Prefetch-Distanz}, muss die Speicherlatenz verdecken, ohne die geholte Line vor Gebrauch
+zu verlieren, und ist damit je Plattform zu kalibrieren~\cite{mittal2016prefetching}. Chen et al.\ begründen genau
+darüber breitere B\textsuperscript{+}-Knoten, deren Lines parallel vorangekündigt werden~\cite{chen2001prefetch};
+Fractal Prefetching überträgt das Prinzip auf Platten-Seiten~\cite{chen2002fractal}.
+\end{nurkurz}
 
 Seine Grenze findet Prefetching am \emph{Pointer-Chasing}, dem Kern jeder Baumsuche: Die Adresse des
 nächsten Knotens steht erst fest, wenn die Line des aktuellen Knotens eingetroffen ist. Eine solche
@@ -312,6 +475,7 @@ hinterlegt sind die \emph{JEDEC-Nennprofile} der Norm; daneben existieren herste
 tatsächlich fährt, ist darum eine dokumentationspflichtige Eigenschaft der Zielplattform, keine aus
 dem Modul ablesbare Konstante.
 
+\begin{nurlang}
 In Mehr-Sockel- und Chiplet-Systemen kommt die Topologie hinzu: Bei \emph{NUMA} (Non-Uniform Memory
 Access) besitzt jeder Knoten eigenen lokalen Speicher, und Zugriffe auf entfernte Knoten kosten
 spürbar mehr als lokale. Das Betriebssystem platziert Seiten standardmäßig nach der
@@ -336,7 +500,17 @@ dieser Arbeit als austauschbare Allokator-Bausteine vor, und welche Allokator-Ba
 im Referenzlauf aktiviert sind, nennt Kapitel~\ref{ch:measurement}. Eine eigenständige dTLB-Optimierung bleibt in den
 Suchalgorithmus-Veröffentlichungen jedoch unterbelegt, eine Beobachtung, auf die die Forschungslücke in
 Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:task-concerns}) zurückkommt.
+\end{nurlang}
+\begin{nurkurz}
+Bei \emph{NUMA} (Non-Uniform Memory Access) besitzt jeder Knoten eigenen lokalen Speicher, entfernte Zugriffe
+kosten spürbar mehr, und die \emph{First-Touch}-Politik legt eine Seite auf dem Knoten des zuerst schreibenden
+Threads ab~\cite{lameter2013numa}. Der \emph{Translation Lookaside Buffer} (TLB) puffert
+Virtuell-zu-Physisch-Abbildungen, ein TLB-Miss löst einen teuren Page-Walk aus, und große Seiten vergrößern seinen
+\emph{Reach} (Eintragszahl mal Seitengröße)~\cite{hennessy2019architecture}; für Suchstrukturen ist der Daten-TLB
+(dTLB) die zweite Lokalitätsgrenze neben der Cache-Line.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Schreibpfad, Ersetzung und Kohärenz}\label{subsec:write-coherence}
 Auch das Schreib- und Update-Verhalten der Caches ist überwiegend mikroarchitektonisch fixiert.
 Schreibzugriffe folgen \emph{Write-Through}, das unmittelbar bis in die nächste Ebene durchschreibt,
@@ -365,7 +539,24 @@ victim-artig bei AMD~Zen~\cite{intel_optimization,amd_sog}. Da all dies zur Lauf
 frei wählbar ist, sind diese Eigenschaften je Zielplattform gegeben und nur durch Messung zugänglich; ihre
 Wirkung --- insbesondere das \emph{Cache-Line-Ping-Pong} bei konkurrierenden Schreibzugriffen auf dieselbe
 Line --- muss ein faires Messverfahren eigens sichtbar machen (Kapitel~\ref{ch:measurement}).
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Schreibpfad, Ersetzung und Kohärenz}\label{subsec:write-coherence}
+Auch das Schreib- und Update-Verhalten der Caches ist überwiegend mikroarchitektonisch fixiert: Schreibzugriffe
+folgen \emph{Write-Through} (Durchschreiben) oder \emph{Write-Back} (Zurückschreiben der \emph{dirty} markierten
+Line erst bei Verdrängung), und die Allokations-Politik (Write-Allocate bzw.\ No-Write-Allocate) regelt den
+Schreib-Fehlzugriff~\cite{arm_arm,intel_sdm}. Welche Line verdrängt wird, entscheidet eine
+heuristische Ersetzungsstrategie von LRU/Pseudo-LRU bis zur scan- und thrash-resistenten \emph{Re-Reference
+Interval Prediction} (RRIP, dynamische Variante DRRIP)~\cite{jaleel2010rrip} auf Basis der adaptiven
+Insertions-Politik~\cite{qureshi2007adaptive}; die Inklusions-Politik regelt, ob eine Line in mehreren Ebenen
+liegt, und in Mehrkern-Systemen sichert ein invalidierungsbasiertes Kohärenzprotokoll die Konsistenz:
+MESI (Zustände \emph{Modified}, \emph{Exclusive}, \emph{Shared}, \emph{Invalid}), herstellerseitig zu MOESI
+(AMD~\cite{amd_sog}) oder MESIF (Intel~\cite{intel_optimization}) erweitert~\cite{hennessy2019architecture}. Ihre
+Wirkung --- insbesondere das \emph{Cache-Line-Ping-Pong} bei konkurrierenden Schreibzugriffen auf dieselbe Line ---
+muss ein faires Messverfahren sichtbar machen (Kapitel~\ref{ch:measurement}).
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Cache-bewusste und cache-oblivious Datenstrukturen}\label{subsec:cc-structures}
 Mit der Begriffs-Taxonomie aus Abschnitt~\ref{sec:overview} und den nun eingeführten Parametern
 lässt sich der Stand der Technik der cache-nahen Datenstrukturen ordnen. Den empirischen Anstoß der
@@ -429,6 +620,32 @@ als offenen Eingaberaum. Zweitens lassen beide Philosophien dieselbe Frage offen
 (Abschnitt~\ref{subsec:write-coherence}) --- systematisch mit den tatsächlich wählbaren cache-nahen
 Einstellungen verbinden? Diese Frage nimmt Kapitel~\ref{ch:measurement}
 (Abschnitt~\ref{sec:task-concerns}) wieder auf.
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Cache-bewusste und cache-oblivious Datenstrukturen}\label{subsec:cc-structures}
+Mit der Begriffs-Taxonomie aus Abschnitt~\ref{sec:overview} und den nun eingeführten Parametern lässt sich der
+Stand der Technik der cache-nahen Datenstrukturen ordnen. Den empirischen Anstoß der cache-bewussten Linie gaben
+Ailamaki et al., deren Zeit-Zerlegung kommerzieller Datenbanksysteme rund die Hälfte der Ausführungszeit in
+Speicher-Wartezyklen fand~\cite{ailamaki1999dbms}. Die Antworten der Folgejahre binden je einen Teil der Parameter
+aus den vorigen Abschnitten explizit in den Entwurf ein: die Cache-Line-Größe
+(CSS-/CSB\textsuperscript{+}-Baum~\cite{rao1999css,rao2000csb}), die Prefetch-Distanz samt mehrzeiliger Knoten
+(pB\textsuperscript{+}-Baum~\cite{chen2001prefetch}, Fractal Prefetching~\cite{chen2002fractal}), Seitengröße und
+SIMD-Breite zugleich (FAST~\cite{kim2010fast}) oder den Verzweigungsgrad je Cache-Line (ART~\cite{leis2013art}); die
+Layout-Techniken des Clustering und der Kompression gehen auf Chilimbi et al.\ zurück~\cite{chilimbi1999layout}. Die
+cache-oblivious Gegenposition ist ebenso instanziiert: Bender et al.\ begründen den cache-oblivious B-Baum über das
+van-Emde-Boas-Layout~\cite{bender2005coboblivious} und ein Baum-Layout fester Topologie, das die Blocktransfers auch
+bei unbekannter Block-Größe nahezu optimal minimiert~\cite{bender2002treelayout,bender2000cobtree}; Saikkonen und
+Soisalon-Soininen halten eine cache-sensitive Layout-Invariante auch unter
+Updates~\cite{saikkonen2008multilevel,saikkonen2016layout}, und Graefe/Larson~\cite{graefe2001btree} vergleichen
+beide Ansätze über die CPU-Cache-Ebenen.
+
+Zwei Beobachtungen an diesen Entwürfen führen weiter: Erstens bindet jeder Entwurf nur \emph{wenige} Parameter fest
+ein, keiner behandelt die Parameter-Menge als offenen Eingaberaum; zweitens lassen beide Philosophien offen, wie
+sich \emph{gemessenes} Lokalitätswissen der Zielplattform --- deren Cache-Eigenschaften überwiegend fest verdrahtet
+sind (Abschnitt~\ref{subsec:write-coherence}) --- systematisch mit den tatsächlich wählbaren cache-nahen
+Einstellungen verbinden lässt. Diese Frage greift Kapitel~\ref{ch:measurement} (Abschnitt~\ref{sec:task-concerns})
+auf.
+\end{nurkurz}
 
 \section{Workloads und Benchmark-Konventionen}\label{sec:workload-basics-known}
 Ob eine Suchstruktur die Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} gut nutzt,
@@ -486,6 +703,7 @@ Streuungs-Angabe~\cite{hoefler2015benchmarking,weaver2008counters}. Welche diese
 Arbeit erhebt und wie sie zu Mess-Kategorien geordnet werden, entwickelt
 Kapitel~\ref{ch:measurement}.
 
+\begin{nurlang}
 \section{Software-Mittel und Zusammenführung zur Abstraktion}\label{sec:software-means}
 Mit welchen Software-System-Mitteln --- Übersetzungszeit-Metaprogrammierung, statische Nutzung der
 Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} --- lässt sich die dort offen gebliebene
@@ -537,6 +755,43 @@ denen sich die je Zielplattform gemessenen Hardware-Eigenschaften zur Übersetzu
 konkretes Layout umsetzen lassen, und die deklarativen Konfigurationsmodelle, mit denen sich die
 gewählte Konfiguration beschreiben und reproduzieren lässt; wie beide dafür kombiniert werden,
 entwickelt Kapitel~\ref{ch:measurement}.
+\end{nurlang}
+\begin{nurkurz}
+\section{Software-Mittel und Zusammenführung zur Abstraktion}\label{sec:software-means}
+Mit welchen Software-System-Mitteln --- Übersetzungszeit-Metaprogrammierung, statische Nutzung der
+Hardware-Eigenschaften aus Abschnitt~\ref{sec:hardware-history} --- lässt sich die dort offen gebliebene
+Abstraktion \emph{umsetzen}? Zur
+Verfügung stehen die etablierten Mittel des software-technischen Entwurfs: die benannten
+Entwurfsmuster~\cite{gamma1994patterns}, der statische Polymorphismus des \emph{Curiously Recurring
+Template Pattern} (CRTP)~\cite{coplien1995crtp,vandevoorde2017templates}\footnote{CRTP\@: Eine Klasse
+leitet von einer Klassenschablone ab, der sie sich selbst als Schablonenargument übergibt
+(\texttt{class Derived: Base<Derived>}); die Basis kann dadurch bereits zur Übersetzungszeit auf Elemente der
+abgeleiteten Klasse zugreifen und ersetzt virtuelle Aufrufe durch statisch aufgelöste --- ohne
+Laufzeit-Indirektion und ohne Tabelle virtueller Funktionen. Benannt und beschrieben hat das Muster
+Coplien 1995 im \emph{C++ Report}~\cite{coplien1995crtp}.} samt \emph{Policy-based
+Design}~\cite{alexandrescu2001modern} sowie die Komposition aus
+austauschbaren Bausteinen (invasive Software-Komposition aus Gray-Box-Komponenten~\cite{assmann2003invasive},
+generative Programmierung~\cite{czarnecki2000generative}, feature-orientierte
+Software-Produktlinien~\cite{apel2013feature,batory1992hierarchical}); C++23-Module strukturieren solche
+Kompositionen, garantieren aber keine portable ABI-Stabilität~\cite{wg21_modules_abi}; wie diese Arbeit die
+Binärschnittstelle vorübersetzter Bausteine stattdessen stabil hält, zeigt Kapitel~\ref{ch:impl}.
+
+Damit aus austauschbaren Bausteinen ein konkretes System wird, braucht es eine \emph{Beschreibungsform} der
+gewählten Konfiguration --- \emph{deklarative Konfigurationsmodelle}: Feature-Modelle~\cite{kang1990foda}
+beschreiben Variantenräume als Merkmal-Hierarchien mit Auswahl-Constraints, die generative Programmierung erzeugt
+daraus die Systemvariante~\cite{czarnecki2000generative}, und die Produktlinien-Literatur systematisiert die
+Bindungszeitpunkte von der Übersetzungs- bis zur Laufzeit~\cite{apel2013feature}. Der Werkzeugbau folgt demselben
+Prinzip: Mavens \emph{Project Object Model} (POM) beschreibt deklarativ, \emph{was} ein modulares Java-System
+ausmacht~\cite{maven_pom}, CMake erzeugt aus einer deklarativen Beschreibung über austauschbare \emph{Generatoren}
+ein natives Buildsystem~\cite{cmake_manual}, und Mokhov et al.\ fassen Build-Systeme als Kombination weniger
+Scheduler- und Rebuilder-Bausteine über deklarativen Abhängigkeiten~\cite{mokhov2018build}; dass deklarative Modelle
+ein System auch im Betrieb begleiten, zeigen models@run.time~\cite{blair2009modelsruntime} und Götz'
+MQuAT-Dissertation zur modellgesteuerten Selbstoptimierung komponentenbasierter Systeme~\cite{goetz2013mqat}.
+
+Für diese Arbeit bilden beide Stränge den Werkzeugkasten: Kompositions-Techniken setzen gemessene
+Hardware-Eigenschaften zur Übersetzungszeit in ein konkretes Layout um, deklarative Konfigurationsmodelle beschreiben
+die gewählte Konfiguration reproduzierbar; ihre Kombination entwickelt Kapitel~\ref{ch:measurement}.
+\end{nurkurz}
 
 \section{Heuristiken als Entscheidungsregeln}\label{sec:heuristics-basics}
 Sowohl die adaptiven und gelernten Indizes (Abschnitt~\ref{sec:overview}) als auch die
@@ -557,6 +812,7 @@ Heuristik} wählt die Konfiguration hingegen zur Laufzeit, abhängig vom tatsäc
 Verhalten, und kann sie im Betrieb anpassen. Beide Spielarten setzen dieselbe \emph{Heuristik-Funktion}
 voraus, verschieben aber den Zeitpunkt ihrer Auswertung.
 
+\begin{nurlang}
 Formal ist diese Heuristik-Funktion ein \emph{Mapping} von einem Messergebnis beziehungsweise
 Lastprofil auf eine Konfiguration: $h: \mathcal{M} \rightarrow \mathcal{K}$, wobei $\mathcal{M}$ den
 Raum der erhobenen Merkmale (Messwerte, Lastprofil-Kennzahlen) und $\mathcal{K}$ den Raum der
@@ -564,6 +820,7 @@ zulässigen Konfigurationen bezeichnet. Die vorliegende Arbeit misst diesen Zusa
 systematisch aus (Kapitel~\ref{ch:measurement}); die \emph{automatisierte} Bestimmung von $h$ selbst ---
 der Mechanismus, der aus den Messergebnissen die jeweils beste Konfiguration ableitet --- ist
 Zielsetzung und Ausblick dieser Arbeit (Abschnitt~\ref{sec:outlook}).
+\end{nurlang}
 
 Schließlich sind die in der Literatur teils synonym gebrauchten Begriffe abzugrenzen\@. \emph{Adaptiv}
 (\emph{adaptive}) heißt eine Heuristik, die ihre Entscheidung an veränderliche Bedingungen anpasst;
@@ -573,9 +830,11 @@ statt zur Übersetzungszeit; und \emph{messgetrieben} (\emph{measurement-driven}
 und nicht auf festen Modellannahmen. Eine adaptive Heuristik ist somit stets dynamisch, eine dynamische
 nicht notwendig adaptiv, und beide können, müssen aber nicht messgetrieben sein.
 
+\begin{nurlang}
 Damit sind die Grundlagen beisammen: die Landschaft der Suchstrukturen, die Hardware-Eigenschaften, die
 ihre Leistung prägen, die Workload-Konventionen, unter denen sie verglichen werden, die Software-Mittel
 der Abstraktion und der Heuristik-Begriff, der Messwissen mit Konfigurationswahl verbindet. Wie sich mit
 genau diesen Mitteln ein Suchalgorithmus in orthogonale, einzeln vermessbare Entwurfsentscheidungen
 zerlegen lässt, entwickelt Kapitel~\ref{ch:measurement}; die konkrete Umsetzung der dort eingeführten
 Bausteine zeigt Kapitel~\ref{ch:impl}.
+\end{nurlang}
