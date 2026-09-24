@@ -3,6 +3,7 @@
 % [SKELETON] Detail focus. After a brief known SOTA, each PRT-ART algorithm as a figure + description;
 % then axis implementation (one overall-concept figure per axis) and all levels of the measurement system.
 
+\begin{nurlang}
 This chapter descends into detail: first the repository architecture with the carrier-stage chain
 (Section~\ref{sec:anatomy-levels}) and the four work modes of a permutation, then each key point of
 PRT-ART individually and visually, next the axis implementation together with the \emph{one} architecture
@@ -18,7 +19,21 @@ make the selection from the measured
 values~\cite{whaley2001atlas,frigo1998fftw,ansel2014opentuner,balaprakash2018autotuning}; the difference
 is that here it is not the parameters of a fixed implementation that are permuted but the organ assignment
 of a living being, and a separate binary is generated per permutation.
+\end{nurlang}
+\begin{nurkurz}
+This chapter descends into detail: from the repository architecture with the carrier-stage chain
+(Section~\ref{sec:anatomy-levels}) through the key points of PRT-ART, the axis implementation, the build
+chain and the contract tests to the realm roots, the hybrid stage and the store. At its core, the
+\emph{one} architecture is a self-optimizing compiler-compiler structure: the planner generates the
+build orders from the user XML, the builder generates the compiled artefacts from them, and the
+evaluation of the measured values feeds the next planning (Section~\ref{sec:mess-chain}) --- the line of
+the empirical autotuning
+systems~\cite{whaley2001atlas,frigo1998fftw,ansel2014opentuner,balaprakash2018autotuning}, except that
+here the organ assignment of a living being is permuted and a separate binary is generated per
+permutation.
+\end{nurkurz}
 
+\begin{nurlang}
 \section{Four-Repository Architecture}\label{sec:repos}
 The implementation is distributed across four Git repositories with clearly separated responsibilities:
 \begin{itemize}
@@ -160,7 +175,91 @@ Mode & CMake type & measures & measurement threads & purpose / status \\
 (\texttt{WorkMode}, four entries; a fifth breaks the compilation). No mode measures in parallel; only
 \texttt{measure} switches the measurement on.}\label{tab:work-modes}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\section{Four-Repository Architecture}\label{sec:repos}
+The implementation is distributed across four Git repositories with clearly separated responsibilities:
+\begin{itemize}
+  \item \texttt{comdare-cache-engine} --- \textbf{how} measurement is done: the building-block library
+  and the builder (code generation, permutation loop, module loader, the seven-phase
+  \texttt{ExperimentDriver} and the planner \texttt{ExperimentPlanDirector},
+  Section~\ref{sec:impl-pipeline}), the ABI headers under \texttt{abi/} together with the test cluster
+  isolated from the build (Section~\ref{sec:axes-impl}), the 33~SOTA profiles as executable XML
+  (Section~\ref{sec:sota-instances}) and the test suites; the source tree follows a Pitchfork layout,
+  added to these are \texttt{libs/traeger} with the four carrier stages (below) and \texttt{heuristik/}
+  with six headers (axis spline, break-even, measurement-curve loader, offline clustering, feature
+  vector, optimization catalogue).
+  \item \texttt{comdare-prt-art} --- the \textbf{candidate under test}: the hybrid
+  \texttt{PrtArtSearchEngine} with the 1/2/N parameter rule (one parameter demands the function
+  interfaces of a vector, two those of a map, more than two those of a map onto a tuple), its ABI
+  adapters and building blocks as well as the re-implementations of the rank-2/3 works
+  (\texttt{legacy\_\allowbreak{}reimpl}, fourteen directories); rank~1 (centrality rank,
+  Section~\ref{sec:rqs}) comprises the eight independent search designs with original adapter as well as
+  the works P08 and P09 that enter as organs. Pool, prefetch and layout components are descriptor
+  skeletons without a memory backend of their own; which candidate building blocks reach the measurement
+  apparatus is decided by the slot assignment (Section~\ref{sec:prtart-impl}).
+  \item \texttt{probst-Diplomarbeit-cache-engine} --- \textbf{what} is tested by the user: the
+  experiment configurations (XML together with the XSD schema), the measurement driver
+  \texttt{messung\_driver} (the CEB role) and the evaluation toolchain of nine numbered programs from
+  \texttt{01\_\allowbreak{}sample\_\allowbreak{}data\_\allowbreak{}generator} to
+  \texttt{09\_\allowbreak{}tex\_\allowbreak{}formatter}.
+  \item the \textbf{manuscript repository} --- the versioned experiment execution directly in the
+  document: the generator output of the toolchain is committed in the appendix, the repository has its
+  own CI, and the project repository triggers the manuscript build after a measurement run
+  (\texttt{trigger:thesis}); a measured value in the document is a versioned artefact state with
+  provenance.
+\end{itemize}
+The fourfold order of the code is not the repository boundary but the \emph{carrier-stage chain}
+planner $\to$ CEB $\to$ tier $\to$ hybrid (Section~\ref{sec:anatomy-levels}); the source tree maps it
+under \texttt{libs/traeger} as four subprojects in stage form, where stage $N+1$ depends only on
+stage $N$. Implementation status: the subprojects form a scaffold, the implementation lies as a
+monolith under \texttt{libs/\allowbreak{}cache\_\allowbreak{}engine}. The candidate under test is not a
+stage but the transversal supplier of organ building blocks; the stage chain is at the same time the
+layer at whose binaries the contracts are partitioned into surfaces (Section~\ref{sec:impl-pipeline});
+Figure~\ref{fig:traeger-stufen} shows it with its binaries, legend forms and surfaces.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  st/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=3.9cm,text width=3.55cm,align=center,inner sep=3pt},
+  fl/.style={draw,rounded corners,fill=orange!10,minimum width=3.75cm,minimum height=1.35cm,text width=3.55cm,align=center,inner sep=2pt,font=\tiny}]
+  \node[st] (s1) at (0,0){\textbf{Stage 1: planner}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny resolves the user XML against the three catalogues; director walk; legend \texttt{ceb:build:\allowbreak[a,b,c]}}};
+  \node[st] (s2) at (3.95,0){\textbf{Stage 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny carries the measurement choice compiled in, permutes system $\times$ organ; legend per host \texttt{tier:build-batch:\allowbreak<host>}, attestations \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[st] (s3) at (7.9,0){\textbf{Stage 3: tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny one organ permutation per binary; seven mandatory symbols; measurement batch per host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, measurement attestations \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[st] (s4) at (11.85,0){\textbf{Stage 4: hybrid}\\{\tiny hybrid \texttt{.so}}\\[2pt]{\tiny the same mandatory symbols; dock array with docked tiers; \texttt{genus()} reports the target genus}};
+  \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s3); \draw[->,thick] (s3)--(s4);
+  \node[fl] (f1) at (0,-2.95){Surface 2 (stamp): self-version X.Y.Z, fingerprint SHA-256, overall stamp};
+  \node[fl] (f2) at (3.95,-2.95){Surface 2 (stamp): measurement and system line, fingerprint SHA-512; own measurement-gate assignment};
+  \node[fl] (f3) at (7.9,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
+  \node[fl] (f4) at (11.85,-2.95){Surfaces 1--3 as for the tier, plus the attached stamp lines (runtime hook)};
+  \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
+\end{tikzpicture}
+\caption[The carrier-stage chain in code]{The carrier-stage chain in code: four carriers in fixed order (stamp contract), per stage the
+binary, its legend form in the emitted pipeline and the contract surfaces expressed at it.
+Stage $N+1$ depends only on stage $N$; only the measurement attestations contain all three axis brackets.
+The surfaces partition the contracts (Section~\ref{sec:impl-pipeline}); the subprojects under
+\texttt{libs/traeger} are a scaffold, the implementation lies as a monolith under
+\texttt{libs/cache\_engine}.}\label{fig:traeger-stufen}
+\end{figure}
+Across this, the terminology separates two engine terms: the \texttt{CacheEngine} is the \emph{library
+of axis building blocks} (per axis the interchangeable design constituents as concept/CRTP components,
+without measurement logic), the \texttt{ExecutionEngine} the \emph{execution and measurement
+infrastructure} lying across all axes with the measurable root \texttt{IExecutionEngine}
+(Section~\ref{sec:measurement-system}); the measurement couplings of the runtime adapter are switched
+via \texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON}, and the CMake option
+\texttt{COMDARE\_\allowbreak{}EXPERIMENT\_\allowbreak{}MODE} encodes the invariant that an experiment
+build is always a measurement build; the separation of building blocks and tools keeps the production
+path measurement-free.
 
+The four \emph{work modes} \texttt{build}, \texttt{measure}, \texttt{compare} and \texttt{release} are
+registered as a sub-axis of the measurement realm (Section~\ref{sec:anatomy-levels}): \texttt{build}
+builds without measuring and may run in parallel, \texttt{measure} is the deterministic single-thread
+measurement run and the only mode with measurement switched on, \texttt{compare} reads the measurement
+store (implementation status: a selectable label, the replay comparison is not implemented),
+\texttt{release} produces the reference binary without instrumentation; all four build as CMake
+Release, and the wiring check of the former debug regime is realized as the switch \texttt{--debug} of
+the planner shell --- a flag, not a state.
+\end{nurkurz}
+
+\begin{nurlang}
 \section{PRT-ART in Detail}\label{sec:prtart-impl}
 Building on the state of the art, this section describes each key point of PRT-ART individually and
 visually; for each key point, the related technique from which it emerges is named first. Pool
@@ -241,7 +340,50 @@ with signalling bits in Appendix~\ref{app:blocks}.
 \end{tikzpicture}
 \caption{Gallery of the six own key points of PRT-ART, each at its axis: a 4+1+2 pool allocator (T6), optimistic lock coupling with reserved value blocks (T8), path-oriented bundle prefetch (T7), a MultiLevel layout (T5) and cache-coherence-aware telemetry together with the DensityTracker and the hypothesis metrics H1/H2/H3 --- the telemetry axis is split in two, a sweep sub-axis of the measurement tooling and a compile-time quantity of the builder (Section~\ref{sec:axis-triad}). The tiles show the \emph{building blocks of the candidate repo}; overridden in the apparatus are the path-compression redirect (T3, engine-side reference composition), the prefetch (T7) and the ChainRef value handle (T10, slot composition of the candidate under test) as well as the build axis page type; the building blocks for T5/T6 run in the measurement path via the cache-engine default, OLC is inherited from ART, and the remaining organ axes the slot composition draws from the ART reference of the cache engine (sixteen of eighteen).}\label{fig:prtart-gallery}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+\section{PRT-ART in Detail}\label{sec:prtart-impl}
+Building on the state of the art, this section names each key point of PRT-ART together with the
+related technique from which it emerges: pool allocation with role-pure pools (Hoard, jemalloc,
+mimalloc~\cite{berger2000hoard,evans2006jemalloc,leijen2019mimalloc}), optimistic lock coupling
+(ART~\cite{leis2016olc}), software prefetch along the tree
+paths~\cite{chen2001prefetch,zhang2025hierarchical}, cache-line-aware node layouts (ART and
+FAST~\cite{leis2013art,kim2010fast}) and coherence-aware telemetry against the false-sharing
+problem~\cite{torrellas1994falsesharing,kuehn2023bplustree}; the DensityTracker and the hypothesis
+metrics H1/H2/H3 are own contributions without an external template.
 
+The candidate under test contributes six key points of its own, two of them on the two-way-split
+telemetry axis (sweep sub-axis of the measurement tooling in the planner, compile-time quantity in the
+builder, Section~\ref{sec:axis-triad}): a \emph{4+1+2 pool allocator} (four page pools with the roles
+trie hull, dense pages, MultiLevel and decision span, one rest pool, two value pools) as a
+cache-line-aligned, low-fragmentation free list; \emph{optimistic lock coupling (OLC) with reserved
+value blocks} via a concurrency manager (OLC, HTM, STM, lock-free, RCU, hazard
+pointers~\cite{michael2004hazard}); a \emph{path-oriented bundle prefetch} of the hot search paths; a
+\emph{MultiLevel layout}; coherence-aware telemetry --- per-node counters cause cache-line ping-pong
+and falsify the measurement they collect --- as \emph{leaf-only counters} (main variant),
+\emph{sampling} and \emph{offline recompute}, the per-node counter is retained only as a labelled
+anti-pattern; and the DensityTracker together with the metrics H1/H2/H3 as telemetry organs of its own.
+In the engine source tree, the telemetry building blocks (TM1--TM3) and the ISA sub-axes (IS1--IS3)
+lie under the organ axes, while telemetry regime and target ISA are carried in the system registry
+(Section~\ref{sec:impl-pipeline}) --- a double location in the code, not an assignment question of the
+model.
+
+These key points are \emph{building blocks of the candidate repo}; which of them reach the measurement
+apparatus is decided by the slot assignment (Section~\ref{sec:prtart-demo}). The candidate under test
+provides four slot hulls: the page type of the build axis (\texttt{PrtArtBPlusPageType}), the prefetch
+(\texttt{PrtArtRedirectPrefetch}, T7), the ChainRef value handle (\texttt{PrtArtChainRefHandle}, T10)
+and a telemetry wrapper with the per-node counter as comparison baseline. Its slot composition
+\texttt{PrtArtCompositionDemo} takes over sixteen of the eighteen organs from the ART reference
+composition of the cache engine and replaces prefetch and value handle; the engine-side
+\texttt{PrtArtComposition} differs from ART only in the path-compression redirect (T3, the \emph{R} in
+PRT-ART); pool allocator (T6) and MultiLevel layout (T5) run in the measurement path via the
+cache-engine default, their binding is envisioned but not implemented. The remaining two of the eight
+building-block layers from the contribution list (Section~\ref{sec:contributions}), value handles and
+signalling-bit serialization, provide the value-handle slot (T10) or are catalogued as a building block
+of the serialization axis (T9) in Appendix~\ref{app:blocks}.
+\end{nurkurz}
+
+\begin{nurlang}
 \section{Axis Implementation and Measurement-System Levels}\label{sec:axes-impl}
 Each axis is implemented as a generalized interface; alongside lie the levels of the measurement system
 from code generation to the seven-phase pipeline. The section closes with the level picture E4--E0 in
@@ -277,7 +419,28 @@ block from the cache engine by the same route (Section~\ref{sec:prtart-impl}). T
 hierarchical prefetching~\cite{zhang2025hierarchical} additionally provides a compile-time call-graph
 analyser (\texttt{p27\_bundle\_finder}, a C++23 port of the original tool \texttt{hp\_soft} that
 identifies functions with a subtree footprint above a threshold as bundle entry points).
+\end{nurlang}
+\begin{nurkurz}
+\section{Axis Implementation and Measurement-System Levels}\label{sec:axes-impl}
+Each axis is implemented as a generalized interface; alongside lie the levels of the measurement system
+up to the seven-phase pipeline, the level picture E4--E0 in code (Figure~\ref{fig:impl-layers}) and the
+contract surfaces; the pattern register follows at the end of the chapter (Figure~\ref{fig:muster}).
+Each axis is a topic directory with a two-layer \emph{concept}~\cite{sutton2012concepts} and a
+\texttt{requires}-secured CRTP base class. The live path of building-block selection is monomorphic:
+from the type list of all building blocks (\texttt{All*}) a compile-time filter over the enable flag
+(\texttt{mp\_filter}, Boost.Mp11~\cite{dimov_mp11}) forms the \texttt{Enabled*} list, and a composition
+assigns exactly one type per slot; the hot path contains neither \texttt{virtual} calls nor runtime
+switches --- an unused abstraction costs nothing~\cite{stroustrup2012foundations}. SOTA designs and
+allocators are integrated via thin \emph{adapters}: vendor shims switch the building block off when the
+vendor is missing instead of breaking the build, with a fallback chosen per family
+(\texttt{portable\_aligned\_alloc}; \texttt{StdMalloc} is a building block of its own, not a makeshift),
+and a stub that throws a \texttt{runtime\_error} at runtime does not occur in the organ axes. The organ
+axes not occupied by the candidate under test draw their building block from the cache engine
+(Section~\ref{sec:prtart-impl}); hierarchical prefetching~\cite{zhang2025hierarchical} brings along the
+call-graph analyser \texttt{p27\_bundle\_finder} at compile time.
+\end{nurkurz}
 
+\begin{nurlang}
 A design decision delimits this live path from a rejected alternative: a variant-based building-block
 resolution --- \texttt{resolve\_baustein} over \texttt{baustein\_variants}, a concept-checked
 \texttt{if constexpr} over tag specializations --- is expressly forbidden for static organ axes because
@@ -299,7 +462,23 @@ registry header of its carrier scaffold under \texttt{libs/traeger/ceb} outside 
 variant-free. The ban is thus stricter than the mere avoidance of virtual
 calls~\cite{alexandrescu2001modern}: it forbids every form of runtime branching between building
 blocks.
+\end{nurlang}
+\begin{nurkurz}
+A design decision delimits this live path from a rejected alternative: a variant-based building-block
+resolution (\texttt{resolve\_baustein} over \texttt{baustein\_variants}) is expressly forbidden for
+static organ axes and exists only as a test cluster isolated from the build. The reason is the parsimony
+of the compiled artefact: a tier binary maps exactly the one permutation being run;
+\texttt{std::variant}, \texttt{virtual} and runtime switches are forbidden in tier and hybrid binaries
+--- whoever needs another permutation needs another compiled artefact. The one permitted variant site
+of the house is the dock array of the hybrid stage (\texttt{HybridDockVariant},
+Section~\ref{sec:impl-hybrid-lager}); besides this, the code tolerates \texttt{std::variant} in two
+axis-foreign building blocks (\texttt{axis\_error}, \texttt{pressure\_state}) and in the three
+expected/result seams of the hardware probes (NUMA pages, NUMA core binding, operating system). The ban
+is thus stricter than the mere avoidance of virtual calls~\cite{alexandrescu2001modern}: it forbids
+every form of runtime branching between building blocks.
+\end{nurkurz}
 
+\begin{nurlang}
 Within each axis category there are main axes, sub-axes and meta-meta axes. In code, the category is
 the trichotomy \texttt{AxisCategory} with the fixed order mess $<$ system $<$ organ --- an order that a
 \texttt{static\_assert} holds against silent re-sorting ---, and the family of an axis is the
@@ -331,7 +510,25 @@ Organ & 18 (T0--T17) & 20 sub-axis headers (e.g.\ SA1--SA4, AA1--AA7) & \texttt{
 family discriminator \texttt{AxisKind} with six values). The numbers are structural numbers of the
 source tree (registry headers and generated registry XML), not measured values.}\label{tab:axis-typology}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+Within each axis category there are main axes, sub-axes and meta-meta axes. In code, the category is
+the trichotomy \texttt{AxisCategory} with the fixed order mess $<$ system $<$ organ (a
+\texttt{static\_assert} holds it against silent re-sorting), the family the discriminator
+\texttt{AxisKind} with six values; a sub-axis is itself a full axis and can at the same time be a
+permutation axis. The inventory per category: the organ realm comprises eighteen main axes, twenty
+sub-axis headers and the organ meta-meta \texttt{disk\_io}; the system realm three main axes, the
+complex axis \texttt{build\_target\_complex} with the sub-axis group \texttt{build\_toolchain}
+(compiler, optimization level, atomics), \texttt{target\_isa\_complex} (three members), the scheduling
+with five dimensions and the system meta-metas under the hub of the extension hardware; the measurement
+realm the tooling main axis (wallclock/macro/micro), four registered sub-axes (sixteen categories, work
+mode, measurement framework, write-back method) and the measurement meta-meta \texttt{load\_framework}.
+The designation meta-meta follows the four-level meta-level architecture of the Object Management Group
+(MOF)~\cite{omg2016mof}; the reading M0--M3 for this apparatus is developed in
+Section~\ref{sec:impl-system-axes}.
+\end{nurkurz}
 
+\begin{nurlang}
 The eighteen organ axes (T0--T17, Section~\ref{sec:axis-triad}) are here not abstract but each a
 concrete \emph{strategy concept} with several interchangeable building blocks, from which a concrete
 composition chooses exactly one per slot; their number is, as \texttt{kOrganAxisCount} $=$ 18, the
@@ -378,7 +575,22 @@ thus not a convention but a compile-time-checked condition.
 \end{tikzpicture}
 \caption{Gallery of the eighteen organ axes (T0--T17, canonical slot order): per axis the implementation concept --- short name, sub-axis family and a representative selection of the interchangeable building blocks. Each axis is a \texttt{Concept} interface with several strategy building blocks (\emph{Strategy} pattern); a concrete composition occupies exactly one per slot. The \emph{default} (\enquote{Def.}) is a derived comparison baseline, not a code flag. The numbers in parentheses (T0, T6, T15) are the \emph{catalogues} of the complete type lists (\texttt{All*}); the \emph{enabled inventory} of a build configuration is the subset formed by the enable filter, which the generated registry XML reports per axis (for instance four search algorithms and three allocators in the in-house default). The T numbers are slots of the composition, not directory numbers of the implementation; the abbreviations io1--io3 and IO1--IO3 belong to different axes (index organization and I/O dispatch). Next to the eighteen slots stands the organ meta-meta \texttt{disk\_io}; the persistence target is pinned to its in-memory representative in the canonical reference catalogue (Section~\ref{sec:axis-triad}). The complete matrix with origin sources is given in Appendix~\ref{app:blocks}.}\label{fig:axes-gallery}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+The eighteen organ axes (T0--T17, Section~\ref{sec:axis-triad}) are here not abstract but each a
+concrete \emph{strategy concept} with several interchangeable building blocks, from which a concrete
+composition chooses exactly one per slot; their number is, as \texttt{kOrganAxisCount} $=$ 18, the
+single source of the organ line, and their names and slot order are carried by the array
+\texttt{kCompositionAxisNames}; the complete building-block matrix with all origin sources is given in
+Appendix~\ref{app:blocks}, the SOTA contributions per axis in Table~\ref{tab:axes-overview}.
+Next to the eighteen canonical main axes stands the organ meta-meta \texttt{disk\_io}, which never
+touches the \texttt{binary\_id} (Section~\ref{sec:axis-triad}); a nineteenth, optional organ axis is
+planned but not implemented; only its implementation introduces it as slot T18. That no composition
+omits an organ is enforced by the \texttt{IsComposition} concept: it demands per algorithm the
+assignment of exactly these eighteen organs, so that no composition compiles that leaves an axis open.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{The One Architecture in Code}\label{sec:impl-architecture}
 The \emph{one} architecture from Section~\ref{sec:anatomy-model} is, in code, a single hierarchy.
 Its root is \texttt{IExecutionEngine} with three engine kinds --- Anatomy, Virus, Hybrid --- and a
@@ -402,6 +614,26 @@ interface --- the library skeleton of the same name, \texttt{libs/search\_engine
 existing code a graph breadth-first search) but possess no anatomy (Figure~\ref{fig:one-architecture}).
 In this hierarchy the compiler-compiler character of the apparatus is anchored: every composition is a
 type from which the builder generates a separate compiled artefact per permutation.
+\end{nurlang}
+\begin{nurkurz}
+\subsection{The One Architecture in Code}\label{sec:impl-architecture}
+The \emph{one} architecture from Section~\ref{sec:anatomy-model} is, in code, a single hierarchy. Its
+root is \texttt{IExecutionEngine} with three engine kinds --- Anatomy, Virus, Hybrid --- and a contract
+of seven methods (\texttt{warm\_up}, \texttt{run}, \texttt{reset} and \texttt{shutdown} as measurement
+lifecycle as well as \texttt{engine\_name}, \texttt{engine\_kind} and \texttt{lifecycle\_state} as
+reports). Beneath it lie the four families and the six genera (Section~\ref{sec:anatomy-levels}); in
+code the family is the derivation of the genus (\texttt{gattung\_of}), not a second label. The living
+being \texttt{SearchAlgorithm} and its ABI runtime view --- the \enquote{SearchEngine} --- are two
+views of the same entity across the module boundary: the body is \texttt{SearchAlgorithmAnatomy<C>},
+the composition and wiring of the eighteen organs, and the view is
+\texttt{SearchAlgorithmAbiAdapter<A>}. The layering
+\texttt{CacheEngine}\,$\to$\,\texttt{ExecutionEngine}\,$\to$\,\texttt{SearchEngine}
+(Section~\ref{sec:repos}) separates roles, not class trees; the library skeleton of the same name,
+\texttt{libs/search\_engine}, contains no code. Axis-less \emph{viruses} stand as siblings beneath the
+same root but possess no anatomy (Figure~\ref{fig:one-architecture}). In this hierarchy the
+compiler-compiler character of the apparatus is anchored: every composition is a type from which the
+builder generates a separate compiled artefact per permutation.
+\end{nurkurz}
 
 \begin{figure}[!htbp]
   \centering
@@ -453,6 +685,7 @@ type from which the builder generates a separate compiled artefact per permutati
   genus; the family HeuristikAdapter carries the reroute genus of the hybrid stage.}\label{fig:one-architecture}
 \end{figure}
 
+\begin{nurlang}
 Concretely, the module boundary is a C-stable interface --- the ABI (application binary interface) of
 the apparatus --- that exports exactly one living being per permutation (Figure~\ref{fig:abi}): every
 tier binary contains seven mandatory symbols with C linkage --- the four primal symbols ABI version,
@@ -477,7 +710,28 @@ field \texttt{permutation\_\allowbreak{}fingerprint} in the ABI POD of the modul
 fingerprint (format~6, eleven members) and the SHA-256 planner fingerprint
 (Section~\ref{sec:stamp-model}). How these and the remaining code interfaces relate in detail is
 summarized by the UML map in Figure~\ref{fig:uml-interfaces}.
+\end{nurlang}
+\begin{nurkurz}
+Concretely, the module boundary is a C-stable interface --- the ABI of the apparatus --- that exports
+exactly one living being per permutation: every tier binary contains seven mandatory symbols with C
+linkage --- the four primal symbols ABI version, magic number, factory
+\texttt{comdare\_\allowbreak{}create\_\allowbreak{}anatomy} and destroy, plus the two reports
+\texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} and
+\texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus}, spelled identically across all families, as
+well as the version lines of the stamp. The identical spelling is a condition: the family-independent
+loader loads every binary via the same loading route (POSIX \texttt{dlopen}~\cite{posix_dlopen}) and
+determines the family from the genus \emph{before} it constructs an instance. The ABI carries major
+version~9, whose seam is the genus interface. The variadic 1/2/N hybrid API belongs to the candidate
+under test: \texttt{PrtArtSearchEngine<Ts\ldots>} specializes by parameter count (\texttt{std::vector},
+\texttt{std::map}, \texttt{std::map} onto a tuple). Complex keys are reduced by a fingerprint component
+(\texttt{fixed\_\allowbreak{}length\_\allowbreak{}fingerprint}, FNV-1a base) to 16-byte binary strings,
+which the candidate under test uses as its key type (\texttt{BinaryKey}); this key fingerprint is to be
+distinguished from the three identity fingerprints of the apparatus ---
+\texttt{permutation\_\allowbreak{}fingerprint} in the ABI POD, SHA-512 tier fingerprint, SHA-256
+planner fingerprint (Section~\ref{sec:stamp-model}).
+\end{nurkurz}
 
+\begin{nurlang}
 \begin{figure}[!htbp]
 \begin{lstlisting}[basicstyle=\footnotesize\ttfamily,frame=single,xleftmargin=1.5em]
 // C-stable module boundary: seven mandatory symbols per tier binary
@@ -504,7 +758,9 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   identity of a binary is carried separately from this by the \texttt{permutation\_fingerprint} field of
   the ABI POD, the SHA-512 tier fingerprint and the SHA-256 planner fingerprint.}\label{fig:abi}
 \end{figure}
+\end{nurlang}
 
+\begin{nurlang}
 \begin{figure}[htbp]\centering
 % No \resizebox: the drawing is only ~15.3cm wide; blowing it up to 0.96\linewidth (x1.006) would inflate
 % the \scriptsize font beyond the body text. Rule: resizebox only to SHRINK (cf. fig:m-model).
@@ -537,7 +793,9 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
 \end{tikzpicture}
 \caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase}, the four families and six genera and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the eighteen axes) and its ABI runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), which is measured via the drive/observer contracts \texttt{IDriveableTier}/\texttt{IObservableTier} and whose measurement crosses as surface~3 through the visitor \texttt{IMessVisitor}; on the right the live path repeated per axis --- a two-layer \texttt{Concept}, a \texttt{requires}-secured CRTP base, the complete \texttt{mp\_list} building-block family, the compile-time filter over the enable flag and the composition slot, which contains exactly one type. The variant-based resolution \texttt{resolve\_baustein} is a rejected alternative isolated from the build (dashed).}\label{fig:uml-interfaces}
 \end{figure}
+\end{nurlang}
 
+\begin{nurlang}
 \subsection{From Profile to Tier Binary: Planner, Builder and Measurement Pipeline}\label{sec:impl-pipeline}
 The chain from the user XML to the tier binary (Section~\ref{sec:mess-chain}) has, in code, a named
 shape of two binaries. Stage~1, the planner role, is \texttt{comdare-experiment-planner} with the
@@ -774,7 +1032,156 @@ admission M = mandatory, P = permitted, F = forbidden; P is unoccupied in the ex
 forbidden cell of the organ line at the CEB is the static barrier \enquote{the CEB carries no organ axes};
 the cells are checked per heir via \texttt{static\_assert}.}\label{tab:stempel-matrix}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{From Profile to Tier Binary: Planner, Builder and Measurement Pipeline}\label{sec:impl-pipeline}
+The chain from the user XML to the tier binary (Section~\ref{sec:mess-chain}) has, in code, the shape
+of two binaries. Stage~1, the planner role, is \texttt{comdare-experiment-planner} with the subcommands
+\texttt{validate}, \texttt{plan dump|ci|cmake}, \texttt{cache-key}, \texttt{fingerprint},
+\texttt{status}, \texttt{check-size}, \texttt{simulate}, \texttt{version} and \texttt{help}:
+\texttt{validate} checks, purely read-only, against the compiled-in registry catalogues, \texttt{plan}
+drives the deterministic, byte-identically repeatable walk of the \texttt{ExperimentPlanDirector}
+(\emph{Director} and \emph{Builder}~\cite{gamma1994patterns}: one walk, one builder per output syntax),
+\texttt{check-size} and \texttt{simulate} compute the measurement set before the run
+(Section~\ref{sec:impl-contracts}). Stage~2, the CEB role, is the measurement driver
+\texttt{comdare-messung-driver} (\texttt{tier ci|cmake}, \texttt{run}, \texttt{version},
+\texttt{help}): it emits the tier build orders of its build space and drives the measurement run; the
+planner steers the CEB orders, the CEB the tier orders --- two modules, not merely surface. The legends
+of the emitted attestations have three forms: \texttt{ceb:build:[a,b,c]} on stage~1, per host a build
+and check batch \texttt{tier:build-batch:<host>} with the attestations \texttt{zelle=[d,e,f][g,h,i]}
+(the milestone batches in Section~\ref{sec:fairness}) and per host a measurement batch
+\texttt{measure:[a,b,c]:batch:<host>}, whose measurement attestations alone contain all three brackets
+(Figure~\ref{fig:traeger-stufen}).
 
+The installation has two control paths, the planner directly via shell and an API command line with a
+headless service (a cell on Kubernetes or on bare metal), plus a command-line-guided creation mode for
+the user XML with hardware filter; the shell path is implemented, service and creation mode are planned
+but not implemented. Two properties secure the \emph{one} main channel: the text plan reports per build
+step the actually generated file stem (\texttt{built\_stem}), produced by the same function that the
+build orchestrator calls; and there is \emph{one} XML source and \emph{one} channel that builds it ---
+variant formation lies in the C++23 metaprogramming, CMake is confined to building.
+
+Inside the CEB, the builder transforms each profile into a precompiled C++23 module. Each permutation
+is identified by a bit-packed \emph{permutation flag} structure with ten banks of 64~bits each, a
+constraint filter (\texttt{is\_valid\_combination}) excludes incoherent combinations; the measurement
+path identifies the eighteen organ axes via the eighteen-segment path (the \texttt{binary\_id},
+Section~\ref{sec:stamp-model}) together with the three fingerprints, and the permutation count follows
+a mixed-radix encoding --- the product space of the variability models of software product
+lines~\cite{pohl2005spl}. Over this runs the \emph{seven-phase measurement pipeline}
+(Figure~\ref{fig:pipeline}) of the \texttt{ExperimentDriver}: (1)~\textsc{Enumerate},
+(2)~\textsc{Generate}, (3)~\textsc{Compile}, (4)~\textsc{Link+Load}, (5)~\textsc{Execute},
+(6)~\textsc{Measure} and (7)~\textsc{Persist}; two opt-in phases compile missing modules and run a
+functional test per module with ABI version check, and the measurement-series modes \texttt{Defined},
+\texttt{Full} and \texttt{FullSampled} (Section~\ref{sec:mess-chain}) choose which permutations a
+series comprises. The downstream evaluation toolchain is a sequence of nine numbered programs from
+\texttt{sample\_data\_generator} to \texttt{tex\_formatter}; the xlsx workbook is the output, the CSV
+form its tree extract generated from the workbook (Section~\ref{sec:eval-dataflow}); implemented is one
+flat file. The measurement couplings are separated from the production path by the
+\texttt{COMDARE\_\allowbreak{}MEASUREMENT\_\allowbreak{}ON} gating (Section~\ref{sec:repos}), and
+continuous integration~\cite{fowler2006ci} runs across all four repositories.
+\begin{figure}[htbp]\centering
+% No \resizebox: the drawing is only ~13.5cm wide; blowing it up to \linewidth (x1.19) would inflate
+% the \footnotesize font beyond the body text. Rule: resizebox only to SHRINK (cf. fig:m-model).
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,align=center,
+  ph/.style={draw,rounded corners,fill=blue!6,minimum width=1.6cm,minimum height=0.85cm},
+  hi/.style={draw,rounded corners,fill=orange!18,very thick,minimum width=1.6cm,minimum height=0.85cm},
+  opt/.style={draw,rounded corners,dashed,fill=orange!8,minimum width=2.0cm,minimum height=0.65cm,font=\scriptsize},
+  pb/.style={draw,rounded corners,fill=orange!16,very thick,minimum width=3.7cm,minimum height=1.05cm,text width=3.5cm,font=\scriptsize}]
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,0.95){In-process path --- \texttt{ExperimentDriver} (7 phases)};
+  \node[ph] (p1) at (0,0){\textbf{1}\\Enumerate};
+  \node[ph] (p2) at (1.95,0){\textbf{2}\\Generate};
+  \node[hi] (p3) at (3.9,0){\textbf{3}\\Compile};
+  \node[ph] (p4) at (5.85,0){\textbf{4}\\Link+Load};
+  \node[hi] (p5) at (7.8,0){\textbf{5}\\Execute};
+  \node[hi] (p6) at (9.75,0){\textbf{6}\\Measure};
+  \node[ph] (p7) at (11.7,0){\textbf{7}\\Persist};
+  \foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5,p5/p6,p6/p7}{\draw[->,thick] (\a)--(\b);}
+  \node[font=\scriptsize,text=orange!60!black] at (3.9,0.66){\textsc{Build}};
+  \node[font=\scriptsize,text=orange!60!black] at (8.78,0.66){\textsc{Measure}};
+  \node[opt] (o1) at (2.9,-1.4){opt-in:\\hot-compile};
+  \node[opt] (o2) at (5.4,-1.4){opt-in:\\functional test per module};
+  \draw[->,dashed] (o1)--(p3);
+  \draw[->,dashed] (o2)--(p4);
+  \node[font=\bfseries\scriptsize,anchor=west] at (-0.95,-2.5){Out-of-process path --- \texttt{BuildOrchestrator} $+$ \texttt{perm\_runner} (design decision)};
+  \node[pb] (b1) at (2.0,-3.95){\textbf{build} \texttt{Build\-Orchestrator}: builds \emph{all} tier binaries first (resumable, RAM-aware)};
+  \node[pb] (b2) at (8.0,-3.95){\textbf{measure} \texttt{perm\_runner}: loads $+$ measures each tier binary individually (1 DLL/process, via \texttt{IObservableTier})};
+  \draw[->,very thick] (b1)--node[above,font=\scriptsize]{tier binaries} (b2);
+\end{tikzpicture}
+\caption{The measurement pipeline in two forms. The \textbf{in-process path} (top) is the seven-phase
+pipeline of the \texttt{ExperimentDriver} per measurement series (Enumerate $\to$ Generate $\to$ Compile
+$\to$ Link+Load $\to$ Execute $\to$ Measure $\to$ Persist; two opt-in phases compile missing modules in
+the running experiment and run a functional test per module with ABI version check). Highlighted are the
+substantial phases: \textsc{Compile} (the \emph{build} of the tier binaries) and
+\textsc{Execute}/\textsc{Measure} (the \emph{measurement}); Generate/Link+Load/Persist are wiring. The
+\textbf{out-of-process path} (bottom) is a design decision for process isolation: the
+\texttt{BuildOrchestrator} \emph{first} builds \emph{all} tier binaries (resumable, RAM-aware), after
+which \texttt{perm\_runner} loads and measures each binary individually via the observer interface
+\texttt{IObservableTier} --- one DLL per process, because the DLL contains no \texttt{main} and the
+runner is the executable that loads it; no state is shared between permutations, and a cluster task
+runs exactly one runner with exactly one DLL.}\label{fig:pipeline}
+\end{figure}
+
+The levels E4--E0 from Section~\ref{sec:anatomy-layers} each have a place in code, and the boundaries
+between them each have a contract test (Section~\ref{sec:impl-contracts});
+Figure~\ref{fig:impl-layers} shows this code shape: E4 is the XML profile with the planner and the
+evaluation programs 04 (\texttt{csv\_to\_latex}) and 08 (\texttt{appendix\_generator}), E3 the
+experiment tree (\texttt{experiment\_tree}) with the \texttt{binary\_id} as path, E2 the ABI adapter
+with the module ABI declaration, E1 the interface \texttt{IResourceControllableTier} with the dynamic
+dimensions of the measurement registry XML, E0 are CI, runners and store, and the cross-cutting
+concern~M is the system-axis root \texttt{SystemAxis} (Section~\ref{sec:impl-system-axes}).
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  eb/.style={draw,rounded corners,fill=blue!7,minimum width=11.4cm,minimum height=0.95cm,text width=11.1cm,align=left,inner sep=3pt},
+  ct/.style={font=\tiny,fill=white,inner sep=1pt}]
+  \node[eb] (e4) at (0,0){\textbf{E4} definition/evaluation layer --- {\scriptsize XML profile $+$ planner (\texttt{profile\_facade/planner}); evaluation: programs 04 and 08}};
+  \node[eb] (e3) at (0,-1.55){\textbf{E3} permutation B$^+$-tree --- {\scriptsize \texttt{experiment\_tree}; path $=$ \texttt{binary\_id} (18 segments, mixed-radix)}};
+  \node[eb] (e2) at (0,-3.1){\textbf{E2} tier binaries --- {\scriptsize \texttt{SearchAlgorithmAbiAdapter<A>} $+$ module ABI declaration (seven mandatory symbols)}};
+  \node[eb] (e1) at (0,-4.65){\textbf{E1} runtime configuration --- {\scriptsize \texttt{IResourceControllableTier} $+$ dynamic dimensions of the measurement registry XML}};
+  \node[eb,fill=gray!12] (e0) at (0,-6.2){\textbf{E0} infrastructure --- {\scriptsize CI (four repositories), runners, store}};
+  \draw[->,thick] (e4)--(e3); \draw[->,thick] (e3)--(e2); \draw[->,thick] (e2)--(e1); \draw[->,thick] (e1)--(e0);
+  \node[ct] at (0,-0.775){\texttt{test\_e4\_contract\_xml\_to\_axislevels} (fake E3)};
+  \node[ct] at (0,-2.325){\texttt{test\_e3\_contract\_binary\_id\_bijektion} $+$ \texttt{\ldots\_conformance\_gate\_wirksam} (fake E2)};
+  \node[ct] at (0,-3.875){\texttt{test\_e2\_contract\_abi\_vertrag} (Wormhole reference DLL, fake E1)};
+  \node[ct] at (0,-5.425){\texttt{test\_e1\_contract\_rc\_konsum} (in-process, T6/T8/T1/T11)};
+  \node[draw,rounded corners,fill=orange!12,minimum width=2.8cm,minimum height=7.15cm,text width=2.6cm,align=center,inner sep=3pt] (m) at (7.3,-3.1){\textbf{M} measurement cross-cutting concern\\[3pt]{\scriptsize \texttt{SystemAxis} root, host-side; touches no binary identity}\\[3pt]{\tiny \texttt{test\_m\_\allowbreak contract\_\allowbreak system\_\allowbreak axis\_\allowbreak wurzel}, \texttt{test\_b3\_\allowbreak wallclock\_\allowbreak erbe\_ct}}};
+\end{tikzpicture}
+\caption[The levels E4--E0 in code]{The levels E4--E0 of the layer model (Section~\ref{sec:anatomy-layers}) at their place in code,
+with the contract test per boundary (fake of the neighbouring level) and the measurement cross-cutting
+concern~M, which crosses all levels host-side without touching the binary identity.}\label{fig:impl-layers}
+\end{figure}
+
+The contracts between the carrier stages are partitioned into surfaces at the binaries. The
+three-surface model (Section~\ref{sec:anatomy-levels}) is present in code by name: surface~1 is the
+genus interface of the tier binary, surface~2 the stamp and surface~3 the measurement cut-through
+\texttt{IMessVisitor} --- a visitor at the \texttt{dlopen} transition, which exists \emph{so that}
+family and genus interfaces remain unchanged. The stamp contract is executed as a matrix of seven
+interfaces and four carriers --- 28~cells with three-valued admission (Table~\ref{tab:stempel-matrix});
+the absence of the organ line at the CEB is the static barrier \enquote{the CEB carries no organ
+axes}, and a \texttt{static\_assert(StempelVertrag<Erbin, Traeger>)} beneath every heir turns a
+missing mandatory or a forbidden interface into a compilation error --- a form of consumer-driven
+contract~\cite{robinson2006cdc}.
+\begin{table}[htbp]\centering\footnotesize
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Interface & Content & Planner & CEB & Tier & Hybrid \\
+\midrule
+\texttt{VersionXyz}     & static self-version X.Y.Z[.flag]                  & M & F & F & F \\
+\texttt{MessZeile}      & stamp line of the measurement realm               & F & M & M & M \\
+\texttt{SystemZeile}    & stamp line of the system realm                    & F & M & M & M \\
+\texttt{OrganZeile}     & stamp line of the organ realm                     & F & F & M & M \\
+\texttt{FingerprintSha} & fingerprint hex (planner SHA-256, otherwise SHA-512) & M & M & M & M \\
+\texttt{GesamtStempel}  & the one composite of the heir                     & M & M & M & M \\
+\texttt{Angeschlossene} & attached stamp lines (runtime hook)               & F & F & F & M \\
+\bottomrule
+\end{tabular}
+\caption{The stamp contract as a matrix of seven interfaces and four carriers (28 cells, three-valued
+admission M = mandatory, P = permitted, F = forbidden; P is unoccupied in the existing code). The
+forbidden cell of the organ line at the CEB is the static barrier \enquote{the CEB carries no organ axes};
+the cells are checked per heir via \texttt{static\_assert}.}\label{tab:stempel-matrix}
+\end{table}
+\end{nurkurz}
+
+\begin{nurlang}
 \section{Quality Assurance: Contract Tests per Layer}\label{sec:impl-contracts}
 The layer model E4--E0 with its fixed interface contracts was developed as a concept in
 Section~\ref{sec:anatomy-layers}; this section describes its implementation as test infrastructure.
@@ -890,7 +1297,69 @@ which binary recombination is to be measured against which loads, and the CEB re
 Implementation status: the hardware acquisition chain runs at the release seam of the builder
 (Section~\ref{sec:impl-system-axes}); the CEB-driven release path of the measurement source is planned
 but not implemented. The code shape of the cross-cutting concern is described in the following section.
+\end{nurlang}
+\begin{nurkurz}
+\section{Quality Assurance: Contract Tests per Layer}\label{sec:impl-contracts}
+The layer model E4--E0 with its interface contracts was developed as a concept in
+Section~\ref{sec:anatomy-layers}; this section describes its implementation as test infrastructure.
+Changes that alter several layers at once produce errors from interactions that neither local tests nor
+review make visible (ADR-5, Appendix~\ref{app:adr}); because the product space rules out any complete
+materialization (Section~\ref{sec:mess-chain}), each layer is completed individually --- with a fixed
+interface contract to the neighbouring level, its own test harness and its own definition of
+acceptance.
 
+The carrying test principle reads: \emph{each layer is tested against a compile-time substitute of its
+neighbouring level.} The neighbouring level is replaced in each case by a \emph{fake} (a template- and
+concept-based stand-in in the test scope, no runtime switch in production code), and the test question
+of every boundary, whether the layer passes its definition on \emph{without loss}, becomes an
+executable acceptance test.
+
+Per layer (the harness names are shown in Figure~\ref{fig:impl-layers}): for E4, golden fixtures
+compare the axis levels emitted from a profile against a reference, a fake E3 replaces the permutation
+tree; for E3 the bijection of the binary identity (mixed-radix back and forth) is run against a fake
+E2, and in addition a conformance gate checks every imported binary before the measurement; for E2 the
+contract is the ABI itself: the Wormhole reference DLL must satisfy \texttt{IAnatomyBase},
+\texttt{IObservableTier} and \texttt{IResourceControllableTier}, and the response to a control-quantity
+request (\texttt{apply}) is the \emph{number of axes that actually accepted the value} --- nothing is
+accepted silently; for E1, edge tests check in-process the corner cases of the dynamic regime (reset of
+a reused tier, pool budget below the live data set as a named state, every control quantity as a named
+column of the result file, preservation of the two-phase operation loop). Persistence is checked at the
+result file; the lead is the standard xlsx, the CSV form its tree extract. Implementation status: the
+E1 check reads the CSV output, which the seam writes as one flat file; the check at the xlsx and the
+tree form are planned but not implemented.
+
+Above the layer harnesses, a \emph{two-gate protocol} secures every implementation package (continuous
+integration and delivery as safeguarding stages~\cite{fowler2006ci,humble2010cd}). \emph{Gate~1} is
+the strict gate of the engine repository: the full test suite runs in four cells, gcc and clang each as
+release and debug build, without change skip and without an exception list; the double run forces every
+static check through two translators and makes the run-to-run stability of the number itself the
+object of testing. Part of gate~1 is the golden anchoring of the permutation space
+(Section~\ref{sec:mess-chain}): the \emph{reference catalogue} holds $2^{17} = 131072$ binary
+identities and is confirmed against a fixed CRC-64 checksum (\texttt{0x56F1B721C72DC10E}), a % chktex 29
+small catalogue of $320$ identities serves as a byte-exact check of the serialization form --- a
+characterization test in the sense of Feathers~\cite{feathers2004legacy} ---, and the
+\emph{cardinality} of the space planned in a measurement series is different from this and never
+static: the planner counts it in the director walk from the XML (\texttt{check-size},
+\texttt{simulate}), never as a constant. \emph{Gate~2} is the integration gate of the project
+repository: its pipeline builds without error and without an exception set; the two declared failure
+tolerances (an arm64 smoke build without a runner, a manual relock maintenance job) are a platform
+boundary, not a test set.
+
+This protocol is methodology, not a system component: it describes \emph{how} changes to the apparatus
+are accepted, not what the binaries contain. The directory and suite structure on which it runs is
+documented in Appendix~\ref{app:code}.
+
+Completion follows the layering top-down --- E4, E3, E2, then the measurement cross-cutting concern~M
+before E1, the infrastructure~E0 as the last step (Section~\ref{sec:anatomy-layers}). All four
+boundaries possess their harness, and the cross-cutting concern~M possesses one of its own without any
+tier binary: a synthetic measurement source is driven through the system-axis root and traced into the
+result columns. Implementation status: the hardware acquisition chain runs at the release seam of the
+builder (Section~\ref{sec:impl-system-axes}); the CEB-driven release path of the measurement source is
+planned but not implemented. The code shape of the cross-cutting concern is described in the following
+section.
+\end{nurkurz}
+
+\begin{nurlang}
 \section{Realm Roots in Code: System and Measurement Axes}\label{sec:impl-system-axes}
 Four abstraction levels order the notions of this section (Figure~\ref{fig:m0-m3}), following the
 four-level meta-level architecture of the Object Management Group (MOF)~\cite{omg2016mof}, in which M0
@@ -928,7 +1397,40 @@ architecture of the MOF\@: meta-meta axes (M3) describe how other axes are descr
 line (M2) classifies main and sub-axes; the CRTP axis (M1) is their conception and runtime
 implementation; the tier binary (M0) is the binary code of exactly one assignment.}\label{fig:m0-m3}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+\section{Realm Roots in Code: System and Measurement Axes}\label{sec:impl-system-axes}
+Four abstraction levels order the notions of this section (Figure~\ref{fig:m0-m3}), following the
+four-level meta-level architecture of the Object Management Group (MOF)~\cite{omg2016mof}: M3 are the
+\emph{meta-meta axes} in the sense of the indirection of a description --- axes that describe how other
+axes are described (\texttt{load\_framework}, \texttt{disk\_io}, the system meta-metas) ---, M2 the
+registry line with category, family and building-block list, M1 the CRTP axis with its concept and M0
+the binary code of the tier binary with exactly one compiled-in assignment. In the stamp, the meta-meta
+level of an entry is mechanically its bracket depth (bits~3--5; a main axis is bracket-less, a
+meta-meta hangs as a bracket appendage on its line, a depth above seven aborts), and the short form
+\texttt{c\{p.e\}} of a version flag denotes \texttt{c} with the sub-members \texttt{p} and \texttt{e},
+never a flat abbreviation. Per realm there is a dedicated meta-meta discriminator; PMC acquisition
+(performance monitoring counters, the hardware counters of the CPU) is a meta-meta measurement axis
+because it describes with which counter instrument other measurements are collected.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  mb/.style={draw,rounded corners,minimum width=13.6cm,minimum height=1.05cm,text width=13.3cm,align=left,inner sep=3pt}]
+  \node[mb,fill=orange!14] (m3) at (0,0){\textbf{M3 meta-meta axes} --- indirection of a description\\{\scriptsize examples: \texttt{load\_framework} (measurement realm, token \texttt{ycsb@1.0.0.c}), \texttt{disk\_io} (organ realm, bracket appendage), system meta-metas under \texttt{external\_utils}}};
+  \node[mb,fill=orange!8] (m2) at (0,-1.5){\textbf{M2 meta axes} (reading) --- literal classification of the main and sub-axes\\{\scriptsize example: the registry line \texttt{<axis id=allocator slot=T06 category=composition \ldots>} with its building-block list}};
+  \node[mb,fill=blue!7] (m1) at (0,-3.0){\textbf{M1 conception and runtime implementation} --- main and sub-axes\\{\scriptsize example: the CRTP axis \texttt{AxisBase<Derived>} with its concept and its building blocks (Strategy)}};
+  \node[mb,fill=gray!12] (m0) at (0,-4.5){\textbf{M0 binary code} --- the tier binary\\{\scriptsize example: \texttt{comdare\_perm\_<fp>.so} with exactly one compiled-in assignment; identity \texttt{binary\_id} $+$ fingerprint}};
+  \draw[->,thick] (m3)--node[right,font=\tiny]{describes}(m2);
+  \draw[->,thick] (m2)--node[right,font=\tiny]{classifies}(m1);
+  \draw[->,thick] (m1)--node[right,font=\tiny]{compiles to}(m0);
+\end{tikzpicture}
+\caption[The four abstraction levels M0--M3]{The four abstraction levels M0--M3 as a reading of the axis notions, following the meta-level
+architecture of the MOF\@: meta-meta axes (M3) describe how other axes are described; the registry
+line (M2) classifies main and sub-axes; the CRTP axis (M1) is their conception and runtime
+implementation; the tier binary (M0) is the binary code of exactly one assignment.}\label{fig:m0-m3}
+\end{figure}
+\end{nurkurz}
 
+\begin{nurlang}
 The tripartition of the axis realms (Section~\ref{sec:axis-triad}) is executed in code as a type
 separation. All axes share a common family roof --- \texttt{topics::Axis<Derived>}, an empty,
 non-polymorphic CRTP base whose concept check (\texttt{is\_empty} and not \texttt{is\_polymorphic})
@@ -943,7 +1445,21 @@ family through its base class, not through a re-attachable label --- \texttt{Ceb
 its kind \texttt{axis\_kind()} as the hard return value \texttt{system\_config}, which is why the
 measurement realm possesses a root of its own instead of a reused one: the system realm roots at the
 CEB, the measurement realm at the planner (Section~\ref{sec:axis-triad}).
+\end{nurlang}
+\begin{nurkurz}
+The tripartition of the axis realms (Section~\ref{sec:axis-triad}) is executed in code as a type
+separation. All axes share the family roof \texttt{topics::Axis<Derived>}, an empty, non-polymorphic
+CRTP base whose concept check rejects any smuggled-in vtable already at compile time, and declare
+category and family via \texttt{AxisCategory} and \texttt{AxisKind} (Section~\ref{sec:axes-impl}). Per
+family there is a dedicated CRTP root: \texttt{OrganAxis} and \texttt{OrganMetaMetaAxis} for the organ
+realm, \texttt{SystemAxis} for the host-side cross-cutting concern, \texttt{CebSystemAxis} for the
+build and steering axes of the CEB, \texttt{SystemMetaMetaAxis} for the system meta axes and
+\texttt{MeasurementMetaMetaAxis} for the measurement-realm axes of the planner. An axis \emph{is} its
+family through its base class, not through a re-attachable label: the system realm roots at the CEB,
+the measurement realm at the planner (Section~\ref{sec:axis-triad}).
+\end{nurkurz}
 
+\begin{nurlang}
 On the system side, the canonical order itself is code: the system main axes \texttt{target\_isa},
 \texttt{operating\_system} and \texttt{external\_utils} are held in their binding sequence by the
 constant three-element array \texttt{kSystemAxisOrder}, and every consumer that needs an order --- the
@@ -962,7 +1478,25 @@ SIMD extension, CEB, target ISA, telemetry, build type and gate contribution ---
 member produces no segment and the gate segment stands at the end, so that every suffix comparison
 sees an unchanged beginning and an appendage (prefix stability); the four-part cell path of the storage
 follows the same order member by member, with a check that binds both orders to each other.
+\end{nurlang}
+\begin{nurkurz}
+On the system side, the canonical order itself is code: the system main axes \texttt{target\_isa},
+\texttt{operating\_system} and \texttt{external\_utils} are held in their binding sequence by the constant
+three-element array \texttt{kSystemAxisOrder}, and every consumer that needs an order reads it there
+instead of re-deriving it (order single source with drift checks). Three compile-time
+\emph{re-entry guards} fix the cut of the main axes: \texttt{static\_assert} checks reject compiler,
+scheduling and load framework as system main axes --- the compiler is a sub-axis group
+\texttt{build\_toolchain} of the complex wrapper \texttt{build\_target\_complex}, the scheduling a
+sub-axis at \texttt{target\_isa} with five dimensions, the load framework a meta-meta main axis of the
+measurement realm ---, and whoever re-enters one of the three breaks the build and must revoke the
+assignment explicitly. The build version identifier of the system line (Section~\ref{sec:stamp-model})
+likewise draws from a single declarative source, the ordered eight-segment sequence
+\texttt{kSuffixSegmentOrder} (compiler identifier, optimization, SIMD extension, CEB, target ISA,
+telemetry, build type, gate contribution), in which an empty member produces no segment and the gate
+segment stands at the end (prefix stability).
+\end{nurkurz}
 
+\begin{nurlang}
 On the measurement side, the meta-meta root \texttt{MeasurementMetaMetaAxis} is the planner's own;
 its first carrier is the load framework \texttt{load\_framework} (stamp token
 \texttt{ycsb@1.0.0.c}), and like all measurement-realm axes it is strictly binary-id-neutral
@@ -1010,7 +1544,32 @@ Registry (file) & Values & Count & Check \\
 index-equals-enum check; the main axis itself holds the three toolings wallclock, macro and
 micro.}\label{tab:mess-registries}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+On the measurement side, the meta-meta root \texttt{MeasurementMetaMetaAxis} is the planner's own;
+its first carrier is the load framework \texttt{load\_framework} (stamp token \texttt{ycsb@1.0.0.c}),
+and like all measurement-realm axes it is strictly binary-id-neutral (\texttt{binary\_id} $=$
+\texttt{never}). The measurement-tooling \emph{main} axis holds exactly three versioned entries in the
+only permitted order wallclock/macro/micro (alias w/ma/mi, Section~\ref{sec:measurement-system}); a
+fourth tooling is a compilation error. It fans out four sub-axis registries: the work mode
+(\texttt{WorkMode}: build, measure, compare, release, Section~\ref{sec:repos}), the measurement
+framework (\texttt{MeasurementFramework}: exactly one entry, YCSB), the write-back method
+(\texttt{WritebackMethod}: CSV, LaTeX table, comparison metrics and xlsx as default, expressly no PDF)
+and the sixteen measurement categories (below); each registry is a \texttt{constexpr} catalogue with
+the check index $=$ enum value, a further entry breaks the compilation. Two gates mirror the tooling
+ladder: the \emph{statistics gate} switches the observer statistics of the macro regime, the
+\emph{segment-timing gate} the eighteen per-axis segment timers; an unset segment-timing gate
+\emph{inherits} the state of the statistics gate, a set one without the statistics gate breaks the
+compilation. The actually effective gate state of every translation unit travels as a measurement-gate
+member with nine \texttt{;}-separated fields into the fingerprint preimage of the stamp
+(Section~\ref{sec:stamp-model}) --- in the off state \texttt{mg=m0;s0;st0;x0;tw0;tm0;tmi0;hm0;hmi0}:
+measurement, statistics, segment timing, experiment mode, then wallclock, macro and micro of the tier
+stage and macro and micro of the hybrid stage ---; the stamp never claims an outfit that the build does
+not carry. The target picture next to this registry state is the axis-interface model from
+Section~\ref{sec:mess-chain}.
+\end{nurkurz}
 
+\begin{nurlang}
 Switching off the measurement is a staged model over the three measurement levels
 (Figure~\ref{fig:abschaltungsstufen}). The measuring instrument \texttt{checkpoint\_measure} always
 collects the input parameters at a \emph{point in time}; the first layer, the wallclock, is the minimum
@@ -1050,7 +1609,47 @@ but, with macro or micro active, also performs the parameter bracket; stage~1 sw
 parameter collection, stage~2 lets the wallclock together with the measurement surfaces fall away as
 well for the release.}\label{fig:abschaltungsstufen}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+Switching off the measurement is a staged model over the three measurement levels
+(Figure~\ref{fig:abschaltungsstufen}). The measuring instrument \texttt{checkpoint\_measure} always
+collects the input parameters at a \emph{point in time}; the wallclock is the minimum of a
+time-measuring, otherwise parameter-empty checkpoint and thus the minimal measuring instrument of the
+CEB\@. The first shut-off level switches off the parameter collection in macro and micro, so that the
+wallclock remains in place for \texttt{measure} and \texttt{compare}; the second, permutative shut-off
+level lets the wallclock together with the surfaces and interfaces of the measurement fall away as
+well for \texttt{release}. Implementation status: the code contains the gates G2 and G3 and the release
+mode without instrumentation (\texttt{measurement\_on} off); the two-level shut-off as a permutation
+quantity is planned but not implemented.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  ze/.style={draw,rounded corners,minimum width=3.9cm,minimum height=1.35cm,text width=3.7cm,align=center,inner sep=2pt,font=\scriptsize},
+  rl/.style={font=\scriptsize\bfseries,anchor=east,text width=2.6cm,align=right}]
+  \node[font=\bfseries\scriptsize] at (0,1.2){wallclock (w)};
+  \node[font=\bfseries\scriptsize] at (4.3,1.2){macro (ma)};
+  \node[font=\bfseries\scriptsize] at (8.6,1.2){micro (mi)};
+  \node[rl] at (-2.3,0){Stage 0: full measurement\\(\texttt{measure})};
+  \node[ze,fill=orange!14] at (0,0){point in time $+$ parameter bracket (compile-time special case)};
+  \node[ze,fill=orange!14] at (4.3,0){time $+$ parameters per genus-interface function};
+  \node[ze,fill=orange!14] at (8.6,0){time $+$ success parameters per axis interface};
+  \node[rl] at (-2.3,-1.7){Stage 1: parameters off\\(\texttt{measure}, \texttt{compare})};
+  \node[ze,fill=orange!8] at (0,-1.7){point in time only: parameter-empty \texttt{checkpoint\_measure} (minimum)};
+  \node[ze,fill=gray!10] at (4.3,-1.7){parameter collection switched off};
+  \node[ze,fill=gray!10] at (8.6,-1.7){parameter collection switched off};
+  \node[rl] at (-2.3,-3.4){Stage 2: everything off\\(\texttt{release})};
+  \node[ze,fill=gray!18] at (0,-3.4){falls away --- no measurement surface, no measurement interface};
+  \node[ze,fill=gray!18] at (4.3,-3.4){falls away};
+  \node[ze,fill=gray!18] at (8.6,-3.4){falls away: only the core code of the binary};
+\end{tikzpicture}
+\caption[The two shut-off levels of the measurement]{The two shut-off levels of the measurement over the three measurement levels:
+\texttt{checkpoint\_measure} collects at a point in time; the wallclock is the parameter-empty minimum
+but, with macro or micro active, also performs the parameter bracket; stage~1 switches off the
+parameter collection, stage~2 lets the wallclock together with the measurement surfaces fall away as
+well for the release.}\label{fig:abschaltungsstufen}
+\end{figure}
+\end{nurkurz}
 
+\begin{nurlang}
 The PMC tooling is multi-layered because the hardware counters differ per core type and vendor (access
 via the \texttt{perf\_event\_open} interface of the Linux kernel~\cite{linux_perf_event_open}). A
 generic event list (\texttt{pmc\_event\_set}) decides whether PMC is built in at all: the planner's
@@ -1074,7 +1673,26 @@ counter paths, \texttt{pmc:amd} on prod1 and \texttt{pmc:intel} on prod2, the In
 scheduling dimension and via the core-pinning building blocks (six-mode model with HybridAware as
 mandatory mode, Section~\ref{sec:axis-triad}); implementation status: the runtime pinning per core type
 is planned but not implemented.
+\end{nurlang}
+\begin{nurkurz}
+The PMC tooling is multi-layered because the hardware counters differ per core type and vendor (access
+via \texttt{perf\_event\_open}~\cite{linux_perf_event_open}). A generic event list
+(\texttt{pmc\_event\_set}) decides whether PMC is built in: the planner's host probe checks exactly the
+events that the real source opens later. A model-bound RAW catalogue fills the channels for L2 misses
+and coherence per microarchitecture: for AMD Zen~5 (prod1) the assignment is cross-checked against the
+named \texttt{perf} events with identical counter readings (17\,314\,023 against 17\,314\,023) ---
+\texttt{cache\_misses\_l2} captures there the demand misses without L2 prefetch,
+\texttt{coherence\_invalidations} the cache-to-cache fills from a foreign CCX (core complex, a core
+cluster with its own L3) ---; for Intel no entry exists, because a RAW assignment without
+cross-checking would be a guess~\cite{intel_sdm} --- a declared gap. A vendor registry carries the PMC
+as \emph{one} feature with two values, AMD and Intel, with a version identifier each, because the
+built-in counter form co-determines the fingerprint of the CEB; the CI runs two counter paths,
+\texttt{pmc:amd} on prod1 and \texttt{pmc:intel} on prod2 (Intel Alder Lake with P- and E-cores). The
+separate measurement of the P- and E-cores is laid out as a scheduling dimension (six-mode model,
+Section~\ref{sec:axis-triad}); the runtime pinning per core type is planned but not implemented.
+\end{nurkurz}
 
+\begin{nurlang}
 The host-side measurement cross-cutting concern of the system realm --- the cross-cutting concern~M,
 which permeates all layers without ever touching the binary identity (Section~\ref{sec:axis-triad})
 --- roots in the CRTP base \texttt{SystemAxis} (file \texttt{system\_axis.hpp}), which docks only
@@ -1086,7 +1704,20 @@ one of the two regimes \texttt{TimeObserver} and \texttt{PmcCounter} (nine time-
 seven counter-based PMC categories, Section~\ref{sec:axis-triad}), and a second one rejects every axis
 that mixes categories of both regimes --- the regime-mixing ban thus breaks the compilation rather than
 only the evaluation.
+\end{nurlang}
+\begin{nurkurz}
+The host-side measurement cross-cutting concern of the system realm --- the cross-cutting concern~M,
+which permeates all layers without ever touching the binary identity (Section~\ref{sec:axis-triad})
+--- roots in the CRTP base \texttt{SystemAxis} (file \texttt{system\_axis.hpp}), which docks only
+reading onto the host-side result structures: an empty, non-polymorphic zero-cost abstraction whose
+conformance a dedicated concept enforces. Two \texttt{consteval} gates translate the concept
+invariants: each of the sixteen measurement categories is assigned to exactly one of the two regimes
+\texttt{TimeObserver} and \texttt{PmcCounter} (nine time- and observer-based, seven counter-based PMC
+categories), and every axis that mixes categories of both regimes is rejected --- the regime-mixing
+ban thus breaks the compilation rather than only the evaluation.
+\end{nurkurz}
 
+\begin{nurlang}
 The sixteen measurement categories are carried by a single \texttt{constexpr} registry
 (\texttt{measurement\_\allowbreak{}axis\_\allowbreak{}registry.hpp}): per category the name and the
 regime derived from the one source. A static gate enforces that the table index matches the category
@@ -1097,7 +1728,17 @@ the categories are a \emph{sub}-axis of the measurement tooling and manifest as 
 tables (Section~\ref{sec:axis-triad}); the registry names are at the same time the reporting
 vocabulary of the evaluation layer (the column names of the E4 reports), and a compile-time iteration
 over all entries makes the registry available to metaprogramming.
+\end{nurlang}
+\begin{nurkurz}
+The sixteen measurement categories are carried by a single \texttt{constexpr} registry
+(\texttt{measurement\_\allowbreak{}axis\_\allowbreak{}registry.hpp}) with a static gate over index,
+names and regime --- a seventeenth category or a silent index drift thereby becomes a compilation
+error. Conceptually the categories are a \emph{sub}-axis of the measurement tooling and manifest as
+columns of the result tables (Section~\ref{sec:axis-triad}); the registry names are at the same time
+the reporting vocabulary of the evaluation layer (the column names of the E4 reports).
+\end{nurkurz}
 
+\begin{nurlang}
 The acquisition abstracts a vendor-neutral measurement-source interface
 (\texttt{i\_\allowbreak{}measurement\_\allowbreak{}source.hpp}). \texttt{IMeasurementSource} describes
 a source by its \emph{structural} capabilities --- which of the ten event semantics (cycles,
@@ -1112,7 +1753,21 @@ attached by the adapter \texttt{PmcSourceAdapter}, which advertises only the sev
 expressible channels --- L1d, L2, L3, dTLB and branch misses, coherence invalidations and energy ---,
 while cycles, instructions and memory stalls are structurally not expressible in the counter POD and
 remain invalid.
+\end{nurlang}
+\begin{nurkurz}
+The acquisition abstracts a vendor-neutral measurement-source interface
+(\texttt{i\_\allowbreak{}measurement\_\allowbreak{}source.hpp}): \texttt{IMeasurementSource} describes
+a source by its \emph{structural} capabilities --- which of the ten event semantics (cycles,
+instructions, L1/L2/L3 cache, dTLB and branch misses, memory stalls, coherence invalidations, energy)
+it can express at all --- and delivers per measurement interval a \texttt{MeasuredDelta} with
+\emph{per-event validity}: zero with the validity flag set is an actual zero measurement, an unset flag
+means \emph{not measured}. As a guaranteed, expressly \emph{degraded} fallback there is the wall-clock
+source (\texttt{WallClockSource}); the existing PMC family is attached by the adapter
+\texttt{PmcSourceAdapter}, which advertises only the seven structurally expressible channels, while
+cycles, instructions and memory stalls remain invalid in the counter POD.
+\end{nurkurz}
 
+\begin{nurlang}
 In the axis-interface model, the measurement-source interface for micro-benchmarking is collected per
 axis interface specifically for its parameter set and gathered in stages over the macro benchmarking
 and the wallclock in the CEB at parameters; the category set thereby grows via the channel addresses
@@ -1130,7 +1785,21 @@ allocates a new memory block and worsens the comparability if it is not possible
 to the last checkpoint. Implementation status: planned but not implemented. The test criterion of the
 re-measurement is the plausibility invariant that the binary with measurement sensors is slower than
 the one without (Chapter~\ref{ch:eval}).
+\end{nurlang}
+\begin{nurkurz}
+In the axis-interface model, the measurement-source interface for micro-benchmarking is collected per
+axis interface specifically for its parameter set; the category set thereby grows via the channel
+addresses axis $\to$ genus $\to$ category to hundreds of measurement categories (implementation status:
+sixteen, statically fixed by the registry). Added to this is the \emph{unthrottled re-measurement}: the
+actions of every axis are rolled back via the checkpoint of the first-called axis-interface function
+behind the genus interface through a control surface of its own, the CEB takes over the inner state of
+a tier binary with measurement sensors into the analogous tier binary without measurement sensors and
+measures anew from the same point, recursively per macro-benchmarking interface --- planned but not
+implemented. The test criterion of the re-measurement is the plausibility invariant that the binary
+with measurement sensors is slower than the one without (Chapter~\ref{ch:eval}).
+\end{nurkurz}
 
+\begin{nurlang}
 The principle of explicitly coded non-observation (Section~\ref{sec:axis-triad}) --- a missing value
 is a state of its own, encoded as a validity flag or as NaN according to IEEE~754~\cite{ieee754_2019},
 never a zero value; in the terminology of missing data it is \emph{missing}, not
@@ -1156,7 +1825,9 @@ which would be precisely the \emph{inverse} metric. Memory footprint and fill-bu
 invalid until an actual peak column or a hardware source exists (the software operation buffer of the
 buffering axis is no proxy for the hardware line-fill buffer), and IPC/CPI remains invalid as long as
 the counter POD possesses no instruction and cycle columns.
+\end{nurlang}
 
+\begin{nurlang}
 The hardware detection is the acquisition chain of the system main axis \texttt{target\_isa} --- its
 sub-axis \texttt{target\_isa\_complex} carries per named recombination the members CPU fabrication,
 RAM frequency and CAS latency --- and at the same time a \emph{measurement} axis
@@ -1186,7 +1857,9 @@ incomplete type and breaks the build ---, a totality check covers the full matri
 complexes and operating systems, and unimplemented cells (Windows, macOS) are declared
 declaration-only cells with expressly occupied upper levels, so that the degradation path reports
 \enquote{asked, does not exist here} instead of \enquote{skipped}.
+\end{nurlang}
 
+\begin{nurlang}
 The comparison between declaration and acquisition is decided by a named runtime verdict with exactly
 seven outcomes --- match, deviation, declared only, not collected, no declaration, incomparable levels
 and label contradiction ---, where only provenance-compatible quantities are compared at all (a fixed
@@ -1199,7 +1872,9 @@ carried as a note of its origin (\texttt{DeclarationOrigin}), the code fixes not
 the presence of a value, and the acquisition takes place anew on every run and carries its trust level
 along --- in the measurement, stage~1 delivers on prod1 the configured clock of 5600\,MT/s with XMP
 active and on prod2 4800\,MT/s.
+\end{nurlang}
 
+\begin{nurlang}
 At the evaluation end of the cross-cutting concern, the first approach to the curve fitting from
 Section~\ref{sec:heuristics-curves} is present as a skeleton (\texttt{curve\_fit.hpp} in the builder):
 a measurement-axis curve over the working-set size is fitted by least squares to the model
@@ -1220,7 +1895,25 @@ measurement-curve loader, the offline clustering of the workloads with its featu
 optimization catalogue of the axes; break-even curves are formed only over the w/ma/mi-measured
 organ-axis parameters. The curve formation itself is developed in
 Section~\ref{sec:heuristics-curves}; here stands only its code shape.
+\end{nurlang}
+\begin{nurkurz}
+At the evaluation end of the cross-cutting concern, the first approach to the curve fitting from
+Section~\ref{sec:heuristics-curves} is present as a skeleton (\texttt{curve\_fit.hpp}): a
+measurement-axis curve over the working-set size is fitted by least squares to the model
+$y = a\log_2 x + b$ --- the form expected for cache-hierarchy curves~\cite{hill1989associativity}. No
+fit without valid data: the fit status distinguishes \emph{no data}, \emph{underdetermined} and
+\emph{invalid data} from the success case --- never an \emph{Ok} with NaN coefficients ---, and the
+result reader accepts only strictly numeric cells. Per measurement curve stands a cubic spline over
+$\log_2 x$, natural or monotonicity-preserving according to Fritsch and
+Carlson~\cite{fritsch1980monotone}, which on monotone data produces no spurious extrema. The
+heuristics family (\texttt{heuristik/}) contains the axis spline, the break-even finder over the
+intersections of two curves of the same axis, the measurement-curve loader, the offline clustering of
+the workloads and the optimization catalogue; break-even curves are formed only over the
+w/ma/mi-measured organ-axis parameters. The curve formation itself is developed in
+Section~\ref{sec:heuristics-curves}; here stands only its code shape.
+\end{nurkurz}
 
+\begin{nurlang}
 Implemented with this are the realm roots including order and re-entry guards, the registries, the
 source abstraction with degraded fallback, the two-stage hardware detection and the first fit approach
 with spline; the binding of these cross-cutting building blocks to runner and probe dock (the collector
@@ -1234,7 +1927,26 @@ multiplies the organ space per platform ---; they do not stand in the organ perm
 \texttt{never}; only the eighteen organ main axes enter the eighteen-segment path). The construction
 itself preserves this: the root docks only reading onto the host-side result structures and remains
 invisible to the ABI boundary.
+\end{nurlang}
+\begin{nurkurz}
+Implemented with this are the realm roots including order and re-entry guards, the registries, the
+source abstraction with degraded fallback, the two-stage hardware detection
+(Section~\ref{sec:hw-probe}: provenance vocabulary, SPD parser, error domain, acquisition chain as
+chain of responsibility, compile-time factory per platform cell and runtime verdict declaration against
+acquisition) and the first fit approach with spline; the binding of these cross-cutting building blocks
+to runner and probe dock (the collector of the success parameters) and the mapping of the registry
+names onto the existing columns of the result files are not implemented. The three concept invariants
+of the system axes read: they \emph{permute} the build and measurement space --- the complex axis
+\texttt{build\_target\_complex} is the command wrapper of the recombination of the three main axes
+with the sub-axis group \texttt{build\_toolchain} and the scheduling with five dimensions, and this
+system multiplier multiplies the organ space per platform ---; they do not stand in the organ
+permutation tree of the \texttt{binary\_id}; and they never touch the binary identity (registry
+XML\@: \texttt{binary\_id} $=$ \texttt{never}; only the eighteen organ main axes enter the
+eighteen-segment path). The construction itself preserves this: the root docks only reading onto the
+host-side result structures and remains invisible to the ABI boundary.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Pattern Register, Hybrid Stage and Store}\label{sec:impl-hybrid-lager}
 The design patterns of the apparatus are not a random inventory but a register
 (Figure~\ref{fig:muster}); the naming follows the catalogue of Gamma et al.~\cite{gamma1994patterns}
@@ -1377,6 +2089,73 @@ Stock & Key components & Source in code & Implementation status \\
 schema; the version lock binds the axis sources to digest and stamped
 version.}\label{tab:lager-schluessel}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Pattern Register, Hybrid Stage and Store}\label{sec:impl-hybrid-lager}
+The design patterns of the apparatus are a register (Figure~\ref{fig:muster}); the naming follows Gamma
+et al.~\cite{gamma1994patterns} (\enquote{Gang of Four}, GoF), and every pattern is executed at compile
+time instead of runtime-polymorphically, because the hot path may contain no runtime branching
+(Section~\ref{sec:axes-impl}): \emph{Strategy} per axis (building blocks behind a concept, bound via
+CRTP~\cite{coplien1995crtp}), \emph{Director} and \emph{Builder} for the plan emission, an
+\emph{Abstract Factory} for the hybrid docks and the result workbooks of the store (xlsx workbook as
+standard, CSV tree as a selectable strategy of the same factory; implemented is one flat file), the
+\emph{Visitor} \texttt{IMessVisitor} at the \texttt{dlopen} transition, a \emph{Chain of
+Responsibility} with type list for the hardware acquisition chain (boot cache --- the filtered
+SMBIOS/DMI table of the system~\cite{dmtf_smbios} --- $\to$ SPD $\to$ declaration) and the selection
+filter chain of the CEB\@; a \emph{Memento} for the state of stateful axes per tier
+(\texttt{memento\_all} after the warm-up), \emph{Command} as the command base of the axes and command
+wrapper of the complex axis \texttt{build\_target\_complex} as well as a \emph{Facade} for the appendix
+generation --- program~08 as a facade over the programs 04 (\texttt{csv\_to\_latex}) and 05
+(\texttt{diagram\_generator}) --- and the purely reading plan emission of the planner.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,
+  mu/.style={draw,rounded corners,fill=blue!7,minimum width=3.6cm,minimum height=2.55cm,text width=3.4cm,align=center,inner sep=2pt}]
+  \node[mu] (m1) at (0,0){\textbf{Strategy $+$ CRTP}\\{\scriptsize per axis}\\[2pt]{\tiny interchangeable building blocks behind a concept; \texttt{topics/axis}, \texttt{AxisBase<Derived>}; bound at compile time}};
+  \node[mu] (m2) at (3.85,0){\textbf{Director $+$ Builder}\\{\scriptsize plan emission}\\[2pt]{\tiny one deterministic walk, one builder per syntax (text, CI YAML, CMake); \texttt{experiment\_plan\_director}, \texttt{plan\_legend}}};
+  \node[mu] (m3) at (7.7,0){\textbf{Abstract Factory}\\{\scriptsize hybrid docks, result workbooks}\\[2pt]{\tiny single construction site of the docks (\texttt{hybrid\_dock\_factory}); xlsx workbook, CSV tree as selectable strategy (\texttt{ergebnis\_mappe})}};
+  \node[mu] (m4) at (11.55,0){\textbf{Visitor}\\{\scriptsize measurement cut-through (surface 3)}\\[2pt]{\tiny \texttt{IMessVisitor} at the \texttt{dlopen} transition: the host passes the sink, the tier calls \texttt{visit}; double dispatch}};
+  \node[mu] (m5) at (0,-3.0){\textbf{Chain of Responsibility}\\{\scriptsize acquisition, selection}\\[2pt]{\tiny hardware chain boot cache $\to$ SPD $\to$ declaration as type list (\texttt{ram\_probe\_chain}); selection filter chain of the CEB}};
+  \node[mu] (m6) at (3.85,-3.0){\textbf{Memento}\\{\scriptsize state per tier}\\[2pt]{\tiny \texttt{memento\_all} rolls back the state of stateful axes after the warm-up; plan: state takeover of the hybrid stage}};
+  \node[mu] (m7) at (7.7,-3.0){\textbf{Command}\\{\scriptsize axis base, complex axis}\\[2pt]{\tiny \texttt{axis\_command\_base} with measurement-visitor slot and limitation report; \texttt{build\_target\_complex} as command wrapper}};
+  \node[mu] (m8) at (11.55,-3.0){\textbf{Facade}\\{\scriptsize appendix, plan emission}\\[2pt]{\tiny \texttt{appendix\_generator} (08) as facade over 04 and 05, in-process; \texttt{profile\_run\_facade} for the reading plan emission}};
+\end{tikzpicture}
+\caption[The register of design patterns]{The register of the design patterns of the apparatus (naming after Gamma et al.): per pattern
+the role and the code location. All eight are executed at compile time --- binding via concepts, CRTP
+and type lists instead of via virtual calls ---, because tier binaries may contain no runtime branching
+between building blocks.}\label{fig:muster}
+\end{figure}
+
+The hybrid stage is the fourth carrier stage (Section~\ref{sec:heuristics-modes}); its code state lies
+under \texttt{hybrid/}. Implemented are the dock contracts (four contract forms \texttt{standard},
+\texttt{rollback}, \texttt{scan} and \texttt{resource\_control} with sixteen status constants), the
+probe dock, the dock factory as the single construction site, the dock array with
+\texttt{HybridDockVariant} (the one permitted variant site, Section~\ref{sec:axes-impl}) and the
+runtime cap \texttt{max\_docks}, the parser of the \texttt{<hybrid\_tier>} section and the binary
+proxy, which makes a hybrid .so an ordinary tier binary to the outside; not implemented are the
+\texttt{.so} export, the eviction and the router --- six of the nine files of the layer. The Hybrid
+Module ABI exports the same mandatory symbols as the plain tiers, \texttt{comdare\_anatomy\_genus}
+reports the \emph{target} genus, never the reroute genus, and the genus build admission carries as its
+sixth entry the reroute genus with the dock cap (default 32) as arity. The hybrid live ranking as the
+fourth evaluation component of the compare stage and the state reconciliation via memento with two
+release artefacts, single and hybrid, in the store are planned (Section~\ref{sec:heuristics-modes})
+but not implemented, nor is the fix of the schema drift (the XSD does not carry the
+\texttt{<hybrid\_tier>} section); the hybrid mode compiles only with the help of the CEB\@.
+
+The store (Section~\ref{sec:lager}) has in code a compile-time-static key schema
+(\texttt{bestand\_\allowbreak{}schluessel\_\allowbreak{}schema}) that declares the four stocks:
+stock~1, the binaries, via the one SHA-512 key that is identical to the tier fingerprint; stock~2, the
+measured values, via the 128-hex fingerprint of the measured binary and the hardware identity of the
+measuring machine; stock~3, the synthesis batches, and stock~4, the solutions, as a work step of the
+full expansion of the store; drift between schema and mechanics breaks at build time. The version lock
+(\texttt{axis\_version.lock}, format v3, 719 records) binds every source file of the axes --- the
+heuristics headers and the overlay cut (per axis the file set of its own implementation plus the shared
+anatomy substance), over which the overlay member of the tier fingerprint hashes --- to content digest
+and stamped version, the CI gate \texttt{contract:axis-version-lock} enforces this. From the schema
+follow the store properties: the measurement is always switched on, in the store only what is missing
+is re-measured; a version change of an axis rebuilds the affected store stack; and every machine type
+has its own stock of measured values. Implementation status: schema, lock and the stocks~1 and~2 are
+implemented, the full expansion is planned but not implemented.
+\end{nurkurz}
 
 With this, the apparatus is fully described --- from the four repositories through the candidate under test, the
 eighteen organ axes and the carrier-stage chain to the chain from plan to tier binary, its contract
