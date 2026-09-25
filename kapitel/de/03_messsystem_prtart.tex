@@ -1446,12 +1446,13 @@ Gesamt-Stempel führen alle vier, und die angeschlossenen Tiere führt nur der H
   fl/.style={draw,rounded corners,fill=orange!10,minimum width=2.1cm,minimum height=1.25cm,text width=1.95cm,font=\tiny},
   lab/.style={anchor=east,font=\scriptsize}]
   %% INTERN-272: KA-022
-  \node[tr] (t0) at (0,0){Planer};
-  \node[tr] (t1) at (2.5,0){CEB};
-  \node[tr] (t2) at (5.0,0){Tier-Binary};
-  \node[tr] (t3) at (7.5,0){Hybrid-Tier};
-  \draw[->,thick] (t0)--(t1); \draw[->,thick] (t1)--(t2); \draw[->,thick] (t2)--(t3);
-  \node[font=\tiny,anchor=south] at (3.75,0.38){Konfiguration wandert: XML $\to$ Planer $\to$ CEB $\to$ Tier $\to$ Hybrid (keine Stufe durchläuft Schichten)};
+  \node[tr] (t0) at (0,0){Planer\\{\tiny\mdseries Stufe 1}};
+  \node[tr] (t1) at (2.5,0){CEB\\{\tiny\mdseries Stufe 2 (Prüf-Dock)}};
+  \node[tr] (t2) at (5.0,0){Tier-Binary\\{\tiny\mdseries Stufe 3}};
+  \node[tr,dashed] (t3) at (7.5,0){Hybrid-Tier\\{\tiny\mdseries Einschub, optional}};
+  \draw[->,thick] (t0)--(t1); \draw[->,thick] (t1)--(t2); \draw[->,thick] (t3)--(t2);
+  \draw[->,thick,dashed] (t1.north) -- ++(0,0.32) coordinate (bp) -| (t3.north);
+  \node[font=\tiny,anchor=south] at ([xshift=1.25cm,yshift=1pt]bp){Konfiguration wandert: XML $\to$ Planer $\to$ CEB $\to$ (Hybrid) $\to$ Tier (keine Stufe durchläuft Schichten)\\gestrichelt: optionaler Einschub --- Hybrid als Mux-Schalter am CEB-Prüf-Dock mit Dock-Slots für Tier-Binaries};
   %% INTERN-272: KA-023
   \node[lab] at (-1.2,-0.75){\texttt{version\_xyz}};
   \node[p] at (0,-0.75){Pflicht}; \node[v] at (2.5,-0.75){verboten}; \node[v] at (5.0,-0.75){verboten}; \node[v] at (7.5,-0.75){verboten};
@@ -1475,7 +1476,7 @@ Gesamt-Stempel führen alle vier, und die angeschlossenen Tiere führt nur der H
   \node[fl] at (7.5,-5.25){1 geerbtes Ziel-Genus\\2 Stempel $+$ angeschlossene\\3 Mess-Durchstich};
   \node[font=\tiny,anchor=north] at (3.15,-6.25){Realm-Zeilen in der Metapher: Mess-Zeile $=$ Labor, System-Zeile $=$ Lebensraum, Organ-Zeile $=$ die vom Blut verbundenen Organe};
 \end{tikzpicture}
-\caption{Träger-Stufen und Interface-Flächen: die dreiwertige Zulassungsmatrix der sieben Stempel-Interfaces über die vier Träger-Stufen Planer, CacheEngineBuilder (CEB), Tier-Binary und Hybrid-Tier-Binary (28 Zellen; grün $=$ Pflicht, grau $=$ verboten; die Zelle Organ-Zeile/CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}) und darunter die Interface-Flächen je Stufe --- Fläche~1 Genus-Interface (Laufzeit), Fläche~2 Stempel (Übersetzungszeit, ABI-stabil), Fläche~3 Mess-Durchstich. Die Konfiguration wandert von der XML über Planer und CEB bis zur Tier-Binary; keine Stufe durchläuft Schichten, jede enthält ihre Schicht einkompiliert.}\label{fig:traeger-flaechen}
+\caption{Träger-Stufen und Interface-Flächen: die dreiwertige Zulassungsmatrix der sieben Stempel-Interfaces über die vier Träger-Stufen Planer, CacheEngineBuilder (CEB), Tier-Binary und Hybrid-Tier-Binary (28 Zellen; grün $=$ Pflicht, grau $=$ verboten; die Zelle Organ-Zeile/CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}) und darunter die Interface-Flächen je Stufe --- Fläche~1 Genus-Interface (Laufzeit), Fläche~2 Stempel (Übersetzungszeit, ABI-stabil), Fläche~3 Mess-Durchstich. Die Konfiguration wandert von der XML über Planer und CEB bis zur Tier-Binary; die Hybrid-Tier-Binary ist eine optional zwischen CEB-Prüf-Dock und Tier-Binary eingeschobene Stufe (gestrichelt: Mux-Schalter am Prüf-Dock mit Dock-Slots für Tier-Binaries; die Spaltenordnung der Matrix folgt der Bau-Reihenfolge, nicht der Einschub-Position); keine Stufe durchläuft Schichten, jede enthält ihre Schicht einkompiliert.}\label{fig:traeger-flaechen}
 \end{figure}
 \end{nurlang}
 \begin{nurkurz}
@@ -1500,12 +1501,13 @@ Absenz der Organ-Zeile beim CEB ist die statische Sperre \enquote{der CEB führt
   fl/.style={draw,rounded corners,fill=orange!10,minimum width=2.1cm,minimum height=1.25cm,text width=1.95cm,font=\tiny},
   lab/.style={anchor=east,font=\scriptsize}]
   %% INTERN-272: KA-022
-  \node[tr] (t0) at (0,0){Planer};
-  \node[tr] (t1) at (2.5,0){CEB};
-  \node[tr] (t2) at (5.0,0){Tier-Binary};
-  \node[tr] (t3) at (7.5,0){Hybrid-Tier};
-  \draw[->,thick] (t0)--(t1); \draw[->,thick] (t1)--(t2); \draw[->,thick] (t2)--(t3);
-  \node[font=\tiny,anchor=south] at (3.75,0.38){Konfiguration wandert: XML $\to$ Planer $\to$ CEB $\to$ Tier $\to$ Hybrid (keine Stufe durchläuft Schichten)};
+  \node[tr] (t0) at (0,0){Planer\\{\tiny\mdseries Stufe 1}};
+  \node[tr] (t1) at (2.5,0){CEB\\{\tiny\mdseries Stufe 2 (Prüf-Dock)}};
+  \node[tr] (t2) at (5.0,0){Tier-Binary\\{\tiny\mdseries Stufe 3}};
+  \node[tr,dashed] (t3) at (7.5,0){Hybrid-Tier\\{\tiny\mdseries Einschub, optional}};
+  \draw[->,thick] (t0)--(t1); \draw[->,thick] (t1)--(t2); \draw[->,thick] (t3)--(t2);
+  \draw[->,thick,dashed] (t1.north) -- ++(0,0.32) coordinate (bp) -| (t3.north);
+  \node[font=\tiny,anchor=south] at ([xshift=1.25cm,yshift=1pt]bp){Konfiguration wandert: XML $\to$ Planer $\to$ CEB $\to$ (Hybrid) $\to$ Tier (keine Stufe durchläuft Schichten)\\gestrichelt: optionaler Einschub --- Hybrid als Mux-Schalter am CEB-Prüf-Dock mit Dock-Slots für Tier-Binaries};
   %% INTERN-272: KA-023
   \node[lab] at (-1.2,-0.75){\texttt{version\_xyz}};
   \node[p] at (0,-0.75){Pflicht}; \node[v] at (2.5,-0.75){verboten}; \node[v] at (5.0,-0.75){verboten}; \node[v] at (7.5,-0.75){verboten};
@@ -1529,7 +1531,7 @@ Absenz der Organ-Zeile beim CEB ist die statische Sperre \enquote{der CEB führt
   \node[fl] at (7.5,-5.25){1 geerbtes Ziel-Genus\\2 Stempel $+$ angeschlossene\\3 Mess-Durchstich};
   \node[font=\tiny,anchor=north] at (3.15,-6.25){Realm-Zeilen in der Metapher: Mess-Zeile $=$ Labor, System-Zeile $=$ Lebensraum, Organ-Zeile $=$ die vom Blut verbundenen Organe};
 \end{tikzpicture}
-\caption{Träger-Stufen und Interface-Flächen: die dreiwertige Zulassungsmatrix der sieben Stempel-Interfaces über die vier Träger-Stufen Planer, CacheEngineBuilder (CEB), Tier-Binary und Hybrid-Tier-Binary (28 Zellen; grün $=$ Pflicht, grau $=$ verboten; die Zelle Organ-Zeile/CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}) und darunter die Interface-Flächen je Stufe --- Fläche~1 Genus-Interface (Laufzeit), Fläche~2 Stempel (Übersetzungszeit, ABI-stabil), Fläche~3 Mess-Durchstich. Die Konfiguration wandert von der XML über Planer und CEB bis zur Tier-Binary; keine Stufe durchläuft Schichten, jede enthält ihre Schicht einkompiliert.}\label{fig:traeger-flaechen}
+\caption{Träger-Stufen und Interface-Flächen: die dreiwertige Zulassungsmatrix der sieben Stempel-Interfaces über die vier Träger-Stufen Planer, CacheEngineBuilder (CEB), Tier-Binary und Hybrid-Tier-Binary (28 Zellen; grün $=$ Pflicht, grau $=$ verboten; die Zelle Organ-Zeile/CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}) und darunter die Interface-Flächen je Stufe --- Fläche~1 Genus-Interface (Laufzeit), Fläche~2 Stempel (Übersetzungszeit, ABI-stabil), Fläche~3 Mess-Durchstich. Die Konfiguration wandert von der XML über Planer und CEB bis zur Tier-Binary; die Hybrid-Tier-Binary ist eine optional zwischen CEB-Prüf-Dock und Tier-Binary eingeschobene Stufe (gestrichelt: Mux-Schalter am Prüf-Dock mit Dock-Slots für Tier-Binaries; die Spaltenordnung der Matrix folgt der Bau-Reihenfolge, nicht der Einschub-Position); keine Stufe durchläuft Schichten, jede enthält ihre Schicht einkompiliert.}\label{fig:traeger-flaechen}
 \end{figure}
 \end{nurkurz}
 
