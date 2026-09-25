@@ -195,9 +195,10 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \texttt{probst-Diplomarbeit-cache-engine} (\emph{what} is tested by the user: experiment
   definition in XML and XSD, measurement driver, evaluation toolchain) and the manuscript
   repository with its own CI, into which the forward channel deposits the generator output as table
-  and diagram files per commit ---; orthogonal to this division lie the four carrier stages planner
-  $\to$ CacheEngineBuilder $\to$ tier binary $\to$ hybrid tier binary, where stage $N+1$ hangs only
-  on stage $N$; planner and CEB are two binaries --- the planner
+  and diagram files per commit ---; orthogonal to this division lie the four carrier stages in build order
+  planner $\to$ CacheEngineBuilder $\to$ tier binary $\to$ hybrid tier binary, where stage $N+1$ hangs
+  only on stage $N$ (processing chain: CEB probe dock $\to$ [optional hybrid mux] $\to$ tier binary);
+  planner and CEB are two binaries --- the planner
   \texttt{comdare-experiment-planner} and the measurement driver \texttt{comdare-messung-driver}
   ---, and the two roles appear as planner line and CEB contract line in the self-stamp of the
   measurement driver (\texttt{--version}) in one driver binary; the measurement aggregator is run
@@ -325,8 +326,9 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \item[ADR-13 --- Four carrier stages and one stamp contract]\hfill\\
   \emph{The stamp as identity, store key, recognition criterion and classification.}\hfill\\
   \textbf{Context:} The configuration travels through four carrier stages (planner,
-  CacheEngineBuilder, tier binary, hybrid tier binary); each stage needs an ABI-stable,
-  compile-time identity into which no measured value enters.
+  CacheEngineBuilder, tier binary, and the hybrid tier binary optionally inserted between the CEB probe
+  dock and the tier binary); each stage needs an ABI-stable, compile-time identity into which no
+  measured value enters.
   \textbf{Decision:} A single CRTP contract binds all four carriers: seven stamp interfaces
   (version, measurement line, system line, organ line, fingerprint, overall stamp, attached lines)
   times four carriers yield 28 three-valued admission cells (Table~\ref{tab:stempel-matrix}); the
