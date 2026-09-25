@@ -90,11 +90,12 @@ The implementation is distributed across four Git repositories with clearly sepa
   --- that is the reason why the manuscript is a Git repository of its own with its own pipeline.
 \end{itemize}
 The fourfold order of the code is not the repository boundary but the \emph{carrier-stage chain}
-planner $\to$ CEB $\to$ tier $\to$ hybrid (Section~\ref{sec:anatomy-levels}): the stamp contract knows
-exactly four carriers in this order, and the source tree maps them under \texttt{libs/traeger} as four
-subprojects in stage form --- \texttt{comdare\_planner}, \texttt{comdare\_ceb},
-\texttt{comdare\_tier\_emission} and \texttt{comdare\_hybrid} ---, where stage $N+1$ depends only on
-stage $N$, never the reverse, and each stage closes onto its predecessor stage with a strict
+planner $\to$ CEB $\to$ tier with the hybrid optionally inserted between the CEB probe dock and the tier
+(Section~\ref{sec:anatomy-levels}): the stamp contract knows exactly four carriers, and the source tree
+maps them under \texttt{libs/traeger} as four subprojects in stage form --- \texttt{comdare\_planner},
+\texttt{comdare\_ceb}, \texttt{comdare\_tier\_emission} and \texttt{comdare\_hybrid} ---, where in the
+build order stage $N+1$ depends only on stage $N$ (no hybrid without a tier), never the reverse, and each
+stage closes onto its predecessor stage with a strict
 configuration check. Implementation status of this order: the subprojects form a scaffold (per stage a
 build description and a description file, planner and CEB with an include directory of their own), and
 the actual implementation lies as a monolith under \texttt{libs/\allowbreak{}cache\_\allowbreak{}engine};
@@ -108,21 +109,28 @@ Figure~\ref{fig:traeger-stufen} shows it with its binaries, legend forms and sur
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,
   st/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=3.9cm,text width=3.55cm,align=center,inner sep=3pt},
+  hy/.style={st,dashed,fill=blue!3},
   fl/.style={draw,rounded corners,fill=orange!10,minimum width=3.75cm,minimum height=1.35cm,text width=3.55cm,align=center,inner sep=2pt,font=\tiny}]
   \node[st] (s1) at (0,0){\textbf{Stage 1: planner}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny resolves the user XML against the three catalogues; director walk; legend \texttt{ceb:build:\allowbreak[a,b,c]}}};
-  \node[st] (s2) at (3.95,0){\textbf{Stage 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny carries the measurement choice compiled in, permutes system $\times$ organ; legend per host \texttt{tier:build-batch:\allowbreak<host>}, attestations \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[st] (s3) at (7.9,0){\textbf{Stage 3: tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny one organ permutation per binary; seven mandatory symbols; measurement batch per host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, measurement attestations \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[st] (s4) at (11.85,0){\textbf{Stage 4: hybrid}\\{\tiny hybrid \texttt{.so}}\\[2pt]{\tiny the same mandatory symbols; dock array with docked tiers; \texttt{genus()} reports the target genus}};
-  \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s3); \draw[->,thick] (s3)--(s4);
+  \node[st] (s2) at (3.95,0){\textbf{Stage 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny carries the measurement choice compiled in, permutes system $\times$ organ; one probe dock as attachment point for tier or hybrid; legend per host \texttt{tier:build-batch:\allowbreak<host>}, attestations \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[st] (s3) at (11.85,0){\textbf{Stage 3: tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny one organ permutation per binary; seven mandatory symbols; measurement batch per host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, measurement attestations \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[hy] (s4) at (7.9,0){\textbf{Insertion: hybrid}\\{\tiny optional, between stage 2 and 3; hybrid \texttt{.so}}\\[2pt]{\tiny mux switch at the CEB probe dock; dock slots 1 to $N$ for tier binaries; the same mandatory symbols; \texttt{genus()} reports the target genus}};
+  \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s4); \draw[->,thick] (s4)--(s3);
+  \draw[->,thick] (s2.north) -- ++(0,0.5) coordinate (bp) -| (s3.north);
+  \node[font=\tiny,anchor=south] at ([xshift=3.95cm,yshift=1pt]bp){standard route without hybrid: CEB probe dock $\to$ tier binary directly; with hybrid: probe dock $\to$ mux $\to$ dock slot $\to$ tier binary};
   \node[fl] (f1) at (0,-2.95){Surface 2 (stamp): self-version X.Y.Z, fingerprint SHA-256, overall stamp};
   \node[fl] (f2) at (3.95,-2.95){Surface 2 (stamp): measurement and system line, fingerprint SHA-512; own measurement-gate assignment};
-  \node[fl] (f3) at (7.9,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
-  \node[fl] (f4) at (11.85,-2.95){Surfaces 1--3 as for the tier, plus the attached stamp lines (runtime hook)};
+  \node[fl] (f3) at (11.85,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
+  \node[fl] (f4) at (7.9,-2.95){Surfaces 1--3 as for the tier, plus the attached stamp lines (runtime hook)};
   \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
 \end{tikzpicture}
-\caption[The carrier-stage chain in code]{The carrier-stage chain in code: four carriers in fixed order (stamp contract), per stage the
-binary, its legend form in the emitted pipeline and the contract surfaces expressed at it.
-Stage $N+1$ depends only on stage $N$; only the measurement attestations contain all three axis brackets.
+\caption[The carrier-stage chain in code]{The carrier-stage chain in code: four carriers, of which the hybrid is a stage
+optionally inserted between the CEB probe dock and the tier binary (stamp chain in fixed order planner $\to$ CEB
+$\to$ [hybrid] $\to$ tier), per stage the binary, its legend form in the emitted pipeline and the contract surfaces
+expressed at it. In the stamp chain, stage $N+1$ depends only on stage $N$; the standard route leads from the CEB
+probe dock directly to the tier binary, the hybrid is a mux switch at the probe dock with dock slots for tier
+binaries (build dependency: no hybrid without a tier); only the measurement attestations contain all three axis
+brackets.
 The surfaces partition the contracts (Section~\ref{sec:impl-pipeline}); the subprojects under
 \texttt{libs/traeger} are a scaffold, the implementation lies as a monolith under
 \texttt{libs/cache\_engine}.}\label{fig:traeger-stufen}
@@ -210,9 +218,10 @@ The implementation is distributed across four Git repositories with clearly sepa
   provenance.
 \end{itemize}
 The fourfold order of the code is not the repository boundary but the \emph{carrier-stage chain}
-planner $\to$ CEB $\to$ tier $\to$ hybrid (Section~\ref{sec:anatomy-levels}); the source tree maps it
-under \texttt{libs/traeger} as four subprojects in stage form, where stage $N+1$ depends only on
-stage $N$. Implementation status: the subprojects form a scaffold, the implementation lies as a
+planner $\to$ CEB $\to$ tier with the hybrid optionally inserted between the CEB probe dock and the tier
+(Section~\ref{sec:anatomy-levels}); the source tree maps it under \texttt{libs/traeger} as four
+subprojects in stage form, where in the build order stage $N+1$ depends only on stage $N$ (no hybrid
+without a tier). Implementation status: the subprojects form a scaffold, the implementation lies as a
 monolith under \texttt{libs/\allowbreak{}cache\_\allowbreak{}engine}. The candidate under test is not a
 stage but the transversal supplier of organ building blocks; the stage chain is at the same time the
 layer at whose binaries the contracts are partitioned into surfaces (Section~\ref{sec:impl-pipeline});
@@ -220,21 +229,28 @@ Figure~\ref{fig:traeger-stufen} shows it with its binaries, legend forms and sur
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,
   st/.style={draw,rounded corners,fill=blue!7,minimum width=3.75cm,minimum height=3.9cm,text width=3.55cm,align=center,inner sep=3pt},
+  hy/.style={st,dashed,fill=blue!3},
   fl/.style={draw,rounded corners,fill=orange!10,minimum width=3.75cm,minimum height=1.35cm,text width=3.55cm,align=center,inner sep=2pt,font=\tiny}]
   \node[st] (s1) at (0,0){\textbf{Stage 1: planner}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny resolves the user XML against the three catalogues; director walk; legend \texttt{ceb:build:\allowbreak[a,b,c]}}};
-  \node[st] (s2) at (3.95,0){\textbf{Stage 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny carries the measurement choice compiled in, permutes system $\times$ organ; legend per host \texttt{tier:build-batch:\allowbreak<host>}, attestations \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[st] (s3) at (7.9,0){\textbf{Stage 3: tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny one organ permutation per binary; seven mandatory symbols; measurement batch per host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, measurement attestations \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[st] (s4) at (11.85,0){\textbf{Stage 4: hybrid}\\{\tiny hybrid \texttt{.so}}\\[2pt]{\tiny the same mandatory symbols; dock array with docked tiers; \texttt{genus()} reports the target genus}};
-  \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s3); \draw[->,thick] (s3)--(s4);
+  \node[st] (s2) at (3.95,0){\textbf{Stage 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny carries the measurement choice compiled in, permutes system $\times$ organ; one probe dock as attachment point for tier or hybrid; legend per host \texttt{tier:build-batch:\allowbreak<host>}, attestations \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[st] (s3) at (11.85,0){\textbf{Stage 3: tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny one organ permutation per binary; seven mandatory symbols; measurement batch per host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, measurement attestations \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
+  \node[hy] (s4) at (7.9,0){\textbf{Insertion: hybrid}\\{\tiny optional, between stage 2 and 3; hybrid \texttt{.so}}\\[2pt]{\tiny mux switch at the CEB probe dock; dock slots 1 to $N$ for tier binaries; the same mandatory symbols; \texttt{genus()} reports the target genus}};
+  \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s4); \draw[->,thick] (s4)--(s3);
+  \draw[->,thick] (s2.north) -- ++(0,0.5) coordinate (bp) -| (s3.north);
+  \node[font=\tiny,anchor=south] at ([xshift=3.95cm,yshift=1pt]bp){standard route without hybrid: CEB probe dock $\to$ tier binary directly; with hybrid: probe dock $\to$ mux $\to$ dock slot $\to$ tier binary};
   \node[fl] (f1) at (0,-2.95){Surface 2 (stamp): self-version X.Y.Z, fingerprint SHA-256, overall stamp};
   \node[fl] (f2) at (3.95,-2.95){Surface 2 (stamp): measurement and system line, fingerprint SHA-512; own measurement-gate assignment};
-  \node[fl] (f3) at (7.9,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
-  \node[fl] (f4) at (11.85,-2.95){Surfaces 1--3 as for the tier, plus the attached stamp lines (runtime hook)};
+  \node[fl] (f3) at (11.85,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
+  \node[fl] (f4) at (7.9,-2.95){Surfaces 1--3 as for the tier, plus the attached stamp lines (runtime hook)};
   \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
 \end{tikzpicture}
-\caption[The carrier-stage chain in code]{The carrier-stage chain in code: four carriers in fixed order (stamp contract), per stage the
-binary, its legend form in the emitted pipeline and the contract surfaces expressed at it.
-Stage $N+1$ depends only on stage $N$; only the measurement attestations contain all three axis brackets.
+\caption[The carrier-stage chain in code]{The carrier-stage chain in code: four carriers, of which the hybrid is a stage
+optionally inserted between the CEB probe dock and the tier binary (stamp chain in fixed order planner $\to$ CEB
+$\to$ [hybrid] $\to$ tier), per stage the binary, its legend form in the emitted pipeline and the contract surfaces
+expressed at it. In the stamp chain, stage $N+1$ depends only on stage $N$; the standard route leads from the CEB
+probe dock directly to the tier binary, the hybrid is a mux switch at the probe dock with dock slots for tier
+binaries (build dependency: no hybrid without a tier); only the measurement attestations contain all three axis
+brackets.
 The surfaces partition the contracts (Section~\ref{sec:impl-pipeline}); the subprojects under
 \texttt{libs/traeger} are a scaffold, the implementation lies as a monolith under
 \texttt{libs/cache\_engine}.}\label{fig:traeger-stufen}
@@ -1991,7 +2007,8 @@ and type lists instead of via virtual calls ---, because tier binaries may conta
 between building blocks.}\label{fig:muster}
 \end{figure}
 
-The hybrid stage is the fourth carrier stage (Section~\ref{sec:heuristics-modes}); its code state lies
+The hybrid stage is the fourth carrier, inserted as an optional mux stage between the CEB probe dock and
+the tier binary (Section~\ref{sec:heuristics-modes}); its code state lies
 under \texttt{hybrid/} (Figure~\ref{fig:hybrid-dock}). Implemented are the dock contracts --- four
 contract forms \texttt{standard}, \texttt{rollback}, \texttt{scan} and \texttt{resource\_control} as a
 \texttt{constexpr} registry with sixteen status constants (\texttt{ok} and fifteen named rejection
@@ -2027,11 +2044,15 @@ section. The hybrid mode compiles only with the help of the CEB\@.
   hb/.style={draw,rounded corners,fill=blue!7,text width=2.9cm,minimum height=1.0cm,align=center,inner sep=2pt,font=\scriptsize},
   dk/.style={draw,rounded corners,fill=orange!12,text width=1.95cm,minimum height=1.1cm,align=center,inner sep=2pt,font=\tiny},
   ex/.style={draw,rounded corners,fill=green!8,text width=2.6cm,minimum height=1.0cm,align=center,inner sep=2pt,font=\tiny}]
-  \node[draw,rounded corners,dashed,minimum width=9.0cm,minimum height=5.4cm] (frame) at (0,-0.4){};
-  \node[font=\bfseries\scriptsize,anchor=north west] at (-4.5,2.3){Hybrid \texttt{.so} (family HeuristikAdapter, reroute genus)};
+  \node[draw,rounded corners,dashed,minimum width=9.0cm,minimum height=4.8cm] (frame) at (0,-0.7){};
+  \node[font=\bfseries\scriptsize,anchor=north west] at (-4.5,-3.15){Hybrid \texttt{.so} (family HeuristikAdapter, reroute genus) --- inserted mux stage};
   \node[hb] (proxy) at (-2.4,0.9){\texttt{HybridBinaryProxy}\\satisfies \texttt{IAnatomyBase}; passes the drive through to the target dock};
   \node[hb] (arr) at (2.3,0.9){\texttt{DockArray\{\allowbreak max\_docks\}}\\\texttt{HybridDockVariant}: the one permitted variant site};
   \draw[->,thick] (proxy)--(arr);
+  \node[hb,fill=blue!16] (ceb) at (-2.4,2.75){CEB probe dock (stage 2)\\attachment point (mux) of the optional hybrid stage};
+  \node[hb,fill=gray!10] (tier) at (2.3,2.75){tier binary (stage 3)\\standard route without hybrid: directly at the CEB probe dock};
+  \draw[->,thick] (ceb)--node[right,font=\tiny]{drive}(proxy);
+  \draw[->,thick,dashed] (ceb)--node[above,font=\tiny]{standard route}(tier);
   \node[dk] (d1) at (-3.2,-1.4){Dock 1\\contract \texttt{standard}\\$\to$ target tier};
   \node[dk] (d2) at (-1.0,-1.4){Dock 2\\contract \texttt{rollback}\\$\to$ target tier};
   \node[dk] (d3) at (1.2,-1.4){Dock 3\\contract \texttt{scan}\\$\to$ target tier};
@@ -2046,7 +2067,9 @@ section. The hybrid mode compiles only with the help of the CEB\@.
   \draw[->,dashed] (frame.east)--(sym);
   \node[ex] (st) at (6.3,-1.4){stamp chain of the hybrid stage; measurement-gate fields \texttt{hm}/\texttt{hmi}; genus build admission: 6th entry};
 \end{tikzpicture}
-\caption[The hybrid stage in code]{The hybrid stage in code: the binary proxy makes the hybrid \texttt{.so} an ordinary tier binary to the
+\caption[The hybrid stage in code]{The hybrid stage in code: the mux stage optionally inserted between the CEB probe
+dock and the tier binary, attached at the CEB probe dock and carrying dock slots for tier binaries (standard route
+without hybrid: probe dock directly to the tier binary). The binary proxy makes the hybrid \texttt{.so} an ordinary tier binary to the
 outside and holds the dock array with the runtime cap \texttt{max\_docks}; per dock one of four
 contracts applies, the dock factory is the single construction site, the \texttt{<hybrid\_tier>}
 section of the XML switches the stage and sets the cap. The exports are spelled identically to the
@@ -2127,7 +2150,8 @@ and type lists instead of via virtual calls ---, because tier binaries may conta
 between building blocks.}\label{fig:muster}
 \end{figure}
 
-The hybrid stage is the fourth carrier stage (Section~\ref{sec:heuristics-modes}); its code state lies
+The hybrid stage is the fourth carrier, inserted as an optional mux stage between the CEB probe dock and
+the tier binary (Section~\ref{sec:heuristics-modes}); its code state lies
 under \texttt{hybrid/}. Implemented are the dock contracts (four contract forms \texttt{standard},
 \texttt{rollback}, \texttt{scan} and \texttt{resource\_control} with sixteen status constants), the
 probe dock, the dock factory as the single construction site, the dock array with
