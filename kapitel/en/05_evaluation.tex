@@ -2,6 +2,7 @@
 
 % [SKELETON] Methodology first, then analysis of the results based on the methodology (merged from old 06+07).
 
+\begin{nurlang}
 The evaluation first discloses the methodology and, building on it, analyses the measurement series. Its
 guiding question is cache-line awareness: Which design decision changes the cache-near measured
 quantities --- L1, L2, and last-level misses, dTLB misses, branch misses, and the latency per
@@ -45,6 +46,30 @@ counters, the hardware counters of the processors) are the primary measured quan
 time categories the cross-check; because hardware counters are trustworthy only after a cross-check by
 measurement~\cite{weaver2008counters}, Section~\ref{sec:eval-counters} discloses the semantics of every
 counter per model.
+\end{nurlang}
+\begin{nurkurz}
+Three evaluation objects structure the chapter: the \emph{design space} (hypotheses H1--H3, sensitivity
+analysis), the \emph{apparatus} itself (heuristic counter-proof, measurement error of the measurement
+instances), and the \emph{automation} from the experiment XML\@; the methodology
+(Section~\ref{sec:eval-method}) unfolds them in eight, the results (Section~\ref{sec:eval-results}) in seven
+subsections. The evaluation follows the empirical chain of research question, hypothesis, measured quantity,
+experimental setup, execution, result, validity check, and
+discussion~\cite{wohlin2012experimentation,shaw2003writing}: every hypothesis names measured quantity and
+criterion before the measurement, every result its
+uncertainty~\cite{georges2007rigorous,kalibera2013rigorous}; the constructed artefact is assessed by the
+utility, rigour, and traceability of design-science
+research~\cite{hevner2004designscience,peffers2007dsrm,wieringa2014designscience}, and reference quantity,
+repetitions, dispersion, platform, and values not collected (n/a) stand at every result according to the
+reporting rules for performance measurements~\cite{hoefler2015benchmarking,blackburn2016truth}. The guiding
+axis is cache-line awareness: compared are the cache-near measured quantities (L1, L2, and last-level misses,
+dTLB misses, branch misses, energy, latency percentiles; sixteen registered measurement categories with a
+regime ordinal) per axis assignment and genus-interface call (channel address axis $\to$ genus $\to$
+category) and per machine signature: prod1 (AMD Zen~5), prod2 (Intel Alder Lake), and the ODROID board with
+Intel Gracemont cores. The PMC categories (performance monitoring counters, the hardware counters of the
+processors) are the primary measured quantities, the time categories the cross-check; because counters are
+trustworthy only when cross-checked~\cite{weaver2008counters}, Section~\ref{sec:eval-counters} discloses
+their semantics per model.
+\end{nurkurz}
 
 \section{Methodology}\label{sec:eval-method}
 \subsection{Hypotheses and Measured Quantities}\label{sec:eval-hypotheses}
@@ -87,6 +112,7 @@ metrics H1--H3 (Section~\ref{sec:prtart-demo}): the former are testable statemen
 space, the latter measurement organs of the candidate under test that, among other things, supply the data for this
 test.
 
+\begin{nurlang}
 \subsection{Fully Automatic Experiment Evaluation from the XML}\label{sec:eval-xml}
 The evaluation is itself an object of the automation (Figure~\ref{fig:eval-xml-kette}): A user XML
 with the root \texttt{<comdare\_experiment>} declares \emph{what} is measured, \emph{where}, and
@@ -144,7 +170,61 @@ render per language into the \texttt{tabellen} directory, the manuscript include
 number carries its run. Dashed: parts not implemented (XML creation mode, \texttt{<publish>} section,
 third factory).}\label{fig:eval-xml-kette}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Fully Automatic Experiment Evaluation from the XML}\label{sec:eval-xml}
+The evaluation is itself an object of the automation (Figure~\ref{fig:eval-xml-kette}): A user XML with the
+root \texttt{<comdare\_experiment>} declares \emph{what} is measured, \emph{where}, and \emph{when}; decisive
+are the sections \texttt{workloads}, \texttt{datasets}, \texttt{measurement\_tooling},
+\texttt{measurement\_categories}, \texttt{run\_methodology}, \texttt{writeback\_methods}, and
+\texttt{output}, which the profile validator checks against the registries. From the XML the plan arises
+deterministically, from it the build jobs of the CacheEngineBuilder and the tier binaries, whose measurement
+lies in the workbook (xlsx); the CSV form is the tree extract generated from the workbook
+(Section~\ref{sec:eval-dataflow}), and the generators of the tool repository render tables and diagrams per
+language into the \texttt{tabellen} directory of the manuscript. No step is executed by hand; every number in
+the appendix carries its run (Appendix~\ref{app:measurements}). Implementation status: The chain is
+demonstrated in a first end-to-end run (smoke measurement series over 43 permutations);
+\texttt{<publish>}, the creation mode (Section~\ref{sec:impl-pipeline}), and the third output factory LaTeX
+(Section~\ref{sec:eval-dataflow}) are planned but not implemented.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  st/.style={draw,rounded corners,fill=blue!7,text width=2.55cm,minimum height=1.1cm,align=center,inner sep=2pt,font=\scriptsize},
+  og/.style={st,fill=green!9},
+  pl/.style={st,fill=orange!10,dashed,minimum height=0.8cm,font=\tiny}]
+  \node[st] (x) at (0,0){\textbf{User XML}\\\texttt{<comdare\_\allowbreak{}experiment>}: workloads, datasets, tooling, categories, run\_methodology, writeback, output};
+  \node[st] (v) at (3.1,0){\textbf{Validator}\\registries, records, merge binding, fairness modes};
+  \node[st] (p) at (6.2,0){\textbf{Planner}\\director walk, plan text, build legend};
+  \node[st] (c) at (9.3,0){\textbf{CEB}\\build jobs per system permutation, tier binaries};
+  \node[st] (m) at (12.4,0){\textbf{Measurement}\\wallclock / macro / micro, PMC counters, one measurement thread};
+  \node[og] (xl) at (12.4,-2.6){\textbf{Workbook (xlsx)}\\trunk: always arises; one data sheet (constant sheet key); sheet per sub-axis permutation: planned};
+  \node[og] (cs) at (9.3,-2.6){\textbf{CSV tree} (tree: planned)\\folder per sheet; WIDE 189 columns, pipeline view 16 + 16};
+  \node[og] (g) at (6.2,-2.6){\textbf{Generators}\\binary-to-CSV, CSV-to-LaTeX, diagrams, appendix};
+  \node[og] (t) at (3.1,-2.6){\textbf{tabellen/}\\per language: fact sheets, booktabs tables, TikZ};
+  \node[og] (ms) at (0,-2.6){\textbf{Manuscript}\\\textbackslash{}input in the appendix; every number with its run};
+  \foreach \a/\b in {x/v,v/p,p/c,c/m}{\draw[->,thick] (\a)--(\b);}
+  \draw[->,thick] (m)--(xl);
+  \foreach \a/\b in {xl/cs,cs/g,g/t,t/ms}{\draw[->,thick] (\a)--(\b);}
+  \node[pl] (a1) at (0,-4.5){not implemented: XML creation mode (command line, hardware filter)};
+  \node[pl] (a2) at (12.4,-4.5){not implemented: \texttt{<publish>} section (store write-back)};
+  \node[pl] (a3) at (9.3,-4.5){not implemented: third factory LaTeX (sheet order, measurement series per binary)};
+  \draw[->,dashed] (a1)--(ms);
+  \draw[->,dashed] (a2)--(xl);
+  \draw[->,dashed] (a3)--(cs);
+\end{tikzpicture}
+\caption{The automated evaluation chain from the user XML to the manuscript. Upper row: The XML
+declares what, where, and when; the validator checks it against the registries; the planner emits the
+deterministic plan; the CEB builds the tier binaries per system permutation; the measurement collects
+the three measurement levels and the counters with one measurement thread. Lower row: The workbook is
+the trunk (one data sheet under a constant sheet key; the fan-out into one sheet per sub-axis
+permutation is planned but not implemented), the CSV form its ordered tree of CSV files generated from
+it (one folder per sheet; not a single child document; implemented is a flat file), the generators
+render per language into the \texttt{tabellen} directory, the manuscript includes the files --- every
+number carries its run. Dashed: parts not implemented (XML creation mode, \texttt{<publish>} section,
+third factory).}\label{fig:eval-xml-kette}
+\end{figure}
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Workloads and Datasets}\label{sec:eval-workloads}
 Phase~5 of the measurement pipeline (Execute, Section~\ref{sec:impl-pipeline}) derives the YCSB
 workload per permutation as a fallback heuristic from the profile's traversal tag
@@ -165,7 +245,22 @@ Pizza\&Chili source, and \texttt{xml} possesses a specification without checksum
 not available locally --- there is no synthetic checksum (n/a). The records lie as XML files per
 dataset in the tool repository, and a canon test checks the computed records against the six-element
 canon of the table.
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Workloads and Datasets}\label{sec:eval-workloads}
+Phase~5 of the measurement pipeline (Execute, Section~\ref{sec:impl-pipeline}) derives the YCSB workload per
+permutation as a fallback heuristic from the profile's traversal tag (\texttt{RANGE} to YCSB-E,
+\texttt{HOT\_PATH} to YCSB-A, otherwise YCSB-C), unless an \texttt{<expected\_workload>} tag overrides the
+heuristic (Section~\ref{sec:sota-instances}); the global default is the permutation over all workloads of
+the load framework YCSB~\cite{cooper2010ycsb}, implementation status: The driver falls back to exactly one
+workload, the full permutation is planned but not implemented. The data basis is real string datasets
+(Table~\ref{tab:datasets}), each with a reproducibility record of source, checksum, line count,
+preprocessing, and seed rule: four records are computed against the preprocessed files, \texttt{dna}
+carries the record of the Pizza\&Chili source, \texttt{xml} a specification without checksum (n/a, file not
+local); a canon test checks the records against the six-element canon of the table.
+\end{nurkurz}
 
+\begin{nurlang}
 \begin{table}[!htbp]
   \centering
   \caption{Profile-aware workload routing (fallback heuristic)}\label{tab:workload-routing}
@@ -179,6 +274,7 @@ canon of the table.
     \bottomrule
   \end{tabular}
 \end{table}
+\end{nurlang}
 
 \begin{table}[!htbp]
   \centering\small
@@ -197,6 +293,7 @@ canon of the table.
   \end{tabular}
 \end{table}
 
+\begin{nurlang}
 \subsection{Platforms, Vendor Lanes, and Regimes}\label{sec:eval-platforms}
 The measurements target the registered measurement machines of the apparatus: prod1, the AMD machine
 with a Ryzen~9~9950X3D (Zen~5; machine signature \texttt{prod1\_zen5} with 22 features including AVX-512), % chktex 29
@@ -227,7 +324,25 @@ cores of the type), the unpinned reference run, and \emph{HybridAware} as the si
 dimension \texttt{hetero\_core\_dispatch}), which is mandatory for the cache-line-awareness
 measurement; the attachment of the core pinning and the core modes to the run profile is planned but
 not implemented (Section~\ref{sec:impl-system-axes}).
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Platforms, Vendor Lanes, and Regimes}\label{sec:eval-platforms}
+The measurements target three registered measurement machines: prod1, the AMD machine with Zen~5 cores
+(signature \texttt{prod1\_zen5}, with AVX-512), prod2, the Intel machine with Alder Lake (signature
+\texttt{prod2\_alder\_lake}, without AVX-512, with P and E cores), and an ODROID board with Intel Gracemont
+cores (\texttt{odroid\_gracemont}). The ZIH cluster (Barnard node: Sapphire
+Rapids)~\cite{zih_hpc_compendium_hardware} is declared as sub-axis IS3 of the target ISA, registered in no
+signature, and not measured (n/a); an HBM platform is registered nowhere. An \texttt{IPlatformProbe} reports
+per platform the runnable subset of the axes; the exclusion of a missing extension is always decided
+\emph{machine-side} with a warning, never as a silent profile filter, per platform a scalar and an AVX2
+build are prepared, an AVX-512 build only with a matching signature, and the XML creation mode with platform
+filter is not implemented (Section~\ref{sec:impl-pipeline}). On hybrid CPUs, P and E cores are measured
+separately via the core PMU domains of the kernel; the core modes follow the six-mode model from
+Section~\ref{sec:axis-triad} with \emph{HybridAware} as the sixth, mandatory mode, their attachment to the
+run profile is not implemented (Section~\ref{sec:impl-system-axes}).
+\end{nurkurz}
 
+\begin{nurlang}
 The productive measurement operation is a \emph{two-machine operation} --- the AMD machine prod1
 alongside the Intel machine prod2 ---, and the counter-based collection carries for this two vendor
 lanes, each individually activatable, \texttt{pmc:amd} on prod1 and \texttt{pmc:intel} on prod2, each
@@ -245,7 +360,20 @@ place to the counter-based measurement categories (Section~\ref{sec:sota-instanc
 runtime-configurable cache-near axis parameters (prefetch distance, hardware prefetcher). The second
 regime is \emph{designed, not carried out}: The reported measurements all originate from the
 root-Linux regime of the two production machines; the Talos regime is planned but not measured.
+\end{nurlang}
+\begin{nurkurz}
+The productive measurement operation is a \emph{two-machine operation} of prod1 and prod2 with two
+individually activatable vendor lanes of the counter collection, \texttt{pmc:amd} and \texttt{pmc:intel},
+each in its own PMU resource group. Completeness is an evaluation rule, not a CI gate: A measurement series
+counts as complete only once both lanes have delivered, a lane run on one side only is reported as a partial
+measurement (Section~\ref{sec:eval-validity}). The measurement plan provides two operating-system regimes
+per measurement: an \emph{immutable} operating system (Talos) with boot-/compile-static cache settings
+(Section~\ref{sec:hardware-history}) and a \emph{root Linux with full hardware-counter access} for the
+counter-based categories (Section~\ref{sec:sota-instances}). The Talos regime is designed, not carried out:
+All reported measurements originate from the root-Linux regime of both machines.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Measurement Levels, Collectors, and Counters}\label{sec:eval-counters}
 To be separated from this is which counters that access actually populates
 (Table~\ref{tab:eval-pmc-zaehler}): The measurement chain opens via
@@ -297,7 +425,48 @@ the counter bundle carries a \texttt{*\_source\_available} flag; a number means 
 delivered}, n/a means \enquote{source is missing}. The Intel status names what is collected on prod2
 without a catalogue entry.}\label{tab:eval-pmc-zaehler}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Measurement Levels, Collectors, and Counters}\label{sec:eval-counters}
+To be separated from this is which counters that access actually populates
+(Table~\ref{tab:eval-pmc-zaehler}): The measurement chain opens via
+\texttt{perf\_event\_open}~\cite{linux_perf_event_open,demelo2010perf} four generic counters (L1D,
+last-level, dTLB, and branch misses, portable on Intel and AMD); L2 misses and coherence invalidations are
+collected model-bound via a RAW event catalogue whose Zen~5 encodings stem from the event table of the Linux
+kernel~\cite{linux_perf_amdzen5} and are cross-checked; for Intel no entry exists (n/a), because the
+cross-check on an Intel host is missing. The last-level event fails on Zen~5 at opening (\texttt{ENOENT}),
+IPC/CPI is declared but not wired up, and the energy is read best-effort from the RAPL sysfs zone (Running
+Average Power Limit, the energy counters of the processors~\cite{david2010rapl,khan2018rapl}). The principle
+of explicitly coded non-observation is realized as a field flag: Per counter the counter bundle carries a
+\texttt{*\_source\_available} flag --- a number means the source has delivered, n/a means the source is
+missing ---, and the distinction travels end-to-end into workbook, tables, and diagrams. Hardware counters
+count as trustworthy only after cross-checking~\cite{weaver2008counters}; the cross-check for Zen~5 is
+substantiated by measurement, the one for Intel is not available.
+\begin{table}[htbp]\centering\footnotesize
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{2.3cm}@{}}
+\toprule
+Category (column) & Source & Intel status & Validity flag \\
+\midrule
+\texttt{cache\_misses\_l1} & generic perf event (L1D read miss) & generic: yes & own flag \\
+\texttt{cache\_misses\_l2} & RAW catalogue Zen~5: event \texttt{0x64}, mask \texttt{0x09} (demand misses in L2) & no catalogue entry, cross-check not performed (n/a) & own flag \\ % chktex 29
+\texttt{cache\_misses\_l3} & generic perf event (last level); fails on Zen~5 at opening (n/a) & generic: yes & own flag \\
+\texttt{dtlb\_misses} & generic perf event (dTLB read miss) & generic: yes & own flag \\
+\texttt{branch\_misses} & generic perf event (\texttt{PERF\_COUNT\_\allowbreak{}HW\_\allowbreak{}BRANCH\_\allowbreak{}MISSES}) & generic: yes & own flag \\
+\texttt{coherence\_invalidations} & RAW catalogue Zen~5: event \texttt{0x43}, mask \texttt{0x14} (foreign-CCX fills) & no catalogue entry, cross-check not performed (n/a) & own flag \\ % chktex 29
+\texttt{energy\_micro\_joules} & RAPL sysfs zone, best-effort (read permission) & as AMD (read permission) & own flag \\
+IPC/CPI & declared, not wired up (source missing) & n/a & --- \\
+\bottomrule
+\end{tabular}
+\caption{The counters of the measurement chain and their sources: four generic perf events
+(portable), two model-bound RAW events from the catalogue for Zen~5 (cross-checked by measurement),
+the RAPL energy as best-effort reading, and IPC/CPI as a declared, not wired-up category. Per counter
+the counter bundle carries a \texttt{*\_source\_available} flag; a number means \enquote{source has
+delivered}, n/a means \enquote{source is missing}. The Intel status names what is collected on prod2
+without a catalogue entry.}\label{tab:eval-pmc-zaehler}
+\end{table}
+\end{nurkurz}
 
+\begin{nurlang}
 Time and observer measurement are united in the measurement checkpoint
 (\texttt{checkpoint\_measure}); their responsibilities are separated by the measurement-tooling main
 axis in exactly this order: \emph{wallclock} (w) --- the wall clock of the overall runs in the
@@ -313,7 +482,20 @@ the wall clock of the CacheEngineBuilder are never mixed (Section~\ref{sec:eval-
 measurements as a figure type of their own in the appendix generator are planned but not implemented.
 Implementation status: Registry and level canon are implemented; the order validation at the three
 serialization points and the collector as a self-contained component are not.
+\end{nurlang}
+\begin{nurkurz}
+Time and observer measurement are united in the measurement checkpoint (\texttt{checkpoint\_measure}); their
+responsibilities are separated by the measurement-tooling main axis in exactly this order: \emph{wallclock},
+\emph{macro}, \emph{micro} (Section~\ref{sec:measurement-system}, Figure~\ref{fig:traeger-flaechen}); every
+other order is syntactically wrong, w/ma/mi is the registered alias. Three collectors (wall clock, observer
+snapshot, PMC) collect as building blocks of the measurement axis \texttt{collector}, the sixteen
+measurement categories are the sub-axis of the tooling axis, and the analysis keeps the three levels apart
+(Section~\ref{sec:eval-sensitivity}); PMC measurements as a figure type of their own in the appendix
+generator are planned but not implemented. Implementation status: Registry and level canon are implemented,
+the order validation and the self-contained collector are not.
+\end{nurkurz}
 
+\begin{nurlang}
 The time- and observer-based categories run identically under both regimes and secure comparability;
 the PMC categories are collected only under the privileged regime. Per category the registry carries
 the regime as an ordinal (0 for time and observer, 1 for counters): nine time/observer categories and
@@ -324,7 +506,16 @@ machines, the sysfs name of the domain); a column of their own in the measuremen
 items do not possess in the WIDE schema --- the columns \texttt{platform} and
 \texttt{build\_version} carry platform tag and build version per row, the log column per domain is
 not implemented.
+\end{nurlang}
+\begin{nurkurz}
+The time- and observer-based categories run identically under both regimes, the PMC categories only under
+the privileged regime; the registry carries the regime per category as an ordinal (nine time/observer, seven
+counter categories). Operating system, kernel, and counter domain are logged per platform; in the WIDE
+schema only the columns \texttt{platform} and \texttt{build\_version} carry platform tag and build version,
+the log column per domain is not implemented.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Build Scope and Optimization Levels}\label{sec:eval-build-scope}
 The scope of the full build is fixed in the profile. The profile declares the build control
 quantities: two optimization levels (O2, O3) times two SIMD levels (no extension, AVX2), that is,
@@ -344,7 +535,21 @@ fixed (Section~\ref{sec:mess-chain}); the system axes multiply the build matrix,
 \texttt{binary\_id}. The cardinality of the real permutation space the planner computes dynamically
 from its inputs (subcommand \texttt{simulate}); it is not a fixed number. Results of the runs of the
 full build are not available (Section~\ref{sec:eval-available}).
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Build Scope and Optimization Levels}\label{sec:eval-build-scope}
+The scope of the full build is fixed in the profile: two optimization levels (O2, O3) times two SIMD levels
+(no extension, AVX2), that is, four build variants per permutation (Section~\ref{sec:axis-triad}). Excluded
+is Ofast alone, because it would break the IEEE-754 and the run-to-run determinism as well as the CRC-64
+checksum of the golden reference catalogue; the default is O2, O3 is selected via the XML and is
+identity-effective via the toolchain member of the fingerprint, O0 to O3 as a user choice and the
+pass-through of further compiler flags are planned but not implemented. Per build variant the golden
+reference catalogue is built ($2^{17} = 131072$ binary identities, Section~\ref{sec:mess-chain}); the
+cardinality of the real permutation space the planner computes dynamically (subcommand \texttt{simulate}).
+Results of the runs of the full build are not available (Section~\ref{sec:eval-available}).
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Fairness and Reproducibility}\label{sec:fairness}
 Fair comparability is secured by fixed rules. Each comparison separates a common minimal mode (common
 denominator: external value handles, no PRT-ART special paths) from the PRT-ART native mode (inline
@@ -385,7 +590,32 @@ the apparatus counters with identical keys, identical build matrix per variant, 
 dimension; a randomized layout stabilization in the sense of Curtsinger and
 Berger~\cite{curtsinger2013stabilizer} is not part of the apparatus and is carried in
 Section~\ref{sec:eval-validity} as a limit.
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Fairness and Reproducibility}\label{sec:fairness}
+Fair comparability is secured by fixed rules. Each comparison separates a common minimal mode (common
+denominator) from the PRT-ART native mode, declared per SOTA series as \texttt{fairness\_mode}
+(\texttt{common\_denominator} or \texttt{native}); implementation status: The mode is a series metadatum
+without influence on the measurement and never part of the \texttt{binary\_id}, which is why two series with
+different modes produce the same \texttt{binary\_id}, which the validator reports as a warning. All methods
+receive identical, normalized byte keys and identical miss, update, and delete sets; the warm-up is the
+two-phase driver, and each configuration is measured in several separate runs (repetition dimension
+\texttt{repetition}). Thread pinning: The actuator is implemented but not attached to the run profile, which
+is why the measurement emission reports the actual state as \emph{unpinned} (on prod1 with two L3 complexes
+of unequal size an unpinned run is not reproducible). Missing capabilities of a baseline are reported as n/a
+rather than emulated (sample statuses \emph{NotApplicable}, \emph{SourceUnavailable}, \emph{Failed}).
+Provenance: toolchain, flags, ISA summary, and the commit states of the four repositories enter the
+provenance manifest at configuration time, a provenance per individual foreign library is not implemented.
+The latency percentiles are determined by the evaluation tree nearest-rank (Hyndman and Fan, type~1, without
+interpolation~\cite{hyndman1996quantiles}); the presentation tools possess their own copies of the
+conversion (a declared gap), and the HDR histogram~\cite{tene_hdrhistogram} (high dynamic range: bins of
+fixed relative resolution over several orders of magnitude) is a method of its own of the distributional
+view. Layout and environment effects that produce wrong conclusions without a recognizable
+error~\cite{mytkowicz2009wrongdata} remain a limit: A randomized layout
+stabilization~\cite{curtsinger2013stabilizer} is missing (Section~\ref{sec:eval-validity}).
+\end{nurkurz}
 
+\begin{nurlang}
 For foreign libraries the original-compiler rule applies: Dissected axis functions are bound in at
 compile time and compiled into a once-again original binary block, so that every dissected
 sub-algorithm keeps its performance properties; where feasible or comparable, the foreign source is
@@ -396,7 +626,15 @@ re-anchors the lock files of the markings; the evidence per building block stand
 Appendix~\ref{app:blocks}. The H2 dossier marks reconstructions without a vendored original source as
 n/a (22 of 33, Section~\ref{sec:eval-hypotheses}). Implementation status: The automatic intake of the
 vendored sources into the build with their original compiler is planned but not implemented.
+\end{nurlang}
+\begin{nurkurz}
+For foreign libraries the original-compiler rule applies: Where feasible, the foreign source is built with
+its original compiler. The proof of originality is implemented --- the \texttt{is\_original} marking per
+function, the validator, and the relock gate of the CI (Appendix~\ref{app:blocks}) ---, the automatic intake
+of the vendored sources with their original compiler is planned but not implemented.
+\end{nurkurz}
 
+\begin{nurlang}
 The measurement \emph{operation}, too, is part of these fairness rules, and it runs through the
 store. The store is the stock of all built tier binaries and their measured values, addressed via
 compile-time keys (Section~\ref{sec:lager}; Figure~\ref{fig:lager-bestaende} shows its structure):
@@ -446,7 +684,52 @@ measured values lie under fingerprint and hardware identity in stock~2 and flow 
 of the store (tree, four stocks, key schema) is shown by Figure~\ref{fig:lager-bestaende}; dashed the
 full store build-out.}\label{fig:eval-lager-kreislauf}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+The measurement \emph{operation}, too, is part of these fairness rules, and it runs through the store
+(Section~\ref{sec:lager}, Figure~\ref{fig:lager-bestaende}): stock~1 keeps the binary under its SHA-512
+fingerprint, stock~2 the measured values under the pair of fingerprint and hardware identity of the
+measuring machine; the binary with and the one without measurement sensors lie side by side as two entries,
+because the measurement-gate state is a fingerprint member. Measurement is always switched on, re-measured
+is only what is missing in the store: A binary with a known fingerprint and an inventoried test attestation
+is skipped, otherwise it is built or measured (Figure~\ref{fig:eval-lager-kreislauf}); the CEB produces the
+parallel requests to the tier binaries. Implementation status: Stock~1 and~2 as well as the key schema of
+all four stocks are implemented, the full store build-out is not.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,
+  k/.style={draw,rounded corners,fill=blue!7,text width=2.7cm,minimum height=1.15cm,align=center,inner sep=2pt,font=\scriptsize},
+  lg/.style={k,fill=green!10},
+  dc/.style={draw,fill=orange!14,text width=2.7cm,minimum height=1.15cm,align=center,inner sep=2pt,font=\scriptsize},
+  pl/.style={k,fill=orange!10,dashed,font=\tiny,minimum height=0.9cm}]
+  \node[k]  (bau)  at (0,0){\textbf{Build (CEB)}\\batches of 4096 binaries each, inventoried resumption};
+  \node[lg] (b1)   at (4.1,0){\textbf{Stock 1: binary}\\key: SHA-512 fingerprint; cell bracketed beside it};
+  \node[dc] (skip) at (8.2,0){\textbf{Recognition criterion}\\fingerprint known \emph{and} test attestation inventoried as passed?};
+  \node[k]  (mess) at (12.3,0){\textbf{Measurement}\\probe dock; one measurement thread; the CEB produces parallel requests};
+  \node[lg] (b2)   at (12.3,-2.6){\textbf{Stock 2: measured values}\\key: fingerprint $+$ hardware identity; cell beside it};
+  \node[lg] (mp)   at (8.2,-2.6){\textbf{Workbook (xlsx)}\\CSV tree (folder per sheet; tree: planned); appendix generators};
+  \node[k]  (ref)  at (4.1,-2.6){\textbf{Structure of the store}\\Figure~\ref{fig:lager-bestaende}: tree, stocks 1--4, key schema};
+  \node[pl] (vp)   at (0,-2.6){full store build-out: stock 3/4, hybrid storage path, commit skip, rebuild flag, \texttt{<publish>}};
+  \draw[->] (bau)--(b1);
+  \draw[->] (b1)--(skip);
+  \draw[->] (skip)--node[above,font=\tiny]{no: measure}(mess);
+  \draw[->] (mess)--(b2);
+  \draw[->] (b2)--(mp);
+  \draw[->] (skip)--node[right,font=\tiny,align=left]{yes: skip,\\measured values exist}(mp);
+  \draw[->] (skip.north) -- ++(0,0.75) -| node[pos=0.25,above,font=\tiny]{fingerprint unknown: build} (bau.north);
+  \draw[->,dashed] (vp)--(ref);
+\end{tikzpicture}
+\caption{The store cycle in measurement operation: The CEB builds in batches of 4096 binaries each;
+every binary lies under its SHA-512 fingerprint in stock~1; the recognition criterion skips what is
+inventoried with a passed test attestation and otherwise lets build or measure; the measurement runs
+at the probe dock with one measurement thread, while the CEB produces the parallel requests; the
+measured values lie under fingerprint and hardware identity in stock~2 and flow into the workbook
+(the CSV tree form with one folder per sheet is planned; implemented is a flat file). The structure
+of the store (tree, four stocks, key schema) is shown by Figure~\ref{fig:lager-bestaende}; dashed the
+full store build-out.}\label{fig:eval-lager-kreislauf}
+\end{figure}
+\end{nurkurz}
 
+\begin{nurlang}
 Measurement remains strictly separated from building: measurement runs never start automatically with
 an error-free build but are triggered explicitly --- an error-free build proves buildability, not a
 measurement result. The run methodology knows four work modes --- \texttt{build}, \texttt{measure},
@@ -463,15 +746,29 @@ consistency gate of the measurement; build as well as measurement runs are proce
 milestone batches of 4096 binaries each at a stretch --- the grain is a compile-time constant whose
 deviation is a compile error ---, with an evenly distributed allocation of the jointly buildable
 binaries across the machines and inventoried resumption after interruption.
+\end{nurlang}
+\begin{nurkurz}
+Measurement remains strictly separated from building: measurement runs are triggered explicitly. The run
+methodology knows four work modes --- \texttt{build}, \texttt{measure}, \texttt{compare}, and
+\texttt{release} (Section~\ref{sec:impl-pipeline}) ---; the measure mode measures with exactly \emph{one}
+measurement thread, the threading of the family itself is left to the tier binary, and \texttt{--debug} is
+a switch of the planner shell, not a work mode. A binary found in the store is skipped only with an
+inventoried test attestation (Figure~\ref{fig:eval-lager-kreislauf}), every measurement is preceded by the
+conformity check at the probe dock (Section~\ref{sec:impl-contracts}), and build as well as measurement runs
+are processed per machine in milestone batches of 4096 binaries each with inventoried resumption after
+interruption.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{The Heuristic Counter-Proof as Fourth Dimension}\label{sec:eval-counterproof}
 Beyond the three hypotheses, the analysis receives a fourth, self-contained \emph{evaluation
 dimension}: the heuristic counter-proof. Its concept is developed in Chapter~\ref{ch:measurement}
 (Sections~\ref{sec:heuristics-modes} and~\ref{sec:heuristics-curves}): The CacheEngineBuilder stage
 compiles the heuristically estimated recombination of the tier binaries into a hybrid tier binary ---
 the hybrid module emitter lies in the builder tree of the CEB ---, and the hybrid tier binary is a
-carrier stage of its own \emph{behind} the CEB, which docks at the probe dock and itself produces no
-code. The measurement-curve type system supplies the estimation basis
+carrier stage of its own that is optionally inserted between the CEB probe dock and the tier binary:
+it docks at the probe dock, carries dock slots for tier binaries, and itself produces no code. The
+measurement-curve type system supplies the estimation basis
 (Figure~\ref{fig:eval-messkurven}): per axis one curve over its parameters and per measurement level
 wallclock, macro, and micro, from these the break-even points and the estimated recombination; the
 measurement-error detection is formulated by Section~\ref{sec:heuristics-curves}. The assessment
@@ -504,7 +801,7 @@ curves and are not implemented.
   \node[font=\tiny,align=left,anchor=north west] at (0.15,3.15){one curve per axis;\\bands wallclock / macro / micro};
   \node[k]  (re) at (6.7,1.6){\textbf{Estimated recombination}\\break-even per axis and level; curves from the store};
   \node[k]  (em) at (9.7,1.6){\textbf{CEB}\\hybrid module emitter in the builder tree: compiles};
-  \node[hy] (hb) at (12.7,1.6){\textbf{Hybrid tier binary}\\stage behind the CEB; docks at the probe dock; produces no code};
+  \node[hy,font=\tiny] (hb) at (12.7,1.6){\textbf{Hybrid tier binary}\\optional mux insertion between CEB probe dock and tier binaries; docks at the probe dock; produces no code};
   \node[k]  (wc) at (12.7,-0.6){\textbf{Wall-clock comparison}\\primarily against paper reconstructions, secondarily against the best single binary};
   \node[pl] (ro) at (9.7,-0.6){router and eviction: not implemented (presuppose measurement curves)};
   \draw[->,thick] (4.8,1.6)--(re);
@@ -521,13 +818,76 @@ curves and are not implemented.
 of the metric over the axis parameter, separated by measurement level (wallclock, macro, micro); the
 intersection of two variants is the break-even point from which the recombination is estimated.
 Middle and right: The CEB compiles the estimated recombination via the hybrid module emitter; the
-hybrid tier binary is the carrier stage behind the CEB, docks at the probe dock, and itself produces
-no code; the comparison is made on the wall clock, primarily against the paper reconstructions,
+hybrid tier binary is the mux stage optionally inserted between the CEB probe dock and the tier binary,
+docks at the probe dock, carries dock slots for tier binaries, and itself produces no code; the
+comparison is made on the wall clock, primarily against the paper reconstructions,
 secondarily against the best single binary. Bottom: the three build variants of the
 measurement-error test plan, kept apart via the gate fields of the fingerprint. Dashed: router and
 eviction (not implemented).}\label{fig:eval-messkurven}
 \end{figure}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{The Heuristic Counter-Proof as Fourth Dimension}\label{sec:eval-counterproof}
+Beyond the three hypotheses, the analysis receives a fourth, self-contained \emph{evaluation dimension}: the
+heuristic counter-proof, whose concept Chapter~\ref{ch:measurement} develops
+(Sections~\ref{sec:heuristics-modes} and~\ref{sec:heuristics-curves}). The CacheEngineBuilder stage compiles
+the heuristically estimated recombination of the tier binaries into a hybrid tier binary, a carrier stage of
+its own that is optionally inserted between the CEB probe dock and the tier binary (mux at the probe dock
+with dock slots for tier binaries); the measurement-curve type system supplies the estimation basis
+(Figure~\ref{fig:eval-messkurven}): per axis one curve over its parameters and per measurement level, from
+these the break-even points and the estimated recombination. The assessment question reads: \enquote{Is the
+heuristically estimated recombination of the tier binaries faster than the existing paper algorithms?}
+Unlike H1--H3, the counter-proof tests not the design space but the apparatus itself, and therefore stands
+\emph{beside} the ranking of the sensitivity analysis (Section~\ref{sec:eval-sensitivity}).
+Implementation status: Classification layer, dock layer, XML parser, and binary proxy of the hybrid stage
+are implemented (six of the nine envisaged files, Section~\ref{sec:impl-hybrid-lager}); router and eviction
+presuppose measurement curves and are not implemented.
+\begin{figure}[htbp]\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,
+  k/.style={draw,rounded corners,fill=blue!7,text width=2.55cm,minimum height=1.1cm,align=center,inner sep=2pt,font=\scriptsize},
+  hy/.style={k,fill=orange!14},
+  pl/.style={k,fill=orange!10,dashed,font=\tiny,minimum height=0.8cm},
+  bv/.style={draw,rounded corners,fill=green!9,text width=4.5cm,minimum height=1.0cm,align=center,inner sep=2pt,font=\tiny}]
+  \draw[->] (0,0) -- (4.8,0) node[below left,font=\scriptsize]{axis parameter (e.g.\ working set)};
+  \draw[->] (0,0) -- (0,3.2) node[above,font=\scriptsize]{metric per level};
+  \draw[blue!70!black,thick] plot[smooth] coordinates {(0.3,0.5) (1.3,0.8) (2.3,1.5) (3.3,2.3) (4.3,2.9)};
+  \draw[green!50!black,thick] plot[smooth] coordinates {(0.3,1.6) (1.3,1.5) (2.3,1.5) (3.3,1.6) (4.3,1.8)};
+  \draw[blue!70!black,thin,dashed] plot[smooth] coordinates {(0.3,0.7) (1.3,1.0) (2.3,1.7) (3.3,2.5) (4.3,3.1)};
+  \draw[green!50!black,thin,dashed] plot[smooth] coordinates {(0.3,1.8) (1.3,1.7) (2.3,1.7) (3.3,1.8) (4.3,2.0)};
+  \fill[red!70!black] (2.3,1.5) circle (2pt);
+  \node[font=\tiny,text=red!70!black,anchor=south east] at (2.25,1.6){break-even};
+  \node[font=\tiny,text=blue!70!black,anchor=west] at (3.35,2.9){variant A};
+  \node[font=\tiny,text=green!50!black,anchor=west] at (3.55,1.35){variant B};
+  \node[font=\tiny,align=left,anchor=north west] at (0.15,3.15){one curve per axis;\\bands wallclock / macro / micro};
+  \node[k]  (re) at (6.7,1.6){\textbf{Estimated recombination}\\break-even per axis and level; curves from the store};
+  \node[k]  (em) at (9.7,1.6){\textbf{CEB}\\hybrid module emitter in the builder tree: compiles};
+  \node[hy,font=\tiny] (hb) at (12.7,1.6){\textbf{Hybrid tier binary}\\optional mux insertion between CEB probe dock and tier binaries; docks at the probe dock; produces no code};
+  \node[k]  (wc) at (12.7,-0.6){\textbf{Wall-clock comparison}\\primarily against paper reconstructions, secondarily against the best single binary};
+  \node[pl] (ro) at (9.7,-0.6){router and eviction: not implemented (presuppose measurement curves)};
+  \draw[->,thick] (4.8,1.6)--(re);
+  \draw[->,thick] (re)--(em);
+  \draw[->,thick] (em)--(hb);
+  \draw[->,thick] (hb)--(wc);
+  \draw[->,dashed] (ro)--(hb);
+  \node[bv] (v1) at (2.35,-2.6){\textbf{Variant 1}: observers in all tier binaries and in the hybrid tier\\gate fields: tier \texttt{tm}/\texttt{tmi} on, hybrid \texttt{hm}/\texttt{hmi} on};
+  \node[bv] (v2) at (7.35,-2.6){\textbf{Variant 2}: observers only in the hybrid tier\\gate fields: tier off, hybrid on};
+  \node[bv] (v3) at (12.35,-2.6){\textbf{Variant 3}: observers in no compiled artefact, wall clock only\\gate fields: all off};
+  \node[font=\tiny,align=center] at (7.35,-3.55){uncertainty band from the differences 1$\to$2 (measurement organs of the animals) and 2$\to$3 (measurement commands of the hybrid tier); validity criterion $t_1 \ge t_2 \ge t_3$};
+\end{tikzpicture}
+\caption{The measurement-curve type system in the heuristic counter-proof. Left: per axis one curve
+of the metric over the axis parameter, separated by measurement level (wallclock, macro, micro); the
+intersection of two variants is the break-even point from which the recombination is estimated.
+Middle and right: The CEB compiles the estimated recombination via the hybrid module emitter; the
+hybrid tier binary is the mux stage optionally inserted between the CEB probe dock and the tier binary,
+docks at the probe dock, carries dock slots for tier binaries, and itself produces no code; the
+comparison is made on the wall clock, primarily against the paper reconstructions,
+secondarily against the best single binary. Bottom: the three build variants of the
+measurement-error test plan, kept apart via the gate fields of the fingerprint. Dashed: router and
+eviction (not implemented).}\label{fig:eval-messkurven}
+\end{figure}
+\end{nurkurz}
 
+\begin{nurlang}
 The test plan for this is fixed in two stages; the corresponding measurement runs are not available
 (Section~\ref{sec:eval-available}). The first stage quantifies the measurement error that the
 measurement instances themselves introduce, for the heuristic's estimation basis is \emph{observed}
@@ -555,7 +915,26 @@ status: This plausibility check is not implemented in the code; it connects to t
 interpolation as the fifth evaluation component of the compare stage
 (Section~\ref{sec:heuristics-curves}), whose constellations the planner computes dynamically from the
 gate assignment, never as a fixed number.
+\end{nurlang}
+\begin{nurkurz}
+The test plan for this is fixed in two stages; the corresponding measurement runs are not available
+(Section~\ref{sec:eval-available}). The first stage quantifies the measurement error that the measurement
+instances themselves introduce: The same experiment is set up in three build variants --- observers in
+\emph{all} tier binaries and in the hybrid tier, \emph{only} in the heuristic tier binary, in \emph{none} of
+the compiled artefacts ---, kept apart via the measurement-gate member of the fingerprint
+(Section~\ref{sec:stamp-model}) with the fields \texttt{tm}/\texttt{tmi} (tier level) and
+\texttt{hm}/\texttt{hmi} (hybrid level), off state \texttt{mg=m0;s0;st0;x0;tw0;tm0;tmi0;hm0;hmi0}. The
+differences between the variants quantify the observer overhead by origin and yield, per workload and
+platform, an \emph{uncertainty band} from repetitions with a confidence interval~\cite{georges2007rigorous},
+below which two configurations count as indistinguishable; the validity criterion is $t_1 \ge t_2 \ge t_3$
+for the wall-clock times of the three variants (with measurement sensors it must be slower than without), a
+violation is a measurement defect of the cell, not a result. Implementation status: The check is not
+implemented; it connects to the measurement-error interpolation as the fifth evaluation component of the
+compare stage (Section~\ref{sec:heuristics-curves}), whose constellations the planner computes dynamically,
+never as a fixed number.
+\end{nurkurz}
 
+\begin{nurlang}
 The second stage is the complementary \emph{fourth step} of the final heuristic assembly: The tier
 binaries subordinate to the heuristic tier --- not the finally optimized main binary --- are rebuilt
 without micro- and macro-benchmarks and without observers, so that no measurement artefact remains in
@@ -566,7 +945,16 @@ papers with one profile XML each, 30 full profiles and 3 abstract ones
 assessment question literally ---, secondarily against all known tier-binary permutations, in
 particular the best single binary; this second comparison classifies whether a potential lead is
 attributable to the heuristic as a whole or merely to a single superior permutation.
+\end{nurlang}
+\begin{nurkurz}
+The second stage is the complementary \emph{fourth step} of the heuristic assembly: The tier binaries
+subordinate to the heuristic tier are rebuilt without micro- and macro-benchmarks and without observers and
+compared purely on the wall clock --- primarily against the 33 reconstructed paper algorithms
+(Section~\ref{sec:sota-instances}), secondarily against all known tier-binary permutations, in particular
+the best single binary.
+\end{nurkurz}
 
+\begin{nurlang}
 From this follows the decision rule: The counter-proof counts as \emph{delivered} per workload class
 if the observer-free rebuilt recombination beats the fastest paper reconstruction on the wall clock
 and the margin exceeds the uncertainty band of the build variants; it counts as \emph{missed} if a
@@ -576,6 +964,15 @@ real behaviour. The uncertainty band is to be distinguished from a measurement d
 violate the validity criterion of the first stage do not enter the decision. The measurement data of
 this dimension are not available; they are reported with series A--C in
 Section~\ref{sec:eval-available}.
+\end{nurlang}
+\begin{nurkurz}
+From this follows the decision rule: The counter-proof counts as \emph{delivered} per workload class if the
+observer-free rebuilt recombination beats the fastest paper reconstruction on the wall clock and the margin
+exceeds the uncertainty band, and as \emph{missed} if a paper algorithm or the best single binary comes out
+ahead --- this, too, would be a result, because it would quantify the estimation error of the curve
+prognosis. Cells that violate the validity criterion of the first stage do not enter the decision; the
+measurement data of this dimension are not available (Section~\ref{sec:eval-available}).
+\end{nurkurz}
 
 \section{Results and Analysis}\label{sec:eval-results}
 \subsection{Identity of the Results: Stamp, Store, Workbook}\label{sec:eval-identity}
@@ -595,6 +992,7 @@ Values of the measurement never appear in the stamp; what is stamped is the comp
 Implementation status: The appendix tables carry \texttt{permutation\_id} and
 \texttt{fingerprint} per row; the full stamp identity per diagram is planned but not implemented.
 
+\begin{nurlang}
 \subsection{Data Flow from the Measurement to the Manuscript}\label{sec:eval-dataflow}
 Per series run the measurement stage writes the one official \texttt{measurements.csv} as a
 projection of the workbook (implemented is a flat file; planned is the CSV tree with one folder per
@@ -631,7 +1029,22 @@ F15-LEGACY & comma & 13 (12 + 1) & result aggregator over \texttt{ExecutionResul
 (legacy name), not cycles. F15-LEGACY comprises twelve columns and, appended at the end,
 \texttt{degeneriert} (12~+~1).}\label{tab:eval-schema-ebenen}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Data Flow from the Measurement to the Manuscript}\label{sec:eval-dataflow}
+Per series run the measurement stage writes the one official \texttt{measurements.csv} as a projection of
+the workbook (implemented is a flat file, planned the CSV tree with one folder per sheet); the
+\texttt{<output>} paths of the user XML the run entry resolves as run provenance. Three column lists are to
+be distinguished: the WIDE schema with 189 columns (separator semicolon; the schema authority of the
+measurement output, anchored as a fixed schema), the pipeline view with 16 plus 16 additional columns, that
+is 32, for the LaTeX stages (separator comma; per permutation for instance \texttt{permutation\_id},
+\texttt{fingerprint}, and \texttt{total\_cycles}), and the thirteen-column legacy form of the result
+aggregator. \texttt{total\_cycles} carries under its legacy name the representative p50 latency in
+nanoseconds, not cycles; the renaming or an actual cycle channel is a documented design decision. Values not
+collected stand as n/a, never as zero.
+\end{nurkurz}
 
+\begin{nurlang}
 The workbook (xlsx) always arises --- in memory, unconditionally, even if a profile persists CSV
 only; it is the output and the standard, and the CSV form is not a single child document but an
 ordered tree of CSV files --- one overall folder per workbook, beneath it one folder per sheet,
@@ -654,7 +1067,22 @@ observer detail table) with A4 cap and size check (a 1$\times$1, 1$\times$n, or 
 produces no image); the appendix generator writes per language into a \texttt{tabellen} directory,
 from which the manuscript includes the files --- each language version includes 38 generated files of
 the appendix.
+\end{nurlang}
+\begin{nurkurz}
+The workbook (xlsx) always arises; it is the output and the standard, and the CSV form is not a single child
+document but an ordered tree of CSV files --- one overall folder per workbook, beneath it one folder per
+sheet, therein the CSV files of the individual sub-axis sweeps ---, which is always generated from the
+workbook and is its mirrored counterpart. What goes to disk is decided by \texttt{<writeback\_methods>}
+alone --- xlsx, csv, or both, with xlsx as default (Section~\ref{sec:impl-system-axes}); the xlsx writer
+writes via libxlsxwriter. Implementation status: The seam writes the CSV projection as one flat file, the
+tree form is planned but not implemented. The analysis enriches the projection via binary-to-CSV with
+profile ID, paper reference, and axis assignment, renders CSV-to-LaTeX fact sheets per permutation ID and,
+via the diagram generator, bars, scatter plots, heatmaps, and the families of the measurement appendix
+(ECDF, sweep curves, ratio matrices, Pareto scatter, and more); the appendix generator writes per language
+into a \texttt{tabellen} directory, from which each language version includes 38 generated files.
+\end{nurkurz}
 
+\begin{nurlang}
 The workbook of a run is one file with one sheet per selected sub-axis permutation and an info sheet
 (system information of the measuring machine, main axes used of all three realms, constant meta
 axes); the sheets are numbered in the binding order measurement $\to$ system $\to$ organ
@@ -670,7 +1098,21 @@ sheet per sub-axis permutation plus info sheet (Section~\ref{sec:limitations}), 
 folder per sheet), the check at the xlsx produced per binary (the persistence check reads the CSV
 output), the export element with target filter and per-binary xlsx, the chart functions, the LaTeX
 factory, the warnings section of the info sheet, and the catch-up of the fixed WIDE schema.
+\end{nurlang}
+\begin{nurkurz}
+The workbook of a run is one file with one sheet per selected sub-axis permutation and an info sheet; the
+sheets are numbered in the binding order measurement $\to$ system $\to$ organ (\texttt{S001} to
+\texttt{Snnn}), the columns stem exclusively from the WIDE header, and columns constant within a run move
+into the metadata of the info sheet. The contract tests of the persistence check at the CSV output
+(Section~\ref{sec:impl-contracts}); besides xlsx and csv, a third factory LaTeX is planned. Implementation
+status: Writer and projection are implemented (one data sheet under a constant sheet key, flat projection);
+not implemented are the fan-out into one sheet per sub-axis permutation plus info sheet
+(Section~\ref{sec:limitations}), the CSV tree, the check at the xlsx, the export element, the chart
+functions, the LaTeX factory, the warnings section of the info sheet, and the catch-up of the fixed WIDE
+schema.
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Measurement Series and Merge Strategies}\label{sec:eval-series}
 Three measurement series are evaluated (Table~\ref{tab:stage-series}): series~A --- PRT-ART against
 the state of the art with the evaluation hypotheses H1--H3 (Section~\ref{sec:eval-hypotheses});
@@ -708,6 +1150,24 @@ empty / \texttt{replace} & \texttt{Verbund2\_Replace} & stage~2 (replace) & the 
 stage names are aliases, the full join is the alias of \texttt{union}. The series column follows the
 assignment from Table~\ref{tab:stage-series}.}\label{tab:eval-verbund-modi}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Measurement Series and Merge Strategies}\label{sec:eval-series}
+Three measurement series are evaluated (Table~\ref{tab:stage-series}): series~A --- PRT-ART against the
+state of the art with the evaluation hypotheses H1--H3 (Section~\ref{sec:eval-hypotheses}); series~B --- the
+systematic variation of the cache-engine permutations from the union of stage~3; series~C ---
+merge/regression of old against new. Orthogonal to this, the user XML declares per axis the \texttt{merge}
+mode of the candidate under test: \texttt{replace} (default; the candidate axis replaces the cache-engine
+axis with fallback, \texttt{Verbund2\_Replace}), \texttt{merge} (cache engine and candidate under test
+hybrid, \texttt{Verbund2\_Hybrid}), and \texttt{union} (union of all axis variants without discarding,
+\texttt{Verbund3\_Union}); stage~1 is \texttt{Verbund1\_CeOnly}, the absence of any candidate directive,
+\enquote{stage~1 to~3} remains the alias of the merge-strategy names and the full join the alias of
+\texttt{union}. Series~A works with \texttt{replace} and \texttt{merge}, series~B with \texttt{union}. The
+states remain distinguishable at the binary via the hierarchically extended algorithm names of the organ
+line (Section~\ref{sec:eval-identity}); a stamp line of their own they do not possess. Implementation
+status: Materialized are \texttt{Verbund1\_CeOnly}, \texttt{Verbund2\_Replace}, and
+\texttt{Verbund3\_Union}, while \texttt{Verbund2\_Hybrid} remains without a production caller.
+\end{nurkurz}
 
 \subsection{Available Measurements}\label{sec:eval-available}
 Methodology and evaluation pipeline are in place and verified on real data: A smoke measurement
@@ -744,6 +1204,7 @@ configurations per workload class; where ratios are aggregated over workloads or
 done by geometric, never arithmetic, mean~\cite{fleming1986statistics}. The heuristic counter-proof
 stands beside this ranking (Section~\ref{sec:eval-counterproof}).
 
+\begin{nurlang}
 \subsection{Validity and Limits}\label{sec:eval-validity}
 The validity of the evaluation is checked according to the four classes of empirical software
 research\footnote{Threats to validity: the classification, customary in empirical software research,
@@ -789,7 +1250,50 @@ external, conclusion): per threat the countermeasure in the apparatus and its im
 --- implemented, declared and not measured (n/a), or not implemented. No row names a number without
 a run.}\label{tab:eval-gueltigkeit}
 \end{table}
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Validity and Limits}\label{sec:eval-validity}
+The validity of the evaluation is checked according to the four classes of threats to a conclusion, the
+threats to validity of empirical software research (construct, internal, external, and conclusion
+validity~\cite{wohlin2012experimentation}; Table~\ref{tab:eval-gueltigkeit};
+Section~\ref{sec:measurement-system} carries the same classes as quality criteria). Construct: The PMC
+semantics are disclosed per model (Section~\ref{sec:eval-counters}), and hardware counters count as
+trustworthy only when cross-checked~\cite{weaver2008counters}. Internal: The observer overhead is bounded
+via the uncertainty band of the three build variants (Section~\ref{sec:eval-counterproof}); layout and
+environment bias~\cite{mytkowicz2009wrongdata,curtsinger2013stabilizer} are countered by identical keys,
+identical build matrix, and repetitions, a layout randomization is missing; warm-up and repetitions follow
+Section~\ref{sec:fairness}~\cite{kalibera2013rigorous}. External: The measurement machines comprise two
+x86-64 microarchitectures and one Gracemont node; ZIH and HBM are declared, not measured
+(Section~\ref{sec:eval-platforms}), the Intel RAW assignment is missing. Conclusion: percentiles
+nearest-rank without interpolation, geometric aggregation, n/a instead of zero. The limitations of the
+measurement appendix (Table~\ref{tab:le:limitierung}, Section~\ref{sec:measurements:limitations}) and of the
+conclusion (Section~\ref{sec:limitations}) are the substantiated list of these limits; no number is named
+without a run, and the reporting rules for performance
+measurements~\cite{hoefler2015benchmarking,blackburn2016truth} apply to every number.
+\begin{table}[htbp]\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{4.9cm}>{\raggedright\arraybackslash}p{3.7cm}@{}}
+\toprule
+Class & Threat & Countermeasure in the apparatus & Implementation status \\
+\midrule
+Construct & counters do not measure what is meant (model semantics, prefetch shares) & RAW catalogue per model with cross-check; semantics disclosure per column; n/a without catalogue entry & implemented (Zen~5); Intel entry: not implemented \\
+Construct & time category misread as cycles & \texttt{total\_cycles} declared as p50 latency in nanoseconds & implemented; renaming: design decision \\
+Internal & observer overhead distorts the curves & three build variants, uncertainty band, validity criterion $t_1 \ge t_2 \ge t_3$ & gate fields implemented; check: not implemented \\
+Internal & layout/environment bias, change of the L3 complex & identical keys and build matrix; repetition dimension; pinning reported as planned & actuator implemented, attachment: not implemented; no layout randomization \\
+Internal & warm-up and cold-start effects & two-phase driver (save, warm up, roll back, measure) & implemented \\
+External & measurement machines do not cover the target platforms & registered signatures prod1, prod2, ODROID\@; ZIH declared as IS3 & ZIH and HBM\@: declared, not measured (n/a) \\
+External & one-sided vendor lane & completeness rule of the evaluation; partial measurement is reported & rule set; Intel lane: cross-check not performed \\
+Conclusion & percentiles synthetic instead of measured, means distorted & nearest rank without interpolation; geometric aggregation & implemented (evaluation tree); copies in the tools: declared gap \\
+Conclusion & zero instead of non-observation & field flags per counter, n/a end-to-end & implemented \\
+\bottomrule
+\end{tabular}
+\caption{Validity of the evaluation according to the four classes of threats (construct, internal,
+external, conclusion): per threat the countermeasure in the apparatus and its implementation status
+--- implemented, declared and not measured (n/a), or not implemented. No row names a number without
+a run.}\label{tab:eval-gueltigkeit}
+\end{table}
+\end{nurkurz}
 
+\begin{nurlang}
 \subsection{Summary of the Evaluation}\label{sec:eval-summary}
 The evaluation records per evaluation object. Design space: The hypotheses H1--H3 carry measured
 quantity and criterion, and the sensitivity analysis is fixed as a procedure over the three
@@ -808,3 +1312,19 @@ contributions~\cite{shaw2003writing} and for empirical assessments~\cite{blackbu
 contribution of this chapter is a validated experimental setup together with its automation, whose
 result figures will be available with the full measurement series. Chapter~\ref{ch:conclusion}
 answers the research questions on this basis.
+\end{nurlang}
+\begin{nurkurz}
+\subsection{Summary of the Evaluation}\label{sec:eval-summary}
+The evaluation records per evaluation object. Design space: The hypotheses H1--H3 carry measured quantity
+and criterion, the sensitivity analysis is fixed as a procedure over the three measurement levels; evidence
+is available for the smoke series (43 permutations, Appendix~\ref{app:measurements}), for the mandatory
+measurement series not (n/a). Apparatus: The counter-proof is fixed as a fourth dimension with test plan,
+validity criterion, and decision rule, its measurement data are not available; the measurement-error
+foundation (gate fields in the fingerprint, field flags per counter, n/a rule) is implemented. Automation:
+The chain from the experiment XML to the included appendix is demonstrated in a first end-to-end run. The
+results are discussed against the leitmotif of the thesis, the transition from heuristic to informed cache
+management; the cache-line effect from the synthesis curves is data-dependent and is not anticipated here.
+By the standards for research contributions~\cite{shaw2003writing} and empirical
+assessments~\cite{blackburn2016truth}, the contribution of this chapter is a validated experimental setup
+together with its automation; Chapter~\ref{ch:conclusion} answers the research questions on this basis.
+\end{nurkurz}

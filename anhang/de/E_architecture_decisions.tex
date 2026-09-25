@@ -203,8 +203,9 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   Experiment-Definition in XML und XSD, Mess-Treiber, Auswertungs-Werkzeugkette) und das
   Manuskript-Repository mit eigener CI, in das der Vorwärts-Kanal die Generator-Ausgabe als Tabellen-
   und Diagramm-Dateien per Commit einlegt ---; orthogonal zu dieser Aufteilung liegen die vier
-  Träger-Stufen Planer $\to$ CacheEngineBuilder $\to$ Tier-Binary $\to$ Hybrid-Tier-Binary, wobei
-  Stufe $N+1$ nur an Stufe $N$ hängt; Planer und CEB sind zwei Binaries --- der Planer
+  Träger-Stufen in Bau-Reihenfolge Planer $\to$ CacheEngineBuilder $\to$ Tier-Binary $\to$
+  Hybrid-Tier-Binary, wobei Stufe $N+1$ nur an Stufe $N$ hängt (Verarbeitungskette: CEB-Prüf-Dock $\to$
+  [optionaler Hybrid-Mux] $\to$ Tier-Binary); Planer und CEB sind zwei Binaries --- der Planer
   \texttt{comdare-experiment-planner} und der Mess-Treiber \texttt{comdare-messung-driver} ---, und
   die zwei Rollen erscheinen als Planer-Zeile und CEB-Vertragszeile im Selbst-Stempel des
   Mess-Treibers (\texttt{--version}) in einem Treiber-Binary; den
@@ -335,8 +336,8 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   \item[ADR-13 --- Vier Träger-Stufen und ein Stempel-Vertrag]\hfill\\
   \emph{Der Stempel als Identität, Lager-Schlüssel, Wiedererkennungs-Kriterium und Einordnung.}\hfill\\
   \textbf{Kontext:} Die Konfiguration wandert durch vier Träger-Stufen (Planer, CacheEngineBuilder,
-  Tier-Binary, Hybrid-Tier-Binary); jede Stufe braucht eine ABI-stabile, übersetzungszeitliche
-  Identität, in die kein Messwert eingeht.
+  Tier-Binary und die optional zwischen CEB-Prüf-Dock und Tier-Binary eingeschobene Hybrid-Tier-Binary);
+  jede Stufe braucht eine ABI-stabile, übersetzungszeitliche Identität, in die kein Messwert eingeht.
   \textbf{Entscheidung:} Ein einziger CRTP-Vertrag bindet alle vier Träger: sieben Stempel-Interfaces
   (Version, Mess-Zeile, System-Zeile, Organ-Zeile, Fingerprint, Gesamt-Stempel, Angeschlossene) mal
   vier Träger ergeben 28 dreiwertige Zulassungszellen (Tabelle~\ref{tab:stempel-matrix}); die Absenz
