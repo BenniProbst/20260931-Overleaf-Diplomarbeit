@@ -6,7 +6,7 @@
 The evaluation first discloses the methodology and, building on it, analyses the measurement series. Its
 guiding question is cache-line awareness: Which design decision changes the cache-near measured
 quantities --- L1, L2, and last-level misses, dTLB misses, branch misses, and the latency per
-genus-interface call --- on which platform, and to what degree? Three evaluation objects structure the
+family-interface call --- on which platform, and to what degree? Three evaluation objects structure the
 chapter: the \emph{design space} (the hypotheses H1--H3 and the axis sensitivity analysis), the
 \emph{apparatus} itself (the heuristic counter-proof and the measurement error that the measurement
 instances introduce), and the \emph{automation} of the evaluation from the experiment XML, for at its
@@ -36,9 +36,9 @@ three evaluation objects structure the subsections; cache-line awareness is thei
 
 The guiding axis of the evaluation is cache-line awareness: Compared are the cache-near measured
 quantities --- L1, L2, and last-level misses, dTLB misses, branch misses, energy, and the latency
-percentiles per genus-interface function; they are sixteen registered measurement categories with one
-regime ordinal per category --- per axis assignment, per family- and genus-interface call (the channel
-address always reads axis $\to$ genus $\to$ category), and per platform, that is, per registered machine
+percentiles per family-interface function; they are sixteen registered measurement categories with one
+regime ordinal per category --- per axis assignment, per concept- and family-interface call (the channel
+address always reads axis $\to$ family $\to$ category), and per platform, that is, per registered machine
 signature: prod1 (AMD Zen~5), prod2 (Intel Core i9-12900K, Alder Lake), and the ODROID board with Intel
 Gracemont cores. The question is not which algorithm is faster, but which axis moves the
 cache-line-related costs on which microarchitecture. The PMC categories (performance monitoring
@@ -63,7 +63,7 @@ repetitions, dispersion, platform, and values not collected (n/a) stand at every
 reporting rules for performance measurements~\cite{hoefler2015benchmarking,blackburn2016truth}. The guiding
 axis is cache-line awareness: compared are the cache-near measured quantities (L1, L2, and last-level misses,
 dTLB misses, branch misses, energy, latency percentiles; sixteen registered measurement categories with a
-regime ordinal) per axis assignment and genus-interface call (channel address axis $\to$ genus $\to$
+regime ordinal) per axis assignment and family-interface call (channel address axis $\to$ family $\to$
 category) and per machine signature: prod1 (AMD Zen~5), prod2 (Intel Alder Lake), and the ODROID board with
 Intel Gracemont cores. The PMC categories (performance monitoring counters, the hardware counters of the
 processors) are the primary measured quantities, the time categories the cross-check; because counters are
@@ -471,13 +471,13 @@ Time and observer measurement are united in the measurement checkpoint
 (\texttt{checkpoint\_measure}); their responsibilities are separated by the measurement-tooling main
 axis in exactly this order: \emph{wallclock} (w) --- the wall clock of the overall runs in the
 CacheEngineBuilder over the load frameworks, parameter-free; \emph{macro} (ma) --- the time of the
-genus-interface functions of the tier binary; \emph{micro} (mi) --- the time and the success
+family-interface functions of the tier binary; \emph{micro} (mi) --- the time and the success
 parameters per axis interface (Section~\ref{sec:measurement-system},
 Figure~\ref{fig:traeger-flaechen}); subsets of the three levels are allowed, every other order is
 syntactically wrong, and w/ma/mi is the registered alias. Three collectors take over the collection
 as building blocks of the measurement axis \texttt{collector} --- wall clock, observer snapshot, and
 PMC ---, and the sixteen measurement categories are the sub-axis of the tooling axis, not its main
-fan-out. The analysis keeps the three levels apart: axis interface, family and genus interface, and
+fan-out. The analysis keeps the three levels apart: axis interface, concept and family interface, and
 the wall clock of the CacheEngineBuilder are never mixed (Section~\ref{sec:eval-sensitivity}); PMC
 measurements as a figure type of their own in the appendix generator are planned but not implemented.
 Implementation status: Registry and level canon are implemented; the order validation at the three
@@ -647,7 +647,7 @@ only what is missing there is re-measured: A binary found is skipped if its fing
 its passed test attestation is inventoried at the binary, otherwise it is built or measured
 (Figure~\ref{fig:eval-lager-kreislauf}). The CEB controls the parallelism by producing parallel
 requests to the tier binaries --- the execution threads arise in the CEB, in a worker pool with
-deterministic result order ---, while the threading of the family stays in the tier binary.
+deterministic result order ---, while the threading of the concept stays in the tier binary.
 Implementation status: Stock~1 and~2 as well as the key schema of all four stocks are implemented;
 stock~3 and~4 (synthesized curves as files, solutions per user XML), the planner sheet function, the
 full placement of the CEB, the hybrid storage path, the commit skip, the rebuild flag, and the XML
@@ -737,11 +737,11 @@ measurement result. The run methodology knows four work modes --- \texttt{build}
 measures with exactly \emph{one} measurement thread, a parallel measurement execution is armed via no
 registry row and reachable only via the state injection of the run entry, and \texttt{--debug} is a
 switch of the planner shell for the wiring check, which stays locked for users, not a work mode; the
-threading of the family itself is thereby left to the tier binary rather than overridden by the
+threading of the concept itself is thereby left to the tier binary rather than overridden by the
 harness. A binary found in the store is skipped only if its passed test attestation is inventoried at
 the binary (Figure~\ref{fig:eval-lager-kreislauf}), and every measurement is preceded by the
-conformity check at the probe dock (Section~\ref{sec:impl-contracts}): the conformity gate of the
-genus contract before the post-compile attestations of the measurement interfaces, beside it the
+conformance check at the probe dock (Section~\ref{sec:impl-contracts}): the conformance gate of the
+family contract before the post-compile attestations of the measurement interfaces, beside it the
 consistency gate of the measurement; build as well as measurement runs are processed per machine in
 milestone batches of 4096 binaries each at a stretch --- the grain is a compile-time constant whose
 deviation is a compile error ---, with an evenly distributed allocation of the jointly buildable
@@ -751,10 +751,10 @@ binaries across the machines and inventoried resumption after interruption.
 Measurement remains strictly separated from building: measurement runs are triggered explicitly. The run
 methodology knows four work modes --- \texttt{build}, \texttt{measure}, \texttt{compare}, and
 \texttt{release} (Section~\ref{sec:impl-pipeline}) ---; the measure mode measures with exactly \emph{one}
-measurement thread, the threading of the family itself is left to the tier binary, and \texttt{--debug} is
+measurement thread, the threading of the concept itself is left to the tier binary, and \texttt{--debug} is
 a switch of the planner shell, not a work mode. A binary found in the store is skipped only with an
 inventoried test attestation (Figure~\ref{fig:eval-lager-kreislauf}), every measurement is preceded by the
-conformity check at the probe dock (Section~\ref{sec:impl-contracts}), and build as well as measurement runs
+conformance check at the probe dock (Section~\ref{sec:impl-contracts}), and build as well as measurement runs
 are processed per machine in milestone batches of 4096 binaries each with inventoried resumption after
 interruption.
 \end{nurkurz}
@@ -1193,7 +1193,7 @@ isolates each constituent as an interchangeable axis over an otherwise constant 
 contribution of each design decision becomes attributable under all-else-equal conditions. The
 ranking runs over the three measurement levels in canonical order: \emph{wallclock} --- the overall
 benchmarking of the YCSB load profiles in the CacheEngineBuilder ---, \emph{macro} --- the
-genus-interface operations of the tier binary --- and \emph{micro} --- the axis interface, the set of
+family-interface operations of the tier binary --- and \emph{micro} --- the axis interface, the set of
 functions that all algorithms of an axis must provide (Section~\ref{sec:mess-chain}); from the rows
 per permutation the analysis quantifies at the micro level which axis contributes most to the
 performance variance, the wallclock level checks the internal micro measurement from outside, and

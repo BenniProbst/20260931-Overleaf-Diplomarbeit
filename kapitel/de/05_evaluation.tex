@@ -4,7 +4,7 @@
 Die Evaluation legt zuerst die Methodik offen und wertet darauf aufbauend die Messreihen aus. Ihre
 Leitfrage ist die Cacheline-Awareness: Welche Entwurfsentscheidung verändert die cache-nahen
 Messgrößen --- L1-, L2- und Last-Level-Misses, dTLB-Misses, Branch-Misses und die Latenz je
-Genus-Interface-Aufruf --- auf welcher Plattform in welchem Maß? Drei Evaluationsobjekte ordnen das
+Gattungs-Interface-Aufruf --- auf welcher Plattform in welchem Maß? Drei Evaluationsobjekte ordnen das
 Kapitel: der \emph{Entwurfsraum} (die Hypothesen H1--H3 und die Achsen-Sensitivitätsanalyse), der
 \emph{Apparat} selbst (der heuristische Gegenbeweis und der Messfehler, den die Mess-Instanzen
 eintragen) und die \emph{Automatisierung} der Evaluation aus der Experiment-XML, denn die Arbeit
@@ -35,9 +35,9 @@ die Unterabschnitte; die Cacheline-Awareness ist ihre gemeinsame Leitachse.
 
 Die Leitachse der Evaluation ist die Cacheline-Awareness: Verglichen werden die cache-nahen
 Messgrößen --- L1-, L2- und Last-Level-Misses, dTLB-Misses, Branch-Misses, Energie sowie die
-Latenz-Perzentile je Genus-Interface-Funktion; sie sind sechzehn registrierte Mess-Kategorien mit einem
-Regime-Ordinal je Kategorie --- je Achsen-Belegung, je Gattungs- und Genus-Interface-Aufruf (die
-Kanal-Adresse lautet stets Achse $\to$ Genus $\to$ Kategorie) und je Plattform, also je registrierter
+Latenz-Perzentile je Gattungs-Interface-Funktion; sie sind sechzehn registrierte Mess-Kategorien mit einem
+Regime-Ordinal je Kategorie --- je Achsen-Belegung, je Konzept- und Gattungs-Interface-Aufruf (die
+Kanal-Adresse lautet stets Achse $\to$ Gattung $\to$ Kategorie) und je Plattform, also je registrierter
 Maschinen-Signatur: prod1 (AMD Zen~5), prod2 (Intel Core i9-12900K, Alder Lake) und das ODROID-Board
 mit Intel-Gracemont-Kernen. Die Frage lautet nicht, welcher Algorithmus schneller ist, sondern welche
 Achse die cacheline-bezogenen Kosten auf welcher Mikroarchitektur bewegt. Die PMC-Kategorien
@@ -61,8 +61,8 @@ und Bezugsgröße, Wiederholungen, Streuung, Plattform und nicht erhobene Werte 
 Berichts-Regeln für Leistungsmessungen~\cite{hoefler2015benchmarking,blackburn2016truth} an jedem Ergebnis.
 Leitachse ist die Cacheline-Awareness: Verglichen werden die cache-nahen Messgrößen (L1-, L2- und
 Last-Level-Misses, dTLB-Misses, Branch-Misses, Energie, Latenz-Perzentile; sechzehn registrierte
-Mess-Kategorien mit Regime-Ordinal) je Achsen-Belegung und Genus-Interface-Aufruf (Kanal-Adresse Achse
-$\to$ Genus $\to$ Kategorie) und je Maschinen-Signatur: prod1 (AMD Zen~5), prod2 (Intel Alder Lake) und
+Mess-Kategorien mit Regime-Ordinal) je Achsen-Belegung und Gattungs-Interface-Aufruf (Kanal-Adresse Achse
+$\to$ Gattung $\to$ Kategorie) und je Maschinen-Signatur: prod1 (AMD Zen~5), prod2 (Intel Alder Lake) und
 das ODROID-Board mit Intel-Gracemont-Kernen. Die PMC-Kategorien (Performance Monitoring Counter, die
 Hardware-Zähler der Prozessoren) sind die primären Messgrößen, die Zeit-Kategorien die Gegenprobe; weil
 Zähler nur gegengeprüft vertrauenswürdig sind~\cite{weaver2008counters}, legt
@@ -480,14 +480,14 @@ erhoben wird.}\label{tab:eval-pmc-zaehler}
 Zeit- und Beobachter-Messung sind im Mess-Checkpoint (\texttt{checkpoint\_measure}) vereint; ihre
 Verantwortlichkeiten trennt die Mess-Tooling-Haupt-Achse in genau dieser Reihenfolge: \emph{wallclock}
 (w) --- die Wall-Clock der Gesamtläufe im CacheEngineBuilder über die Last-Rahmenwerke,
-parameter-leer; \emph{macro} (ma) --- die Zeit der Genus-Interface-Funktionen der Tier-Binary;
+parameter-leer; \emph{macro} (ma) --- die Zeit der Gattungs-Interface-Funktionen der Tier-Binary;
 \emph{micro} (mi) --- die Zeit und die Erfolgs-Parameter je Achsen-Interface
 (Abschnitt~\ref{sec:measurement-system}, Abbildung~\ref{fig:traeger-flaechen}); Teilmengen der drei
 Ebenen sind erlaubt, jede andere Reihenfolge ist syntaktisch falsch, und w/ma/mi ist der registrierte
 Alias. Drei Kollektoren übernehmen die Erhebung als Bausteine der Mess-Achse \texttt{collector} ---
 Wall-Clock, Beobachter-Schnappschuss und PMC ---, und die sechzehn Mess-Kategorien sind die
 Unter-Achse der Tooling-Achse, nicht ihre Haupt-Auffächerung. Die Auswertung hält die drei Ebenen
-getrennt: Achsen-Interface, Gattungs- und Genus-Interface und die Wall-Clock des CacheEngineBuilders
+getrennt: Achsen-Interface, Konzept- und Gattungs-Interface und die Wall-Clock des CacheEngineBuilders
 werden nie gemischt (Abschnitt~\ref{sec:eval-sensitivity}); PMC-Messungen als eigener Abbildungstyp des
 Anhang-Generators sind vorgesehen, aber nicht implementiert. Umsetzungsstand: Registry und Ebenen-Kanon sind implementiert;
 die Ordnungs-Validierung an den drei Serialisierungs-Stellen und der Kollektor als eigenständiges
@@ -767,7 +767,7 @@ Threading der Gattung selbst bleibt dabei der Tier-Binary überlassen, statt vom
 zu werden. Ein im Lager vorgefundenes Binary wird nur dann übersprungen, wenn sein bestandenes Prüf-Testat
 am Binary inventarisiert ist (Abbildung~\ref{fig:eval-lager-kreislauf}), und vor jeder Messung steht
 die Konformitätsprüfung am Prüf-Dock (Abschnitt~\ref{sec:impl-contracts}): das Konformitäts-Gate des
-Genus-Vertrags vor den Post-Compile-Testaten der Mess-Interfaces, daneben das Konsistenz-Gate der
+Gattungs-Vertrags vor den Post-Compile-Testaten der Mess-Interfaces, daneben das Konsistenz-Gate der
 Messung; Bau- wie Mess-Läufe werden je Maschine in Meilenstein-Batches von je 4096 Binaries am Stück
 abgearbeitet --- das Korn ist eine Übersetzungszeit-Konstante, deren Abweichung ein Übersetzungsfehler
 ist ---, mit gleichverteilter Zuteilung der gemeinsam baubaren Binaries über die Maschinen und
@@ -1232,7 +1232,7 @@ indem das Achsen-Framework jeden Bestandteil als austauschbare Achse über einer
 Struktur isoliert und der Beitrag jeder Entwurfsentscheidung unter sonst gleichen Bedingungen
 zurechenbar wird. Die Rangbildung läuft über die drei Mess-Ebenen in Kanon-Reihenfolge:
 \emph{wallclock} --- das Gesamt-Benchmarking der YCSB-Lastprofile im CacheEngineBuilder ---,
-\emph{macro} --- die Genus-Interface-Operationen der Tier-Binary --- und \emph{micro} --- das
+\emph{macro} --- die Gattungs-Interface-Operationen der Tier-Binary --- und \emph{micro} --- das
 Achsen-Interface, die Funktionsmenge, die alle Algorithmen einer Achse liefern müssen
 (Abschnitt~\ref{sec:mess-chain}); anhand der Zeilen je Permutation quantifiziert die Analyse auf der
 micro-Ebene, welche Achse am meisten zur Performance-Varianz beiträgt, die wallclock-Ebene prüft die

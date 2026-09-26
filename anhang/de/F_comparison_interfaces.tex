@@ -18,7 +18,7 @@ Parameterzahl an die Hülle: Ein Template-Parameter fordert alle Funktionsinterf
 \texttt{std::map<K,\,std::tuple<\ldots>>} (Abschnitt~\ref{sec:impl-architecture}). Die Cache-Engine
 leitet aus derselben Regel die Typen ab --- bei einem Parameter wird der Schlüssel implizit als
 monoton gezählter 64-Bit-Wert vergeben, bei $N>2$ wird der Wert zum Tupel ---; ihre beiden
-Vertrags-Hüllen sind als getrennte Gattungs-Adapter implementiert: die Map-Gattung über den funktionalen
+Vertrags-Hüllen sind als getrennte Gattungs-Adapter implementiert: das Map-Konzept über den funktionalen
 Antrieb der Modulgrenze mit den fünf Operationen \texttt{tier\_insert}, \texttt{tier\_lookup},
 \texttt{tier\_erase}, \texttt{tier\_clear} und \texttt{tier\_size}, die Sequenz-Gattung über den
 Sequenz-Antrieb mit \texttt{tier\_push\_back}, \texttt{tier\_at}, \texttt{tier\_size} und
@@ -52,21 +52,21 @@ Funktionen als solche.}) dokumentiert das Entwickler-Dokument
 der Cache-Engine; es verzeichnet je Standard-Funktion den Sprungpfad und den Status an der
 Modulgrenze.
 
-\emph{Konformitäts-Teilmenge.} Das Konformitäts-Gatter (Abschnitt~\ref{sec:measurement-system})
+\emph{Konformitäts-Teilmenge.} Das Konformitäts-Gate (Abschnitt~\ref{sec:measurement-system})
 prüft vor jeder Messung je Gattung eine Kern-Teilmenge der Hüllen-Operationen gegen ein Orakel der
-Standardbibliothek --- \texttt{std::map} für die Map-Gattung, \texttt{std::deque} für die
+Standardbibliothek --- \texttt{std::map} für das Map-Konzept, \texttt{std::deque} für die
 Sequenz-Gattung ---, damit nur Vergleichbares verglichen wird; die Teilmenge ist in beiden Tafeln
 mit $\dagger$ gekennzeichnet.
 
 \section{\texttt{std::map} (geordnet-assoziativ)}\label{asec:if-map}
 Tabelle~\ref{tab:if-map} listet die vollständige Schnittstelle von
 \texttt{std::map<Key,\,T,\,Compare,\,Allocator>} nach C++23. Ein $\dagger$ markiert die
-Kern-Operationen, die das Konformitäts-Gatter (Abschnitt~\ref{sec:measurement-system}) vor jeder
+Kern-Operationen, die das Konformitäts-Gate (Abschnitt~\ref{sec:measurement-system}) vor jeder
 Messung prüft, damit nur Vergleichbares verglichen wird. Komplexitäten beziehen sich auf
 $n=\texttt{size()}$; bei Bereichs-Operationen ist $N$ die Zahl der Eingabe-Elemente; Fassungs-Marker
 und Komplexitäten folgen dem Normtext~\cite{iso_cpp} und sind an der
 Online-Referenz~\cite{cppreference_map} gegengelesen. Die siebzehn markierten Operationen sind
-genau die Operationsmenge der zwölf Kern-Prüfblöcke des Gatters: Keine markierte Operation bleibt
+genau die Operationsmenge der zwölf Kern-Prüfblöcke des Gates: Keine markierte Operation bleibt
 ungeprüft, keine geprüfte Operation ist unmarkiert (\texttt{size} wird in den Blöcken mitgeprüft,
 gehört aber zum Zufalls-Kernblock und ist deshalb nicht markiert). Vier der markierten Operationen
 entsprechen unmittelbar Operationen der Modulgrenze (\texttt{insert\_or\_assign} dem
@@ -77,7 +77,7 @@ Einfüge-Antrieb, \texttt{find} der Punkt-Suche, \texttt{erase} und \texttt{clea
 überschreibenden Formen laufen über einen Pfad und werden gegen drei verschiedene Orakel-Aufrufe
 gestellt; \texttt{begin}/\texttt{end}, \texttt{lower\_bound}, \texttt{upper\_bound} und
 \texttt{equal\_range} synthetisiert der Host über die additive Scan-Fähigkeit der Modulgrenze
-geordnet, und fehlt sie einer geladenen Binary, protokolliert das Gatter diese Blöcke als
+geordnet, und fehlt sie einer geladenen Binary, protokolliert das Gate diese Blöcke als
 übersprungen, nicht als bestanden; \texttt{key\_comp} wird am Orakel festgestellt (Schlüsselordnung
 kleiner-als auf 64-Bit-Werten), weil die Hülle keinen Komparator über die Grenze trägt.
 
@@ -176,7 +176,7 @@ Normtext~\cite{iso_cpp} und sind an der Online-Referenz~\cite{cppreference_vecto
 Sämtliche Member sind seit C++20 \texttt{constexpr}\footnote{Seit C++20 sind alle Elementfunktionen
 von \texttt{std::vector} \texttt{constexpr}; ein \texttt{constexpr}-Objekt selbst scheitert in der
 Regel am dynamischen Speicher~\cite{dionne2019constexprvector}.}. Ein $\dagger$ markiert die
-Kern-Operationen, die das Konformitäts-Gatter der Sequenz-Gattung vor jeder Messung gegen ein
+Kern-Operationen, die das Konformitäts-Gate der Sequenz-Gattung vor jeder Messung gegen ein
 \texttt{std::deque}-Orakel prüft (Anhängen, Index-Zugriff, Größe, Leeren; für diese vier
 Operationen ist die \texttt{deque}-Semantik mit der des \texttt{std::vector} deckungsgleich): Die
 eigene Sequenz-Hülle bietet genau diese vier Funktionen über die Modulgrenze an, der Index-Zugriff
@@ -279,7 +279,7 @@ als feste Komposition. Die geordneten Operationen --- \texttt{begin}/\texttt{end
 Ordnungs-Suche voraus und sind deshalb als eigene, additive Fähigkeit der Modulgrenze geführt;
 ungeordnete Achsen erfüllen dieselbe Hülle ohne sie und bezahlen die fehlende Ordnung beim
 geordneten Lesen mit linearem Aufwand. Genau diese Austauschbarkeit ist der Gegenstand der Messung
-(Abschnitt~\ref{sec:measurement-system}). Das Konformitäts-Gatter prüft je Gattung die in den
+(Abschnitt~\ref{sec:measurement-system}). Das Konformitäts-Gate prüft je Gattung die in den
 Tabellen~\ref{tab:if-map} und~\ref{tab:if-vector} mit $\dagger$ markierte Kern-Teilmenge.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{3.1cm}@{}}
@@ -306,12 +306,12 @@ Tabellen~\ref{tab:if-map} und~\ref{tab:if-vector} mit $\dagger$ markierte Kern-T
 \end{longtable}
 
 \noindent An der Modulgrenze ist die Primitivitäts-Ordnung dieser Tafel umgekehrt: Der eine
-Einfüge-Antrieb der Map-Gattung trägt die Semantik von \texttt{insert\_or\_assign} --- Einfügen oder
+Einfüge-Antrieb des Map-Konzepts trägt die Semantik von \texttt{insert\_or\_assign} --- Einfügen oder
 Aktualisieren, die Rückgabe meldet, ob ein neuer Schlüssel entstand ---, sodass
 \texttt{insert\_or\_assign} die Durchreichung ist und die nicht überschreibenden Formen
 \texttt{insert}, \texttt{emplace} und \texttt{try\_emplace} host-seitig als Punkt-Suche mit
 anschließendem Einfügen nur bei fehlendem Schlüssel komponiert werden: ein Pfad für drei
-Standard-Funktionen, den das Gatter gegen drei Orakel-Aufrufe stellt. Der ISO-Vertrag führt es
+Standard-Funktionen, den das Gate gegen drei Orakel-Aufrufe stellt. Der ISO-Vertrag führt es
 umgekehrt (\texttt{insert} als Grundform, \texttt{insert\_or\_assign} als Zusammensetzung); beide
 Sichten sind korrekt und beschreiben verschiedene Ebenen --- genau der Kontrast, der die
 Austauschbarkeit hinter einer festen Schnittstelle konkret macht.
