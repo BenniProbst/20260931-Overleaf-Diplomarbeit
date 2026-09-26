@@ -1563,9 +1563,10 @@ single-thread measurement run whose result fills the measurement store; \emph{co
 with options of its own and computes which tier binary or hybrid recombination must, according to the measurement, be the
 best; \emph{release} generates from that the fully optimized binary without measurement instrumentation
 and re-measures its wall clock. On the hybrid level the same chain repeats synchronously
-(Figure~\ref{fig:modi-kette}). There is no debug work mode; the build variants debug, measurement, and release remain in force, and the debug variant is being extended further: \texttt{--debug} is a switch of
-the planner shell for the wiring check --- a flag, not a work mode; under \texttt{--debug} the conformance
-gate additionally runs the genus test set (as planned: tests only with the debug binaries, debug and
+(Figure~\ref{fig:modi-kette}). There is no debug work mode; the build variants debug, measurement, and release remain in force, and the debug variant is being extended further: \texttt{--debug} is a switch of the planner shell for the wiring check --- a flag and not a work mode of its own in
+the chain build/measure/compare/release; it enables the indirect debug mode of the debug variant (the unofficial
+fifth maintenance mode): under \texttt{--debug} the conformance gate additionally runs the standard test set of the
+tier interface (as planned: tests only with the debug binaries, debug and
 release build side by side), and this indirect debug mode coincides with the release build and is not
 kept as a separate mode; it stays locked for users (rc~8). Implementation status: the
 four modes are selectable and validatable and take effect on the build of the binaries; the mode-specific procedure
@@ -1591,7 +1592,7 @@ selectable, validatable labels with release-equivalent build semantics.
   \node[plan] (hr) at (9.3,-2.0){\textbf{release}\\with and without sidecar};
   \draw[->] (hb)--(hm); \draw[->] (hm)--(hc); \draw[->] (hc)--(hr);
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
-  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug} is a flag of the planner shell, not a mode (under \texttt{--debug}: genus test set additionally).};
+  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug}: not a work mode of its own (flag; debug variant extended).};
 \end{tikzpicture}
 \caption{The run chain of the four work modes build $\to$ measure $\to$ compare $\to$ release as a registered sub-axis of the measurement realm, cumulative in this order and repeated synchronously on the hybrid level; compare reads the measurement store and computes the best binary or recombination, release generates the fully optimized binary without measurement sensors and re-measures its wall clock. A debug state does not exist; under \texttt{--debug} the conformance gate additionally runs the genus test set, an indirect debug mode that coincides with the release build. The assignment to the operating target pictures measurement, evaluation, working, and hybrid mode is given by Section~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
@@ -1603,9 +1604,8 @@ measure; \emph{measure} is the deterministic single-thread measurement run that 
 store; \emph{compare} computes from the store the tier binary or hybrid recombination that must, according
 to the measurement, be the best; \emph{release} generates from that the fully optimized binary without
 measurement instrumentation and re-measures its wall clock; on the hybrid level the same chain repeats
-(Figure~\ref{fig:modi-kette}). There is no debug work mode; the build variants debug, measurement, and release remain in force, and the debug variant is being extended further: \texttt{--debug} is a flag of the planner shell,
-not a work mode; under \texttt{--debug} the conformance gate additionally runs the genus test set, and this
-indirect debug mode coincides with the release build (locked for users, rc~8). Implementation status:
+(Figure~\ref{fig:modi-kette}). There is no debug work mode; the build variants debug, measurement, and release remain in force, and the debug variant is being extended further: \texttt{--debug} is a flag of the planner shell and not a work mode of its own in the chain build/measure/compare/release; it enables the indirect debug mode of the debug variant (the unofficial fifth maintenance mode): under
+\texttt{--debug} the conformance gate additionally runs the standard test set of the tier interface, and this indirect debug mode coincides with the release build (locked for users, rc~8). Implementation status:
 the four modes are selectable, validatable, and effective in the
 build; the mode-specific procedure of compare and release is envisioned for later main waves but not implemented,
 both are labels with release-equivalent build semantics.
@@ -1628,7 +1628,7 @@ both are labels with release-equivalent build semantics.
   \node[plan] (hr) at (9.3,-2.0){\textbf{release}\\with and without sidecar};
   \draw[->] (hb)--(hm); \draw[->] (hm)--(hc); \draw[->] (hc)--(hr);
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
-  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug} is a flag of the planner shell, not a mode (under \texttt{--debug}: genus test set additionally).};
+  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug}: not a work mode of its own (flag; debug variant extended).};
 \end{tikzpicture}
 \caption{The run chain of the four work modes build $\to$ measure $\to$ compare $\to$ release as a registered sub-axis of the measurement realm, cumulative in this order and repeated synchronously on the hybrid level; compare reads the measurement store and computes the best binary or recombination, release generates the fully optimized binary without measurement sensors and re-measures its wall clock. A debug state does not exist; under \texttt{--debug} the conformance gate additionally runs the genus test set, an indirect debug mode that coincides with the release build. The assignment to the operating target pictures measurement, evaluation, working, and hybrid mode is given by Section~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
@@ -2096,9 +2096,11 @@ tooling, which manifest as columns of the result tables, not as main axes of the
 the registry carries sixteen categories, yet with the collection per axis interface and its
 parameter set their number grows dynamically (sixteen categories times parameter sets) and is never a
 fixed count; and (d) the run methodology as sub-axis \texttt{work\_mode} with the four modes
-build, measure, compare, and release (Section~\ref{sec:anatomy-levels}), where \texttt{--debug} is a
-flag of the planner shell and not a mode (under \texttt{--debug} the conformance gate additionally runs the
-genus test set; this indirect debug mode coincides with the release build). None of these sub-axes ever
+build, measure, compare, and release (Section~\ref{sec:anatomy-levels}), where \texttt{--debug} is a flag of the planner shell and not a work mode of its own in the chain
+build/measure/compare/release; it enables the indirect debug mode of the debug variant (the unofficial fifth
+maintenance mode), which is being extended further: under \texttt{--debug} the conformance gate additionally runs
+the standard test set of the tier interface, and this indirect debug mode coincides with the release build; the
+build variants debug, measurement, and release remain in force. None of these sub-axes ever
 becomes part of a binary identity:
 measurement axes are strictly binary-id-neutral. Within the categories there is a
 \emph{regime bipartition}: the time- and observer-based regime (runtime clocks and observer hulls;

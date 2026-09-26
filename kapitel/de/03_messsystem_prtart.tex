@@ -1576,9 +1576,10 @@ Ein-Thread-Mess-Lauf, dessen Ergebnis das Messwertlager füllt; \emph{compare} l
 mit eigenen Optionen und errechnet, welche Tier-Binary oder Hybrid-Rekombination laut Vermessung die
 beste sein muss; \emph{release} erzeugt daraus die voll optimierte Binary ohne Mess-Instrumentierung
 und misst ihre Wall-Clock nach. Auf der Hybrid-Ebene wiederholt sich dieselbe Kette synchron
-(Abbildung~\ref{fig:modi-kette}). Einen Debug-Arbeitsmodus gibt es nicht; die Bau-Varianten Debug, Messung und Release gelten fort, und die Debug-Variante wird weiter ausgebaut: \texttt{--debug} ist ein Schalter
-der Planer-Shell für den Verdrahtungs-Check --- ein Flag, kein Arbeitsmodus; unter \texttt{--debug} fährt
-das Konformitäts-Gate zusätzlich den Genus-Testsatz (wie geplant: Tests nur mit den Debug-Binaries,
+(Abbildung~\ref{fig:modi-kette}). Einen Debug-Arbeitsmodus gibt es nicht; die Bau-Varianten Debug, Messung und Release gelten fort, und die Debug-Variante wird weiter ausgebaut: \texttt{--debug} ist ein Schalter der Planer-Shell für den Verdrahtungs-Check --- ein Flag und kein eigener
+Arbeitsmodus der Kette build/measure/compare/release; es schaltet den indirekten Debug-Modus der Debug-Variante ein
+(den nicht offiziellen fünften Wartungsmodus): unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den
+Standard-Testsatz des Tier-Interfaces (wie geplant: Tests nur mit den Debug-Binaries,
 Debug- und Release-Kompilat parallel), und dieser indirekte Debug-Modus fällt mit dem Release-Bau
 zusammen und wird nicht separat geführt; für Anwender bleibt er gesperrt (rc~8). Umsetzungsstand: Die
 vier Modi sind wählbar und validierbar und wirken auf den Bau der Binaries; der modus-spezifische Ablauf
@@ -1604,7 +1605,7 @@ wählbare, validierbare Etiketten mit release-gleicher Bausemantik.
   \node[plan] (hr) at (9.3,-2.0){\textbf{release}\\mit und ohne Sidecar};
   \draw[->] (hb)--(hm); \draw[->] (hm)--(hc); \draw[->] (hc)--(hr);
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
-  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){grün: Modus wählbar, validierbar und im Bau wirksam.\\gestrichelt/orange: Modus wählbar; der modus-spezifische Ablauf (Replay-Vergleich,\\Erzeugung der optimalen Binary) ist vorgesehen, aber nicht implementiert.\\\texttt{--debug} ist ein Flag der Planer-Shell, kein Modus (unter \texttt{--debug}: Genus-Testsatz zusätzlich).};
+  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){grün: Modus wählbar, validierbar und im Bau wirksam.\\gestrichelt/orange: Modus wählbar; der modus-spezifische Ablauf (Replay-Vergleich,\\Erzeugung der optimalen Binary) ist vorgesehen, aber nicht implementiert.\\\texttt{--debug}: kein eigener Arbeitsmodus (Flag; Debug-Variante wird weiter ausgebaut).};
 \end{tikzpicture}
 \caption{Die Ablauf-Kette der vier Arbeitsmodi build $\to$ measure $\to$ compare $\to$ release als registrierte Unter-Achse des Mess-Realms, kumulativ in dieser Reihenfolge und auf der Hybrid-Ebene synchron wiederholt; compare liest das Messwertlager und errechnet die beste Binary bzw. Rekombination, release erzeugt die voll optimierte Binary ohne Messfühler und misst ihre Wall-Clock nach. Ein Debug-Zustand existiert nicht; unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Genus-Testsatz, ein indirekter Debug-Modus, der mit dem Release-Bau zusammenfällt. Die Zuordnung zu den Betriebs-Zielbildern Mess-, Auswertungs-, Arbeits- und Hybrid-Modus gibt Abschnitt~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
@@ -1615,9 +1616,8 @@ Unter-Achse registriert und in fester Reihenfolge kumulativ durchlaufen: \emph{b
 misst nicht; \emph{measure} ist der deterministische Ein-Thread-Mess-Lauf, der das Messwertlager füllt;
 \emph{compare} errechnet aus dem Lager die laut Vermessung beste Tier-Binary oder Hybrid-Rekombination;
 \emph{release} erzeugt daraus die voll optimierte Binary ohne Mess-Instrumentierung und misst ihre Wall-Clock
-nach; auf der Hybrid-Ebene wiederholt sich dieselbe Kette (Abbildung~\ref{fig:modi-kette}). Einen Debug-Arbeitsmodus gibt es nicht; die Bau-Varianten Debug, Messung und Release gelten fort, und die Debug-Variante wird weiter ausgebaut: \texttt{--debug} ist ein Flag
-der Planer-Shell, kein Arbeitsmodus; unter
-\texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Genus-Testsatz, und dieser indirekte
+nach; auf der Hybrid-Ebene wiederholt sich dieselbe Kette (Abbildung~\ref{fig:modi-kette}). Einen Debug-Arbeitsmodus gibt es nicht; die Bau-Varianten Debug, Messung und Release gelten fort, und die Debug-Variante wird weiter ausgebaut: \texttt{--debug} ist ein Flag der Planer-Shell und kein eigener Arbeitsmodus der Kette build/measure/compare/release; es schaltet den indirekten Debug-Modus der Debug-Variante ein (den nicht offiziellen fünften Wartungsmodus): unter
+\texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Standard-Testsatz des Tier-Interfaces, und dieser indirekte
 Debug-Modus fällt mit dem Release-Bau zusammen (für Anwender gesperrt, rc~8).
 Umsetzungsstand: Die vier Modi sind wählbar, validierbar und bau-wirksam; der modus-spezifische Ablauf von
 compare und release ist für spätere Haupt-Wellen vorgesehen, aber nicht implementiert, beide sind Etiketten
@@ -1641,7 +1641,7 @@ mit release-gleicher Bausemantik.
   \node[plan] (hr) at (9.3,-2.0){\textbf{release}\\mit und ohne Sidecar};
   \draw[->] (hb)--(hm); \draw[->] (hm)--(hc); \draw[->] (hc)--(hr);
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
-  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){grün: Modus wählbar, validierbar und im Bau wirksam.\\gestrichelt/orange: Modus wählbar; der modus-spezifische Ablauf (Replay-Vergleich,\\Erzeugung der optimalen Binary) ist vorgesehen, aber nicht implementiert.\\\texttt{--debug} ist ein Flag der Planer-Shell, kein Modus (unter \texttt{--debug}: Genus-Testsatz zusätzlich).};
+  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){grün: Modus wählbar, validierbar und im Bau wirksam.\\gestrichelt/orange: Modus wählbar; der modus-spezifische Ablauf (Replay-Vergleich,\\Erzeugung der optimalen Binary) ist vorgesehen, aber nicht implementiert.\\\texttt{--debug}: kein eigener Arbeitsmodus (Flag; Debug-Variante wird weiter ausgebaut).};
 \end{tikzpicture}
 \caption{Die Ablauf-Kette der vier Arbeitsmodi build $\to$ measure $\to$ compare $\to$ release als registrierte Unter-Achse des Mess-Realms, kumulativ in dieser Reihenfolge und auf der Hybrid-Ebene synchron wiederholt; compare liest das Messwertlager und errechnet die beste Binary bzw. Rekombination, release erzeugt die voll optimierte Binary ohne Messfühler und misst ihre Wall-Clock nach. Ein Debug-Zustand existiert nicht; unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Genus-Testsatz, ein indirekter Debug-Modus, der mit dem Release-Bau zusammenfällt. Die Zuordnung zu den Betriebs-Zielbildern Mess-, Auswertungs-, Arbeits- und Hybrid-Modus gibt Abschnitt~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
@@ -2116,9 +2116,10 @@ Toolings, die sich als Spalten der Ergebnis-Tabellen manifestieren, nicht als ei
 die Registry führt sechzehn Kategorien, doch mit der Erhebung je Achsen-Interface und dessen
 Parametersatz wächst ihre Zahl dynamisch (sechzehn Kategorien mal Parametersätze) und ist nie eine
 feste Anzahl; und (d) die Ablauf-Methodik als Unter-Achse \texttt{work\_mode} mit den vier Modi
-build, measure, compare und release (Abschnitt~\ref{sec:anatomy-levels}), wobei \texttt{--debug} ein
-Flag der Planer-Shell und kein Modus ist (unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich
-den Genus-Testsatz; dieser indirekte Debug-Modus fällt mit dem Release-Bau zusammen). Keine dieser
+build, measure, compare und release (Abschnitt~\ref{sec:anatomy-levels}), wobei \texttt{--debug} ein Flag der Planer-Shell und kein eigener Arbeitsmodus der Kette
+build/measure/compare/release ist; es schaltet den indirekten Debug-Modus der Debug-Variante ein (den nicht offiziellen fünften Wartungsmodus), die weiter ausgebaut wird: unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den
+Standard-Testsatz des Tier-Interfaces, und dieser indirekte Debug-Modus fällt mit dem Release-Bau zusammen; die
+Bau-Varianten Debug, Messung und Release gelten fort. Keine dieser
 Unter-Achsen wird je Teil einer Binary-Identität:
 Mess-Achsen sind strikt binary-id-neutral. Innerhalb der Kategorien besteht eine
 \emph{Regime-Zweiteilung}: das zeit- und observer-basierte Regime (Laufzeit-Uhren und Beobachter-Hüllen;
