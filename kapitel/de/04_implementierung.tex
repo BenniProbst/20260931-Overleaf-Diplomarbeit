@@ -109,13 +109,13 @@ Abbildung~\ref{fig:traeger-stufen} zeigt sie mit ihren Binaries, Legenden-Formen
   \node[st] (s1) at (0,0){\textbf{Stufe 1: Planer}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny löst die Anwender-XML gegen die drei Kataloge auf; Director-Walk; Legende \texttt{ceb:build:\allowbreak[a,b,c]}}};
   \node[st] (s2) at (3.95,0){\textbf{Stufe 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny führt die Mess-Wahl einkompiliert, permutiert System $\times$ Organ; ein Prüf-Dock als Anschluss für Tier oder Hybrid; Legende je Host \texttt{tier:build-batch:\allowbreak<host>}, Testate \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
   \node[st] (s3) at (11.85,0){\textbf{Stufe 3: Tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny eine Organ-Permutation je Binary; sieben Pflicht-Symbole; Mess-Batch je Host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, Mess-Testate \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[hy] (s4) at (7.9,0){\textbf{Einschub: Hybrid}\\{\tiny optional, zwischen Stufe 2 und 3; Hybrid-\texttt{.so}}\\[2pt]{\tiny Mux-Schalter am CEB-Prüf-Dock; Dock-Slots 1 bis $N$ für Tier-Binaries; dieselben Pflicht-Symbole; \texttt{genus()} meldet den Ziel-Genus}};
+  \node[hy] (s4) at (7.9,0){\textbf{Einschub: Hybrid}\\{\tiny optional, zwischen Stufe 2 und 3; Hybrid-\texttt{.so}}\\[2pt]{\tiny Mux-Schalter am CEB-Prüf-Dock; Dock-Slots 1 bis $N$ für Tier-Binaries; dieselben Pflicht-Symbole; \texttt{genus()} meldet den Ziel-Gattung}};
   \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s4); \draw[->,thick] (s4)--(s3);
   \draw[->,thick] (s2.north) -- ++(0,0.5) coordinate (bp) -| (s3.north);
   \node[font=\tiny,anchor=south,text width=11.5cm,align=center] at ([xshift=3.95cm,yshift=1pt]bp){Standardweg ohne Hybrid: CEB-Prüf-Dock $\to$ Tier-Binary direkt; mit Hybrid: Prüf-Dock $\to$ Mux $\to$ Dock-Slot $\to$ Tier-Binary};
   \node[fl] (f1) at (0,-2.95){Fläche 2 (Stempel): Selbst-Version X.Y.Z, Fingerprint SHA-256, Gesamt-Stempel};
   \node[fl] (f2) at (3.95,-2.95){Fläche 2 (Stempel): Mess- und System-Zeile, Fingerprint SHA-512; eigene Mess-Gate-Belegung};
-  \node[fl] (f3) at (11.85,-2.95){Flächen 1--3: Genus-Interface, Stempel (drei Zeilen), Mess-Durchstich \texttt{IMessVisitor}};
+  \node[fl] (f3) at (11.85,-2.95){Flächen 1--3: Gattungs-Interface, Stempel (drei Zeilen), Mess-Durchstich \texttt{IMessVisitor}};
   \node[fl] (f4) at (7.9,-2.95){Flächen 1--3 wie Tier, dazu die angeschlossenen Stempel-Zeilen (Laufzeit-Haken)};
   \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
 \end{tikzpicture}
@@ -155,12 +155,15 @@ dieselbe Reihenfolge, Abschnitt~\ref{sec:anatomy-levels}). \texttt{build} baut d
 und darf parallel laufen; \texttt{measure} ist der deterministische Ein-Thread-Messlauf und der einzige
 Modus mit eingeschalteter Messung; \texttt{compare} liest das Messwertlager und vergleicht bereits
 gemessene Sichten --- die Stufe \emph{vor} dem Release; \texttt{release} erzeugt die Referenz-Binary ohne
-Instrumentierung. Alle vier bauen als CMake-Release; ein messendes Debug-Regime existiert nicht mehr, weil
+Instrumentierung. Alle vier bauen als CMake-Release; daneben gelten die Bau-Varianten Debug, Messung und Release fort, und die Debug-Variante wird weiter ausgebaut
+--- ein messendes Debug-Regime existiert jedoch nicht mehr, weil
 parallel erhobene Zahlen mit Ein-Thread-Messungen nicht vergleichbar sind, und der Verdrahtungs-Check, den
-es leistete, ist als Schalter \texttt{--debug} der Planer-Shell realisiert --- ein Flag, kein Zustand.
+es leistete, ist als Schalter \texttt{--debug} der Planer-Shell realisiert --- ein Flag, kein Zustand;
+unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Standard-Testsatz des Tier-Interfaces, und dieser indirekte
+Debug-Modus fällt mit dem Release-Bau zusammen und wird nicht separat geführt.
 Umsetzungsstand: \texttt{compare} ist ein wählbares Etikett mit \texttt{release}-gleicher Bausemantik;
-sein modus-spezifischer Ablauf (Replay-Vergleich statt Messen) ist vorgesehen, aber nicht
-implementiert (Abschnitt~\ref{sec:anatomy-levels}).
+sein modus-spezifischer Ablauf (Replay-Vergleich statt Messen) ist für spätere Haupt-Wellen vorgesehen, aber
+nicht implementiert (Abschnitt~\ref{sec:anatomy-levels}).
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}llllp{5.6cm}@{}}
 \toprule
@@ -226,13 +229,13 @@ zeigt sie mit ihren Binaries, Legenden-Formen und Flächen.
   \node[st] (s1) at (0,0){\textbf{Stufe 1: Planer}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny löst die Anwender-XML gegen die drei Kataloge auf; Director-Walk; Legende \texttt{ceb:build:\allowbreak[a,b,c]}}};
   \node[st] (s2) at (3.95,0){\textbf{Stufe 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny führt die Mess-Wahl einkompiliert, permutiert System $\times$ Organ; ein Prüf-Dock als Anschluss für Tier oder Hybrid; Legende je Host \texttt{tier:build-batch:\allowbreak<host>}, Testate \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
   \node[st] (s3) at (11.85,0){\textbf{Stufe 3: Tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny eine Organ-Permutation je Binary; sieben Pflicht-Symbole; Mess-Batch je Host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, Mess-Testate \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[hy] (s4) at (7.9,0){\textbf{Einschub: Hybrid}\\{\tiny optional, zwischen Stufe 2 und 3; Hybrid-\texttt{.so}}\\[2pt]{\tiny Mux-Schalter am CEB-Prüf-Dock; Dock-Slots 1 bis $N$ für Tier-Binaries; dieselben Pflicht-Symbole; \texttt{genus()} meldet den Ziel-Genus}};
+  \node[hy] (s4) at (7.9,0){\textbf{Einschub: Hybrid}\\{\tiny optional, zwischen Stufe 2 und 3; Hybrid-\texttt{.so}}\\[2pt]{\tiny Mux-Schalter am CEB-Prüf-Dock; Dock-Slots 1 bis $N$ für Tier-Binaries; dieselben Pflicht-Symbole; \texttt{genus()} meldet den Ziel-Gattung}};
   \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s4); \draw[->,thick] (s4)--(s3);
   \draw[->,thick] (s2.north) -- ++(0,0.5) coordinate (bp) -| (s3.north);
   \node[font=\tiny,anchor=south,text width=11.5cm,align=center] at ([xshift=3.95cm,yshift=1pt]bp){Standardweg ohne Hybrid: CEB-Prüf-Dock $\to$ Tier-Binary direkt; mit Hybrid: Prüf-Dock $\to$ Mux $\to$ Dock-Slot $\to$ Tier-Binary};
   \node[fl] (f1) at (0,-2.95){Fläche 2 (Stempel): Selbst-Version X.Y.Z, Fingerprint SHA-256, Gesamt-Stempel};
   \node[fl] (f2) at (3.95,-2.95){Fläche 2 (Stempel): Mess- und System-Zeile, Fingerprint SHA-512; eigene Mess-Gate-Belegung};
-  \node[fl] (f3) at (11.85,-2.95){Flächen 1--3: Genus-Interface, Stempel (drei Zeilen), Mess-Durchstich \texttt{IMessVisitor}};
+  \node[fl] (f3) at (11.85,-2.95){Flächen 1--3: Gattungs-Interface, Stempel (drei Zeilen), Mess-Durchstich \texttt{IMessVisitor}};
   \node[fl] (f4) at (7.9,-2.95){Flächen 1--3 wie Tier, dazu die angeschlossenen Stempel-Zeilen (Laufzeit-Haken)};
   \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
 \end{tikzpicture}
@@ -261,7 +264,8 @@ einzige Modus mit eingeschalteter Messung, \texttt{compare} liest das Messwertla
 wählbares Etikett, der Replay-Vergleich ist nicht implementiert), \texttt{release} erzeugt die
 Referenz-Binary ohne Instrumentierung; alle vier bauen als CMake-Release, und der Verdrahtungs-Check des
 früheren Debug-Regimes ist als Schalter \texttt{--debug} der Planer-Shell realisiert --- ein Flag, kein
-Zustand.
+Zustand; unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Standard-Testsatz des Tier-Interfaces, ein indirekter
+Debug-Modus, der mit dem Release-Bau zusammenfällt.
 \end{nurkurz}
 
 \begin{nurlang}
@@ -604,10 +608,10 @@ Die \emph{eine} Architektur aus Abschnitt~\ref{sec:anatomy-model} ist im Code ei
 Ihre Wurzel ist \texttt{IExecutionEngine} mit drei Engine-Arten --- Anatomy, Virus, Hybrid --- und einem
 Vertrag aus sieben Methoden: \texttt{warm\_up}, \texttt{run}, \texttt{reset} und \texttt{shutdown} als
 Mess-Lebenszyklus sowie \texttt{engine\_name}, \texttt{engine\_kind} und \texttt{lifecycle\_state} als
-Auskünfte. Unter ihr liegen auf Ebene~1 die vier Gattungen Map, Container, Graph und HeuristikAdapter
-(Abschnitt~\ref{sec:anatomy-levels}) --- Graph als deklarierter Stub ohne Genus --- und auf Ebene~2 die
-sechs Genera SearchAlgorithm, Set, Sequence, Adapter, View und FunctionInterfaceReroute; die Gattung ist im
-Code die Ableitung des Genus (\texttt{gattung\_of}), kein zweites Etikett. Das Lebewesen
+Auskünfte. Unter ihr liegen auf Ebene~1 die vier Konzepte Map, Container, Graph und HeuristikAdapter
+(Abschnitt~\ref{sec:anatomy-levels}) --- Graph als deklarierter Stub ohne Gattung --- und auf Ebene~2 die
+sechs Gattungen SearchAlgorithm, Set, Sequence, Adapter, View und FunctionInterfaceReroute; die Gattung ist im
+Code die Ableitung der Gattung (\texttt{gattung\_of}), kein zweites Etikett. Das Lebewesen
 \texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind zwei
 Sichten desselben Gegenstands über die Modulgrenze, kein paralleles Konstrukt: Der Körper ist
 \texttt{SearchAlgorithmAnatomy<C>}, die Komposition und Verdrahtung der achtzehn Organe, und die Sicht ist
@@ -629,8 +633,8 @@ Die \emph{eine} Architektur aus Abschnitt~\ref{sec:anatomy-model} ist im Code ei
 Wurzel ist \texttt{IExecutionEngine} mit drei Engine-Arten --- Anatomy, Virus, Hybrid --- und einem Vertrag
 aus sieben Methoden (\texttt{warm\_up}, \texttt{run}, \texttt{reset} und \texttt{shutdown} als
 Mess-Lebenszyklus sowie \texttt{engine\_name}, \texttt{engine\_kind} und \texttt{lifecycle\_state} als
-Auskünfte). Unter ihr liegen die vier Gattungen und die sechs Genera (Abschnitt~\ref{sec:anatomy-levels});
-die Gattung ist im Code die Ableitung des Genus (\texttt{gattung\_of}), kein zweites Etikett. Das Lebewesen
+Auskünfte). Unter ihr liegen die vier Konzepte und die sechs Gattungen (Abschnitt~\ref{sec:anatomy-levels});
+die Gattung ist im Code die Ableitung der Gattung (\texttt{gattung\_of}), kein zweites Etikett. Das Lebewesen
 \texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind zwei Sichten
 desselben Gegenstands über die Modulgrenze: Der Körper ist \texttt{SearchAlgorithmAnatomy<C>}, die
 Komposition und Verdrahtung der achtzehn Organe, und die Sicht ist \texttt{SearchAlgorithmAbiAdapter<A>}.
@@ -648,22 +652,22 @@ Builder je Permutation ein eigenes Kompilat erzeugt.
   \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=3pt, text width=3.0cm},
     gen/.style={draw, rounded corners, align=center, font=\tiny, inner sep=2pt, text width=2.0cm, fill=blue!4}]
     \node[box,fill=blue!8,text width=6.6cm] (root) at (-1.0,0) {\texttt{IExecutionEngine} --- \textbf{Treiber der Messung}\\{\scriptsize Vertrag: \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown} $+$ \texttt{engine\_name$\cdot$engine\_kind$\cdot$lifecycle\_state}; Engine-Arten Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
-    \node[box] (ana) at (-4.4,-2.0) {\texttt{IAnatomyBase}\\{\scriptsize Lebewesen (vier Gattungen, Ebene~1)}};
+    \node[box] (ana) at (-4.4,-2.0) {\texttt{IAnatomyBase}\\{\scriptsize Lebewesen (vier Konzepte, Ebene~1)}};
     \node[box] (vir) at (3.4,-2.0) {\texttt{IVirus\-Execution\-Engine}\\{\scriptsize Virus (achsenlos, dennoch messbar; z.\,B.\ Graph-BFS)}};
-    \node[box,text width=3.2cm] (g1) at (-7.5,-3.9) {Map-Gattung\\{\tiny Genus \texttt{SearchAlgorithm} (Säugetier)}};
-    \node[box,text width=3.2cm] (g2) at (-3.95,-3.9) {Container-Gattung\\{\tiny Genera Set, Sequence, Adapter, View}};
-    \node[box,text width=3.2cm,dashed] (g3) at (-0.4,-3.9) {Graph-Gattung\\{\tiny deklarierter Stub, kein Genus}};
-    \node[box,text width=3.2cm] (g4) at (3.15,-3.9) {HeuristikAdapter-Gattung\\{\tiny Genus \texttt{FunctionInterfaceReroute}}};
+    \node[box,text width=3.2cm] (g1) at (-7.5,-3.9) {Map-Konzept\\{\tiny Gattung \texttt{SearchAlgorithm} (Säugetier)}};
+    \node[box,text width=3.2cm] (g2) at (-3.95,-3.9) {Container-Konzept\\{\tiny Gattungen Set, Sequence, Adapter, View}};
+    \node[box,text width=3.2cm,dashed] (g3) at (-0.4,-3.9) {Graph-Konzept\\{\tiny deklarierter Stub, keine Gattung}};
+    \node[box,text width=3.2cm] (g4) at (3.15,-3.9) {HeuristikAdapter-Konzept\\{\tiny Gattung \texttt{FunctionInterfaceReroute}}};
     \node[gen] (n1) at (-7.6,-5.7) {\texttt{SearchAlgorithm}\\18 Organe};
     \node[gen] (n2) at (-5.4,-5.7) {\texttt{Set}};
     \node[gen] (n3) at (-3.2,-5.7) {\texttt{Sequence}};
     \node[gen] (n4) at (-1.0,-5.7) {\texttt{Adapter}};
     \node[gen] (n5) at (1.2,-5.7) {\texttt{View}};
-    \node[gen,text width=3.1cm] (n6) at (4.1,-5.7) {\texttt{FunctionInterfaceReroute}\\Reroute-Genus};
+    \node[gen,text width=3.1cm] (n6) at (4.1,-5.7) {\texttt{FunctionInterfaceReroute}\\Reroute-Gattung};
     \node[box,text width=3.4cm] (body) at (-6.6,-7.6) {\texttt{Search\-Algorithm\-Anatomy<C>}\\{\scriptsize \emph{Körper}: Komposition $+$ \emph{Verdrahtung} der 18 Organe}};
     \node[box,text width=3.4cm] (abi) at (-2.4,-7.6) {\texttt{Search\-Algorithm\-Abi\-Adapter<A>}\\{\scriptsize ABI-Laufzeit-Sicht (\enquote{SearchEngine})}};
-    \node[box,fill=orange!8,text width=3.4cm] (comp) at (-6.6,-9.7) {konkrete Composition (z.\,B.\ \texttt{ArtComposition})\\{\scriptsize Ebene 4: Belegung \emph{aller} 18 Achsen $=$ ein Tier}};
-    \node[box,fill=orange!16,text width=3.4cm] (bin) at (-6.6,-12.0) {Tier-Binary \texttt{comdare\_perm\_\-<fp>.so}\\{\scriptsize Ebene 5: je Permutation kompiliert $+$ System-Achsen}};
+    \node[box,fill=orange!8,text width=3.4cm] (comp) at (-6.6,-9.7) {konkrete Composition (z.\,B.\ \texttt{ArtComposition})\\{\scriptsize Ebene 3: Genus (z.\,B.\ ART) $=$ Belegung \emph{aller} 18 Organ-Achsen (Ebene 4)}};
+    \node[box,fill=orange!16,text width=3.4cm] (bin) at (-6.6,-12.0) {Tier-Binary \texttt{comdare\_perm\_\-<fp>.so}\\{\scriptsize Ebene 5a: je Permutation kompiliert $+$ System-Achsen}};
     \draw[->] (root) -- (ana);
     \draw[->] (root) -- (vir);
     \draw[->] (ana) -- (g1); \draw[->] (ana) -- (g2); \draw[->,dashed] (ana) -- (g3); \draw[->] (ana) -- (g4);
@@ -679,15 +683,15 @@ Builder je Permutation ein eigenes Kompilat erzeugt.
   \texttt{IExecutionEngine} als \emph{Treiber der Messung} --- der universelle messbare Vertrag aus
   Mess-Lebenszyklus (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) und Auskünften
   (\texttt{engine\_name}/\texttt{engine\_kind}/\texttt{lifecycle\_state}) über alle drei Engine-Arten
-  Anatomy, Virus und Hybrid; unter ihm verzweigen die anatomie-tragenden \emph{Gattungen} (Ebene~1: Map,
-  Container, Graph, HeuristikAdapter) mit ihren \emph{Genera} (Ebene~2) und die achsenlosen \emph{Viren}.
-  \texttt{SearchAlgorithm} \emph{ist} das fokale Lebewesen (Säugetier); seine Anatomie ist sein
+  Anatomy, Virus und Hybrid; unter ihm verzweigen die anatomie-tragenden \emph{Konzepte} (Ebene~1: Map,
+  Container, Graph, HeuristikAdapter) mit ihren \emph{Gattungen} (Ebene~2) und die achsenlosen \emph{Viren}.
+  \texttt{SearchAlgorithm} \emph{ist} das fokale Lebewesen (Elefant); seine Anatomie ist sein
   \emph{Körper} --- die feste Komposition \emph{und Verdrahtung} der 18 Organe ---, und
-  \enquote{SearchEngine} nur dessen ABI-Laufzeit-Sicht. Der Säugetier-Ast ist bis zum Individuum
-  ausgezogen: eine konkrete Achsen-Composition (Ebene~4) wird je Permutation als eigenständige Tier-Binary
-  kompiliert (Ebene~5). Container besitzt einen eigenen Organsatz mit den Genera Set, Sequence, Adapter und
-  View, deren Aritäten die Genus-Bau-Zulassung führt; Graph ist deklariert und besitzt keinen Genus; die
-  Gattung HeuristikAdapter führt das Reroute-Genus der Hybrid-Stufe.}\label{fig:one-architecture}
+  \enquote{SearchEngine} nur dessen ABI-Laufzeit-Sicht. Der Elefanten-Ast (Gattung \texttt{SearchAlgorithm}) ist bis zum Individuum
+  ausgezogen: ein Genus (Ebene~3) mit seiner konkreten Achsen-Composition (Ebene~4) wird je Permutation
+  als eigenständige Tier-Binary kompiliert (Ebene~5a, das Individuum). Container besitzt einen eigenen Organsatz mit den Gattungen Set, Sequence, Adapter und
+  View, deren Aritäten die Gattungs-Bau-Zulassung führt; Graph ist deklariert und besitzt keine Gattung; das
+  Konzept HeuristikAdapter führt die Reroute-Gattung der Hybrid-Stufe.}\label{fig:one-architecture}
 \end{figure}
 
 \begin{nurlang}
@@ -697,15 +701,15 @@ enthält sieben Pflicht-Symbole mit C-Bindung --- die vier Ur-Symbole ABI-Versio
 \texttt{comdare\_\allowbreak{}create\_\allowbreak{}anatomy} und Destroy, dazu die zwei über alle Gattungen
 buchstabengleichen Auskünfte \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} und
 \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus} sowie die Versions-Zeilen des Stempels. Die
-Buchstabengleichheit ist Bedingung, nicht Bequemlichkeit: Der gattungsunabhängige Loader lädt jede Binary
-über dieselbe Ladestrecke (POSIX \texttt{dlopen}~\cite{posix_dlopen}) und kann die Gattung ermitteln,
-\emph{bevor} er eine Instanz baut --- gattungsunabhängige Namen mit gattungs-spezifischen Werten; die
-Gattung ist dabei aus dem Genus abgeleitet. Die ABI führt die Major-Version~9, deren Naht das
-Genus-Interface ist. Die variadische 1/2/N-Hybrid-API gehört zum Prüfling: Seine
+Buchstabengleichheit ist Bedingung, nicht Bequemlichkeit: Der konzeptunabhängige Loader lädt jede Binary
+über dieselbe Ladestrecke (POSIX \texttt{dlopen}~\cite{posix_dlopen}) und kann das Konzept ermitteln,
+\emph{bevor} er eine Instanz baut --- konzeptunabhängige Namen mit konzept-spezifischen Werten; die
+Gattung ist dabei aus der Gattung abgeleitet. Die ABI führt die Major-Version~9, deren Naht das
+Gattungs-Interface ist. Die variadische 1/2/N-Hybrid-API gehört zum Prüfling: Seine
 \texttt{PrtArtSearchEngine<Ts\ldots>} spezialisiert sich nach Parameterzahl --- ein Parameter fordert alle
 Funktionsinterfaces eines \texttt{std::vector}, zwei die eines \texttt{std::map}, mehr als zwei die eines
-\texttt{std::map} auf ein Tupel ---, und die Slot-Aritäten der Genera der Cache-Engine (achtzehn für das
-Genus SearchAlgorithm, je eigene für Set, Sequence, Adapter und View aus der Genus-Bau-Zulassung) sind
+\texttt{std::map} auf ein Tupel ---, und die Slot-Aritäten der Gattungen der Cache-Engine (achtzehn für das
+Gattung SearchAlgorithm, je eigene für Set, Sequence, Adapter und View aus der Gattungs-Bau-Zulassung) sind
 davon getrennt zu lesen. Komplexe Schlüssel reduziert eine Fingerprint-Komponente der Cache-Engine
 (\texttt{fixed\_\allowbreak{}length\_\allowbreak{}fingerprint}, FNV-1a-Basis) auf 16-Byte-Binärstrings
 fester Länge, die der Prüfling als Schlüsseltyp seines Speichermodells verwendet (\texttt{BinaryKey});
@@ -722,9 +726,9 @@ Ur-Symbole ABI-Version, Magic-Zahl, Factory \texttt{comdare\_\allowbreak{}create
 Destroy, dazu die zwei über alle Gattungen buchstabengleichen Auskünfte
 \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} und
 \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus} sowie die Versions-Zeilen des Stempels. Die
-Buchstabengleichheit ist Bedingung: Der gattungsunabhängige Loader lädt jede Binary über dieselbe
-Ladestrecke (POSIX \texttt{dlopen}~\cite{posix_dlopen}) und ermittelt die Gattung aus dem Genus,
-\emph{bevor} er eine Instanz baut. Die ABI führt die Major-Version~9, deren Naht das Genus-Interface ist.
+Buchstabengleichheit ist Bedingung: Der konzeptunabhängige Loader lädt jede Binary über dieselbe
+Ladestrecke (POSIX \texttt{dlopen}~\cite{posix_dlopen}) und ermittelt das Konzept aus der Gattung,
+\emph{bevor} er eine Instanz baut. Die ABI führt die Major-Version~9, deren Naht das Gattungs-Interface ist.
 Die variadische 1/2/N-Hybrid-API gehört zum Prüfling: \texttt{PrtArtSearchEngine<Ts\ldots>} spezialisiert
 sich nach Parameterzahl (\texttt{std::vector}, \texttt{std::map}, \texttt{std::map} auf ein Tupel). Komplexe
 Schlüssel reduziert eine Fingerprint-Komponente
@@ -756,7 +760,7 @@ extern "C" {
 template<class K, class First, class... Rest> class PrtArtSearchEngine;
 \end{lstlisting}
   \caption{Die ABI-stabile C-Modulgrenze (sieben Pflicht-Symbole; die Hybrid-.so exportiert dieselbe Menge
-  und meldet über \texttt{genus} ihr Ziel-Genus) und die variadische 1/2/N-API als Sicht des Prüflings.
+  und meldet über \texttt{genus} ihre Ziel-Gattung) und die variadische 1/2/N-API als Sicht des Prüflings.
   Komplexe Schlüssel reduziert eine Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge; die
   Identität einer Binary führen davon getrennt das \texttt{permutation\_fingerprint}-Feld des ABI-POD, der
   SHA-512-Tier-Fingerprint und der SHA-256-Planer-Fingerprint.}\label{fig:abi}
@@ -775,7 +779,7 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   \node[iface] (anat) at (-4.9,3.75){IAnatomyBase};
   \node[iface] (virus) at (-0.2,5.05){IVirusExecutionEngine};
   \node[comp] (gatt) at (-4.9,2.75){Gattung (4, Ebene 1)};
-  \node[comp] (genus) at (-4.9,1.75){Genus (6, Ebene 2)};
+  \node[comp] (genus) at (-4.9,1.75){Gattung (6, Ebene 2)};
   \node[comp] (body) at (-4.9,0.75){SearchAlgorithmAnatomy<C>};
   \node[comp] (abi) at (-4.9,-0.25){SearchAlgorithmAbiAdapter<A>};
   \node[iface,fill=orange!10] (drive) at (-4.9,-1.35){IDriveableTier / IObservableTier};
@@ -793,7 +797,7 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(all); \draw[->] (all)--(filt); \draw[->] (filt)--(en); \draw[->] (en)--(slot);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{komponiert 18 Achsen} (topic.west);
 \end{tikzpicture}
-\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase}, den vier Gattungen und sechs Genera und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der achtzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird und deren Messung als Fläche~3 durch den Visitor \texttt{IMessVisitor} quert; rechts der je Achse wiederholte Live-Weg --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die vollständige \texttt{mp\_list}-Baustein-Familie, der Übersetzungszeit-Filter über das Enable-Flag und der Composition-Slot, der genau einen Typ enthält. Die variant-basierte Auflösung \texttt{resolve\_baustein} ist eine verworfene, vom Bau isolierte Alternative (gestrichelt).}\label{fig:uml-interfaces}
+\caption{UML-Landkarte der Code-Interfaces: links die Engine-/Anatomie-Hierarchie --- die messbare Wurzel \texttt{IExecutionEngine} als \emph{Treiber der Messung} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) über \texttt{IAnatomyBase}, den vier Konzepten und sechs Gattungen und der achsenlosen \texttt{IVirus\-Execution\-Engine}, darunter der \emph{Körper} \texttt{Search\-Algorithm\-Anatomy<C>} (Komposition \emph{und Verdrahtung} der achtzehn Achsen) und seine ABI-Laufzeit-Sicht \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), die über die Treib-/Beobachter-Verträge \texttt{IDriveableTier}/\texttt{IObservableTier} gemessen wird und deren Messung als Fläche~3 durch den Visitor \texttt{IMessVisitor} quert; rechts der je Achse wiederholte Live-Weg --- ein zweischichtiges \texttt{Concept}, eine \texttt{requires}-gesicherte CRTP-Basis, die vollständige \texttt{mp\_list}-Baustein-Familie, der Übersetzungszeit-Filter über das Enable-Flag und der Composition-Slot, der genau einen Typ enthält. Die variant-basierte Auflösung \texttt{resolve\_baustein} ist eine verworfene, vom Bau isolierte Alternative (gestrichelt).}\label{fig:uml-interfaces}
 \end{figure}
 \end{nurlang}
 
@@ -997,9 +1001,9 @@ host-seitig quert, ohne die Binary-Identität zu berühren.}\label{fig:impl-laye
 
 Die Verträge zwischen den Träger-Stufen sind an den Binaries in Flächen zergliedert. Das
 Drei-Flächen-Modell (Abschnitt~\ref{sec:anatomy-levels}) ist im Code namentlich vorhanden: Fläche~1 ist
-das Genus-Interface der Tier-Binary (Laufzeit, Abstract Factory), Fläche~2 der Stempel (Übersetzungszeit,
+das Gattungs-Interface der Tier-Binary (Laufzeit, Abstract Factory), Fläche~2 der Stempel (Übersetzungszeit,
 ABI-stabil) und Fläche~3 der Mess-Durchstich \texttt{IMessVisitor} --- ein Visitor am
-\texttt{dlopen}-Übergang mit doppeltem Dispatch, der existiert, \emph{damit} Gattungs- und Genus-Interfaces
+\texttt{dlopen}-Übergang mit doppeltem Dispatch, der existiert, \emph{damit} Konzept- und Gattungs-Interfaces
 unverändert bleiben: Die Messung quert als eigene Naht, statt Mess-Felder in die fachlichen Interfaces zu
 drängen. Der Stempel-Vertrag ist als Matrix aus sieben Interfaces und vier Trägern ausgeführt --- 28~Zellen
 mit dreiwertiger Zulassung (Pflicht, Erlaubt, Verboten), von denen der Bestand nur Pflicht und Verboten
@@ -1156,9 +1160,9 @@ host-seitig quert, ohne die Binary-Identität zu berühren.}\label{fig:impl-laye
 
 Die Verträge zwischen den Träger-Stufen sind an den Binaries in Flächen zergliedert. Das
 Drei-Flächen-Modell (Abschnitt~\ref{sec:anatomy-levels}) ist im Code namentlich vorhanden: Fläche~1 ist
-das Genus-Interface der Tier-Binary, Fläche~2 der Stempel und Fläche~3 der Mess-Durchstich
+das Gattungs-Interface der Tier-Binary, Fläche~2 der Stempel und Fläche~3 der Mess-Durchstich
 \texttt{IMessVisitor} --- ein Visitor am \texttt{dlopen}-Übergang, der existiert, \emph{damit} Gattungs-
-und Genus-Interfaces unverändert bleiben. Der Stempel-Vertrag ist als Matrix aus sieben Interfaces und
+und Gattungs-Interfaces unverändert bleiben. Der Stempel-Vertrag ist als Matrix aus sieben Interfaces und
 vier Trägern ausgeführt --- 28~Zellen mit dreiwertiger Zulassung (Tabelle~\ref{tab:stempel-matrix}); die
 Absenz der Organ-Zeile beim CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}, und
 ein \texttt{static\_assert(StempelVertrag<Erbin, Traeger>)} unter jeder Erbin macht eine fehlende Pflicht
@@ -1220,7 +1224,8 @@ und je Pfad der mixed-radix-kodierte Binary-Identifier hin- und zurückübersetz
 Signatur-Roundtrip) --- gegen ein Fake-E2, das keine einzige Binary baut; dazu tritt ein Konformitäts-Gate
 im Voll-Lauf-Pfad
 (\texttt{test\_\allowbreak{}e3\_\allowbreak{}contract\_\allowbreak{}conformance\_\allowbreak{}gate\_\allowbreak{}wirksam}),
-das jede importierte Binary vor der Messung gegen den festgeschriebenen Vertrag prüft. Für die
+das jede importierte Binary vor der Messung gegen den festgeschriebenen Vertrag prüft (unter
+\texttt{--debug} zusätzlich gegen den Standard-Testsatz des Tier-Interfaces). Für die
 Tier-Binaries~E2 ist der Vertrag die ABI selbst
 (\texttt{test\_\allowbreak{}e2\_\allowbreak{}contract\_\allowbreak{}abi\_\allowbreak{}vertrag}): Die
 Wormhole-Referenz-DLL wird geladen und muss die festgeschriebene Schnittstellen-Folge erfüllen ---
@@ -1268,7 +1273,8 @@ Golden-Verankerung des Permutationsraums, und hier sind zwei Begriffe zu trennen
 (Abschnitt~\ref{sec:mess-chain}):
 %% INTERN-272: KA-071
 Der \emph{Referenz-Katalog} des Golden-Tests hält $2^{17} = 131072$ Binary-Identitäten --- siebzehn Achsen
-mit je zwei Vertretern, das Persistenz-Ziel auf einen festgelegt --- und wird gegen eine festgeschriebene
+mit je zwei Vertretern, das Persistenz-Ziel auf einen festgelegt; eine vereinfachende, überholte Annahme, denn
+die Achsen tragen mehrere Auslegungen, der Katalog ist Regressions-Detektor, nicht Obergrenze --- und wird gegen eine festgeschriebene
 CRC-64-Prüfsumme bestätigt (\texttt{0x56F1B721C72DC10E}, CRC-64/ECMA-182 über die Identitäten in % chktex 29
 kanonischer Reihenfolge; die Referenz ist literaler Werkzeug-Output, und ihre Änderung ist nur im
 Rahmen einer koordinierten Schnittstellen-Änderung zulässig), während ein kleiner, materialisierbarer Katalog von
@@ -1324,7 +1330,8 @@ die Schicht ihre Definition \emph{verlustfrei} weiterreicht, wird zum ausführba
 Je Schicht (die Harness-Namen zeigt Abbildung~\ref{fig:impl-layers}): Für E4 vergleichen Golden-Fixtures
 die aus einem Profil emittierten Achsen-Ebenen gegen eine Referenz, ein Fake-E3 ersetzt den
 Permutationsbaum; für E3 wird die Bijektion der Binary-Identität (mixed-radix hin und zurück) gegen ein
-Fake-E2 gefahren, dazu prüft ein Konformitäts-Gate jede importierte Binary vor der Messung; für E2 ist der
+Fake-E2 gefahren, dazu prüft ein Konformitäts-Gate jede importierte Binary vor der Messung (unter
+\texttt{--debug} auch gegen den Standard-Testsatz des Tier-Interfaces); für E2 ist der
 Vertrag die ABI selbst: Die Wormhole-Referenz-DLL muss \texttt{IAnatomyBase}, \texttt{IObservableTier}
 und \texttt{IResourceControllableTier} erfüllen, und die Antwort einer Stellgrößen-Anfrage
 (\texttt{apply}) ist die \emph{Zahl der Achsen, die den Wert tatsächlich angenommen haben} --- nichts wird
@@ -1341,8 +1348,8 @@ Oberhalb der Schicht-Harnesse sichert ein \emph{Zwei-Gate-Protokoll} jedes Imple
 und clang jeweils als Release- und Debug-Bau, ohne Änderungs-Skip und ohne Ausnahmeliste; der Doppellauf
 zwingt jede statische Prüfung durch zwei Übersetzer und macht die Run-to-Run-Stabilität der Zahl selbst
 zum Prüfgegenstand. Bestandteil von Gate~1 ist die Golden-Verankerung des Permutationsraums
-(Abschnitt~\ref{sec:mess-chain}): Der \emph{Referenz-Katalog} hält $2^{17} = 131072$ Binary-Identitäten
-und wird gegen eine festgeschriebene CRC-64-Prüfsumme bestätigt (\texttt{0x56F1B721C72DC10E}), ein % chktex 29
+(Abschnitt~\ref{sec:mess-chain}): Der \emph{Referenz-Katalog} hält $2^{17} = 131072$ Binary-Identitäten (Annahme zweier Auslegungen
+je Achse, überholt; Regressions-Detektor, nicht Obergrenze) und wird gegen eine festgeschriebene CRC-64-Prüfsumme bestätigt (\texttt{0x56F1B721C72DC10E}), ein % chktex 29
 kleiner Katalog von $320$ Identitäten dient als byte-genaue Prüfung der Serialisierungsform --- ein
 Charakterisierungs-Test im Sinne von Feathers~\cite{feathers2004legacy} ---, und die \emph{Mächtigkeit}
 des in einer Messreihe geplanten Raums ist davon verschieden und nie statisch: Der Planer zählt sie im
@@ -1606,7 +1613,7 @@ zweistufige Abschaltung als Permutations-Größe ist vorgesehen, aber nicht impl
   \node[font=\bfseries\scriptsize] at (8.6,1.2){micro (mi)};
   \node[rl] at (-2.3,0){Stufe 0: volle Messung\\(\texttt{measure})};
   \node[ze,fill=orange!14] at (0,0){Zeitpunkt $+$ Parameter-Klammer (Übersetzungszeit-Sonderfall)};
-  \node[ze,fill=orange!14] at (4.3,0){Zeit $+$ Parameter je Genus-Interface-Funktion};
+  \node[ze,fill=orange!14] at (4.3,0){Zeit $+$ Parameter je Gattungs-Interface-Funktion};
   \node[ze,fill=orange!14] at (8.6,0){Zeit $+$ Erfolgs-Parameter je Achsen-Interface};
   \node[rl] at (-2.3,-1.7){Stufe 1: Parameter aus\\(\texttt{measure}, \texttt{compare})};
   \node[ze,fill=orange!8] at (0,-1.7){nur Zeitpunkt: parameter-leerer \texttt{checkpoint\_measure} (Minimum)};
@@ -1644,7 +1651,7 @@ die zweistufige Abschaltung als Permutations-Größe ist vorgesehen, aber nicht 
   \node[font=\bfseries\scriptsize] at (8.6,1.2){micro (mi)};
   \node[rl] at (-2.3,0){Stufe 0: volle Messung\\(\texttt{measure})};
   \node[ze,fill=orange!14] at (0,0){Zeitpunkt $+$ Parameter-Klammer (Übersetzungszeit-Sonderfall)};
-  \node[ze,fill=orange!14] at (4.3,0){Zeit $+$ Parameter je Genus-Interface-Funktion};
+  \node[ze,fill=orange!14] at (4.3,0){Zeit $+$ Parameter je Gattungs-Interface-Funktion};
   \node[ze,fill=orange!14] at (8.6,0){Zeit $+$ Erfolgs-Parameter je Achsen-Interface};
   \node[rl] at (-2.3,-1.7){Stufe 1: Parameter aus\\(\texttt{measure}, \texttt{compare})};
   \node[ze,fill=orange!8] at (0,-1.7){nur Zeitpunkt: parameter-leerer \texttt{checkpoint\_measure} (Minimum)};
@@ -1789,11 +1796,11 @@ Zyklen, Instruktionen und Speicher-Stalls im Zähler-POD ungültig bleiben.
 Im Achsen-Interface-Modell wird die Mess-Quellen-Schnittstelle für das Mikro-Benchmarking je
 Achsen-Interface speziell für dessen Parametersatz erhoben und in Stufen über das Makro-Benchmarking und
 die Wallclock in der CEB an Parametern zusammengetragen; die Kategorien-Menge wächst damit über die
-Kanal-Adressen Achse $\to$ Genus $\to$ Kategorie (Hierarchie-Tiefe drei) auf hunderte Mess-Kategorien, je
+Kanal-Adressen Achse $\to$ Gattung $\to$ Kategorie (Hierarchie-Tiefe drei) auf hunderte Mess-Kategorien, je
 Achsen-Interface und Parametersatz eine. Umsetzungsstand: sechzehn Kategorien, durch die Registry statisch festgelegt
 (oben). Dazu tritt die \emph{ungebremste Nachmessung}: In einem Experiment werden die Aktionen jeder
 Achse in Reihenfolge über den Checkpoint der zuerst aufgerufenen Achsen-Interface-Funktion hinter dem
-Genus-Interface durch eine eigene Steuerungsfläche zurückgerollt, damit anschließend alle Achsen vom
+Gattungs-Interface durch eine eigene Steuerungsfläche zurückgerollt, damit anschließend alle Achsen vom
 Eintrittspunkt aus ohne Messung erneut vermessen werden können --- die CEB übernimmt dazu im Einzelmodus
 den inneren Zustand einer Tier-Binary mit Messfühlern in die analoge Tier-Binary ohne Messfühler (nur der
 Wallclock-Checkpoint) und misst vom selben Punkt erneut, gestaffelt nach dem Last-Profil-Eingang der
@@ -1807,10 +1814,10 @@ dass die Binary mit Messfühlern langsamer ist als die ohne (Kapitel~\ref{ch:eva
 %% INTERN-272: KA-083
 Im Achsen-Interface-Modell wird die Mess-Quellen-Schnittstelle für das Mikro-Benchmarking je
 Achsen-Interface speziell für dessen Parametersatz erhoben; die Kategorien-Menge wächst damit über die
-Kanal-Adressen Achse $\to$ Genus $\to$ Kategorie auf hunderte Mess-Kategorien (Umsetzungsstand: sechzehn,
+Kanal-Adressen Achse $\to$ Gattung $\to$ Kategorie auf hunderte Mess-Kategorien (Umsetzungsstand: sechzehn,
 durch die Registry statisch festgelegt). Dazu tritt die \emph{ungebremste Nachmessung}: Die Aktionen jeder
 Achse werden über den Checkpoint der zuerst aufgerufenen Achsen-Interface-Funktion hinter dem
-Genus-Interface durch eine eigene Steuerungsfläche zurückgerollt, die CEB übernimmt den inneren Zustand
+Gattungs-Interface durch eine eigene Steuerungsfläche zurückgerollt, die CEB übernimmt den inneren Zustand
 einer Tier-Binary mit Messfühlern in die analoge Tier-Binary ohne Messfühler und misst vom selben Punkt
 erneut, rekursiv je Makro-Benchmarking-Interface --- vorgesehen, aber nicht implementiert. Das
 Prüfkriterium der Nachmessung ist die Plausibilitäts-Invariante, dass die Binary mit Messfühlern langsamer
@@ -2027,14 +2034,14 @@ braucht tatsächliche Messkurven). Gemessen an der Dateiliste, die die \texttt{R
 (Dock-Verträge, Prüf-Dock, Dock-Factory, Dock-Array, XML-Parser, Binary-Proxy) und drei nicht (das Tier-Modul
 des \texttt{.so}-Exports --- die zwei Modulquellen unter \texttt{tests/unit} belegen nur die Baubarkeit des
 Modul-ABI ---, die Eviction und der Router); daneben führt das Verzeichnis die vier Header der
-Klassifikations-Schicht (Klassifikation, Concept-Gate, Strategie je Genus, Synthese-Matrix) und drei weitere
+Klassifikations-Schicht (Klassifikation, Concept-Gate, Strategie je Gattung, Synthese-Matrix) und drei weitere
 Header für das Andocken, das Modul-ABI und die Stempel-Kette, insgesamt dreizehn Header.
 Die Hybrid Module ABI v1 exportiert dieselben Pflicht-Symbole wie die plain
-Tiere samt Gattung und Genus, und \texttt{comdare\_anatomy\_genus} meldet den \emph{Ziel}-Genus (das, was
-das Modul für den Aufrufer ist), nie den Reroute-Genus der Klassifikation --- derselbe
+Tiere samt Konzept und Gattung, und \texttt{comdare\_anatomy\_genus} meldet den \emph{Ziel}-Gattung (das, was
+das Modul für den Aufrufer ist), nie den Reroute-Gattung der Klassifikation --- derselbe
 gattungsunabhängige Loader lädt die Hybrid-.so über die eine Ladestrecke; die Stempel-Kette der
 Hybrid-Stufe und die Hybrid-Positionen des Mess-Gate-Glieds (\texttt{hm}/\texttt{hmi}) führen ihre
-Identität, und die Genus-Bau-Zulassung führt sechs Einträge, den sechsten für das Reroute-Genus mit dem
+Identität, und die Gattungs-Bau-Zulassung führt sechs Einträge, den sechsten für die Reroute-Gattung mit dem
 Dock-Deckel (Default 32) als Arität. Das Hybrid-Live-Ranking ist als vierte
 Auswertungs-Komponente der compare-Stufe vorgesehen, und der Zustandsabgleich der Hybrid-Stufe ist per
 Memento mit zwei Release-Artefakten, single und hybrid, im Lager vorgesehen
@@ -2047,7 +2054,7 @@ Behebung der Schema-Drift, dass das XSD die \texttt{<hybrid\_tier>}-Sektion nich
   dk/.style={draw,rounded corners,fill=orange!12,text width=1.95cm,minimum height=1.1cm,align=center,inner sep=2pt,font=\tiny},
   ex/.style={draw,rounded corners,fill=green!8,text width=2.6cm,minimum height=1.0cm,align=center,inner sep=2pt,font=\tiny}]
   \node[draw,rounded corners,dashed,minimum width=9.0cm,minimum height=4.8cm] (frame) at (0,-0.7){};
-  \node[font=\bfseries\scriptsize,anchor=north west] at (-4.5,-3.15){Hybrid-\texttt{.so} (Gattung HeuristikAdapter, Reroute-Genus) --- eingeschobene Mux-Stufe};
+  \node[font=\bfseries\scriptsize,anchor=north west] at (-4.5,-3.15){Hybrid-\texttt{.so} (Konzept HeuristikAdapter, Reroute-Gattung) --- eingeschobene Mux-Stufe};
   \node[hb] (proxy) at (-2.4,0.9){\texttt{HybridBinaryProxy}\\erfüllt \texttt{IAnatomyBase}; leitet den Antrieb an das Ziel-Dock durch};
   \node[hb] (arr) at (2.3,0.9){\texttt{DockArray\{\allowbreak max\_docks\}}\\\texttt{HybridDockVariant}: die eine erlaubte variant-Stelle};
   \draw[->,thick] (proxy)--(arr);
@@ -2065,9 +2072,9 @@ Behebung der Schema-Drift, dass das XSD die \texttt{<hybrid\_tier>}-Sektion nich
   \draw[->,dashed] (fac)--(proxy);
   \node[ex] (xml) at (-6.3,-1.4){\texttt{<hybrid\_tier enabled=true max\_docks=N>}\\Parser: \texttt{enabled} exklusiv je Kette, \texttt{max\_docks} Pflicht};
   \draw[->,dashed] (xml)--(d1);
-  \node[ex] (sym) at (6.3,0.9){Exporte: sieben Pflicht-Symbole wie plain Tiere; \texttt{genus()} meldet den Ziel-Genus (Weg C)};
+  \node[ex] (sym) at (6.3,0.9){Exporte: sieben Pflicht-Symbole wie plain Tiere; \texttt{genus()} meldet den Ziel-Gattung (Weg C)};
   \draw[->,dashed] (frame.east)--(sym);
-  \node[ex] (st) at (6.3,-1.4){Stempel-Kette der Hybrid-Stufe; Mess-Gate-Felder \texttt{hm}/\texttt{hmi}; Genus-Bau-Zulassung: 6.\ Eintrag};
+  \node[ex] (st) at (6.3,-1.4){Stempel-Kette der Hybrid-Stufe; Mess-Gate-Felder \texttt{hm}/\texttt{hmi}; Gattungs-Bau-Zulassung: 6.\ Eintrag};
 \end{tikzpicture}
 \caption[Die Hybrid-Stufe im Code]{Die Hybrid-Stufe im Code: die optional zwischen CEB-Prüf-Dock und Tier-Binary
 eingeschobene Mux-Stufe, am CEB-Prüf-Dock angesetzt und mit Dock-Slots für Tier-Binaries (Standardweg ohne
@@ -2075,7 +2082,7 @@ Hybrid: Prüf-Dock direkt zur Tier-Binary). Der Binary-Proxy macht die Hybrid-.s
 gewöhnlichen Tier-Binary und hält das Dock-Array mit dem Laufzeit-Deckel \texttt{max\_docks}; je Dock gilt
 einer von vier Verträgen, die Dock-Factory ist der einzige Konstruktions-Ort, die
 \texttt{<hybrid\_tier>}-Sektion der XML schaltet die Stufe und setzt den Deckel. Die Exporte sind
-buchstabengleich zu den plain Tieren, \texttt{genus()} meldet den Ziel-Genus. Nicht implementiert: \texttt{.so}-Export,
+buchstabengleich zu den plain Tieren, \texttt{genus()} meldet den Ziel-Gattung. Nicht implementiert: \texttt{.so}-Export,
 Eviction, Router.}\label{fig:hybrid-dock}
 \end{figure}
 
@@ -2163,8 +2170,8 @@ Prüf-Dock, die Dock-Factory als einziger Konstruktions-Ort, das Dock-Array mit 
 \texttt{max\_docks}, der Parser der \texttt{<hybrid\_tier>}-Sektion und der Binary-Proxy, der eine
 Hybrid-.so nach außen zu einer gewöhnlichen Tier-Binary macht; nicht implementiert sind \texttt{.so}-Export,
 Eviction und Router --- sechs der neun Dateien der Schicht. Die Hybrid Module ABI exportiert dieselben
-Pflicht-Symbole wie die plain Tiere, \texttt{comdare\_anatomy\_genus} meldet den \emph{Ziel}-Genus, nie
-den Reroute-Genus, und die Genus-Bau-Zulassung führt als sechsten Eintrag das Reroute-Genus mit dem
+Pflicht-Symbole wie die plain Tiere, \texttt{comdare\_anatomy\_genus} meldet den \emph{Ziel}-Gattung, nie
+den Reroute-Gattung, und die Gattungs-Bau-Zulassung führt als sechsten Eintrag die Reroute-Gattung mit dem
 Dock-Deckel (Default 32) als Arität. Das Hybrid-Live-Ranking als vierte Auswertungs-Komponente der
 compare-Stufe und der Zustandsabgleich per Memento mit zwei Release-Artefakten, single und hybrid, im
 Lager sind vorgesehen (Abschnitt~\ref{sec:heuristics-modes}), aber nicht implementiert, ebenso nicht die

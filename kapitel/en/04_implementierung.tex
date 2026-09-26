@@ -114,13 +114,13 @@ Figure~\ref{fig:traeger-stufen} shows it with its binaries, legend forms and sur
   \node[st] (s1) at (0,0){\textbf{Stage 1: planner}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny resolves the user XML against the three catalogues; director walk; legend \texttt{ceb:build:\allowbreak[a,b,c]}}};
   \node[st] (s2) at (3.95,0){\textbf{Stage 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny carries the measurement choice compiled in, permutes system $\times$ organ; one probe dock as attachment point for tier or hybrid; legend per host \texttt{tier:build-batch:\allowbreak<host>}, attestations \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
   \node[st] (s3) at (11.85,0){\textbf{Stage 3: tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny one organ permutation per binary; seven mandatory symbols; measurement batch per host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, measurement attestations \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[hy] (s4) at (7.9,0){\textbf{Insertion: hybrid}\\{\tiny optional, between stage 2 and 3; hybrid \texttt{.so}}\\[2pt]{\tiny mux switch at the CEB probe dock; dock slots 1 to $N$ for tier binaries; the same mandatory symbols; \texttt{genus()} reports the target genus}};
+  \node[hy] (s4) at (7.9,0){\textbf{Insertion: hybrid}\\{\tiny optional, between stage 2 and 3; hybrid \texttt{.so}}\\[2pt]{\tiny mux switch at the CEB probe dock; dock slots 1 to $N$ for tier binaries; the same mandatory symbols; \texttt{genus()} reports the target family}};
   \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s4); \draw[->,thick] (s4)--(s3);
   \draw[->,thick] (s2.north) -- ++(0,0.5) coordinate (bp) -| (s3.north);
   \node[font=\tiny,anchor=south,text width=11.5cm,align=center] at ([xshift=3.95cm,yshift=1pt]bp){standard route without hybrid: CEB probe dock $\to$ tier binary directly; with hybrid: probe dock $\to$ mux $\to$ dock slot $\to$ tier binary};
   \node[fl] (f1) at (0,-2.95){Surface 2 (stamp): self-version X.Y.Z, fingerprint SHA-256, overall stamp};
   \node[fl] (f2) at (3.95,-2.95){Surface 2 (stamp): measurement and system line, fingerprint SHA-512; own measurement-gate assignment};
-  \node[fl] (f3) at (11.85,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
+  \node[fl] (f3) at (11.85,-2.95){Surfaces 1--3: family interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
   \node[fl] (f4) at (7.9,-2.95){Surfaces 1--3 as for the tier, plus the attached stamp lines (runtime hook)};
   \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
 \end{tikzpicture}
@@ -162,11 +162,14 @@ Section~\ref{sec:anatomy-levels}). \texttt{build} builds the binaries without me
 parallel; \texttt{measure} is the deterministic single-thread measurement run and the only mode with
 measurement switched on; \texttt{compare} reads the measurement store and compares views already
 measured --- the stage \emph{before} the release; \texttt{release} produces the reference binary without
-instrumentation. All four build as CMake Release; a measuring debug regime no longer exists, because
+instrumentation. All four build as CMake Release; alongside, the build variants debug, measurement, and release remain in force, and the debug variant is being extended further
+--- a measuring debug regime, however, no longer exists, because
 numbers collected in parallel are not comparable with single-thread measurements, and the wiring check
-it performed is realized as the switch \texttt{--debug} of the planner shell --- a flag, not a state.
+it performed is realized as the switch \texttt{--debug} of the planner shell --- a flag, not a state;
+under \texttt{--debug} the conformance gate additionally runs the standard test set of the tier interface, and this indirect debug
+mode coincides with the release build and is not kept separately.
 Implementation status: \texttt{compare} is a selectable label with build semantics identical to
-\texttt{release}; its mode-specific execution (replay comparison instead of measuring) is planned but
+\texttt{release}; its mode-specific execution (replay comparison instead of measuring) is planned for later main waves but
 not implemented (Section~\ref{sec:anatomy-levels}).
 \begin{table}[htbp]\centering\footnotesize
 \begin{tabular}{@{}llllp{5.6cm}@{}}
@@ -234,13 +237,13 @@ Figure~\ref{fig:traeger-stufen} shows it with its binaries, legend forms and sur
   \node[st] (s1) at (0,0){\textbf{Stage 1: planner}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny resolves the user XML against the three catalogues; director walk; legend \texttt{ceb:build:\allowbreak[a,b,c]}}};
   \node[st] (s2) at (3.95,0){\textbf{Stage 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny carries the measurement choice compiled in, permutes system $\times$ organ; one probe dock as attachment point for tier or hybrid; legend per host \texttt{tier:build-batch:\allowbreak<host>}, attestations \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
   \node[st] (s3) at (11.85,0){\textbf{Stage 3: tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny one organ permutation per binary; seven mandatory symbols; measurement batch per host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, measurement attestations \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[hy] (s4) at (7.9,0){\textbf{Insertion: hybrid}\\{\tiny optional, between stage 2 and 3; hybrid \texttt{.so}}\\[2pt]{\tiny mux switch at the CEB probe dock; dock slots 1 to $N$ for tier binaries; the same mandatory symbols; \texttt{genus()} reports the target genus}};
+  \node[hy] (s4) at (7.9,0){\textbf{Insertion: hybrid}\\{\tiny optional, between stage 2 and 3; hybrid \texttt{.so}}\\[2pt]{\tiny mux switch at the CEB probe dock; dock slots 1 to $N$ for tier binaries; the same mandatory symbols; \texttt{genus()} reports the target family}};
   \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s4); \draw[->,thick] (s4)--(s3);
   \draw[->,thick] (s2.north) -- ++(0,0.5) coordinate (bp) -| (s3.north);
   \node[font=\tiny,anchor=south,text width=11.5cm,align=center] at ([xshift=3.95cm,yshift=1pt]bp){standard route without hybrid: CEB probe dock $\to$ tier binary directly; with hybrid: probe dock $\to$ mux $\to$ dock slot $\to$ tier binary};
   \node[fl] (f1) at (0,-2.95){Surface 2 (stamp): self-version X.Y.Z, fingerprint SHA-256, overall stamp};
   \node[fl] (f2) at (3.95,-2.95){Surface 2 (stamp): measurement and system line, fingerprint SHA-512; own measurement-gate assignment};
-  \node[fl] (f3) at (11.85,-2.95){Surfaces 1--3: genus interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
+  \node[fl] (f3) at (11.85,-2.95){Surfaces 1--3: family interface, stamp (three lines), measurement cut-through \texttt{IMessVisitor}};
   \node[fl] (f4) at (7.9,-2.95){Surfaces 1--3 as for the tier, plus the attached stamp lines (runtime hook)};
   \draw[dashed,gray] (s1)--(f1); \draw[dashed,gray] (s2)--(f2); \draw[dashed,gray] (s3)--(f3); \draw[dashed,gray] (s4)--(f4);
 \end{tikzpicture}
@@ -272,7 +275,8 @@ measurement run and the only mode with measurement switched on, \texttt{compare}
 store (implementation status: a selectable label, the replay comparison is not implemented),
 \texttt{release} produces the reference binary without instrumentation; all four build as CMake
 Release, and the wiring check of the former debug regime is realized as the switch \texttt{--debug} of
-the planner shell --- a flag, not a state.
+the planner shell --- a flag, not a state; under \texttt{--debug} the conformance gate additionally runs
+the standard test set of the tier interface, an indirect debug mode that coincides with the release build.
 \end{nurkurz}
 
 \begin{nurlang}
@@ -421,7 +425,7 @@ enable flag of the configuration and the detection flag \texttt{COMDARE\_HAVE\_<
 --- a missing vendor switches the building block off instead of breaking the build ---; SOTA building
 blocks are switched on or off at compile time via constexpr enable flags together with
 \texttt{mp\_filter} (the \texttt{COMDARE\_AXIS\_*\_USE\_}/\texttt{ENABLE\_} flag family), each with a
-safe fallback chosen per family: allocator adapters replace the missing vendor in \texttt{if constexpr}
+safe fallback chosen per concept: allocator adapters replace the missing vendor in \texttt{if constexpr}
 branches with the portable aligned allocation (\texttt{portable\_aligned\_alloc}), the vendor shim
 supplies only forward stubs for the never-executed branch, and the axis value \texttt{StdMalloc} is a
 building block of its own, not a makeshift; data-structure adapters of foreign search techniques
@@ -448,7 +452,7 @@ from the type list of all building blocks (\texttt{All*}) a compile-time filter 
 assigns exactly one type per slot; the hot path contains neither \texttt{virtual} calls nor runtime
 switches --- an unused abstraction costs nothing~\cite{stroustrup2012foundations}. SOTA designs and
 allocators are integrated via thin \emph{adapters}: vendor shims switch the building block off when the
-vendor is missing instead of breaking the build, with a fallback chosen per family
+vendor is missing instead of breaking the build, with a fallback chosen per concept
 (\texttt{portable\_aligned\_alloc}; \texttt{StdMalloc} is a building block of its own, not a makeshift),
 and a stub that throws a \texttt{runtime\_error} at runtime does not occur in the organ axes. The organ
 axes not occupied by the candidate under test draw their building block from the cache engine
@@ -612,10 +616,10 @@ The \emph{one} architecture from Section~\ref{sec:anatomy-model} is, in code, a 
 Its root is \texttt{IExecutionEngine} with three engine kinds --- Anatomy, Virus, Hybrid --- and a
 contract of seven methods: \texttt{warm\_up}, \texttt{run}, \texttt{reset} and \texttt{shutdown} as
 measurement lifecycle as well as \texttt{engine\_name}, \texttt{engine\_kind} and
-\texttt{lifecycle\_state} as reports. Beneath it lie, on level~1, the four families Map, Container,
+\texttt{lifecycle\_state} as reports. Beneath it lie, on level~1, the four concepts Map, Container,
 Graph and HeuristikAdapter (Section~\ref{sec:anatomy-levels}) --- Graph as a declared stub without a
-genus --- and, on level~2, the six genera SearchAlgorithm, Set, Sequence, Adapter, View and
-FunctionInterfaceReroute; in code the family is the derivation of the genus (\texttt{gattung\_of}), not
+family --- and, on level~2, the six families SearchAlgorithm, Set, Sequence, Adapter, View and
+FunctionInterfaceReroute; in code the concept is the derivation of the family (\texttt{gattung\_of}), not
 a second label. The living being \texttt{SearchAlgorithm} and its ABI runtime view --- the
 \enquote{SearchEngine} --- are two views of the same entity across the module boundary, not a parallel
 construct: the body is \texttt{SearchAlgorithmAnatomy<C>}, the composition and wiring of the eighteen
@@ -637,8 +641,8 @@ The \emph{one} architecture from Section~\ref{sec:anatomy-model} is, in code, a 
 root is \texttt{IExecutionEngine} with three engine kinds --- Anatomy, Virus, Hybrid --- and a contract
 of seven methods (\texttt{warm\_up}, \texttt{run}, \texttt{reset} and \texttt{shutdown} as measurement
 lifecycle as well as \texttt{engine\_name}, \texttt{engine\_kind} and \texttt{lifecycle\_state} as
-reports). Beneath it lie the four families and the six genera (Section~\ref{sec:anatomy-levels}); in
-code the family is the derivation of the genus (\texttt{gattung\_of}), not a second label. The living
+reports). Beneath it lie the four concepts and the six families (Section~\ref{sec:anatomy-levels}); in
+code the concept is the derivation of the family (\texttt{gattung\_of}), not a second label. The living
 being \texttt{SearchAlgorithm} and its ABI runtime view --- the \enquote{SearchEngine} --- are two
 views of the same entity across the module boundary: the body is \texttt{SearchAlgorithmAnatomy<C>},
 the composition and wiring of the eighteen organs, and the view is
@@ -659,22 +663,22 @@ builder generates a separate compiled artefact per permutation.
   \begin{tikzpicture}[box/.style={draw, rounded corners, align=center, font=\footnotesize, inner sep=3pt, text width=3.0cm},
     gen/.style={draw, rounded corners, align=center, font=\tiny, inner sep=2pt, text width=2.0cm, fill=blue!4}]
     \node[box,fill=blue!8,text width=6.6cm] (root) at (-1.0,0) {\texttt{IExecutionEngine} --- \textbf{driver of measurement}\\{\scriptsize contract: \texttt{warm\_up$\cdot$run$\cdot$reset$\cdot$shutdown} $+$ \texttt{engine\_name$\cdot$engine\_kind$\cdot$lifecycle\_state}; engine kinds Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid}};
-    \node[box] (ana) at (-4.4,-2.0) {\texttt{IAnatomyBase}\\{\scriptsize living being (four families, level~1)}};
+    \node[box] (ana) at (-4.4,-2.0) {\texttt{IAnatomyBase}\\{\scriptsize living being (four concepts, level~1)}};
     \node[box] (vir) at (3.4,-2.0) {\texttt{IVirus\-Execution\-Engine}\\{\scriptsize virus (axis-less, yet measurable; e.g.\ graph BFS)}};
-    \node[box,text width=3.2cm] (g1) at (-7.5,-3.9) {Map family\\{\tiny genus \texttt{SearchAlgorithm} (mammal)}};
-    \node[box,text width=3.2cm] (g2) at (-3.95,-3.9) {Container family\\{\tiny genera Set, Sequence, Adapter, View}};
-    \node[box,text width=3.2cm,dashed] (g3) at (-0.4,-3.9) {Graph family\\{\tiny declared stub, no genus}};
-    \node[box,text width=3.2cm] (g4) at (3.15,-3.9) {HeuristikAdapter family\\{\tiny genus \texttt{FunctionInterfaceReroute}}};
+    \node[box,text width=3.2cm] (g1) at (-7.5,-3.9) {Map concept\\{\tiny family \texttt{SearchAlgorithm} (mammal)}};
+    \node[box,text width=3.2cm] (g2) at (-3.95,-3.9) {Container concept\\{\tiny families Set, Sequence, Adapter, View}};
+    \node[box,text width=3.2cm,dashed] (g3) at (-0.4,-3.9) {Graph concept\\{\tiny declared stub, no family}};
+    \node[box,text width=3.2cm] (g4) at (3.15,-3.9) {HeuristikAdapter concept\\{\tiny family \texttt{FunctionInterfaceReroute}}};
     \node[gen] (n1) at (-7.6,-5.7) {\texttt{SearchAlgorithm}\\18 organs};
     \node[gen] (n2) at (-5.4,-5.7) {\texttt{Set}};
     \node[gen] (n3) at (-3.2,-5.7) {\texttt{Sequence}};
     \node[gen] (n4) at (-1.0,-5.7) {\texttt{Adapter}};
     \node[gen] (n5) at (1.2,-5.7) {\texttt{View}};
-    \node[gen,text width=3.1cm] (n6) at (4.1,-5.7) {\texttt{FunctionInterfaceReroute}\\reroute genus};
+    \node[gen,text width=3.1cm] (n6) at (4.1,-5.7) {\texttt{FunctionInterfaceReroute}\\reroute family};
     \node[box,text width=3.4cm] (body) at (-6.6,-7.6) {\texttt{Search\-Algorithm\-Anatomy<C>}\\{\scriptsize \emph{body}: composition $+$ \emph{wiring} of the 18 organs}};
     \node[box,text width=3.4cm] (abi) at (-2.4,-7.6) {\texttt{Search\-Algorithm\-Abi\-Adapter<A>}\\{\scriptsize ABI runtime view (\enquote{SearchEngine})}};
-    \node[box,fill=orange!8,text width=3.4cm] (comp) at (-6.6,-9.7) {concrete composition (e.g.\ \texttt{ArtComposition})\\{\scriptsize level 4: assignment of \emph{all} 18 axes $=$ one animal}};
-    \node[box,fill=orange!16,text width=3.4cm] (bin) at (-6.6,-12.0) {tier binary \texttt{comdare\_perm\_\-<fp>.so}\\{\scriptsize level 5: compiled per permutation $+$ system axes}};
+    \node[box,fill=orange!8,text width=3.4cm] (comp) at (-6.6,-9.7) {concrete composition (e.g.\ \texttt{ArtComposition})\\{\scriptsize level 3: genus (e.g.\ ART) $=$ assignment of \emph{all} 18 organ axes (level 4)}};
+    \node[box,fill=orange!16,text width=3.4cm] (bin) at (-6.6,-12.0) {tier binary \texttt{comdare\_perm\_\-<fp>.so}\\{\scriptsize level 5a: compiled per permutation $+$ system axes}};
     \draw[->] (root) -- (ana);
     \draw[->] (root) -- (vir);
     \draw[->] (ana) -- (g1); \draw[->] (ana) -- (g2); \draw[->,dashed] (ana) -- (g3); \draw[->] (ana) -- (g4);
@@ -690,15 +694,15 @@ builder generates a separate compiled artefact per permutation.
   \texttt{IExecutionEngine} as the \emph{driver of measurement} --- the universal measurable contract of
   measurement lifecycle (\texttt{warm\_up}/\texttt{run}/\texttt{reset}/\texttt{shutdown}) and reports
   (\texttt{engine\_name}/\texttt{engine\_kind}/\texttt{lifecycle\_state}) across all three engine kinds
-  Anatomy, Virus and Hybrid; beneath it branch the anatomy-bearing \emph{families} (level~1: Map,
-  Container, Graph, HeuristikAdapter) with their \emph{genera} (level~2) and the axis-less
-  \emph{viruses}. \texttt{SearchAlgorithm} \emph{is} the focal living being (mammal); its anatomy is its
+  Anatomy, Virus and Hybrid; beneath it branch the anatomy-bearing \emph{concepts} (level~1: Map,
+  Container, Graph, HeuristikAdapter) with their \emph{families} (level~2) and the axis-less
+  \emph{viruses}. \texttt{SearchAlgorithm} \emph{is} the focal living being (elephant); its anatomy is its
   \emph{body} --- the fixed composition \emph{and wiring} of the 18 organs ---, and
-  \enquote{SearchEngine} only its ABI runtime view. The mammal branch is drawn out down to the
-  individual: a concrete axis composition (level~4) is compiled per permutation as a standalone tier
-  binary (level~5). Container possesses an organ set of its own with the genera Set, Sequence, Adapter
-  and View, whose arities are carried by the genus build admission; Graph is declared and possesses no
-  genus; the family HeuristikAdapter carries the reroute genus of the hybrid stage.}\label{fig:one-architecture}
+  \enquote{SearchEngine} only its ABI runtime view. The elephant branch (family \texttt{SearchAlgorithm}) is drawn out down to the
+  individual: a genus (level~3) with its concrete axis composition (level~4) is compiled per permutation
+  as a standalone tier binary (level~5a, the individual). Container possesses an organ set of its own with the families Set, Sequence, Adapter
+  and View, whose arities are carried by the family build admission; Graph is declared and possesses no
+  family; the concept HeuristikAdapter carries the reroute family of the hybrid stage.}\label{fig:one-architecture}
 \end{figure}
 
 \begin{nurlang}
@@ -707,17 +711,17 @@ the apparatus --- that exports exactly one living being per permutation (Figure~
 tier binary contains seven mandatory symbols with C linkage --- the four primal symbols ABI version,
 magic number, factory \texttt{comdare\_\allowbreak{}create\_\allowbreak{}anatomy} and destroy, plus the
 two reports \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} and
-\texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus}, spelled identically across all families, as
+\texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus}, spelled identically across all concepts, as
 well as the version lines of the stamp. The identical spelling is a condition, not a convenience: the
-family-independent loader loads every binary via the same loading route (POSIX
+concept-independent loader loads every binary via the same loading route (POSIX
 \texttt{dlopen}~\cite{posix_dlopen}) and can determine the family \emph{before} it constructs an
-instance --- family-independent names with family-specific values; the family is here derived from the
-genus. The ABI carries major version~9, whose seam is the genus interface. The variadic 1/2/N hybrid
+instance --- concept-independent names with concept-specific values; the concept is here derived from the
+family. The ABI carries major version~9, whose seam is the family interface. The variadic 1/2/N hybrid
 API belongs to the candidate under test: its \texttt{PrtArtSearchEngine<Ts\ldots>} specializes by parameter count ---
 one parameter demands all function interfaces of a \texttt{std::vector}, two those of a
 \texttt{std::map}, more than two those of a \texttt{std::map} onto a tuple ---, and the slot arities of
-the genera of the cache engine (eighteen for the genus SearchAlgorithm, each their own for Set,
-Sequence, Adapter and View from the genus build admission) are to be read separately from it. Complex
+the families of the cache engine (eighteen for the family SearchAlgorithm, each their own for Set,
+Sequence, Adapter and View from the family build admission) are to be read separately from it. Complex
 keys are reduced by a fingerprint component of the cache engine
 (\texttt{fixed\_\allowbreak{}length\_\allowbreak{}fingerprint}, FNV-1a base) to 16-byte binary strings
 of fixed length, which the candidate under test uses as the key type of its memory model (\texttt{BinaryKey}); this key
@@ -733,11 +737,11 @@ exactly one living being per permutation: every tier binary contains seven manda
 linkage --- the four primal symbols ABI version, magic number, factory
 \texttt{comdare\_\allowbreak{}create\_\allowbreak{}anatomy} and destroy, plus the two reports
 \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} and
-\texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus}, spelled identically across all families, as
-well as the version lines of the stamp. The identical spelling is a condition: the family-independent
+\texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus}, spelled identically across all concepts, as
+well as the version lines of the stamp. The identical spelling is a condition: the concept-independent
 loader loads every binary via the same loading route (POSIX \texttt{dlopen}~\cite{posix_dlopen}) and
-determines the family from the genus \emph{before} it constructs an instance. The ABI carries major
-version~9, whose seam is the genus interface. The variadic 1/2/N hybrid API belongs to the candidate
+determines the concept from the family \emph{before} it constructs an instance. The ABI carries major
+version~9, whose seam is the family interface. The variadic 1/2/N hybrid API belongs to the candidate
 under test: \texttt{PrtArtSearchEngine<Ts\ldots>} specializes by parameter count (\texttt{std::vector},
 \texttt{std::map}, \texttt{std::map} onto a tuple). Complex keys are reduced by a fingerprint component
 (\texttt{fixed\_\allowbreak{}length\_\allowbreak{}fingerprint}, FNV-1a base) to 16-byte binary strings,
@@ -769,7 +773,7 @@ extern "C" {
 template<class K, class First, class... Rest> class PrtArtSearchEngine;
 \end{lstlisting}
   \caption{The ABI-stable C module boundary (seven mandatory symbols; the hybrid \texttt{.so} exports the same set
-  and reports its target genus via \texttt{genus}) and the variadic 1/2/N API as the view of the candidate under test.
+  and reports its target family via \texttt{genus}) and the variadic 1/2/N API as the view of the candidate under test.
   Complex keys are reduced by a fingerprint component to 16-byte binary strings of fixed length; the
   identity of a binary is carried separately from this by the \texttt{permutation\_fingerprint} field of
   the ABI POD, the SHA-512 tier fingerprint and the SHA-256 planner fingerprint.}\label{fig:abi}
@@ -788,14 +792,14 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   \node[iface,minimum height=1.0cm] (exec) at (-4.9,5.05){IExecutionEngine\\{\normalfont\scriptsize driver of measurement}};
   \node[iface] (anat) at (-4.9,3.75){IAnatomyBase};
   \node[iface] (virus) at (-0.2,5.05){IVirusExecutionEngine};
-  \node[comp] (gatt) at (-4.9,2.75){Family (4, level 1)};
-  \node[comp] (genus) at (-4.9,1.75){Genus (6, level 2)};
+  \node[comp] (gatt) at (-4.9,2.75){Concept (4, level 1)};
+  \node[comp] (family) at (-4.9,1.75){Family (6, level 2)};
   \node[comp] (body) at (-4.9,0.75){SearchAlgorithmAnatomy<C>};
   \node[comp] (abi) at (-4.9,-0.25){SearchAlgorithmAbiAdapter<A>};
   \node[iface,fill=orange!10] (drive) at (-4.9,-1.35){IDriveableTier / IObservableTier};
   \node[iface,fill=orange!10] (mess) at (-4.9,-2.35){IMessVisitor\\{\normalfont\scriptsize surface 3: measurement cut-through}};
   \draw[->] (exec)--(anat); \draw[->] (exec.east) to[bend left=10] (virus.west);
-  \draw[->] (anat)--(gatt); \draw[->] (gatt)--(genus); \draw[->] (genus)--(body); \draw[->] (body)--(abi); \draw[->] (abi)--(drive); \draw[->] (drive)--(mess);
+  \draw[->] (anat)--(gatt); \draw[->] (gatt)--(family); \draw[->] (family)--(body); \draw[->] (body)--(abi); \draw[->] (abi)--(drive); \draw[->] (drive)--(mess);
   \node[font=\bfseries\scriptsize] at (4.9,5.8){Implementation pattern per axis ($\times$18)};
   \node[iface] (topic) at (4.9,5.05){TopicConcept $\wedge$ AxisConcept};
   \node[comp] (crtp) at (4.9,3.95){AxisBase<Derived> (CRTP)};
@@ -807,7 +811,7 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(all); \draw[->] (all)--(filt); \draw[->] (filt)--(en); \draw[->] (en)--(slot);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{composes 18 axes} (topic.west);
 \end{tikzpicture}
-\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase}, the four families and six genera and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the eighteen axes) and its ABI runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), which is measured via the drive/observer contracts \texttt{IDriveableTier}/\texttt{IObservableTier} and whose measurement crosses as surface~3 through the visitor \texttt{IMessVisitor}; on the right the live path repeated per axis --- a two-layer \texttt{Concept}, a \texttt{requires}-secured CRTP base, the complete \texttt{mp\_list} building-block family, the compile-time filter over the enable flag and the composition slot, which contains exactly one type. The variant-based resolution \texttt{resolve\_baustein} is a rejected alternative isolated from the build (dashed).}\label{fig:uml-interfaces}
+\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase}, the four families and six families and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the eighteen axes) and its ABI runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), which is measured via the drive/observer contracts \texttt{IDriveableTier}/\texttt{IObservableTier} and whose measurement crosses as surface~3 through the visitor \texttt{IMessVisitor}; on the right the live path repeated per axis --- a two-layer \texttt{Concept}, a \texttt{requires}-secured CRTP base, the complete \texttt{mp\_list} building-block family, the compile-time filter over the enable flag and the composition slot, which contains exactly one type. The variant-based resolution \texttt{resolve\_baustein} is a rejected alternative isolated from the build (dashed).}\label{fig:uml-interfaces}
 \end{figure}
 \end{nurlang}
 
@@ -1013,9 +1017,9 @@ concern~M, which crosses all levels host-side without touching the binary identi
 
 The contracts between the carrier stages are partitioned into surfaces at the binaries. The
 three-surface model (Section~\ref{sec:anatomy-levels}) is present in code by name: surface~1 is the
-genus interface of the tier binary (runtime, abstract factory), surface~2 the stamp (compile time,
+family interface of the tier binary (runtime, abstract factory), surface~2 the stamp (compile time,
 ABI-stable) and surface~3 the measurement cut-through \texttt{IMessVisitor} --- a visitor at the
-\texttt{dlopen} transition with double dispatch, which exists \emph{so that} family and genus interfaces
+\texttt{dlopen} transition with double dispatch, which exists \emph{so that} concept and family interfaces
 remain unchanged: the measurement crosses as a seam of its own instead of forcing measurement fields
 into the domain interfaces. The stamp contract is executed as a matrix of seven interfaces and four
 carriers --- 28~cells with three-valued admission (mandatory, permitted, forbidden), of which the existing
@@ -1170,9 +1174,9 @@ concern~M, which crosses all levels host-side without touching the binary identi
 
 The contracts between the carrier stages are partitioned into surfaces at the binaries. The
 three-surface model (Section~\ref{sec:anatomy-levels}) is present in code by name: surface~1 is the
-genus interface of the tier binary, surface~2 the stamp and surface~3 the measurement cut-through
+family interface of the tier binary, surface~2 the stamp and surface~3 the measurement cut-through
 \texttt{IMessVisitor} --- a visitor at the \texttt{dlopen} transition, which exists \emph{so that}
-family and genus interfaces remain unchanged. The stamp contract is executed as a matrix of seven
+concept and family interfaces remain unchanged. The stamp contract is executed as a matrix of seven
 interfaces and four carriers --- 28~cells with three-valued admission (Table~\ref{tab:stempel-matrix});
 the absence of the organ line at the CEB is the static barrier \enquote{the CEB carries no organ
 axes}, and a \texttt{static\_assert(StempelVertrag<Erbin, Traeger>)} beneath every heir turns a
@@ -1235,7 +1239,8 @@ run and, per path, the mixed-radix-encoded binary identifier is translated back 
 plus signature round trip) --- against a fake E2 that builds not a single binary; added to this is a
 conformance gate in the full-run path
 (\texttt{test\_\allowbreak{}e3\_\allowbreak{}contract\_\allowbreak{}conformance\_\allowbreak{}gate\_\allowbreak{}wirksam}),
-which checks every imported binary against the fixed contract before the measurement. For the tier
+which checks every imported binary against the fixed contract before the measurement (under
+\texttt{--debug} additionally against the standard test set of the tier interface). For the tier
 binaries~E2 the contract is the ABI itself
 (\texttt{test\_\allowbreak{}e2\_\allowbreak{}contract\_\allowbreak{}abi\_\allowbreak{}vertrag}): the
 Wormhole reference DLL is loaded and must satisfy the fixed interface sequence ---
@@ -1281,7 +1286,9 @@ single-thread-deterministic mode \texttt{measure} --- makes the run-to-run stabi
 itself the object of testing. Part of gate~1 is the golden anchoring of the permutation space, and here
 two notions are to be separated (Section~\ref{sec:mess-chain}):
 The \emph{reference catalogue} of the golden test holds $2^{17} = 131072$ binary identities ---
-seventeen axes with two representatives each, the persistence target pinned to one --- and is confirmed
+seventeen axes with two representatives each, the persistence target pinned to one; a simplifying,
+superseded assumption, since the axes carry several configurations, the catalogue is the regression
+detector, not an upper bound --- and is confirmed
 against a fixed CRC-64 checksum (\texttt{0x56F1B721C72DC10E}, CRC-64/ECMA-182 over the identities in % chktex 29
 canonical order; the reference is literal tool output, and its change is permissible only within a
 coordinated interface change), while a small, materializable catalogue of
@@ -1337,7 +1344,8 @@ executable acceptance test.
 Per layer (the harness names are shown in Figure~\ref{fig:impl-layers}): for E4, golden fixtures
 compare the axis levels emitted from a profile against a reference, a fake E3 replaces the permutation
 tree; for E3 the bijection of the binary identity (mixed-radix back and forth) is run against a fake
-E2, and in addition a conformance gate checks every imported binary before the measurement; for E2 the
+E2, and in addition a conformance gate checks every imported binary before the measurement (under
+\texttt{--debug} also against the standard test set of the tier interface); for E2 the
 contract is the ABI itself: the Wormhole reference DLL must satisfy \texttt{IAnatomyBase},
 \texttt{IObservableTier} and \texttt{IResourceControllableTier}, and the response to a control-quantity
 request (\texttt{apply}) is the \emph{number of axes that actually accepted the value} --- nothing is
@@ -1356,7 +1364,8 @@ release and debug build, without change skip and without an exception list; the 
 static check through two translators and makes the run-to-run stability of the number itself the
 object of testing. Part of gate~1 is the golden anchoring of the permutation space
 (Section~\ref{sec:mess-chain}): the \emph{reference catalogue} holds $2^{17} = 131072$ binary
-identities and is confirmed against a fixed CRC-64 checksum (\texttt{0x56F1B721C72DC10E}), a % chktex 29
+identities (assumption of two configurations per axis, superseded; regression detector, not an upper bound)
+and is confirmed against a fixed CRC-64 checksum (\texttt{0x56F1B721C72DC10E}), a % chktex 29
 small catalogue of $320$ identities serves as a byte-exact check of the serialization form --- a
 characterization test in the sense of Feathers~\cite{feathers2004legacy} ---, and the
 \emph{cardinality} of the space planned in a measurement series is different from this and never
@@ -1614,7 +1623,7 @@ quantity is planned but not implemented.
   \node[font=\bfseries\scriptsize] at (8.6,1.2){micro (mi)};
   \node[rl] at (-2.3,0){Stage 0: full measurement\\(\texttt{measure})};
   \node[ze,fill=orange!14] at (0,0){point in time $+$ parameter bracket (compile-time special case)};
-  \node[ze,fill=orange!14] at (4.3,0){time $+$ parameters per genus-interface function};
+  \node[ze,fill=orange!14] at (4.3,0){time $+$ parameters per family-interface function};
   \node[ze,fill=orange!14] at (8.6,0){time $+$ success parameters per axis interface};
   \node[rl] at (-2.3,-1.7){Stage 1: parameters off\\(\texttt{measure}, \texttt{compare})};
   \node[ze,fill=orange!8] at (0,-1.7){point in time only: parameter-empty \texttt{checkpoint\_measure} (minimum)};
@@ -1652,7 +1661,7 @@ quantity is planned but not implemented.
   \node[font=\bfseries\scriptsize] at (8.6,1.2){micro (mi)};
   \node[rl] at (-2.3,0){Stage 0: full measurement\\(\texttt{measure})};
   \node[ze,fill=orange!14] at (0,0){point in time $+$ parameter bracket (compile-time special case)};
-  \node[ze,fill=orange!14] at (4.3,0){time $+$ parameters per genus-interface function};
+  \node[ze,fill=orange!14] at (4.3,0){time $+$ parameters per family-interface function};
   \node[ze,fill=orange!14] at (8.6,0){time $+$ success parameters per axis interface};
   \node[rl] at (-2.3,-1.7){Stage 1: parameters off\\(\texttt{measure}, \texttt{compare})};
   \node[ze,fill=orange!8] at (0,-1.7){point in time only: parameter-empty \texttt{checkpoint\_measure} (minimum)};
@@ -1793,11 +1802,11 @@ cycles, instructions and memory stalls remain invalid in the counter POD\@.
 In the axis-interface model, the measurement-source interface for micro-benchmarking is collected per
 axis interface specifically for its parameter set and gathered in stages over the macro benchmarking
 and the wallclock in the CEB at parameters; the category set thereby grows via the channel addresses
-axis $\to$ genus $\to$ category (hierarchy depth three) to hundreds of measurement categories, one per
+axis $\to$ family $\to$ category (hierarchy depth three) to hundreds of measurement categories, one per
 axis interface and parameter set. Implementation status: sixteen categories, statically fixed by the
 registry (above). Added to this is the \emph{unthrottled re-measurement}: in an experiment, the
 actions of every axis are rolled back in order via the checkpoint of the first-called axis-interface
-function behind the genus interface through a control surface of its own, so that afterwards all axes
+function behind the family interface through a control surface of its own, so that afterwards all axes
 can be measured anew from the entry point without measurement --- for this the CEB, in single mode,
 takes over the inner state of a tier binary with measurement sensors into the analogous tier binary
 without measurement sensors (only the wallclock checkpoint) and measures anew from the same point,
@@ -1811,10 +1820,10 @@ the one without (Chapter~\ref{ch:eval}).
 \begin{nurkurz}
 In the axis-interface model, the measurement-source interface for micro-benchmarking is collected per
 axis interface specifically for its parameter set; the category set thereby grows via the channel
-addresses axis $\to$ genus $\to$ category to hundreds of measurement categories (implementation status:
+addresses axis $\to$ family $\to$ category to hundreds of measurement categories (implementation status:
 sixteen, statically fixed by the registry). Added to this is the \emph{unthrottled re-measurement}: the
 actions of every axis are rolled back via the checkpoint of the first-called axis-interface function
-behind the genus interface through a control surface of its own, the CEB takes over the inner state of
+behind the family interface through a control surface of its own, the CEB takes over the inner state of
 a tier binary with measurement sensors into the analogous tier binary without measurement sensors and
 measures anew from the same point, recursively per macro-benchmarking interface --- planned but not
 implemented. The test criterion of the re-measurement is the plausibility invariant that the binary
@@ -2030,14 +2039,14 @@ dock, proxy and router layer, six of the nine files are implemented (dock contra
 factory, dock array, XML parser, binary proxy) and three are not (the tier module of the \texttt{.so}
 export --- the two module sources under \texttt{tests/unit} demonstrate only the buildability of the
 module ABI ---, the eviction and the router); besides these, the directory carries the four headers of
-the classification layer (classification, concept gate, strategy per genus, synthesis matrix) and three
+the classification layer (classification, concept gate, strategy per family, synthesis matrix) and three
 further headers for docking, the module ABI and the stamp chain, thirteen headers in total.
-The Hybrid Module ABI v1 exports the same mandatory symbols as the plain tiers including family and
-genus, and \texttt{comdare\_anatomy\_genus} reports the \emph{target} genus (what the module is for the
-caller), never the reroute genus of the classification --- the same family-independent loader loads
+The Hybrid Module ABI v1 exports the same mandatory symbols as the plain tiers including concept and
+family, and \texttt{comdare\_anatomy\_genus} reports the \emph{target} family (what the module is for the
+caller), never the reroute family of the classification --- the same concept-independent loader loads
 the hybrid \texttt{.so} via the one loading route; the stamp chain of the hybrid stage and the hybrid positions
-of the measurement-gate member (\texttt{hm}/\texttt{hmi}) carry its identity, and the genus build
-admission carries six entries, the sixth for the reroute genus with the dock cap (default 32) as arity.
+of the measurement-gate member (\texttt{hm}/\texttt{hmi}) carry its identity, and the family build
+admission carries six entries, the sixth for the reroute family with the dock cap (default 32) as arity.
 The hybrid live ranking is planned as the fourth evaluation component of the compare stage, and the
 state reconciliation of the hybrid stage is planned via memento with two release artefacts, single and
 hybrid, in the store (Section~\ref{sec:heuristics-modes}); implementation status: neither is
@@ -2049,7 +2058,7 @@ section. The hybrid mode compiles only with the help of the CEB\@.
   dk/.style={draw,rounded corners,fill=orange!12,text width=1.95cm,minimum height=1.1cm,align=center,inner sep=2pt,font=\tiny},
   ex/.style={draw,rounded corners,fill=green!8,text width=2.6cm,minimum height=1.0cm,align=center,inner sep=2pt,font=\tiny}]
   \node[draw,rounded corners,dashed,minimum width=9.0cm,minimum height=4.8cm] (frame) at (0,-0.7){};
-  \node[font=\bfseries\scriptsize,anchor=north west] at (-4.5,-3.15){Hybrid \texttt{.so} (family HeuristikAdapter, reroute genus) --- inserted mux stage};
+  \node[font=\bfseries\scriptsize,anchor=north west] at (-4.5,-3.15){Hybrid \texttt{.so} (concept HeuristikAdapter, reroute family) --- inserted mux stage};
   \node[hb] (proxy) at (-2.4,0.9){\texttt{HybridBinaryProxy}\\satisfies \texttt{IAnatomyBase}; passes the drive through to the target dock};
   \node[hb] (arr) at (2.3,0.9){\texttt{DockArray\{\allowbreak max\_docks\}}\\\texttt{HybridDockVariant}: the one permitted variant site};
   \draw[->,thick] (proxy)--(arr);
@@ -2067,9 +2076,9 @@ section. The hybrid mode compiles only with the help of the CEB\@.
   \draw[->,dashed] (fac)--(proxy);
   \node[ex] (xml) at (-6.3,-1.4){\texttt{<hybrid\_tier enabled=true max\_docks=N>}\\parser: \texttt{enabled} exclusive per chain, \texttt{max\_docks} mandatory};
   \draw[->,dashed] (xml)--(d1);
-  \node[ex] (sym) at (6.3,0.9){exports: seven mandatory symbols as for plain tiers; \texttt{genus()} reports the target genus (route C)};
+  \node[ex] (sym) at (6.3,0.9){exports: seven mandatory symbols as for plain tiers; \texttt{genus()} reports the target family (route C)};
   \draw[->,dashed] (frame.east)--(sym);
-  \node[ex] (st) at (6.3,-1.4){stamp chain of the hybrid stage; measurement-gate fields \texttt{hm}/\texttt{hmi}; genus build admission: 6th entry};
+  \node[ex] (st) at (6.3,-1.4){stamp chain of the hybrid stage; measurement-gate fields \texttt{hm}/\texttt{hmi}; family build admission: 6th entry};
 \end{tikzpicture}
 \caption[The hybrid stage in code]{The hybrid stage in code: the mux stage optionally inserted between the CEB probe
 dock and the tier binary, attached at the CEB probe dock and carrying dock slots for tier binaries (standard route
@@ -2077,7 +2086,7 @@ without hybrid: probe dock directly to the tier binary). The binary proxy makes 
 outside and holds the dock array with the runtime cap \texttt{max\_docks}; per dock one of four
 contracts applies, the dock factory is the single construction site, the \texttt{<hybrid\_tier>}
 section of the XML switches the stage and sets the cap. The exports are spelled identically to the
-plain tiers, \texttt{genus()} reports the target genus. Not implemented: \texttt{.so} export,
+plain tiers, \texttt{genus()} reports the target family. Not implemented: \texttt{.so} export,
 eviction, router.}\label{fig:hybrid-dock}
 \end{figure}
 
@@ -2164,8 +2173,8 @@ runtime cap \texttt{max\_docks}, the parser of the \texttt{<hybrid\_tier>} secti
 proxy, which makes a hybrid \texttt{.so} an ordinary tier binary to the outside; not implemented are the
 \texttt{.so} export, the eviction and the router --- six of the nine files of the layer. The Hybrid
 Module ABI exports the same mandatory symbols as the plain tiers, \texttt{comdare\_anatomy\_genus}
-reports the \emph{target} genus, never the reroute genus, and the genus build admission carries as its
-sixth entry the reroute genus with the dock cap (default 32) as arity. The hybrid live ranking as the
+reports the \emph{target} family, never the reroute family, and the family build admission carries as its
+sixth entry the reroute family with the dock cap (default 32) as arity. The hybrid live ranking as the
 fourth evaluation component of the compare stage and the state reconciliation via memento with two
 release artefacts, single and hybrid, in the store are planned (Section~\ref{sec:heuristics-modes})
 but not implemented, nor is the fix of the schema drift (the XSD does not carry the

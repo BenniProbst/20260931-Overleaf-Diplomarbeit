@@ -132,7 +132,7 @@ Mediation between logical slot indices and physical memory offsets in trie inner
 ID & Name & Description \\
 \midrule
 \endhead%
-MP1 & Direct-Access Mapping (MP1) & Direct slot-to-absolute-offset mapping without indirection. Wrapper family for classic array-of-pointers layout as in B-tree inner nodes (Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972). Simple cache locality, O(N) lookup via \texttt{std::find\_\allowbreak{}if}. \\
+MP1 & Direct-Access Mapping (MP1) & Direct slot-to-absolute-offset mapping without indirection. Wrapper concept for classic array-of-pointers layout as in B-tree inner nodes (Bayer/\allowbreak{}Mc\allowbreak{}Creight 1972). Simple cache locality, O(N) lookup via \texttt{std::find\_\allowbreak{}if}. \\
 MP2 & Pool-Relative Mapping (MP2) & Slot-to-pool-relative-offset mapping using based-pointer arena pattern. All offsets stored relative to dynamic \texttt{pool\_\allowbreak{}base\_\allowbreak{}address}. Enables O(1) rebase on memory reallocation --- core property for persistent data structures (Driscoll et al. 1989) and Custom\allowbreak{}Aligned\allowbreak{}Structure pattern in prt-art. \\
 \bottomrule
 \end{longtable}
@@ -699,7 +699,7 @@ Variant & Description & Source \\
 \texttt{Cuckoo\allowbreak{}Filter} & Cuckoo filter per Fan et al. Co\allowbreak{}NEXT 2014: bucketed cuckoo hashing with 1-byte fingerprints. Supports deletes and lookup counting (advantage vs Bloom). Probe characteristic: 2 bucket lookups + fingerprint comparison (partial-key cuckoo per Co\allowbreak{}NEXT 2014 \S3: i2 = i1 XOR hash(fp)). Higher insert cost, but flexible mutability. & Fan et al. Co\allowbreak{}NEXT 2014 (DOI:10.1145/\allowbreak{}2674005.2674994) \\
 \texttt{Range\allowbreak{}Surf\allowbreak{}Filter} & Su\allowbreak{}RF (Succinct Range Filter) per Zhang et al. SIGMOD 2018: LOUDS-bitmap trie for range queries. Only filter with range semantics (lower\_\allowbreak{}bound/\allowbreak{}upper\_\allowbreak{}bound at byte-prefix level). Probe characteristic: multi-level trie descent with succinct-LOUDS navigation (up to k\allowbreak{}Max\allowbreak{}Depth=6), not exactly 1 hash test, hence latency variable per prefix length. Practical in Rocks\allowbreak{}DB SST optimizations. & P10 (Zhang et al. SIGMOD 2018) \\
 \texttt{Xor\allowbreak{}Filter} & Xor filter per Graf+Lemire 2020 (JEA 25): XOR-based filter with approx. 9 bits/\allowbreak{}key (vs. 10 bits/\allowbreak{}key Bloom at the same FP rate). Immutable after build. Probe characteristic: exactly 3 independent table accesses (3 disjoint table thirds h0, h1, h2) + 3-way XOR, branch-free, constant latency without early exit. Safe against optimization-away, smallest memory footprint of all filters. & Graf+Lemire 2020 (JEA 25:Article 1.5, DOI:10.1145/\allowbreak{}3376122) \\
-\texttt{None\allowbreak{}Filter} & Pass-through variant without filtering (E14): every probe passes unconditionally (input equals output), 0~bit structure memory and 0 hash tests per probe --- the comparison zero point for the space/time trade-off of the four filters (family 5, end-append, golden-320-neutral). Registered in the catalogue and conformant, but disabled by default in the build configuration (option \texttt{COMDARE\_\allowbreak{}AXIS\_\allowbreak{}FILTER\_\allowbreak{}ENABLE\_\allowbreak{}NONE}, default OFF), so that the enabled inventory of the axis comprises four building blocks. & Code/\allowbreak{}Baseline \\
+\texttt{None\allowbreak{}Filter} & Pass-through variant without filtering (E14): every probe passes unconditionally (input equals output), 0~bit structure memory and 0 hash tests per probe --- the comparison zero point for the space/time trade-off of the four filters (concept 5, end-append, golden-320-neutral). Registered in the catalogue and conformant, but disabled by default in the build configuration (option \texttt{COMDARE\_\allowbreak{}AXIS\_\allowbreak{}FILTER\_\allowbreak{}ENABLE\_\allowbreak{}NONE}, default OFF), so that the enabled inventory of the axis comprises four building blocks. & Code/\allowbreak{}Baseline \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
@@ -804,7 +804,7 @@ Variant & Description & Source \\
 
 This axis is the \emph{persistence-target organ} (T17) of the living being \texttt{SearchAlgorithm} (cf.\ Section~\ref{sec:sota-instances}); it is the eighteenth organ slot (T17).
 
-The axis makes the storage target of the structure explicit as an organ slot of its own instead of implicitly carrying an in-memory assumption. In the golden reference catalogue it is pinned to its in-memory representative: seventeen axes with two expressions each and \texttt{persistence\_\allowbreak{}target} with one yield $2^{17} = 131072$ reference identities per system permutation; every \texttt{binary\_\allowbreak{}id} nevertheless carries the eighteenth segment \texttt{persistence\_\allowbreak{}target=\allowbreak{}persistence\_\allowbreak{}memory\_\allowbreak{}only}. The cardinality of a complete measurement series is different from that: it is not a static number but is counted per profile from the Director walk (Section~\ref{sec:mess-chain}).
+The axis makes the storage target of the structure explicit as an organ slot of its own instead of implicitly carrying an in-memory assumption. In the golden reference catalogue it is pinned to its in-memory representative: seventeen axes with two expressions each and \texttt{persistence\_\allowbreak{}target} with one yield $2^{17} = 131072$ reference identities per system permutation (simplifying, superseded assumption of two configurations per axis; regression detector, not an upper bound); every \texttt{binary\_\allowbreak{}id} nevertheless carries the eighteenth segment \texttt{persistence\_\allowbreak{}target=\allowbreak{}persistence\_\allowbreak{}memory\_\allowbreak{}only}. The cardinality of a complete measurement series is different from that: it is not a static number but is counted per profile from the Director walk, as an upper bound from the configurations selected per axis in the XML experiment, known only at execution time (Section~\ref{sec:mess-chain}).
 
 \subsection*{Building blocks}
 \begin{scriptsize}
@@ -825,7 +825,7 @@ Variant & Description & Source \\
 
 This quantity is the only organ meta-meta axis of the organ realm (meta-meta in the sense of the M3 level, cf.\ the footnote at the beginning of this appendix). It is no nineteenth composition slot: the composition stays at eighteen organ axes, and the axis never enters the \texttt{binary\_\allowbreak{}id} (\texttt{binary\_\allowbreak{}id=never}, \texttt{stage=ct}, \texttt{baustein\_\allowbreak{}count=1}); the organ registry carries it as category \texttt{organ\_\allowbreak{}meta\_\allowbreak{}meta} beside the eighteen slots.
 
-The axis carries the stamping identity of the member \texttt{disk\_\allowbreak{}io}: its axis code version (\texttt{1.0.0.c}) attaches as a bracket appendage to the end of the organ line (member [3] of the animal fingerprint), and exclusively for compositions with the persistence target \texttt{Disk\allowbreak{}Writeback\allowbreak{}Target} (carrier axis \texttt{persistence\_\allowbreak{}target}, carrier value \texttt{persistence\_\allowbreak{}disk\_\allowbreak{}writeback}); compositions with \texttt{Memory\allowbreak{}Only\allowbreak{}Target} remain byte-identical, their suffix is empty and produces no empty bracket pair. The form follows the system model: the organ line of an I/O carrier ends in \texttt{;[disk\_\allowbreak{}io=code@1.0.0.c]}. The binding strategy type $\rightarrow$ meta-meta lives in the ABI layer, not in the axis header; carriers of the selection are the eighteen existing slot aliases of the composition. For the channel machinery, \texttt{disk\_\allowbreak{}io} is declared as a genus channel of its own; the channel itself is declared as a concept but not implemented.
+The axis carries the stamping identity of the member \texttt{disk\_\allowbreak{}io}: its axis code version (\texttt{1.0.0.c}) attaches as a bracket appendage to the end of the organ line (member [3] of the animal fingerprint), and exclusively for compositions with the persistence target \texttt{Disk\allowbreak{}Writeback\allowbreak{}Target} (carrier axis \texttt{persistence\_\allowbreak{}target}, carrier value \texttt{persistence\_\allowbreak{}disk\_\allowbreak{}writeback}); compositions with \texttt{Memory\allowbreak{}Only\allowbreak{}Target} remain byte-identical, their suffix is empty and produces no empty bracket pair. The form follows the system model: the organ line of an I/O carrier ends in \texttt{;[disk\_\allowbreak{}io=code@1.0.0.c]}. The binding strategy type $\rightarrow$ meta-meta lives in the ABI layer, not in the axis header; carriers of the selection are the eighteen existing slot aliases of the composition. For the channel machinery, \texttt{disk\_\allowbreak{}io} is declared as a family channel of its own; the channel itself is declared as a concept but not implemented.
 Thus the stamp mechanics of the axis are implemented, the channel construction is not; also not implemented is the profile connection: the profile parser does not read the registry block of the axis, and a reference to it in organ position is rejected by the profile validation, so that the axis is not selectable via experiment profile and is switched off; in the golden reference catalogue its suffix remains empty (Section~\ref{sec:axis-triad}).
 
 \subsection*{Dynamic sub-axes}
@@ -957,7 +957,7 @@ Variant & Description & Source \\
 
 This quantity is the second system main axis and thus part of the \emph{habitat} and of no organ (cf.\ Section~\ref{sec:axis-triad}); in the canonical, code-guarded order it occupies position two of three.
 
-The main axis carries the \emph{class} identity only: exactly three operating-system families (\texttt{baustein\_\allowbreak{}count=3}), together with \texttt{stage=ct} and \texttt{binary\_\allowbreak{}id=never}. The \emph{instance} --- distribution, release, kernel and patch level --- resides entirely in the three sub-axes; entering a distribution as a fourth expression of the main axis would miss that cut. The existing machines (Windows 11 and Windows Server 2022, the Linux Docker matrix, two macOS machines) fall entirely into the three families.
+The main axis carries the \emph{class} identity only: exactly three operating-system concepts (\texttt{baustein\_\allowbreak{}count=3}), together with \texttt{stage=ct} and \texttt{binary\_\allowbreak{}id=never}. The \emph{instance} --- distribution, release, kernel and patch level --- resides entirely in the three sub-axes; entering a distribution as a fourth expression of the main axis would miss that cut. The existing machines (Windows 11 and Windows Server 2022, the Linux Docker matrix, two macOS machines) fall entirely into the three concepts.
 
 \subsection*{Dynamic sub-axes}
 
@@ -1009,7 +1009,7 @@ The hub carries \emph{only} system meta-metas; the load framework explicitly doe
 ID & Name & Description \\
 \midrule
 \endhead%
-\texttt{simd} & Vector extension level & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=3}. The family identifier is at the same time the sub-axis label (notation \texttt{external\_\allowbreak{}utils.simd=\dots}); the per-dialect reflected compiler flags come from the option, not from the family. \\
+\texttt{simd} & Vector extension level & \texttt{stage=runtime}, \texttt{value\_\allowbreak{}type=token}, \texttt{option\_\allowbreak{}count=3}. The concept identifier is at the same time the sub-axis label (notation \texttt{external\_\allowbreak{}utils.simd=\dots}); the per-dialect reflected compiler flags come from the option, not from the concept. \\
 \bottomrule
 \end{longtable}
 \end{scriptsize}
@@ -1504,7 +1504,7 @@ Defines the platform hardware family (CPU architecture, SIMD capabilities, cache
 
 \subsubsection*{Static sub-axes}
 
-The four sub-axes are orthogonal to one another; a platform family assigns its primary characteristic to exactly one tag, and the \texttt{Cache\allowbreak{}Engine\allowbreak{}Builder} can group platforms by sub-axes (for instance HW1 $\times$ HW2 across all platforms).
+The four sub-axes are orthogonal to one another; a platform concept assigns its primary characteristic to exactly one tag, and the \texttt{Cache\allowbreak{}Engine\allowbreak{}Builder} can group platforms by sub-axes (for instance HW1 $\times$ HW2 across all platforms).
 
 \begin{scriptsize}
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.5cm}@{}}
@@ -1513,7 +1513,7 @@ ID & Name & Description \\
 \midrule
 \endhead%
 HW1 & CPU Architecture Family (\texttt{cpu\_\allowbreak{}family}) & x86\_\allowbreak{}64 (Intel/\allowbreak{}AMD), aarch64 (ARM/\allowbreak{}Apple), riscv64 (RISC-V), generic (platform-independent). \\
-HW2 & SIMD Instruction Set Family (\texttt{simd\_\allowbreak{}capability}) & SSE/\allowbreak{}AVX/\allowbreak{}AVX2/\allowbreak{}AVX-512 (x86), NEON/\allowbreak{}SVE (ARM), RVV (RISC-V), scalar (no SIMD). \\
+HW2 & SIMD Instruction Set Concept (\texttt{simd\_\allowbreak{}capability}) & SSE/\allowbreak{}AVX/\allowbreak{}AVX2/\allowbreak{}AVX-512 (x86), NEON/\allowbreak{}SVE (ARM), RVV (RISC-V), scalar (no SIMD). \\
 HW3 & NUMA and Cache Hierarchy (\texttt{memory\_\allowbreak{}topology}) & UMA-single-socket, NUMA-multi-socket, Apple-unified-memory, HBM-on-package (Sapphire Rapids HBM, Grace Hopper), CXL-attached. \\
 HW4 & Page Configuration (\texttt{page\_\allowbreak{}topology}) & Standard and HugePage configuration: 4K-standard (POSIX), 16K-apple-silicon, 2M-hugepage (x86), 64K-arm-server, 1G-gigantic-hugepage. \\
 \bottomrule

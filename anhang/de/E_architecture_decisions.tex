@@ -44,7 +44,7 @@ ADR-6 & Explizit kodierte Nicht-Erhebung statt Phantomwert & Abschn.~\ref{sec:me
 ADR-7 & Vier-Repository-Architektur mit orthogonalen Träger-Stufen & Abschn.~\ref{sec:repos} & umgesetzt \\
 ADR-8 & Familienweise Adapter-Fallbacks & Abschn.~\ref{sec:axes-impl} & umgesetzt \\
 ADR-9 & Mess-Gating in drei Schichten und vier Arbeitsmodi & Abschn.~\ref{sec:impl-pipeline} & teilweise (Replay-Ablauf compare/release) \\
-ADR-10 & \texttt{std::map}-Vertrag mit Konformitäts-Gatter & Abschn.~\ref{sec:measurement-system} & teilweise (volle \texttt{std::map}-Schnittstelle, Container-Hülle) \\
+ADR-10 & \texttt{std::map}-Vertrag mit Konformitäts-Gate & Abschn.~\ref{sec:measurement-system} & teilweise (volle \texttt{std::map}-Schnittstelle, Container-Hülle) \\
 ADR-11 & Entwurfsmuster-Register mit belegten Rollen & Abschn.~\ref{sec:anatomy-patterns} & umgesetzt \\
 ADR-12 & Mess-Regime-Doppel Talos und root-Linux & Abschn.~\ref{sec:eval-method} & teilweise (Talos-Regime) \\
 ADR-13 & Vier Träger-Stufen und ein Stempel-Vertrag & Abschn.~\ref{sec:stamp-model} & teilweise (Stempel-Export Hybrid, SOTA-Zweig) \\
@@ -67,14 +67,14 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   \textbf{Entscheidung:} Eine einheitliche C-Modulgrenze exportiert je Permutation genau ein Lebewesen
   --- eine \texttt{IAnatomyBase}-Instanz --- über sieben gattungsunabhängig benannte Pflicht-Symbole:
   die vier Ur-Symbole ABI-Version, Magic, Factory (\texttt{comdare\_create\_anatomy()}) und Destroy,
-  die zwei Identitäts-Symbole Gattung und Genus, wobei die Gattung nicht als zweites Datum gepflegt,
-  sondern übersetzungsstatisch aus dem Genus abgeleitet wird, und das Stempel-Zeilen-Symbol. Die
+  die zwei Identitäts-Symbole Konzept und Gattung, wobei das Konzept nicht als zweites Datum gepflegt,
+  sondern übersetzungsstatisch aus der Gattung abgeleitet wird, und das Stempel-Zeilen-Symbol. Die
   Namensgleichheit über alle Gattungen ist das Stabilitäts-Argument: Der Lader kann die Gattung
-  über ein gattungsunabhängiges Symbol ermitteln, ohne sie vorab zu kennen. Dahinter liegen zwei Engine-Begriffe: die \texttt{CacheEngine} als
+  über ein konzeptunabhängiges Symbol ermitteln, ohne sie vorab zu kennen. Dahinter liegen zwei Engine-Begriffe: die \texttt{CacheEngine} als
   Bibliothek der Achsen-Bausteine und die \texttt{ExecutionEngine} als Ausführungs- und
   Mess-Infrastruktur mit der Wurzel \texttt{IExecutionEngine}, unter der \texttt{IAnatomyBase} steht;
   die API-Fassade ist \texttt{ICacheEngine}; der Name \enquote{SearchEngine} bezeichnet die ABI-Laufzeit-Sicht
-  des Genus \texttt{SearchAlgorithm}, kein drittes Kettenglied; das gleichnamige Auslagerungs-Modul ist
+  der Gattung \texttt{SearchAlgorithm}, kein drittes Kettenglied; das gleichnamige Auslagerungs-Modul ist
   deklariert, aber nicht angebunden.
   \textbf{Konsequenz:} Die ABI-Stabilität stellt die C-Grenze her, nicht das Modulsystem (ABI-Major~9);
   der Lader prüft jedes Modul beim Laden fail-closed gegen die Symbol-Pflichtmenge und die
@@ -85,10 +85,12 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
 
 %% INTERN-272: KA-163
   \item[ADR-2 --- Compile-Time-Permutation über Typlisten statt Laufzeit-Adaption]\hfill\\
-  \textbf{Kontext:} Achtzehn Organ-Kompositions-Achsen zählen schon im kanonischen
-  Vermessungs-Katalog $2^{17} = 131072$ Binary-Identitäten je System-Permutation --- eine davon,
-  das Persistenz-Ziel, auf ihren In-Memory-Vertreter festgelegt ---, und der rohe
-  Varianten-Produktraum über alle Achsen-Kataloge samt Unter-Achsen liegt Größenordnungen darüber;
+  \textbf{Kontext:} Achtzehn Organ-Kompositions-Achsen zählen schon im golden-Referenzkatalog
+  $2^{17} = 131072$ Binary-Identitäten je System-Permutation --- eine davon, das Persistenz-Ziel, auf ihren
+  In-Memory-Vertreter festgelegt, unter der überholten Annahme zweier Auslegungen je Achse ---, die Obergrenze
+  je System-Permutation ist das Produkt der je Achse im XML-Experiment gewählten Auslegungen (erst zur
+  Ausführung bekannt), und der rohe Varianten-Produktraum über alle Achsen-Kataloge samt Unter-Achsen liegt
+  Größenordnungen darüber;
   der Hot-Path darf weder \texttt{virtual}-Aufrufe noch Laufzeit-Switches enthalten. Die Festlegung ist eine
   Budget-Entscheidung (laut Katalogkopf rund 224~GB und 24~h vollständiger Bau statt rund 448~GB und
   48~h); vorgesehen ist die Variation aller achtzehn Achsen, und die Mächtigkeit eines konkreten Plans
@@ -117,16 +119,17 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   \item[ADR-3 --- Drei-Ebenen-Modell als die \emph{eine} Architektur]\hfill\\
   \textbf{Kontext:} Anatomie-Metapher und technische Engine-Sicht drohen zu parallelen
   Modellbäumen auseinanderzulaufen.
-  \textbf{Entscheidung:} Es gibt genau eine Hierarchie ohne Parallel-Bäume --- Gattung (Ebene~1,
-  Außen-Interface: die Prüf-Dock-Gattungen Map, Container und Graph sowie die vierte Gattung
-  HeuristikAdapter, die kein eigenes Dock hat, weil ihre Binaries per \texttt{genus()} das Ziel-Genus
-  melden und am Dock des Ziels andocken) $\to$ Genus (Ebene~2, die Tier-Unterklasse mit festem
-  Achsen-Satz, als Alias Gattungs-Unterklasse; die sechs Genera \texttt{SearchAlgorithm},
+  \textbf{Entscheidung:} Es gibt genau eine Hierarchie ohne Parallel-Bäume --- Konzept (Ebene~1,
+  Mess-Surface: die Prüf-Dock-Konzepte Map, Container und Graph sowie das vierte Konzept
+  HeuristikAdapter, das kein eigenes Dock hat, weil seine Binaries per \texttt{genus()} die Ziel-Gattung
+  melden und am Dock des Ziels andocken) $\to$ Gattung (Ebene~2, das Tier-Interface mit festem
+  Achsen-Satz; die sechs Gattungen \texttt{SearchAlgorithm},
   \texttt{Set}, \texttt{Sequence}, \texttt{Adapter}, \texttt{View} und
-  \texttt{FunctionInterfaceReroute}) $\to$ Achsen-Organe (Ebene~3) --- unter \texttt{IExecutionEngine}
-  als gemeinsamer messbarer Wurzel; eine eigene Gattung entstünde erst, wenn sich der
+  \texttt{FunctionInterfaceReroute}) $\to$ Genus (Ebene~3, die Implementierung des
+  Gattungs-Interfaces, z.\,B.\ ART, HOT, START) $\to$ Achsen-Organe (Ebene~4, eigene Klassifikation)
+  --- unter \texttt{IExecutionEngine} als gemeinsamer messbarer Wurzel; ein eigenes Konzept entstünde erst, wenn sich der
   Basis-Achsen-Satz grundlegend unterschiede.
-  \textbf{Konsequenz:} Das Genus \texttt{SearchAlgorithm} unter der Gattung Map und seine
+  \textbf{Konsequenz:} Die Gattung \texttt{SearchAlgorithm} unter dem Konzept Map und ihre
   ABI-Laufzeit-Sicht (\enquote{SearchEngine}) sind zwei Sichten desselben Lebewesens, kein zweites
   Modell.
   \textbf{Beleg:} Abschnitte~\ref{sec:anatomy-model},~\ref{sec:anatomy-levels}
@@ -142,12 +145,12 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   (\texttt{Path\allowbreak{}Compression\allowbreak{}None}), der Knotentyp besitzt keine None-Variante und wird
   regulär mit einem der vier ART-Knotenformate belegt, die ein nicht-baumartiger Baustein nicht nutzt
   (Entwurf; ohne Code-Baustein);
-  das Pflicht-Concept \texttt{IsComposition} des Genus \texttt{SearchAlgorithm} erzwingt
+  das Pflicht-Concept \texttt{IsComposition} der Gattung \texttt{SearchAlgorithm} erzwingt
   übersetzungszeitlich die Belegung aller achtzehn Organe (achtzehn Typ-Forderungen und ein
-  Organ-Zähler von achtzehn mit Prüfung auf ABI-Bruch), sodass keine Komposition dieses Genus mit offener
+  Organ-Zähler von achtzehn mit Prüfung auf ABI-Bruch), sodass keine Komposition dieser Gattung mit offener
   Achse übersetzt.
-  \textbf{Konsequenz:} Nicht-baumartige Verfahren erfordern keine eigene Gattung, sondern ein
-  eingeschränktes Achsen-Subset innerhalb desselben Genus.
+  \textbf{Konsequenz:} Nicht-baumartige Verfahren erfordern kein eigenes Konzept, sondern ein
+  eingeschränktes Achsen-Subset innerhalb derselben Gattung.
   \textbf{Beleg:} Abschnitte~\ref{sec:sota-instances},~\ref{sec:anatomy-levels}
   und~\ref{sec:axes-impl}.
 
@@ -244,14 +247,17 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   Etikett: \texttt{build} (bauen ohne Messen), \texttt{measure} (deterministischer
   Ein-Thread-Messlauf, der einzige Modus mit Messung), \texttt{compare} (liest das Messwertlager, die
   Stufe vor \texttt{release}) und \texttt{release} (Voll-Optimierung ohne Mess-Instrumentierung); der
-  Arbeitsmodus ist eine Unter-Achse des Mess-Realms und geht nicht in die Binary-Identität ein, einen
-  Debug-Zustand gibt es nicht (\texttt{--debug} ist ein Flag der Planer-Shell), und den
-  Mess-Aggregator führt der \texttt{ExperimentDriver} host-seitig.
+  Arbeitsmodus ist eine Unter-Achse des Mess-Realms und geht nicht in die Binary-Identität ein, einen eigenen Debug-Arbeitsmodus gibt es nicht (\texttt{--debug} ist ein Flag der Planer-Shell und kein eigener
+  Arbeitsmodus der Kette build/measure/compare/release; es schaltet den indirekten Debug-Modus der Debug-Variante
+  ein, den nicht offiziellen fünften Wartungsmodus, die weiter ausgebaut wird: unter \texttt{--debug} fährt das
+  Konformitäts-Gate zusätzlich den Standard-Testsatz des Tier-Interfaces, ein indirekter Debug-Modus, der mit dem
+  Release-Bau zusammenfällt; die Bau-Varianten Debug, Messung und Release gelten fort), und den Mess-Aggregator führt der \texttt{ExperimentDriver} host-seitig.
   \textbf{Konsequenz:} Der Produktiv-Pfad bleibt mess-frei und verursacht keinen Mess-Overhead; wählbar sind
   vier Modi, in der Bau-Semantik verschieden ist allein \texttt{measure} --- alle vier Registry-Zeilen
   führen den Release-Bautyp.
   \textbf{Umsetzungsstand:} Der modus-spezifische Replay-Ablauf von \texttt{compare} und die aus
-  Messwerten erzeugte optimale Release-Binary sind vorgesehen, aber nicht implementiert;
+  Messwerten erzeugte optimale Release-Binary sind für spätere Haupt-Wellen vorgesehen, aber nicht
+  implementiert;
   \texttt{compare} ist ein wählbares, validierbares Etikett mit release-gleicher
   Bau-Semantik.
   \textbf{Beleg:} Abschnitte~\ref{sec:repos},~\ref{sec:impl-pipeline} und~\ref{sec:eval-method};
@@ -259,22 +265,28 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
 
   %% INTERN-272: S-112
   %% INTERN-272: KA-170
-  \item[ADR-10 --- \texttt{std::map}-Vertrag als gemeinsamer Nenner mit Konformitäts-Gatter]\hfill\\
+  \item[ADR-10 --- \texttt{std::map}-Vertrag als gemeinsamer Nenner mit Konformitäts-Gate]\hfill\\
   \textbf{Kontext:} Strukturell verschiedene Suchalgorithmen sind nur über eine gemeinsame, gut
   verstandene Außen-Schnittstelle fair vergleichbar.
   \textbf{Entscheidung:} Alle Verfahren werden auf den C++-Vertrag der geordneten Map
-  \texttt{std::map<Key,\,Value>}~\cite{iso_cpp} abgebildet; die Container-Genera werden gegen je ein
+  \texttt{std::map<Key,\,Value>}~\cite{iso_cpp} abgebildet; die Container-Gattungen werden gegen je ein
   Standard-Orakel gehalten --- \texttt{Set} gegen \texttt{std::set}, \texttt{Sequence} gegen
   \texttt{std::deque}, \texttt{Adapter} gegen \texttt{std::queue}, \texttt{std::stack} und
   \texttt{std::priority\_queue}, \texttt{View} gegen \texttt{std::span} ---, und \texttt{std::vector}
-  dient als Inner-Substrat des Genus \texttt{Adapter}. Ein Konformitäts-Gatter prüft diesen Vertrag vor
-  jeder Messung in der bindenden Reihenfolge Import $\to$ Gatter $\to$ Messen, über die fünf
-  Kern-Operationen \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{clear} und \texttt{size},
-  mit Konformitäts-Quoten als Ergebnisform.
+  dient als Inner-Substrat der Gattung \texttt{Adapter}. Ein Konformitäts-Gate prüft diesen Vertrag vor
+  jeder Messung in der bindenden Reihenfolge Import $\to$ Gate $\to$ Messen: die siebzehn in
+  Anhang~\ref{app:interfaces} markierten \texttt{std::map}-Operationen (zwölf Kern-Prüfblöcke,
+  \texttt{std::map} als Orakel), mit Konformitäts-Quoten als Ergebnisform; die fünf Antriebs-Operationen
+  der Modulgrenze (\texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{clear}, \texttt{size}) sind
+  die ABI-Primitive, über denen der host-seitige Adapter diesen Vertrag komponiert, nicht der
+  Prüfumfang. Unter \texttt{--debug} fährt das Gate zusätzlich den Standard-Testsatz des jeweiligen
+  Tier-Interfaces: den generischen Gattungs-Teil (gültig für alle Genera) und den Genus-speziellen Teil
+  (die gegebenenfalls erweiterten Spezial-Interfaces); dieser indirekte Debug-Modus fällt mit dem
+  Release-Bau zusammen und wird nicht separat geführt.
   \textbf{Konsequenz:} Nur Vergleichbares wird verglichen; die Achsen beschreiben ausschließlich
   das innere Verhalten hinter der festen Schnittstelle.
-  \textbf{Umsetzungsstand:} Der Ausbau des Gatters auf die volle \texttt{std::map}-Schnittstelle und die
-  Genus-Iterator-Bibliothek sind nicht implementiert; die Forderung, die Container-Genera über eine
+  \textbf{Umsetzungsstand:} Der Ausbau des Gates auf die volle \texttt{std::map}-Schnittstelle und die
+  Gattungs-Iterator-Bibliothek sind nicht implementiert; die Forderung, die Container-Gattungen über eine
   vollständige \texttt{std::vector}-Hülle zu führen, ist nicht erfüllt --- das implementierte Sequence-Orakel ist
   \texttt{std::deque}.
   \textbf{Beleg:} Abschnitte~\ref{sec:measurement-system} und~\ref{sec:impl-contracts}.
@@ -378,13 +390,13 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
 
   %% INTERN-272: KA-174
   \item[ADR-15 --- Mess-Visitor-Naht (Fläche 3) statt Sidecar]\hfill\\
-  \emph{Gattungs- und Genus-Interfaces bleiben unverändert.}\hfill\\
+  \emph{Konzept- und Gattungs-Interfaces bleiben unverändert.}\hfill\\
   \textbf{Kontext:} Ein Beobachter, der von außen Felder aus einer Tier-Binary abholt, misst die
   Nachbarschaft und nicht den Gegenstand: Was gemessen wird, entscheidet dann der Host durch die Wahl
-  der Felder; Mess-Felder in den fachlichen Interfaces würden die Gattungs- und Genus-Verträge
+  der Felder; Mess-Felder in den fachlichen Interfaces würden die Konzept- und Gattungs-Verträge
   verändern.
   \textbf{Entscheidung:} Jede Träger-Stufe bietet drei Interface-Flächen: Fläche~1 das
-  Genus-Interface (Laufzeit, Abstract Factory), Fläche~2 den Stempel (Übersetzungszeit, ABI-stabil),
+  Gattungs-Interface (Laufzeit, Abstract Factory), Fläche~2 den Stempel (Übersetzungszeit, ABI-stabil),
   Fläche~3 den Mess-Durchstich; die Messung quert als eigene Naht
   (\texttt{tier\_measure\_accept} mit \texttt{IMessVisitor}), ein Visitor am
   \texttt{dlopen}-Übergang mit doppeltem Dispatch~\cite{gamma1994patterns}; je nachdem, ob die
@@ -399,8 +411,9 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   %% INTERN-272: KA-175
   \item[ADR-16 --- Lager als Bestand mit Übersetzungszeit-Schlüsseln]\hfill\\
   \emph{Messung immer an, im Lager nur Fehlendes nachmessen.}\hfill\\
-  \textbf{Kontext:} Ein Referenzraum von $2^{17}$ Kompositionen je System-Permutation (laut
-  Katalogkopf rund 224~GB und 24~h vollständiger Bau) ist nur mit Wiederverwendung gebauter Binaries und
+  \textbf{Kontext:} Ein Referenzraum von $2^{17}$ Kompositionen je System-Permutation im golden-Referenzkatalog (laut
+  Katalogkopf rund 224~GB und 24~h vollständiger Bau; überholte Annahme zweier Auslegungen je Achse, die
+  Obergrenze bestimmt der Planer aus dem XML-Experiment) ist nur mit Wiederverwendung gebauter Binaries und
   gemessener Werte beherrschbar; die Messung soll immer eingeschaltet sein und im Lager nur
   nachmessen, was dort nicht zu finden ist.
   \textbf{Entscheidung:} Bestand~1 hält die Binary unter ihrem SHA-512-Fingerprint; Bestand~2 hält

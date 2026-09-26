@@ -66,15 +66,15 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   ABI stability~\cite{wg21_modules_abi}.
   \textbf{Decision:} A uniform C module boundary exports exactly one living being per permutation
   --- an \texttt{IAnatomyBase} instance --- via seven mandatory symbols named independently of the
-  family: the four primal symbols ABI version, magic, factory (\texttt{comdare\_create\_anatomy()})
-  and destroy, the two identity symbols family and genus, whereby the family is not maintained as a
-  second datum but derived statically at compile time from the genus, and the stamp-line symbol. The
+  concept: the four primal symbols ABI version, magic, factory (\texttt{comdare\_create\_anatomy()})
+  and destroy, the two identity symbols concept and family, whereby the concept is not maintained as a
+  second datum but derived statically at compile time from the family, and the stamp-line symbol. The
   identity of names across all families is the stability argument: the loader can determine the
-  family via a family-independent symbol without knowing it in advance. Behind it lie two engine
+  concept via a concept-independent symbol without knowing it in advance. Behind it lie two engine
   concepts: the \texttt{CacheEngine} as the library of the axis building blocks and the
   \texttt{ExecutionEngine} as the execution and measurement infrastructure with the root
   \texttt{IExecutionEngine}, under which \texttt{IAnatomyBase} stands; the API facade is
-  \texttt{ICacheEngine}; the name \enquote{SearchEngine} denotes the ABI runtime view of the genus
+  \texttt{ICacheEngine}; the name \enquote{SearchEngine} denotes the ABI runtime view of the family
   \texttt{SearchAlgorithm}, not a third link in the chain; the same-named module intended to house it
   separately is declared but not wired in.
   \textbf{Consequence:} ABI stability is established by the C boundary, not by the module system
@@ -87,9 +87,11 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
 
   \item[ADR-2 --- Compile-time permutation via type lists instead of runtime adaptation]\hfill\\
   \textbf{Context:} Eighteen organ composition axes already count $2^{17} = 131072$ binary
-  identities per system permutation in the canonical measurement catalogue --- one of them, the
-  persistence target, pinned to its in-memory representative ---, and the raw variant product space
-  over all axis catalogues including their sub-axes lies orders of magnitude above that; the hot
+  identities per system permutation in the golden reference catalogue --- one of them, the persistence
+  target, pinned to its in-memory representative, under the superseded assumption of two configurations per
+  axis ---, the upper bound per system permutation is the product of the configurations selected per axis in
+  the XML experiment (known only at execution time), and the raw variant product space over all axis
+  catalogues including their sub-axes lies orders of magnitude above that; the hot
   path must carry neither \texttt{virtual} calls nor runtime switches. The pinning is a budget
   decision (according to the catalogue header about 224~GB and 24~h of complete build instead of
   about 448~GB and 48~h); the variation of all eighteen axes is provided for, and the cardinality of
@@ -116,15 +118,17 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \item[ADR-3 --- The three-level model as the \emph{one} architecture]\hfill\\
   \textbf{Context:} The anatomy metaphor and the technical engine view threaten to drift apart
   into parallel model trees.
-  \textbf{Decision:} There is exactly one hierarchy without parallel trees --- family (level~1,
-  outer interface: the probe-dock families Map, Container and Graph as well as the fourth family
-  HeuristikAdapter, which has no dock of its own because its binaries report the target genus via
-  \texttt{genus()} and dock at the dock of the target) $\to$ genus (level~2, the tier subclass with
-  a fixed axis set, alias family subclass; the six genera \texttt{SearchAlgorithm}, \texttt{Set},
+  \textbf{Decision:} There is exactly one hierarchy without parallel trees --- concept (level~1,
+  measurement surface: the probe-dock concepts Map, Container and Graph as well as the fourth concept
+  HeuristikAdapter, which has no dock of its own because its binaries report the target family via
+  \texttt{genus()} and dock at the dock of the target) $\to$ family (level~2, the tier interface with
+  a fixed axis set; the six families \texttt{SearchAlgorithm}, \texttt{Set},
   \texttt{Sequence}, \texttt{Adapter}, \texttt{View} and \texttt{FunctionInterfaceReroute}) $\to$
-  axis organs (level~3) --- under \texttt{IExecutionEngine} as the common measurable root; a family
+  genus (level~3, the implementation of the family interface, e.g.\ ART, HOT, START) $\to$
+  axis organs (level~4, a classification of their own) --- under \texttt{IExecutionEngine} as the
+  common measurable root; a concept
   of its own would arise only if the base axis set differed fundamentally.
-  \textbf{Consequence:} The genus \texttt{SearchAlgorithm} under the family Map and its ABI runtime
+  \textbf{Consequence:} The family \texttt{SearchAlgorithm} under the concept Map and its ABI runtime
   view (\enquote{SearchEngine}) are two views of the same living being, not a second model.
   \textbf{Evidence:} Sections~\ref{sec:anatomy-model},~\ref{sec:anatomy-levels}
   and~\ref{sec:impl-architecture}; Figures~\ref{fig:three-levels} and~\ref{fig:genera}.
@@ -138,11 +142,11 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   (\texttt{Path\allowbreak{}Compression\allowbreak{}None}), the node type possesses no None variant
   and is regularly assigned one of the four ART node formats, which a non-tree-shaped building block
   does not use (design; without a code building block); the mandatory concept
-  \texttt{IsComposition} of the genus \texttt{SearchAlgorithm} enforces at compile time the
+  \texttt{IsComposition} of the family \texttt{SearchAlgorithm} enforces at compile time the
   assignment of all eighteen organs (eighteen type requirements and an organ counter of eighteen
-  with a check for ABI break), so that no composition of this genus with an open axis compiles.
-  \textbf{Consequence:} Non-tree-shaped methods require no family of their own but a restricted
-  axis subset within the same genus.
+  with a check for ABI break), so that no composition of this family with an open axis compiles.
+  \textbf{Consequence:} Non-tree-shaped methods require no concept of their own but a restricted
+  axis subset within the same family.
   \textbf{Evidence:} Sections~\ref{sec:sota-instances},~\ref{sec:anatomy-levels}
   and~\ref{sec:axes-impl}.
 
@@ -237,14 +241,18 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \texttt{measure} (deterministic single-thread measurement run, the only mode with measurement),
   \texttt{compare} (reads the measurement store, the stage before \texttt{release}) and
   \texttt{release} (full optimization without measurement instrumentation); the work mode is a
-  sub-axis of the measurement realm and does not enter the binary identity, a debug state does not
-  exist (\texttt{--debug} is a flag of the planner shell), and the measurement aggregator is run
-  host-side by the \texttt{ExperimentDriver}.
+  sub-axis of the measurement realm and does not enter the binary identity, a debug work mode of its own does not exist (\texttt{--debug} is a flag of the planner shell and not a work mode
+  of its own in the chain build/measure/compare/release; it enables the indirect debug mode of the debug variant,
+  the unofficial fifth maintenance mode, which is being extended further: under \texttt{--debug} the conformance
+  gate additionally runs the standard test set of the tier interface, an indirect debug mode that coincides with
+  the release build; the build variants debug, measurement, and release remain in force),
+  and the measurement aggregator is run host-side by the \texttt{ExperimentDriver}.
   \textbf{Consequence:} The production path stays measurement-free and causes no measurement
   overhead; four modes are selectable, in build semantics only \texttt{measure} differs --- all
   four registry rows carry the release build type.
   \textbf{Implementation status:} The mode-specific replay run of \texttt{compare} and the optimal
-  release binary generated from measured values are planned but not implemented;
+  release binary generated from measured values are planned for later main waves but not
+  implemented;
   \texttt{compare} is a selectable, validatable label with release-equivalent build semantics.
   \textbf{Evidence:} Sections~\ref{sec:repos},~\ref{sec:impl-pipeline} and~\ref{sec:eval-method};
   Figures~\ref{fig:modi-kette} and~\ref{fig:abschaltungsstufen}.
@@ -253,19 +261,25 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \textbf{Context:} Structurally different search algorithms can only be compared fairly through
   a common, well-understood outer interface.
   \textbf{Decision:} All methods are mapped onto the C++ contract of the ordered map
-  \texttt{std::map<Key,\,Value>}~\cite{iso_cpp}; the container genera are held against one
+  \texttt{std::map<Key,\,Value>}~\cite{iso_cpp}; the container families are held against one
   standard oracle each --- \texttt{Set} against \texttt{std::set}, \texttt{Sequence} against
   \texttt{std::deque}, \texttt{Adapter} against \texttt{std::queue}, \texttt{std::stack} and
   \texttt{std::priority\_queue}, \texttt{View} against \texttt{std::span} ---, and
-  \texttt{std::vector} serves as the inner substrate of the genus \texttt{Adapter}. A conformance
+  \texttt{std::vector} serves as the inner substrate of the family \texttt{Adapter}. A conformance
   gate checks this contract before every measurement in the binding order import $\to$ gate $\to$
-  measure, via the five core operations \texttt{insert}, \texttt{lookup}, \texttt{erase},
-  \texttt{clear} and \texttt{size}, with conformance ratios as the result form.
+  measure: the seventeen \texttt{std::map} operations marked in Appendix~\ref{app:interfaces} (twelve
+  core check blocks, \texttt{std::map} as oracle), with conformance ratios as the result form; the five
+  drive operations of the module boundary (\texttt{insert}, \texttt{lookup}, \texttt{erase},
+  \texttt{clear}, \texttt{size}) are the ABI primitives over which the host-side adapter composes this
+  contract, not the scope of the check. Under \texttt{--debug} the gate additionally runs the standard
+  test set of the respective tier interface: the family-generic part (valid for all genera) and the
+  genus-specific part (the possibly extended special interfaces); this indirect debug mode coincides with
+  the release build and is not kept as a separate mode.
   \textbf{Consequence:} Only comparables are compared; the axes describe exclusively the inner
   behaviour behind the fixed interface.
   \textbf{Implementation status:} The extension of the gate to the full \texttt{std::map}
-  interface and the genus iterator library are not implemented; the requirement to run the
-  container genera through a complete \texttt{std::vector} hull is not met --- the implemented
+  interface and the family iterator library are not implemented; the requirement to run the
+  container families through a complete \texttt{std::vector} hull is not met --- the implemented
   Sequence oracle is \texttt{std::deque}.
   \textbf{Evidence:} Sections~\ref{sec:measurement-system} and~\ref{sec:impl-contracts}.
 
@@ -368,12 +382,12 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   and~\ref{sec:impl-system-axes}; Table~\ref{tab:axes-overview}.
 
   \item[ADR-15 --- Measurement-visitor seam (surface 3) instead of a sidecar]\hfill\\
-  \emph{Family and genus interfaces remain unchanged.}\hfill\\
+  \emph{Concept and family interfaces remain unchanged.}\hfill\\
   \textbf{Context:} An observer that fetches fields from a tier binary from the outside measures
   the neighbourhood and not the object: what is measured is then decided by the host through the
-  choice of fields; measurement fields in the domain interfaces would alter the family and genus
+  choice of fields; measurement fields in the domain interfaces would alter the concept and family
   contracts.
-  \textbf{Decision:} Each carrier stage offers three interface surfaces: surface~1 the genus
+  \textbf{Decision:} Each carrier stage offers three interface surfaces: surface~1 the family
   interface (runtime, abstract factory), surface~2 the stamp (compile time, ABI-stable), surface~3
   the measurement cut-through; the measurement crosses as a seam of its own
   (\texttt{tier\_measure\_accept} with \texttt{IMessVisitor}), a visitor at the \texttt{dlopen}
@@ -388,8 +402,10 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
 
   \item[ADR-16 --- Store as stock with compile-time keys]\hfill\\
   \emph{Measurement always on, in the store only re-measure what is missing.}\hfill\\
-  \textbf{Context:} A reference space of $2^{17}$ compositions per system permutation (according
-  to the catalogue header about 224~GB and 24~h of complete build) is manageable only with reuse of
+  \textbf{Context:} A reference space of $2^{17}$ compositions per system permutation in the golden reference catalogue
+  (according to the catalogue header about 224~GB and 24~h of complete build; superseded assumption of two
+  configurations per axis, the upper bound is determined by the planner from the XML experiment) is
+  manageable only with reuse of
   built binaries and measured values; the measurement is to be always switched on and, in the
   store, to re-measure only what cannot be found there.
   \textbf{Decision:} Stock~1 holds the binary under its SHA-512 fingerprint; stock~2 holds the

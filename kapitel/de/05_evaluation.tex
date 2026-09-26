@@ -4,7 +4,7 @@
 Die Evaluation legt zuerst die Methodik offen und wertet darauf aufbauend die Messreihen aus. Ihre
 Leitfrage ist die Cacheline-Awareness: Welche Entwurfsentscheidung verändert die cache-nahen
 Messgrößen --- L1-, L2- und Last-Level-Misses, dTLB-Misses, Branch-Misses und die Latenz je
-Genus-Interface-Aufruf --- auf welcher Plattform in welchem Maß? Drei Evaluationsobjekte ordnen das
+Gattungs-Interface-Aufruf --- auf welcher Plattform in welchem Maß? Drei Evaluationsobjekte ordnen das
 Kapitel: der \emph{Entwurfsraum} (die Hypothesen H1--H3 und die Achsen-Sensitivitätsanalyse), der
 \emph{Apparat} selbst (der heuristische Gegenbeweis und der Messfehler, den die Mess-Instanzen
 eintragen) und die \emph{Automatisierung} der Evaluation aus der Experiment-XML, denn die Arbeit
@@ -35,9 +35,9 @@ die Unterabschnitte; die Cacheline-Awareness ist ihre gemeinsame Leitachse.
 
 Die Leitachse der Evaluation ist die Cacheline-Awareness: Verglichen werden die cache-nahen
 Messgrößen --- L1-, L2- und Last-Level-Misses, dTLB-Misses, Branch-Misses, Energie sowie die
-Latenz-Perzentile je Genus-Interface-Funktion; sie sind sechzehn registrierte Mess-Kategorien mit einem
-Regime-Ordinal je Kategorie --- je Achsen-Belegung, je Gattungs- und Genus-Interface-Aufruf (die
-Kanal-Adresse lautet stets Achse $\to$ Genus $\to$ Kategorie) und je Plattform, also je registrierter
+Latenz-Perzentile je Gattungs-Interface-Funktion; sie sind sechzehn registrierte Mess-Kategorien mit einem
+Regime-Ordinal je Kategorie --- je Achsen-Belegung, je Konzept- und Gattungs-Interface-Aufruf (die
+Kanal-Adresse lautet stets Achse $\to$ Gattung $\to$ Kategorie) und je Plattform, also je registrierter
 Maschinen-Signatur: prod1 (AMD Zen~5), prod2 (Intel Core i9-12900K, Alder Lake) und das ODROID-Board
 mit Intel-Gracemont-Kernen. Die Frage lautet nicht, welcher Algorithmus schneller ist, sondern welche
 Achse die cacheline-bezogenen Kosten auf welcher Mikroarchitektur bewegt. Die PMC-Kategorien
@@ -61,8 +61,8 @@ und Bezugsgröße, Wiederholungen, Streuung, Plattform und nicht erhobene Werte 
 Berichts-Regeln für Leistungsmessungen~\cite{hoefler2015benchmarking,blackburn2016truth} an jedem Ergebnis.
 Leitachse ist die Cacheline-Awareness: Verglichen werden die cache-nahen Messgrößen (L1-, L2- und
 Last-Level-Misses, dTLB-Misses, Branch-Misses, Energie, Latenz-Perzentile; sechzehn registrierte
-Mess-Kategorien mit Regime-Ordinal) je Achsen-Belegung und Genus-Interface-Aufruf (Kanal-Adresse Achse
-$\to$ Genus $\to$ Kategorie) und je Maschinen-Signatur: prod1 (AMD Zen~5), prod2 (Intel Alder Lake) und
+Mess-Kategorien mit Regime-Ordinal) je Achsen-Belegung und Gattungs-Interface-Aufruf (Kanal-Adresse Achse
+$\to$ Gattung $\to$ Kategorie) und je Maschinen-Signatur: prod1 (AMD Zen~5), prod2 (Intel Alder Lake) und
 das ODROID-Board mit Intel-Gracemont-Kernen. Die PMC-Kategorien (Performance Monitoring Counter, die
 Hardware-Zähler der Prozessoren) sind die primären Messgrößen, die Zeit-Kategorien die Gegenprobe; weil
 Zähler nur gegengeprüft vertrauenswürdig sind~\cite{weaver2008counters}, legt
@@ -480,14 +480,14 @@ erhoben wird.}\label{tab:eval-pmc-zaehler}
 Zeit- und Beobachter-Messung sind im Mess-Checkpoint (\texttt{checkpoint\_measure}) vereint; ihre
 Verantwortlichkeiten trennt die Mess-Tooling-Haupt-Achse in genau dieser Reihenfolge: \emph{wallclock}
 (w) --- die Wall-Clock der Gesamtläufe im CacheEngineBuilder über die Last-Rahmenwerke,
-parameter-leer; \emph{macro} (ma) --- die Zeit der Genus-Interface-Funktionen der Tier-Binary;
+parameter-leer; \emph{macro} (ma) --- die Zeit der Gattungs-Interface-Funktionen der Tier-Binary;
 \emph{micro} (mi) --- die Zeit und die Erfolgs-Parameter je Achsen-Interface
 (Abschnitt~\ref{sec:measurement-system}, Abbildung~\ref{fig:traeger-flaechen}); Teilmengen der drei
 Ebenen sind erlaubt, jede andere Reihenfolge ist syntaktisch falsch, und w/ma/mi ist der registrierte
 Alias. Drei Kollektoren übernehmen die Erhebung als Bausteine der Mess-Achse \texttt{collector} ---
 Wall-Clock, Beobachter-Schnappschuss und PMC ---, und die sechzehn Mess-Kategorien sind die
 Unter-Achse der Tooling-Achse, nicht ihre Haupt-Auffächerung. Die Auswertung hält die drei Ebenen
-getrennt: Achsen-Interface, Gattungs- und Genus-Interface und die Wall-Clock des CacheEngineBuilders
+getrennt: Achsen-Interface, Konzept- und Gattungs-Interface und die Wall-Clock des CacheEngineBuilders
 werden nie gemischt (Abschnitt~\ref{sec:eval-sensitivity}); PMC-Messungen als eigener Abbildungstyp des
 Anhang-Generators sind vorgesehen, aber nicht implementiert. Umsetzungsstand: Registry und Ebenen-Kanon sind implementiert;
 die Ordnungs-Validierung an den drei Serialisierungs-Stellen und der Kollektor als eigenständiges
@@ -543,10 +543,12 @@ werden; O0 bis O3 als Anwender-Wahl in der XML und die Durchreichung weiterer Co
 vorgesehen, aber nicht implementiert. Je Bau-Variante wird der golden-Referenzkatalog
 gebaut: $2^{17} = 131072$ Binary-Identitäten, weil das golden-Profil für siebzehn Organ-Haupt-Achsen
 je zwei Vertreter aus dem Angebot der Organ-Registry aktiviert und die achtzehnte
-(\texttt{persistence\_target}) festgelegt ist
-(Abschnitt~\ref{sec:mess-chain}); die System-Achsen multiplizieren die Bau-Matrix, nie die
-\texttt{binary\_id}. Die Mächtigkeit des realen Permutationsraums rechnet der Planer dynamisch aus
-seinen Eingängen (Subkommando \texttt{simulate}); sie ist keine feste Anzahl. Ergebnisse der
+(\texttt{persistence\_target}) festgelegt ist (Abschnitt~\ref{sec:mess-chain}) --- eine vereinfachende,
+überholte Annahme, der Katalog ist Regressions-Detektor, nicht Bau-Umfang; die System-Achsen multiplizieren
+die Bau-Matrix, nie die \texttt{binary\_id}. Die Obergrenze der Binary-Identitäten je System-Permutation ist
+das Produkt der je Organ-Achse im XML-Experiment gewählten Auslegungen; der Planer bestimmt sie aus dem
+XML-Experiment, sie ist erst zur Ausführung bekannt, und die Mächtigkeit des realen Permutationsraums
+rechnet er dynamisch aus seinen Eingängen (Subkommando \texttt{simulate}); sie ist keine feste Anzahl. Ergebnisse der
 Läufe des vollständigen Baus liegen nicht vor (Abschnitt~\ref{sec:eval-available}).
 \end{nurlang}
 \begin{nurkurz}
@@ -559,8 +561,10 @@ Run-to-Run-Determinismus sowie die CRC-64-Prüfsumme des golden-Referenzkatalogs
 O2, O3 wird über die XML gewählt und ist über das Werkzeugketten-Glied des Fingerprints
 identitätswirksam, O0 bis O3 als Anwender-Wahl und die Durchreichung weiterer Compiler-Flags sind
 vorgesehen, aber nicht implementiert. Je Bau-Variante wird der golden-Referenzkatalog gebaut
-($2^{17} = 131072$ Binary-Identitäten, Abschnitt~\ref{sec:mess-chain}); die Mächtigkeit des realen
-Permutationsraums rechnet der Planer dynamisch (Subkommando \texttt{simulate}). Ergebnisse der Läufe des
+($2^{17} = 131072$ Binary-Identitäten unter der überholten Annahme zweier Auslegungen je Achse,
+Regressions-Detektor, nicht Bau-Umfang; Abschnitt~\ref{sec:mess-chain}); die Obergrenze je System-Permutation
+ist das Produkt der im XML-Experiment gewählten Auslegungen je Achse, vom Planer erst zur Ausführung bestimmt,
+und die Mächtigkeit des realen Permutationsraums rechnet der Planer dynamisch (Subkommando \texttt{simulate}). Ergebnisse der Läufe des
 vollständigen Baus liegen nicht vor (Abschnitt~\ref{sec:eval-available}).
 \end{nurkurz}
 
@@ -762,12 +766,15 @@ Die Ablaufmethodik kennt vier Arbeitsmodi --- \texttt{build}, \texttt{measure}, 
 \texttt{release} (Abschnitt~\ref{sec:impl-pipeline}) ---; der Mess-Modus misst mit genau \emph{einem}
 Mess-Thread, eine parallele Mess-Ausführung ist über keine Registry-Zeile scharfgeschaltet und nur über
 die Zustands-Injektion des Laufeintrags erreichbar, und \texttt{--debug} ist ein Schalter der
-Planer-Shell für den Verdrahtungs-Check, der für Anwender gesperrt bleibt, kein Arbeitsmodus; das
+Planer-Shell für den Verdrahtungs-Check, der für Anwender gesperrt bleibt, kein Arbeitsmodus (unter
+\texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Standard-Testsatz des Tier-Interfaces; dieser indirekte Debug-Modus
+fällt mit dem Release-Bau zusammen und wird nicht separat geführt); das
 Threading der Gattung selbst bleibt dabei der Tier-Binary überlassen, statt vom Harness überschrieben
 zu werden. Ein im Lager vorgefundenes Binary wird nur dann übersprungen, wenn sein bestandenes Prüf-Testat
 am Binary inventarisiert ist (Abbildung~\ref{fig:eval-lager-kreislauf}), und vor jeder Messung steht
 die Konformitätsprüfung am Prüf-Dock (Abschnitt~\ref{sec:impl-contracts}): das Konformitäts-Gate des
-Genus-Vertrags vor den Post-Compile-Testaten der Mess-Interfaces, daneben das Konsistenz-Gate der
+Gattungs-Vertrags (unter \texttt{--debug} um den Standard-Testsatz des Tier-Interfaces erweitert) vor den Post-Compile-Testaten
+der Mess-Interfaces, daneben das Konsistenz-Gate der
 Messung; Bau- wie Mess-Läufe werden je Maschine in Meilenstein-Batches von je 4096 Binaries am Stück
 abgearbeitet --- das Korn ist eine Übersetzungszeit-Konstante, deren Abweichung ein Übersetzungsfehler
 ist ---, mit gleichverteilter Zuteilung der gemeinsam baubaren Binaries über die Maschinen und
@@ -778,7 +785,9 @@ Die Messung bleibt strikt vom Bau getrennt: Mess-Läufe werden ausdrücklich aus
 kennt vier Arbeitsmodi --- \texttt{build}, \texttt{measure}, \texttt{compare} und \texttt{release}
 (Abschnitt~\ref{sec:impl-pipeline}) ---; der Mess-Modus misst mit genau \emph{einem} Mess-Thread, das
 Threading der Gattung selbst bleibt der Tier-Binary überlassen, und
-\texttt{--debug} ist ein Schalter der Planer-Shell, kein Arbeitsmodus. Ein im Lager vorgefundenes Binary
+\texttt{--debug} ist ein Schalter der Planer-Shell, kein Arbeitsmodus (unter \texttt{--debug} fährt das
+Konformitäts-Gate zusätzlich den Standard-Testsatz des Tier-Interfaces; dieser indirekte Debug-Modus fällt mit dem Release-Bau
+zusammen). Ein im Lager vorgefundenes Binary
 wird nur mit inventarisiertem Prüf-Testat übersprungen
 (Abbildung~\ref{fig:eval-lager-kreislauf}), vor jeder Messung steht die Konformitätsprüfung am Prüf-Dock
 (Abschnitt~\ref{sec:impl-contracts}), und Bau- wie Mess-Läufe werden je Maschine in Meilenstein-Batches
@@ -1232,7 +1241,7 @@ indem das Achsen-Framework jeden Bestandteil als austauschbare Achse über einer
 Struktur isoliert und der Beitrag jeder Entwurfsentscheidung unter sonst gleichen Bedingungen
 zurechenbar wird. Die Rangbildung läuft über die drei Mess-Ebenen in Kanon-Reihenfolge:
 \emph{wallclock} --- das Gesamt-Benchmarking der YCSB-Lastprofile im CacheEngineBuilder ---,
-\emph{macro} --- die Genus-Interface-Operationen der Tier-Binary --- und \emph{micro} --- das
+\emph{macro} --- die Gattungs-Interface-Operationen der Tier-Binary --- und \emph{micro} --- das
 Achsen-Interface, die Funktionsmenge, die alle Algorithmen einer Achse liefern müssen
 (Abschnitt~\ref{sec:mess-chain}); anhand der Zeilen je Permutation quantifiziert die Analyse auf der
 micro-Ebene, welche Achse am meisten zur Performance-Varianz beiträgt, die wallclock-Ebene prüft die
