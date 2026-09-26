@@ -30,7 +30,7 @@ introduces the term.
   GenuineIntel/6/151/2, RAM nominal rate 4800~MT/s declared, CAS latency not collected).
   \item[Anatomy] (\emph{Anatomie}) The \emph{body} of a living being: the fixed composition of its
   eighteen axis organs and, above all, their \emph{wiring} --- the generalized interfaces through
-  which one organ uses the services of the others (for instance a container genus as the node
+  which one organ uses the services of the others (for instance a container family as the node
   substrate of the axis \texttt{node\_type} or as index organization). Not a second model beside
   the search algorithm but its internal structure (cf.\ Section~\ref{sec:anatomy-metaphor}).
   \item[Answer status] (\emph{Antwort-Status}) The level of answering reported in the conclusion
@@ -119,6 +119,24 @@ introduces the term.
   (cf.\ Section~\ref{sec:complex-axis}). An undeclared member is stamped as undeclared, never
   guessed; the CAS latency is not collected for any measurement machine (n/a: the SMBIOS structure
   type~17 does not carry it).
+  \item[Concept] (\emph{Konzept}; code: \texttt{AnatomyGattung}) The topmost level beneath the
+  kingdom (level~1): the animal class as the measurement surface --- Map (mammal), Container (bird),
+  Graph (plant), HeuristikAdapter (insect) ---, the externally visible measurement interface that
+  defines measurability; per family a probe dock materializes it. The concept is not maintained as a
+  second datum but determined at run time from the family, via a concept-independent C symbol (the
+  symbol bears the same name for every concept). In the product-line reading the concept is the
+  feature core composition, the family the feature special composition. Reading note:
+  \enquote{Adapter} without prefix always means the container family, the hybrid concept is always
+  called HeuristikAdapter. Code bridge: \texttt{AnatomyGattung}, ABI symbol
+  \texttt{comdare\_anatomy\_gattung} (renaming in the code after the defence; see
+  \emph{Three-level model}, \emph{Family}, \emph{Genus}).
+  \item[Conformance gate] (\emph{Konformitäts-Gate}) The unconditional check before every
+  measurement: at the probe dock the gate checks the \texttt{std::map} contract of the conformance
+  subset (Appendix~\ref{app:interfaces}), so that only comparable things are compared. Under
+  \texttt{--debug} it additionally runs the standard test set of the tier interface: the
+  family-generic part (valid for all genera) and the genus-specific part (the extended
+  sub-interfaces); this indirect debug mode coincides with the release build and is not kept as a
+  separate mode (see \emph{Family}, \emph{Genus}).
   \item[Consumer] (\emph{Konsument}) The role of the thesis code towards the engine: a consumer
   links exclusively against the cache engine and uses one door (\texttt{get\_cache\_engine()}); the
   measurement driver is at the same time its driver. To be distinguished from this is the operator
@@ -165,14 +183,18 @@ introduces the term.
   binary tree (children of index~$i$ at $2i$ and $2i+1$), so that binary search proceeds in a
   cache-line- and prefetch-friendly manner~\cite{khuong2017eytzinger}. In this thesis one value of
   the memory-layout axis.
-  \item[Family] (\emph{Gattung}; code: \texttt{AnatomyGattung}) An externally visible interface
-  --- Map, Container, Graph, HeuristikAdapter ---, the topmost level (level~1) of the framework;
-  the family is derived from the genus (one maintained source) and is determined via a
-  family-independent C symbol (the symbol bears the same name for every family). In the
-  product-line reading the family is the feature core composition, the genus the feature special
-  composition. Reading note: \enquote{Adapter} without prefix always means the container genus, the
-  hybrid family is always called HeuristikAdapter (see \emph{Three-level model}, \emph{Genus}).
-  \item[Family subclass] (\emph{Gattungs-Unterklasse}) see \emph{Genus} (alias).
+  \item[Family] (\emph{Gattung}; code: \texttt{AnatomyGenus}) The second level of the framework
+  (level~2) and the first tier-interface level beneath a concept: the interface that a family carries
+  outward as a template, the AND-intersection of the interfaces of all its genera (in the metaphor
+  canon the elephant $=$ SearchAlgorithm beneath the mammal Map). Six families: SearchAlgorithm under
+  Map, Set, Sequence, Adapter and View under Container (woodpecker, stork, cockatoo, falcon) as well
+  as FunctionInterfaceReroute (ant) under HeuristikAdapter. The family is the only maintained source
+  of the classification; the concept is determined from it at run time. Per docking family there is
+  exactly one probe dock (five docks for SearchAlgorithm, Set, Sequence, Adapter and View), whereas
+  the classifying family FunctionInterfaceReroute has none and its binaries dock at the dock of the
+  reported target family. The family tests of the conformance gate are generic for all genera of the
+  family. Code bridge: \texttt{AnatomyGenus} (renaming in the code after the defence; see
+  \emph{Concept}, \emph{Genus}, \emph{Three-level model}).
   \item[Fingerprint] The cryptographic identity hash per carrier stage: the planner carries a
   SHA-256 over version, ISA and operating system (64 hex characters); the tier binary a SHA-512
   over eleven members in fixed order (format~6: format identifier, measurement, system and organ
@@ -196,19 +218,21 @@ introduces the term.
   measurement technology~\cite{berthold2023vampir}) and leaves the remaining ones to the standard
   construction kit --- the same type that the candidate under test PRT-ART corresponds to. Of the 33 profiles,
   30 are full profiles and 3 abstract.
-  \item[Genus] The second level beneath a family, with a fixed axis set (code:
-  \texttt{AnatomyGenus}). Six genera: SearchAlgorithm under Map --- in the metaphor canon of this
-  thesis the \enquote{mammal} with the full eighteen-axis anatomy ---, Set, Sequence, Adapter and
-  View under Container (in the metaphor canon the animal classes \enquote{bird}, \enquote{reptile},
-  \enquote{invertebrate} and \enquote{plant} as living beings, each with its own
-  compile-time-statically fixed axis set; see \emph{Metaphor canon}) as well as
-  FunctionInterfaceReroute under HeuristikAdapter. The latter classifies the hybrid artefact;
-  \texttt{genus()} of a hybrid binary, by contrast, reports the inherited target genus, the
-  rerouting remains transparent to the outside. The genus is the only maintained source of the
-  classification; per docking genus there is exactly one probe dock (five docks for
-  SearchAlgorithm, Set, Sequence, Adapter and View), whereas the classifying genus
-  FunctionInterfaceReroute has none and its binaries dock at the dock of the reported target genus.
-  Alias: family subclass, tier subclass.
+  \item[Genus] (\emph{Genus}) The third level (level~3) and second tier-interface level: the
+  subspecies, the implementation of the family interface with possibly extended sub-interfaces (in
+  the metaphor canon the elephant species mammoth $=$ ART, African elephant $=$ HOT, Indian elephant
+  $=$ START beneath the family SearchAlgorithm; the giraffe is reserved, CoCo has no code object).
+  Beneath the genus lie one or more search strategies (simple $=$ assignment of a single axis,
+  complex $=$ composition of several axes); the organs are a classification of their own (level~4)
+  that the genus implementation binds. The genus is neither the search-strategy axis nor the
+  composition of its organs. The genus tests of the conformance gate check only the special
+  interfaces. As-is: today the code carries the genus only as an axis assignment; the genus
+  implementation class is missing (an acknowledged architecture error, fix after the defence). The
+  hybrid artefact is classified by the family FunctionInterfaceReroute; \texttt{genus()} of a hybrid
+  binary, by contrast, reports the inherited target family, the rerouting remains transparent to the
+  outside. Code bridge: \texttt{AnatomyGenus} denotes in the code the \emph{family} of this thesis,
+  not the genus (renaming after the defence; see \emph{Family}).
+ 
   \item[Gitlink] The commit of a submodule recorded in the superordinate repository (entry mode
   160000); \texttt{.gitmodules} declares per submodule the path, the URL and optionally the
   branch~\cite{git2026gitmodules}. The super-repository thus carries the authoritative state of
@@ -242,12 +266,13 @@ introduces the term.
   both types and measures there with the counter set belonging to the core type; precondition of
   the cache-line-awareness measurement and therefore a mandatory part of the measurement model
   (cf.\ Section~\ref{sec:axis-triad}).
-  \item[Hybrid tier binary] The fourth carrier stage in the build order, in the processing chain the
-  optional mux insertion between the CEB probe dock and the tier binary: a module of the family
+  \item[Hybrid tier binary] The fourth carrier stage (level~5b: inserted between the CEB probe dock and
+  the tier binaries as a multiplexer with slots) in the build order, in the processing chain the
+  optional mux insertion between the CEB probe dock and the tier binary: a module of the concept
   HeuristikAdapter
-  (genus FunctionInterfaceReroute) that inherits at compile time the interfaces of one family and
-  one genus and puts calls through to attached tier binaries according to heuristic criteria; it
-  exports the same mandatory symbols as a tier, reports the target genus to the outside and is
+  (family FunctionInterfaceReroute) that inherits at compile time the interfaces of one concept and
+  one family and puts calls through to attached tier binaries according to heuristic criteria; it
+  exports the same mandatory symbols as a tier, reports the target family to the outside and is
   built exclusively by means of the CEB\@. Implementation status: classification, dock layer, XML
   parser and binary proxy are implemented; the module export as a separate compiled artefact, the
   reroute router, the displacement, the state synchronization (memento sidecar) and the live
@@ -267,17 +292,17 @@ introduces the term.
   shut-off as a permutation quantity is intended but not implemented
   (Figure~\ref{fig:abschaltungsstufen}, Section~\ref{sec:impl-system-axes}).
   \item[Interface surface] (\emph{Interface-Fläche}) One of the three contract surfaces that every
-  carrier stage offers: surface~1 the genus interface (run time, Abstract Factory), surface~2 the
+  carrier stage offers: surface~1 the family interface (run time, Abstract Factory), surface~2 the
   stamp (compile time, ABI-stable), surface~3 the measurement cut-through (\texttt{IMessVisitor}),
-  which crosses the measurement as a seam of its own so that family and genus interfaces remain
+  which crosses the measurement as a seam of its own so that concept and family interfaces remain
   unchanged (Figure~\ref{fig:traeger-flaechen}). Alias: contract surface, carrier surface.
   \item[IQR] Interquartile range --- difference between the third and the first quartile (p75 $-$
   p25); in the measurement appendix the dispersion measure of the sibling-pair differences in the
   exchangeability long tables and the forest plots (whisker = IQR); a box plot of the latencies is
   deliberately not drawn there, because the schema carries per operation only the percentiles p50,
   p99 and p999 but no quartile boundaries (p25/p75)~\cite{mcgill1978boxplots}.
-  \item[Living being] (\emph{Lebewesen}) A completely composed tier module of a family --- all
-  families are living beings; the SearchAlgorithm is the case with the full eighteen-axis anatomy,
+  \item[Living being] (\emph{Lebewesen}) A completely composed tier module of a concept --- all
+  families and genera are living beings; the family SearchAlgorithm is the case with the full eighteen-axis anatomy,
   and only the ABI adapter view narrows the term to it (technical identifier there: SearchAlgorithm
   instance). The user XML carries a living being with one or more tiers. Delimitation: axis-less
   Graph modules are viruses (see \emph{Virus}).
@@ -298,7 +323,7 @@ introduces the term.
   \item[Measurement level] (\emph{Mess-Ebene}) One of the three levels of the measurement-tooling
   main axis, in exactly this order: \emph{wallclock} (w) --- the wall clock of the overall runs in
   the CacheEngineBuilder across the load frameworks; \emph{macro} (ma) --- the time of the
-  genus-interface functions of the tier binary; \emph{micro} (mi) --- time and success parameters
+  family-interface functions of the tier binary; \emph{micro} (mi) --- time and success parameters
   per axis interface. Subsets are permitted, any other order is syntactically wrong
   (cf.\ Section~\ref{sec:measurement-system}). Alias: w/ma/mi; wallclock, macro, micro level.
   \item[Measurement realm] (\emph{Mess-Realm}) The third axis realm beside organ and system axes:
@@ -332,13 +357,18 @@ introduces the term.
   \texttt{measurement\_meta\_meta} (\texttt{load\_framework}); the PMC collection counts among the
   meta-meta measurement axes.
   \item[Metaphor canon] (\emph{Metapher-Kanon}) The biological reading of the architecture, used
-  uniformly in this thesis: organ $=$ axis; anatomy $=$ the body of a living being; animal
-  (\emph{Tier}) $=$ a living being of a family (the animal classes as examples per genus:
-  \enquote{mammal} $=$ SearchAlgorithm, \enquote{bird}, \enquote{reptile}, \enquote{invertebrate}
-  and \enquote{plant} $=$ the four container genera Set, Sequence, Adapter and View); virus $=$
-  axis-less Graph module; blood $=$ the liquid organ that connects all organ axes and is condensed
-  in the planner into one compile-time configuration; habitat $=$ the system axes; laboratory $=$
-  the measurement axes (cf.\ Section~\ref{sec:anatomy-metaphor}). Where the text means the
+  uniformly in this thesis: kingdom $=$ Animalia (\texttt{IAnatomyBase}); animal class $=$ concept
+  (\enquote{mammal} $=$ Map, \enquote{bird} $=$ Container, \enquote{plant} $=$ Graph --- botanically
+  the kingdom Plantae, the metaphor deliberately reaches beyond the kingdom Animalia here ---,
+  \enquote{insect} $=$ HeuristikAdapter); species $=$ family (\enquote{elephant} $=$ SearchAlgorithm,
+  \enquote{woodpecker} $=$ Set, \enquote{stork} $=$ Sequence, \enquote{cockatoo} $=$ Adapter,
+  \enquote{falcon} $=$ View, \enquote{ant} $=$ FunctionInterfaceReroute); subspecies $=$ genus
+  (\enquote{mammoth} $=$ ART, \enquote{African elephant} $=$ HOT, \enquote{Indian elephant} $=$
+  START); organ $=$ axis; anatomy $=$ the body of a living being; animal (\emph{Tier}) $=$ a living
+  being of a family, the individual its tier binary; virus $=$ axis-less Graph module; blood $=$
+  the liquid organ that connects all organ axes and is condensed in the planner into one
+  compile-time configuration; habitat $=$ the system axes; laboratory $=$ the measurement axes
+  (cf.\ Section~\ref{sec:anatomy-metaphor}). Where the text means the
   measurement cross-section of the host, it says so without metaphor.
   \item[MLP] Memory-level parallelism --- number of simultaneously outstanding memory accesses that
   a core can overlap; bounded by the miss status holding registers (see \emph{MSHR}).
@@ -355,7 +385,7 @@ introduces the term.
   \item[NUMA] Non-Uniform Memory Access.
   \item[OLC] Optimistic Lock Coupling --- optimistic concurrency technique (ARTSync,
   P08)~\cite{leis2016olc}.
-  \item[Organ] Metaphorical term for an \emph{axis} (level~3 of the three-level model); a search
+  \item[Organ] Metaphorical term for an \emph{axis} (level~4 beneath the three-level model); a search
   algorithm possesses eighteen organ axes. Beside the eighteen organ main axes the organ realm
   carries an optional organ meta-meta axis (\texttt{disk\_io}), which takes effect only with a disk
   write-back target (see \emph{Axis}, \emph{Meta-meta axis}).
@@ -392,10 +422,10 @@ introduces the term.
   is a building block of the collector axis (regime PmcCounter); the model-bound raw events are
   supplied by a catalogue per microarchitecture, and in the axis typology PMC counts among the
   meta-meta measurement axes.
-  \item[Probe dock] (\emph{Prüf-Dock}) The builder-side measurement orchestration per genus:
-  exactly one dock per genus (SearchAlgorithm, Set, Sequence, Adapter, View) loads a living being,
+  \item[Probe dock] (\emph{Prüf-Dock}) The builder-side measurement orchestration per family: the
+  concept defines the measurability, per family a probe dock materializes it. Exactly one dock per family (SearchAlgorithm, Set, Sequence, Adapter, View) loads a living being,
   drives it through the interface operations and measures it; hybrid docks bind attached tiers.
-  The dock is no ABI boundary --- the ABI boundary remains the genus-specific drive sub-interface
+  The dock is no ABI boundary --- the ABI boundary remains the family-specific drive sub-interface
   including the POD snapshot; the persistence of the results is taken over by the result intake
   into the experiment tree and the write-back (cf.\ Section~\ref{sec:anatomy-levels}).
   \item[Provenance level] (\emph{Provenienz-Stufe}) Trust level of a collected hardware value ---
@@ -450,7 +480,7 @@ introduces the term.
   (cf.\ Section~\ref{sec:lager}).
   \item[Store] (\emph{Lager}) The persistent holdings of the apparatus, in which what is built and
   what is measured lies under stamp keys (see \emph{Stock}): the store tree is organized by
-  family, genus and realm, a permutation is recognized via its fingerprint instead of being built
+  concept, family and realm, a permutation is recognized via its fingerprint instead of being built
   anew, measurement is always switched on and re-measures in the store only what is missing there.
   Every machine configuration has its own measurement stock; an algorithm version change triggers
   the rebuild of the affected store stack together with re-measurement. Implementation status:
@@ -469,23 +499,27 @@ introduces the term.
   Alias: subaxis. Sub-axis and permutation axis are not mutually exclusive.
   \item[Subset] (\emph{Teilmenge}) In this thesis in two fixed meanings: the permissible subset of
   the measurement levels (any subset of wallclock/macro/micro in canonical order) and the
-  conformance subset of the interface operations, which the comparison gate checks before every
-  measurement (Appendix~\ref{app:interfaces}).
+  conformance subset of the interface operations, which the conformance gate checks before every
+  measurement (under \texttt{--debug} additionally the genus test set; Appendix~\ref{app:interfaces}).
   \item[Subsystem] In this thesis the four carrier subsystems of the chain (measurement driver,
   CacheEngineBuilder, CacheEngine, candidate under test); in the code, by contrast, the twelve
   \texttt{ISubEngine} stages of the recommendation pipeline behind the facade
   \texttt{ICacheEngine}. The two meanings are not mixed in the text.
   \item[SuRF] Succinct Range Filter~\cite{zhang2018surf}.
   \item[SVE, NEON, RVV] ARM (SVE, NEON) and RISC-V (RVV) SIMD extensions, respectively.
-  \item[Three-level model] (\emph{Drei-Ebenen-Modell}) The layering of the one architecture:
-  \emph{family} (level~1, the outer algorithm interface --- Map, Container, Graph,
-  HeuristikAdapter), \emph{genus} (level~2, family subclass with a fixed axis set ---
-  SearchAlgorithm, Set, Sequence, Adapter, View, FunctionInterfaceReroute) and
-  \emph{organs}/\emph{axes} (level~3). See Section~\ref{sec:anatomy-levels}.
-  \item[Tier binary] The third carrier stage: the dynamically loadable module of a tier, built by
+  \item[Three-level model] (\emph{Drei-Ebenen-Modell}) The three interface levels of the one
+  architecture: \emph{concept} (level~1, the animal class as the measurement surface --- Map,
+  Container, Graph, HeuristikAdapter), \emph{family} (level~2, the tier interface as a template ---
+  SearchAlgorithm, Set, Sequence, Adapter, View, FunctionInterfaceReroute) and \emph{genus} (level~3,
+  the subspecies as the implementation of the family interface --- ART, HOT, START). Beneath them lie
+  the \emph{organs}/\emph{axes} (level~4) as a classification of their own, above them the kingdom
+  (level~0); tier binary (level~5a) and hybrid tier (level~5b) are the post-phase of the compilation.
+  See Section~\ref{sec:anatomy-levels}.
+  \item[Tier binary] The third carrier stage (level~5a of the concept hierarchy: the post-phase of the
+  compilation, the individual): the dynamically loadable module of a tier, built by
   the CEB per permutation, which contains exactly one organ assignment (\texttt{binary\_id})
   together with the system and measurement choice firmly compiled in, is loaded via
-  letter-identical C symbols (the four primal symbols, the family and genus query and the
+  letter-identical C symbols (the four primal symbols, the concept and family query and the
   version lines) and lies in the store as stock~1. Alias: tier, permutation module. The word \emph{Tier} is German for
   \emph{animal} and names, in the metaphor canon of this thesis, the fully composed module --- the living
   being with all its organs ---, not a level or layer.
