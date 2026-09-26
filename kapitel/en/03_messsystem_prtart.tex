@@ -2408,7 +2408,15 @@ complex axis occupies exactly one field in its line (Section~\ref{sec:complex-ax
 entry grammar is defined once for all lines: \texttt{axis=algo@X.Y.Z[.flag]*} with recursive
 composite brackets --- \texttt{c\{p.e\}} is the base \texttt{c} with the sub-members \texttt{p} and
 \texttt{e} and is never read flat as \texttt{cpe}; the bracket depth of an entry is its
-meta-meta level, zero the main axis. The flag \texttt{e} denotes an efficiency-core algorithm.
+meta-meta level, zero the main axis. The flag alphabet at depth~0 names the target hardware class:
+\texttt{c} $=$ CPU, \texttt{g} $=$ GPU, \texttt{f} $=$ FPGA, \texttt{n} $=$ NPU; \texttt{g}, \texttt{f} and
+\texttt{n} are reserved in the catalogue and are not produced today, because the cache engine generates CPU code
+exclusively --- every version it generates carries the CPU base \texttt{c}, an entry without \texttt{c} fails at
+the catalogue guard. Beneath \texttt{c} stand as sub-members the core classes \texttt{p} $=$ performance core and
+\texttt{e} $=$ efficiency core; \texttt{c} without a bracket means \texttt{c\{p\}} (default), \texttt{c\{e\}}
+denotes an efficiency-core algorithm, \texttt{c\{p.e\}} both core classes. The identity of a flag is the pair of
+token and parent: \texttt{f} at depth~0 is FPGA, \texttt{f} inside the bracket of \texttt{x512} the AVX-512
+foundation subset.
 A fourth \emph{realm} line for the mixing strategy of a candidate under test, by contrast, cannot exist: a
 candidate under test mixes against the organ axes and is thus already described in the organ line. The mixing becomes
 recognizable there in the axis name, which the candidate under test stamps under its own namespace prefix
@@ -2569,8 +2577,12 @@ segments with the load framework as a bracket appendage at its end (pattern
 measurement line is an explicitly declared statement (no measurement tooling compiled in). The entry
 grammar is defined once for all lines: \texttt{axis=algo@X.Y.Z[.flag]*} with recursive composite
 brackets --- \texttt{c\{p.e\}} is the base \texttt{c} with the sub-members \texttt{p} and \texttt{e}
-and is never read flat as \texttt{cpe}; the bracket depth of an entry is its meta-meta level, the flag
-\texttt{e} denotes an efficiency-core algorithm. A fourth realm line for the mixing strategy of a
+and is never read flat as \texttt{cpe}; the bracket depth of an entry is its meta-meta level. The flag alphabet at depth~0 names
+the target hardware class (\texttt{c} $=$ CPU, \texttt{g} $=$ GPU, \texttt{f} $=$ FPGA, \texttt{n} $=$ NPU; only
+\texttt{c} is produced and mandatory, \texttt{g}/\texttt{f}/\texttt{n} are reserved), beneath \texttt{c} the core
+classes \texttt{p} $=$ performance core (default: \texttt{c} $=$ \texttt{c\{p\}}) and \texttt{e} $=$ efficiency
+core; \texttt{c\{e\}} denotes an efficiency-core algorithm, and the identity of a flag is the pair of token and
+parent (\texttt{f} beneath \texttt{x512} is the AVX-512 foundation subset, not FPGA). A fourth realm line for the mixing strategy of a
 candidate under test does not exist: the candidate under test stamps under its own namespace prefix in
 the organ line (pattern \texttt{prt-art.memory.abc=prt\_patricia@2.3.4.c\{p.e\}}), so that mixing
 constellations remain distinguishable by name. The stamp is closed per carrier stage by a
