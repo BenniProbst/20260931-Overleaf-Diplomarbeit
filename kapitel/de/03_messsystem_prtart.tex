@@ -579,8 +579,10 @@ SuRF-~\cite{zhang2018surf} und Xor-Filter~\cite{graf2020xor}. Die \emph{Persiste
 Platten-Rückschreibe-Ziel als abgeschaltete Option in Kombination mit der optionalen, abgeschalteten
 Organ-Meta-Meta-Achse \texttt{disk\_io} (Abschnitt~\ref{sec:axis-triad}) ---; im golden-Referenzkatalog
 ist sie auf ihren In-Memory-Vertreter festgelegt, sodass dieser feste Regressions-Detektor $2^{17} = 131072$
-Identitäten zählt, während die Mächtigkeit des realen Permutationsraums vom Planer dynamisch aus den
-aktivierten Katalogen gerechnet wird (Abschnitt~\ref{sec:mess-chain}). Diese Rekombination wird in
+Identitäten zählt (unter der überholten Annahme genau zweier Auslegungen je Achse), während die Obergrenze der
+Binary-Identitäten je System-Permutation das Produkt der je Achse im XML-Experiment gewählten Auslegungen ist,
+das der Planer aus den Eigenschaften des XML-Experiments bestimmt und das erst zur Ausführung bekannt ist
+(Abschnitt~\ref{sec:mess-chain}). Diese Rekombination wird in
 der Realität nicht erreicht, da nicht alle Achsen-Organe miteinander kompatibel sind.
 \end{nurlang}
 \begin{nurkurz}
@@ -602,8 +604,10 @@ SuRF-~\cite{zhang2018surf} und Xor-Filter~\cite{graf2020xor}. Die \emph{Persiste
 Platten-Rückschreibe-Ziel als abgeschaltete Option in Kombination mit der optionalen, abgeschalteten
 Organ-Meta-Meta-Achse \texttt{disk\_io} (Abschnitt~\ref{sec:axis-triad}) ---; im golden-Referenzkatalog
 ist sie auf ihren In-Memory-Vertreter festgelegt, sodass dieser feste Regressions-Detektor $2^{17} = 131072$
-Identitäten zählt, während die Mächtigkeit des realen Permutationsraums vom Planer dynamisch aus den
-aktivierten Katalogen gerechnet wird (Abschnitt~\ref{sec:mess-chain}). Diese Rekombination wird in
+Identitäten zählt (unter der überholten Annahme genau zweier Auslegungen je Achse), während die Obergrenze der
+Binary-Identitäten je System-Permutation das Produkt der je Achse im XML-Experiment gewählten Auslegungen ist,
+das der Planer aus den Eigenschaften des XML-Experiments bestimmt und das erst zur Ausführung bekannt ist
+(Abschnitt~\ref{sec:mess-chain}). Diese Rekombination wird in
 der Realität nicht erreicht, da nicht alle Achsen-Organe miteinander kompatibel sind.
 \end{nurkurz}
 
@@ -2844,12 +2848,20 @@ messbar, statt im Gesamtdurchsatz vermengt zu bleiben.
 Den so aufgespannten Raum reduziert das System gezielt. Der golden-Referenzkatalog --- je Organ-Achse
 zwei aktivierte Vertreter, die Persistenz-Achse auf ihren In-Memory-Vertreter festgelegt --- zählt
 $2^{17} = 131072$ Binary-Identitäten je System-Permutation (je Kombination der Bau-Steuergrößen,
-Abschnitt~\ref{sec:axis-triad}), jede mit vollem Achtzehn-Segment-Pfad
-(Abschnitt~\ref{sec:stamp-model}), und dient als Regressions-Detektor des Ganzsystems mit einer
-festgeschriebenen CRC-64-Prüfsumme über alle Identitäten; die Mächtigkeit des realen Permutationsraums über alle
-Achsen-Kataloge samt ihrer Unter-Achsen rechnet der Planer dagegen dynamisch aus seinen Eingängen
-(Subkommando \texttt{simulate}) --- sie liegt Größenordnungen darüber und ist nie eine feste
-Anzahl. Drei Mechanismen dämpfen die Explosion: Der \texttt{<expected\_workload>}-Profil-Filter routet
+Abschnitt~\ref{sec:axis-triad}), jede mit vollem Achtzehn-Segment-Pfad (Abschnitt~\ref{sec:stamp-model}),
+unter der vereinfachenden Annahme genau zweier Auslegungen je Achse (an/aus) über siebzehn Achsen; diese
+Annahme ist überholt, die Achsen tragen mehrere Auslegungen, und der Katalog bleibt Regressions-Detektor des
+Ganzsystems mit einer festgeschriebenen CRC-64-Prüfsumme über alle Identitäten, nicht Obergrenze (auch der
+kleine 320er-Katalog ist als Mess-Kanon überholt; Kanon ist das XML-Profil über die Planer- und
+Director-Kette). Die Obergrenze der Binary-Identitäten je System-Permutation ist keine Konstante, sondern das
+Produkt über die Organ-Achsen der Zahl der im XML-Experiment gewählten Auslegungen (je Achse mehrere, nicht
+an/aus); der Planer bestimmt sie aus den Eigenschaften des XML-Experiments, sie ist erst zur Ausführung
+bekannt. Die Mächtigkeit des realen Permutationsraums über alle Achsen-Kataloge samt ihrer Unter-Achsen
+rechnet der Planer dagegen dynamisch aus seinen Eingängen (Subkommando \texttt{simulate}) als Obergrenze,
+die erst zur Ausführung bekannt ist --- sie liegt Größenordnungen darüber und ist nie eine feste Anzahl. Die
+Planungs-Simulation rechnet heute das Produkt der XML-Freigaben je Organ-Achse mal System-Permutationen
+arithmetisch; die Planer-Erweiterung, die diese Obergrenze und die Batch-Größe eines Experiments als
+Grundlage der Last-Abschätzung bei der Ausführung korrekt erfasst, ist geplant und steht aus. Drei Mechanismen dämpfen die Explosion: Der \texttt{<expected\_workload>}-Profil-Filter routet
 nur kompatible Workloads; der \texttt{Defined}-Modus führt nur die deklarierten Tupel aus, aus denen
 die Messreihen des Manuskripts gespeist werden; und der \texttt{Full}- bzw.\ \texttt{Full-Sampled}-Modus
 fährt den Vollraum oder eine deterministische, seed-stabile 1:$n$-Teilmenge davon (Vorgabe $n = 1000$).
@@ -2950,10 +2962,17 @@ vermengt zu bleiben.
 Den so aufgespannten Raum reduziert das System gezielt. Der golden-Referenzkatalog --- je Organ-Achse zwei
 aktivierte Vertreter, die Persistenz-Achse auf ihren In-Memory-Vertreter festgelegt --- zählt $2^{17} = 131072$
 Binary-Identitäten je System-Permutation (Abschnitt~\ref{sec:axis-triad}), jede mit vollem
-Achtzehn-Segment-Pfad (Abschnitt~\ref{sec:stamp-model}), und dient als Regressions-Detektor mit einer
-festgeschriebenen CRC-64-Prüfsumme; die Mächtigkeit des realen Permutationsraums rechnet der Planer dagegen
-dynamisch aus seinen Eingängen (Subkommando \texttt{simulate}) --- sie liegt Größenordnungen darüber und ist nie
-eine feste Anzahl. Drei Mechanismen dämpfen die Explosion: der \texttt{<expected\_workload>}-Profil-Filter (nur
+Achtzehn-Segment-Pfad (Abschnitt~\ref{sec:stamp-model}), unter der vereinfachenden Annahme genau zweier
+Auslegungen je Achse (an/aus) über siebzehn Achsen; diese Annahme ist überholt, die Achsen tragen mehrere
+Auslegungen, und der Katalog bleibt Regressions-Detektor mit festgeschriebener CRC-64-Prüfsumme, nicht
+Obergrenze (der 320er-Katalog ist als Mess-Kanon überholt; Kanon ist das XML-Profil über die Planer-Kette).
+Die Obergrenze der Binary-Identitäten je System-Permutation ist das Produkt über die Organ-Achsen der Zahl der
+im XML-Experiment gewählten Auslegungen (mehrere je Achse); der Planer bestimmt sie aus dem XML-Experiment,
+sie ist erst zur Ausführung bekannt. Die Mächtigkeit des realen Permutationsraums rechnet der Planer dagegen
+dynamisch aus seinen Eingängen (Subkommando \texttt{simulate}) als Obergrenze, die erst zur Ausführung bekannt
+ist --- sie liegt Größenordnungen darüber und ist nie eine feste Anzahl; die Planer-Erweiterung, die diese
+Obergrenze und die Batch-Größe eines Experiments als Grundlage der Last-Abschätzung korrekt erfasst, ist
+geplant und steht aus. Drei Mechanismen dämpfen die Explosion: der \texttt{<expected\_workload>}-Profil-Filter (nur
 kompatible Workloads), der \texttt{Defined}-Modus (nur die deklarierten Tupel) und der \texttt{Full}- bzw.\
 \texttt{Full-Sampled}-Modus (Vollraum oder seed-stabile 1:$n$-Teilmenge). Der Default-Workload ist die
 Voll-Permutation über alle verfügbaren Workloads; das Routing dieser Vorgabe ist nicht implementiert

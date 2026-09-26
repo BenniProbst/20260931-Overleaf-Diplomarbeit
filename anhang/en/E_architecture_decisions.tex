@@ -87,9 +87,11 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
 
   \item[ADR-2 --- Compile-time permutation via type lists instead of runtime adaptation]\hfill\\
   \textbf{Context:} Eighteen organ composition axes already count $2^{17} = 131072$ binary
-  identities per system permutation in the canonical measurement catalogue --- one of them, the
-  persistence target, pinned to its in-memory representative ---, and the raw variant product space
-  over all axis catalogues including their sub-axes lies orders of magnitude above that; the hot
+  identities per system permutation in the golden reference catalogue --- one of them, the persistence
+  target, pinned to its in-memory representative, under the superseded assumption of two configurations per
+  axis ---, the upper bound per system permutation is the product of the configurations selected per axis in
+  the XML experiment (known only at execution time), and the raw variant product space over all axis
+  catalogues including their sub-axes lies orders of magnitude above that; the hot
   path must carry neither \texttt{virtual} calls nor runtime switches. The pinning is a budget
   decision (according to the catalogue header about 224~GB and 24~h of complete build instead of
   about 448~GB and 48~h); the variation of all eighteen axes is provided for, and the cardinality of
@@ -397,8 +399,10 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
 
   \item[ADR-16 --- Store as stock with compile-time keys]\hfill\\
   \emph{Measurement always on, in the store only re-measure what is missing.}\hfill\\
-  \textbf{Context:} A reference space of $2^{17}$ compositions per system permutation (according
-  to the catalogue header about 224~GB and 24~h of complete build) is manageable only with reuse of
+  \textbf{Context:} A reference space of $2^{17}$ compositions per system permutation in the golden reference catalogue
+  (according to the catalogue header about 224~GB and 24~h of complete build; superseded assumption of two
+  configurations per axis, the upper bound is determined by the planner from the XML experiment) is
+  manageable only with reuse of
   built binaries and measured values; the measurement is to be always switched on and, in the
   store, to re-measure only what cannot be found there.
   \textbf{Decision:} Stock~1 holds the binary under its SHA-512 fingerprint; stock~2 holds the

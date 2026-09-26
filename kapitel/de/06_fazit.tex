@@ -129,12 +129,13 @@ Profil-Anschluss ist vorgesehen, aber nicht implementiert. Sie ist das Beispiel 
 Meta-Meta-Ebene M3, die Indirektion einer Beschreibung: Sie stempelt im Klammer-Anhang der Organ-Zeile,
 und die Klammer-Tiefe eines Eintrags ist seine Meta-Meta-Ebene (Abschnitt~\ref{sec:stamp-model}). Zwei
 Bezugsgrößen sind zu trennen: Der golden-Referenzkatalog variiert siebzehn Achsen je zwei und legt das
-Persistenz-Ziel auf einen Wert fest --- $2^{17} = 131072$ Binary-Identitäten je System-Permutation als
-Regressions-Detektor mit einer festgeschriebenen CRC-64-Prüfsumme\footnote{CRC-64: eine zyklische
+Persistenz-Ziel auf einen Wert fest --- $2^{17} = 131072$ Binary-Identitäten je System-Permutation unter der
+überholten Annahme zweier Auslegungen je Achse, als Regressions-Detektor (nicht Obergrenze) mit einer festgeschriebenen CRC-64-Prüfsumme\footnote{CRC-64: eine zyklische
 Redundanzprüfung mit 64-Bit-Prüfsumme (hier die Variante ECMA-182), berechnet über alle Identitäten in
 kanonischer Reihenfolge; eine geänderte Identität ändert die Prüfsumme.} über alle Identitäten
 (Abschnitt~\ref{sec:impl-contracts}) ---, während die Mächtigkeit eines geplanten Raums keine Konstante
-ist, sondern die Rechnung des Planers je Profil und Plattform (Subkommando \texttt{simulate}); alle
+ist, sondern die Rechnung des Planers je Profil und Plattform (Subkommando \texttt{simulate}) als Obergrenze, die
+erst zur Ausführung bekannt ist; alle
 achtzehn Achsen sind für die Variation vorgesehen (nicht gemessen). Die 33 Korpus-Arbeiten P01--P33 besitzen je ein
 Profil-XML, davon 30 Vollprofile eigenständiger Suchentwürfe (acht Rang-1 und 22 Rang-2/3) und drei
 abstrakte Profile (OLC, LOUDS, VAMPIR), die nur einzelne Achsen belegen
@@ -171,9 +172,10 @@ beantwortet, FF1.a beantwortet, FF1.b empirisch offen.
 Matrix auf (Abschnitt~\ref{sec:axis-triad}); \texttt{disk\_io} ist neunzehnter Registry-Eintrag und Beispiel
 der Meta-Meta-Ebene M3: gestempelt im Klammer-Anhang der Organ-Zeile, die Klammer-Tiefe ist die
 Meta-Meta-Ebene (Abschnitt~\ref{sec:stamp-model}). Zwei Bezugsgrößen sind zu trennen: der
-golden-Referenzkatalog mit $2^{17} = 131072$ Binary-Identitäten je System-Permutation, per CRC-64-Prüfsumme
-gegen Regression gesichert (Abschnitt~\ref{sec:impl-contracts}), und die vom Planer gerechnete Mächtigkeit
-eines geplanten Raums (\texttt{simulate}). Die 33 Korpus-Arbeiten besitzen je ein Profil-XML (30
+golden-Referenzkatalog mit $2^{17} = 131072$ Binary-Identitäten je System-Permutation (überholte Annahme zweier
+Auslegungen je Achse), per CRC-64-Prüfsumme gegen Regression gesichert (Abschnitt~\ref{sec:impl-contracts}),
+und die vom Planer gerechnete Mächtigkeit eines geplanten Raums (\texttt{simulate}) als Obergrenze, die erst
+zur Ausführung bekannt ist. Die 33 Korpus-Arbeiten besitzen je ein Profil-XML (30
 Vollprofile,
 drei abstrakte; Abschnitt~\ref{sec:sota-instances}); die variadische Abbildung (Anhang~\ref{app:interfaces})
 trägt algorithmus- wie container-orientierte Muster, die Gattungs-Dreiteilung Map, Container, Graph ordnet
@@ -607,9 +609,15 @@ Literaturbeleg) und der offene Rest ohne Zahl.}\label{tab:ff-beweiskette}
 
 \begin{nurlang}
 %% INTERN-272: KA-119
-\paragraph{Umsetzungsstand.} Der deklarierte Bau-Umfang --- je System-Permutation die 131072
-Organ-Permutationen des golden-Referenzkatalogs; der Katalog-Kommentar schätzt rund 224~GB und rund
-24~Stunden je vollständigem Bau, eine Schätzung, kein Messwert --- ist nicht durchgeführt; die End-to-End-Läufe des
+\paragraph{Umsetzungsstand.} Der vollständige Bau ist nicht durchgeführt; sein Umfang ist kein deklarierter
+fester Wert: Die Obergrenze der Binary-Identitäten je System-Permutation ist das Produkt der je Organ-Achse im
+XML-Experiment gewählten Auslegungen (mehrere je Achse, nicht an/aus), vom Planer aus dem XML-Experiment
+bestimmt und erst zur Ausführung bekannt; die Planungs-Simulation (Unterkommando \texttt{simulate}) rechnet
+heute dieses Produkt mal System-Permutationen arithmetisch, die Planer-Erweiterung, die Obergrenze und
+Batch-Größe eines Experiments als Grundlage der Last-Abschätzung korrekt erfasst, ist geplant und steht aus
+(die 131072 Organ-Permutationen des golden-Referenzkatalogs mit dem Katalog-Kommentar von rund 224~GB und rund
+24~Stunden je Bau sind eine historische Schätzung unter der überholten Annahme zweier Auslegungen je Achse,
+kein Bau-Umfang); die End-to-End-Läufe des
 Mess-Treibers über die Zielplattformen (x86-64 mit AVX2 und AVX-512, aarch64 mit NEON und
 SVE\footnote{NEON und SVE\@: die SIMD-Erweiterungen der ARM-Architektur --- NEON mit fester
 128-Bit-Breite, SVE (Scalable Vector Extension) mit implementierungsabhängiger Vektorbreite.}) liegen
@@ -623,9 +631,9 @@ bewertet.} mit 10000 Operationen und 671,5~ns je Operation (p50 der
 \texttt{lookup}-Operation 750~ns) als realer Messwert des Weges --- und der Kalibrierlauf auf der
 AMD-Maschine, der 250 von 250
 Tier-Binaries gebaut und den Bau-Takt auf 0,521~s je Binary sowie den Platzbedarf auf rund 457~kB je
-Binary kalibriert hat; daraus folgt ein Lagerbedarf von rund 240~GB für den vollständigen Bau von 524288
-Tier-Binaries über die vier System-Permutationen des golden-Profils (zwei Optimierungsstufen mal zwei
-SIMD-Optionen). Die Smoke-Reihe --- 43 Permutationen in zwei Teilblöcken: 27 kartesische
+Binary kalibriert hat; daraus folgt als Rechenbeispiel des historischen golden-Profils (vier
+System-Permutationen mal $2^{17}$, zwei Optimierungsstufen mal zwei SIMD-Optionen) ein Lagerbedarf von rund
+240~GB für 524288 Tier-Binaries --- kein Bau-Umfang des Systems. Die Smoke-Reihe --- 43 Permutationen in zwei Teilblöcken: 27 kartesische
 SIMD$\times$Layout$\times$Allokator-Kombinationen plus 16 über Knotenbreite, Pfadkompression, interne
 Suche und Telemetrie --- liegt in Anhang~\ref{app:measurements} vor; ihre Provenienz ist der Datenstand,
 unter dem sie erhoben wurde: sieben variierte Achsen jener Zählung, von denen SIMD und Telemetrie in der
@@ -639,16 +647,19 @@ FF0 und FF3 bleiben offen, solange Reihe~A nicht gelaufen ist; alle achtzehn Ach
 \end{nurlang}
 \begin{nurkurz}
 %% INTERN-272: KA-119
-\paragraph{Umsetzungsstand.} Der deklarierte Bau-Umfang (je System-Permutation die 131072
-Organ-Permutationen des golden-Referenzkatalogs; der Katalog-Kommentar schätzt rund 224~GB und 24~Stunden je
-Bau, kein Messwert) ist nicht durchgeführt; die End-to-End-Läufe über die Zielplattformen (x86-64, aarch64)
+\paragraph{Umsetzungsstand.} Der vollständige Bau ist nicht durchgeführt; sein Umfang ist kein fester
+Wert: Die Obergrenze je System-Permutation ist das Produkt der je Organ-Achse im XML-Experiment gewählten
+Auslegungen, vom Planer erst zur Ausführung bestimmt; die Planungs-Simulation (\texttt{simulate}) rechnet
+dieses Produkt heute arithmetisch, die Planer-Erweiterung für Obergrenze und Batch-Größe als Grundlage der
+Last-Abschätzung steht aus (die 131072 Organ-Permutationen des golden-Referenzkatalogs mit rund 224~GB und
+24~Stunden je Bau sind eine historische Schätzung unter der überholten Annahme zweier Auslegungen je Achse); die End-to-End-Läufe über die Zielplattformen (x86-64, aarch64)
 liegen nicht vor, ebenso die Abgabe-Messung über den 320er-Katalog.
 Belegt sind zwei Teil-Durchführungen: der erste durchgehende Lauf der Kette (Abschnitt~\ref{sec:eval-xml})
 --- ein Mess-Job der Smoke-Stufe auf der AMD-Zen-5-Maschine (Pipeline 15800, Mess-Job 377503, Host prod1)
 mit 10000 Operationen und 671,5~ns je Operation (p50 \texttt{lookup} 750~ns; ein Vorlauf, Pipeline 15764,
 ergab 1199,047~ns auf nicht dokumentierter Maschine) --- und der Kalibrierlauf (250 von 250 Tier-Binaries,
-0,521~s und rund 457~kB je Binary; daraus rund 240~GB für 524288 Tier-Binaries über die vier
-System-Permutationen des golden-Profils). Die Smoke-Reihe (43 = 27 + 16 Permutationen) liegt in
+0,521~s und rund 457~kB je Binary; daraus als Rechenbeispiel des historischen golden-Profils rund 240~GB für 524288 Tier-Binaries
+über dessen vier System-Permutationen, kein Bau-Umfang des Systems). Die Smoke-Reihe (43 = 27 + 16 Permutationen) liegt in
 Anhang~\ref{app:measurements} vor; ihr Datenstand zählte SIMD und Telemetrie noch als Organ-Achsen. Sie
 approximiert Achsen-Effekte teils über Wall-Clock-Proxys, einzelne Effekte sind
 Instrumentierungs-Artefakte (Veränderung des Verhaltens durch das Mess-Instrument
@@ -843,7 +854,8 @@ Abschnitt~\ref{sec:impl-pipeline}).
 Kurzfristig stehen die folgenden Schritte an; implementierte Teile treten mit ihrem offenen Rest auf,
 entworfene Teile mit ihrem Umsetzungsstand:
 \begin{enumerate}[label=(\arabic*)]
-  \item der vollständige Bau nach dem deklarierten Umfang (Abschnitt~\ref{sec:eval-build-scope}) und die
+  \item der vollständige Bau nach dem vom Planer aus dem XML-Experiment bestimmten Umfang
+  (Abschnitt~\ref{sec:eval-build-scope}) und die
   Abgabe-Messung über den 320er-Katalog;
   \item der End-to-End-Lauf der drei Pflicht-Messreihen auf den registrierten Messmaschinen samt Erzeugung der
   Mess-Diagramme;
@@ -920,7 +932,8 @@ ein wesentlicher Hebel für künftigen experimentellen Fortschritt.
 Kurzfristig stehen die folgenden Schritte an; implementierte Teile treten mit ihrem offenen Rest auf,
 entworfene mit ihrem Umsetzungsstand:
 \begin{enumerate}[label=(\arabic*)]
-  \item der vollständige Bau nach dem deklarierten Umfang (Abschnitt~\ref{sec:eval-build-scope}) und die
+  \item der vollständige Bau nach dem vom Planer aus dem XML-Experiment bestimmten Umfang
+  (Abschnitt~\ref{sec:eval-build-scope}) und die
   Abgabe-Messung über den 320er-Katalog;
   \item der End-to-End-Lauf der drei Pflicht-Messreihen samt Diagrammen;
   \item der Lager-Vollausbau: die Binaries mit und ohne Messfühler als zwei Release-Artefakte,

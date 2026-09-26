@@ -123,12 +123,13 @@ example of the meta-meta level M3, the indirection of a description: it stamps i
 appendage of the organ line, and the bracket depth of an entry is its meta-meta level
 (Section~\ref{sec:stamp-model}). Two reference quantities are to be kept apart: the golden
 reference catalogue varies seventeen axes over two values each and pins the persistence target to
-one value --- $2^{17} = 131072$ binary identities per system permutation as a regression detector
+one value --- $2^{17} = 131072$ binary identities per system permutation under the superseded assumption of
+two configurations per axis, as a regression detector (not an upper bound)
 with a fixed CRC-64 checksum\footnote{CRC-64: a cyclic redundancy check with a 64-bit checksum
 (here the variant ECMA-182), computed over all identities in canonical order; a changed identity
 changes the checksum.} over all identities (Section~\ref{sec:impl-contracts}) ---, whereas the
 cardinality of a planned space is not a constant but the planner's computation per profile and
-platform (subcommand \texttt{simulate}); all eighteen axes are planned for variation (not
+platform (subcommand \texttt{simulate}) as an upper bound known only at execution time; all eighteen axes are planned for variation (not
 measured). The 33 corpus works P01--P33 each possess a profile XML, among them 30 full profiles of
 standalone search designs (eight Rank-1 and 22 Rank-2/3) and three abstract profiles (OLC, LOUDS,
 VAMPIR) that occupy only individual axes (Section~\ref{sec:sota-instances}); the registry of the
@@ -163,9 +164,10 @@ answered, RQ1.b empirically open.
 in the code) span the matrix (Section~\ref{sec:axis-triad}); \texttt{disk\_io} is the nineteenth registry
 entry and the example of the meta-meta level M3: stamped in the bracket appendage of the organ line, the
 bracket depth is the meta-meta level (Section~\ref{sec:stamp-model}). Two reference quantities are to be
-kept apart: the golden reference catalogue with $2^{17} = 131072$ binary identities per system permutation,
-secured against regression by a CRC-64 checksum (Section~\ref{sec:impl-contracts}), and the cardinality of
-a planned space computed by the planner (\texttt{simulate}). The 33 corpus works each possess a profile XML
+kept apart: the golden reference catalogue with $2^{17} = 131072$ binary identities per system permutation (superseded
+assumption of two configurations per axis), secured against regression by a CRC-64 checksum
+(Section~\ref{sec:impl-contracts}), and the cardinality of a planned space computed by the planner
+(\texttt{simulate}) as an upper bound known only at execution time. The 33 corpus works each possess a profile XML
 (30 full profiles, three abstract ones; Section~\ref{sec:sota-instances}); the variadic mapping
 (Appendix~\ref{app:interfaces}) carries algorithm- as well as container-oriented patterns, the family triad
 Map, Container, Graph orders the families beneath it (Section~\ref{sec:anatomy-levels}). RQ1.a is answered in
@@ -585,10 +587,15 @@ number.}\label{tab:ff-beweiskette}
 \end{table}
 
 \begin{nurlang}
-\paragraph{Implementation status.} The declared build scope --- per system permutation the 131072
-organ permutations of the golden reference catalogue; the catalogue comment estimates roughly
-224~GB and roughly 24~hours per complete build, an estimate, not a measured value --- has not been
-carried out; the end-to-end runs of the measurement driver across the target platforms (x86-64
+\paragraph{Implementation status.} The complete build has not been carried out; its scope is not a
+declared fixed value: the upper bound of binary identities per system permutation is the product of the
+configurations selected per organ axis in the XML experiment (several per axis, not on/off), determined by
+the planner from the XML experiment and known only at execution time; the planning simulation (subcommand
+\texttt{simulate}) today computes this product times system permutations arithmetically, the planner
+extension that correctly captures the upper bound and the batch size of an experiment as the basis of the
+load estimate is planned but outstanding (the 131072 organ permutations of the golden reference catalogue
+with the catalogue comment of roughly 224~GB and roughly 24~hours per build are a historical estimate under
+the superseded assumption of two configurations per axis, not a build scope); the end-to-end runs of the measurement driver across the target platforms (x86-64
 with AVX2 and AVX-512, aarch64 with NEON and SVE\footnote{NEON and SVE\@: the SIMD extensions of
 the ARM architecture --- NEON with a fixed 128-bit width, SVE (Scalable Vector Extension) with an
 implementation-dependent vector width.}) are not available, nor is the delivery measurement over
@@ -602,9 +609,9 @@ not documented and the difference not assessed.} with 10000 operations and 671.5
 (p50 of the \texttt{lookup} operation 750~ns) as the real measured value of the path --- and the
 calibration run on the AMD machine, which built 250 of 250 tier binaries and calibrated the build
 cadence to 0.521~s per binary and the space requirement to roughly 457~kB per binary; from this
-follows a storage requirement of roughly 240~GB for the complete build of 524288 tier binaries over
-the four system permutations of the golden profile (two optimization levels times two SIMD
-options). The smoke series --- 43 permutations in two sub-blocks: 27 Cartesian
+follows, as a worked example of the historical golden profile (four system permutations times $2^{17}$, two
+optimization levels times two SIMD options), a storage requirement of roughly 240~GB for 524288 tier
+binaries --- not a build scope of the system. The smoke series --- 43 permutations in two sub-blocks: 27 Cartesian
 SIMD$\times$layout$\times$allocator combinations plus 16 over node width, path compression,
 internal search, and telemetry --- is available in Appendix~\ref{app:measurements}; its provenance
 is the data state under which it was collected: seven varied axes of that count, of which SIMD and
@@ -618,16 +625,20 @@ acceptance per package runs through the two-gate protocol (Section~\ref{sec:impl
 planned for variation (not measured).
 \end{nurlang}
 \begin{nurkurz}
-\paragraph{Implementation status.} The declared build scope (per system permutation the 131072 organ
-permutations of the golden reference catalogue; the catalogue comment estimates roughly 224~GB and
-24~hours per build, not a measured value) has not been carried out; the end-to-end runs across the target
+\paragraph{Implementation status.} The complete build has not been carried out; its scope is not a fixed
+value: the upper bound per system permutation is the product of the configurations selected per organ axis
+in the XML experiment, determined by the planner only at execution time; the planning simulation
+(\texttt{simulate}) today computes this product arithmetically, the planner extension for upper bound and
+batch size as the basis of the load estimate is outstanding (the 131072 organ permutations of the golden
+reference catalogue with roughly 224~GB and 24~hours per build are a historical estimate under the superseded
+assumption of two configurations per axis); the end-to-end runs across the target
 platforms (x86-64, aarch64) are not available, nor is the delivery measurement over the 320-identity
 catalogue. Substantiated are two partial executions: the first end-to-end run of the chain
 (Section~\ref{sec:eval-xml}) --- a measurement job of the smoke stage on the AMD Zen~5 machine (pipeline
 15800, measurement job 377503, host prod1) with 10000 operations and 671.5~ns per operation (p50
 \texttt{lookup} 750~ns; a preceding run, pipeline 15764, yielded 1199.047~ns on an undocumented machine)
---- and the calibration run (250 of 250 tier binaries, 0.521~s and roughly 457~kB per binary; from this
-roughly 240~GB for 524288 tier binaries over the four system permutations of the golden profile). The
+--- and the calibration run (250 of 250 tier binaries, 0.521~s and roughly 457~kB per binary; from this, as a worked example of the historical golden profile, roughly 240~GB for 524288 tier binaries
+over its four system permutations, not a build scope of the system). The
 smoke series (43 = 27 + 16 permutations) is available in Appendix~\ref{app:measurements}; its data state
 still counted SIMD and telemetry as organ axes. It approximates axis effects partly via wall-clock proxies,
 individual effects are instrumentation artefacts (the change of the observed behaviour by the measuring
@@ -815,7 +826,8 @@ Section~\ref{sec:impl-pipeline}).
 In the short term the following steps are due; implemented parts appear with their open remainder,
 designed parts with their implementation status:
 \begin{enumerate}[label=(\arabic*)]
-  \item the complete build according to the declared scope (Section~\ref{sec:eval-build-scope}) and
+  \item the complete build according to the scope determined by the planner from the XML experiment
+  (Section~\ref{sec:eval-build-scope}) and
   the delivery measurement over the 320-identity catalogue;
   \item the end-to-end run of the three mandatory measurement series on the registered measurement
   machines together with the generation of the measurement diagrams;
@@ -891,7 +903,8 @@ herein lies an essential lever for future experimental progress.
 In the short term the following steps are due; implemented parts appear with their open remainder,
 designed ones with their implementation status:
 \begin{enumerate}[label=(\arabic*)]
-  \item the complete build according to the declared scope (Section~\ref{sec:eval-build-scope}) and the
+  \item the complete build according to the scope determined by the planner from the XML experiment
+  (Section~\ref{sec:eval-build-scope}) and the
   delivery measurement over the 320-identity catalogue;
   \item the end-to-end run of the three mandatory measurement series together with the diagrams;
   \item the full build-out of the store: the binaries with and without measurement sensors as two release

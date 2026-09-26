@@ -576,8 +576,10 @@ SuRF~\cite{zhang2018surf}, and Xor filter~\cite{graf2020xor}. The \emph{persiste
 disk-writeback target as a disabled option in combination with the optional, disabled
 organ meta-meta axis \texttt{disk\_io} (Section~\ref{sec:axis-triad}) ---; in the golden reference catalogue
 it is pinned to its in-memory representative, so that this fixed regression detector counts $2^{17} = 131072$
-identities, while the cardinality of the real permutation space is computed dynamically by the planner from the
-activated catalogues (Section~\ref{sec:mess-chain}). This recombination is not reached in
+identities (under the superseded assumption of exactly two configurations per axis), while the upper bound of
+binary identities per system permutation is the product of the configurations selected per axis in the XML
+experiment, which the planner determines from the properties of the XML experiment and which is known only at
+execution time (Section~\ref{sec:mess-chain}). This recombination is not reached in
 reality, since not all axis organs are compatible with one another.
 \end{nurlang}
 \begin{nurkurz}
@@ -597,10 +599,12 @@ storage, secondary index~\cite{comer1979btree}, and index-organized table, the \
 Bloom~\cite{bloom1970}, Cuckoo~\cite{fan2014cuckoo}, SuRF~\cite{zhang2018surf}, and Xor
 filter~\cite{graf2020xor}. The \emph{persistence-target axis} (T17), finally, makes the storage target
 explicit --- in-memory as the standard, a disk-writeback target as a disabled option in combination with
-the optional, disabled organ meta-meta axis \texttt{disk\_io} (Section~\ref{sec:axis-triad}) ---; in the
-golden reference catalogue it is pinned to its in-memory representative, so that this fixed regression
-detector counts $2^{17} = 131072$ identities, while the cardinality of the real permutation space is
-computed dynamically by the planner from the activated catalogues (Section~\ref{sec:mess-chain}). This
+the optional, disabled organ meta-meta axis \texttt{disk\_io} (Section~\ref{sec:axis-triad}) ---; in the golden reference catalogue
+it is pinned to its in-memory representative, so that this fixed regression detector counts $2^{17} = 131072$
+identities (under the superseded assumption of exactly two configurations per axis), while the upper bound of
+binary identities per system permutation is the product of the configurations selected per axis in the XML
+experiment, which the planner determines from the properties of the XML experiment and which is known only at
+execution time (Section~\ref{sec:mess-chain}). This
 recombination is not reached in reality, since not all axis organs are compatible with one another.
 \end{nurkurz}
 
@@ -2819,12 +2823,20 @@ measurable instead of remaining blended in the overall throughput.
 The system reduces the space thus spanned deliberately. The golden reference catalogue --- per organ axis
 two enabled representatives, the persistence axis pinned to its in-memory representative --- counts
 $2^{17} = 131072$ binary identities per system permutation (per combination of the build control quantities,
-Section~\ref{sec:axis-triad}), each with its full eighteen-segment path
-(Section~\ref{sec:stamp-model}), and serves as the regression detector of the whole system with a
-fixed CRC-64 checksum over all identities; the cardinality of the real permutation space over all
-axis catalogues including their sub-axes, by contrast, is computed dynamically by the planner from its inputs
-(subcommand \texttt{simulate}) --- it lies orders of magnitude above and is never a fixed
-count. Three mechanisms dampen the explosion: the \texttt{<expected\_workload>} profile filter routes
+Section~\ref{sec:axis-triad}), each with its full eighteen-segment path (Section~\ref{sec:stamp-model}),
+under the simplifying assumption of exactly two configurations per axis (on/off) over seventeen axes; this
+assumption is superseded, the axes carry several configurations, and the catalogue remains the regression
+detector of the whole system with a fixed CRC-64 checksum over all identities, not an upper bound (the small
+320-identity catalogue, too, is superseded as the measurement canon; the canon is the XML profile via the
+planner and Director chain). The upper bound of binary identities per system permutation is not a constant
+but the product over the organ axes of the number of configurations selected in the XML experiment (several
+per axis, not on/off); the planner determines it from the properties of the XML experiment, it is known only
+at execution time. The cardinality of the real permutation space over all axis catalogues including their
+sub-axes, by contrast, is computed dynamically by the planner from its inputs (subcommand \texttt{simulate})
+as an upper bound known only at execution time --- it lies orders of magnitude above and is never a fixed
+count. The planning simulation today computes the product of the XML releases per organ axis times system
+permutations arithmetically; the planner extension that correctly captures this upper bound and the batch
+size of an experiment as the basis of the load estimate at execution time is planned but outstanding. Three mechanisms dampen the explosion: the \texttt{<expected\_workload>} profile filter routes
 only compatible workloads; the \texttt{Defined} mode runs only the declared tuples, from which
 the measurement series of the manuscript are fed; and the \texttt{Full} or \texttt{Full-Sampled} mode
 runs the full space or a deterministic, seed-stable 1:$n$ subset of it (default $n = 1000$).
@@ -2929,10 +2941,17 @@ the contributions remain separately measurable instead of remaining blended in t
 The system reduces the space thus spanned deliberately. The golden reference catalogue --- per organ
 axis two enabled representatives, the persistence axis pinned to its in-memory representative --- counts
 $2^{17} = 131072$ binary identities per system permutation (Section~\ref{sec:axis-triad}), each with its
-full eighteen-segment path (Section~\ref{sec:stamp-model}), and serves as the regression detector with a
-fixed CRC-64 checksum; the cardinality of the real permutation space, by contrast, is computed
-dynamically by the planner from its inputs (subcommand \texttt{simulate}) --- it lies orders of
-magnitude above and is never a fixed count. Three mechanisms dampen the explosion: the
+full eighteen-segment path (Section~\ref{sec:stamp-model}), under the simplifying assumption of exactly two
+configurations per axis (on/off) over seventeen axes; this assumption is superseded, the axes carry several
+configurations, and the catalogue remains the regression detector with a fixed CRC-64 checksum, not an upper
+bound (the 320-identity catalogue is superseded as the measurement canon; the canon is the XML profile via the
+planner chain). The upper bound of binary identities per system permutation is the product over the organ
+axes of the number of configurations selected in the XML experiment (several per axis); the planner
+determines it from the XML experiment, it is known only at execution time. The cardinality of the real
+permutation space, by contrast, is computed dynamically by the planner from its inputs (subcommand
+\texttt{simulate}) as an upper bound known only at execution time --- it lies orders of magnitude above and
+is never a fixed count; the planner extension that correctly captures this upper bound and the batch size of
+an experiment as the basis of the load estimate is planned but outstanding. Three mechanisms dampen the explosion: the
 \texttt{<expected\_workload>} profile filter (only compatible workloads), the \texttt{Defined} mode
 (only the declared tuples), and the \texttt{Full} or \texttt{Full-Sampled} mode (full space or
 seed-stable 1:$n$ subset). The default workload is the full permutation over all available workloads;
