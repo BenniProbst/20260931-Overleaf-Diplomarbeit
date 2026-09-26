@@ -3075,30 +3075,40 @@ ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte SOTA-Verfahren.
 Die Messreihen liefern mehr als Ranglisten: Aus ihnen lassen sich Heuristiken gewinnen, die das
 Mess-System schrittweise von einem Prüfstand zu einem sich selbst optimierenden Auslieferungs-System
 schärfen. Dieser Abschnitt entwickelt diese Schärfung als Konzept in drei Stufen --- die
-Heuristik-Schleife über gelernte Lastprofile, die vier Betriebsmodi des Builders bis zum Hybrid-Modus
+sequentielle Achsensuche und die Funktions-Synthese, die vier Betriebsmodi des Builders bis zum Hybrid-Modus
 als Zielbild der Arbeit und das Messkurven-Typsystem samt Filterkette und Messfehler-Erkennung, das
 diese Modi mit Daten versorgt.
 
 \begin{nurlang}
-\subsection{Heuristik-Schleife und gelernte Lastprofile}\label{sec:heuristics-loop}
+\subsection{Sequentielle Achsensuche und Funktions-Synthese}\label{sec:heuristics-loop}
 Aus den Messreihen lässt sich je Last- und Datentyp-Profil die beste
 Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
+Die Messkette ist gerade und hat keine Rückkante: ein XML-Experiment führt zu einer Konfiguration, diese
+zum Workload-Filter, und daraus folgen die Messung mit den Messreihen A/B/C und die Funktions-Synthese der
+Messergebnisse (Abbildung~\ref{fig:mess-kette}). Der Workload-Filter ist im Regelfall nicht einschränkend:
+alle Workloads sind Pflicht, damit kein Bias entsteht. Die Sezierung der Achsen eröffnet einen per Schalter
+aktivierbaren Suchmodus: Achse für Achse (T0 bis T17) wird nacheinander durchprobiert, und je Achse bleibt
+die schnellste Belegung stehen; nach T17 beginnt der Durchlauf von vorn unter den Default-Achsen des letzten
+Durchlaufs (depth-first, lazy Materialisierung); der Vorgang wiederholt sich, bis die Achsen-Belegung anhand
+der Messwerte konvergiert. Dieser Suchmodus ist als Betriebsmodus vorgesehen (Konzept, Festlegung vom
+26.09.2026) und nicht Teil der gemessenen Kette dieser Arbeit.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,align=center,
-  stage/.style={draw,rounded corners,fill=blue!4,minimum width=2.8cm,minimum height=1cm}]
-  \node[stage] (mess) at (0,0){Messung\\{\scriptsize Messreihen A/B/C}};
-  \node[stage] (profil) at (4.4,0){XML-Lastprofil\\{\scriptsize gelernte Zuordnung}};
-  \node[stage] (konfig) at (4.4,-2.2){Konfiguration\\{\scriptsize beste Achsen-Komposition}};
-  \node[stage] (filter) at (0,-2.2){Workload-Filter\\{\scriptsize \texttt{<expected\_workload>}}};
-  \draw[->] (mess)--(profil);\draw[->] (profil)--(konfig);
-  \draw[->] (konfig)--(filter);\draw[->] (filter)--(mess);
+  stage/.style={draw,rounded corners,fill=blue!4,minimum height=1cm,text width=2.4cm,inner sep=3pt}]
+  \node[stage] (xml) at (0,0){XML-Experiment};
+  \node[stage] (konfig) at (3,0){Konfiguration};
+  \node[stage] (filter) at (6,0){Workload-Filter\\{\scriptsize Default: alle Workloads}};
+  \node[stage] (mess) at (9,0){Messung\\{\scriptsize Messreihen A/B/C}};
+  \node[stage] (synth) at (12,0){Funktions-Synthese\\{\scriptsize Messkurven, mehrstufig, Abschnitt~\ref{sec:heuristics-curves}}};
+  \draw[->] (xml)--(konfig);\draw[->] (konfig)--(filter);
+  \draw[->] (filter)--(mess);\draw[->] (mess)--(synth);
 \end{tikzpicture}
-\caption{Die Heuristik-Schleife: aus den Messreihen wird je Lastprofil die beste Achsen-Komposition gelernt, als XML-Lastprofil abgelegt und über den Workload-Filter in die nächste Messung zurückgeführt.}\label{fig:heuristic-loop}
+\caption{Die gerade Messkette: ein XML-Experiment legt die Konfiguration fest, der Workload-Filter lässt im Regelfall alle Workloads zu, die Messung liefert die Messreihen A/B/C, und die Funktions-Synthese verdichtet die Messergebnisse mehrstufig zu Messkurven (Abschnitt~\ref{sec:heuristics-curves}); eine Rückkante gibt es nicht.}\label{fig:mess-kette}
 \end{figure}
 
 %% INTERN-272: KA-048
-\emph{Die volle Schleife ist ein Ausblick-Mechanismus; realisiert sind davon die automatische Auswahl
-und der Binary-Versand (Abschnitt~\ref{sec:contributions}).} Der Selektor liest die Messwert-Mappe ---
+\emph{Realisiert sind die automatische Auswahl und der Binary-Versand (Abschnitt~\ref{sec:contributions}).}
+Der Selektor liest die Messwert-Mappe ---
 die xlsx-Mappe ist die Ausgabe und der Standard des Apparats; die CSV-Form ist kein einzelnes
 Kind-Dokument, sondern ein aus der Mappe erzeugter, geordneter Baum aus CSV-Dateien mit denselben Spalten
 (ein Gesamtordner je Mappe, darunter ein Ordner je Blatt, darin die CSV-Dateien der einzelnen
@@ -3106,69 +3116,68 @@ Unter-Achsen-Fahrten) ---, rankt je
 Interface-Funktion und Metrik über die gültigen Zwei-Phasen-Zeilen (Median, Nearest-Rank), bestimmt bei
 konkurrierenden Zielgrößen die Pareto-Front der nicht-dominierten Kandidaten statt eines Einzelsiegers,
 löst die \texttt{binary\_id} zur Binary im Lager auf und liefert Binary, Versions-Sidecar und Manifest
-als eigenständiges Artefakt aus. Die Heuristik-Kurven entstehen als natürliche kubische Splines über die
-Stützstellen je Achse und $x$-Dimension; ein Entscheidungs-Lambda-Baum liest die Break-Even-Schwellen
-aus den Spline-Schnittpunkten und wählt an einer Anfrage-Koordinate rückwärts die führende Binary ---
-synthetische Stützstellen weist er als Gerüst aus, ohne gültige Kurven trifft er keine Entscheidung.
-Über die reine Rangbildung hinaus ist eine \emph{Heuristik-Extraktion} als Folge-Phase nach
-\textbf{Persist} --- der letzten Phase der Sieben-Phasen-Pipeline (Abschnitt~\ref{sec:impl-pipeline}) ---
-vorgesehen, die aus den gesammelten Messungen automatisch ableitet, welche Achsen-Konfiguration je Workload
-und Datensatz die beste ist. Der angestrebte Mechanismus ist eine ML-Klassifikation in drei Schritten:
-Zunächst werden aus der Messwert-Mappe je Permutation Merkmale gewonnen --- die Lastprofil- und Datensatz-Merkmale (Workload-Typ,
-Schlüssel-Verteilung, Schreib-/Lese-Anteil, Alphabet- und Präfix-Charakteristik sowie Schlüssel- und
-Wert-Datentyp) sowie die Achsen-Belegung ---, mit der je
-Lastmuster gemessenen Bestleistung (etwa Durchsatz oder Tail-Latenz) als Zielgröße; darüber lernt ein \emph{ML-Klassifikator} die Abbildung
-von Lastprofil-/Achsen-Merkmalen auf die beste Konfiguration; und dieser liefert je Workload-/Datensatz-Klasse
-die empfohlene Achsen-Komposition, ohne den gesamten Permutationsraum erneut zu fahren. Das Ergebnis wird
-als wiederverwendbares \emph{XML-Lastprofil} persistiert --- symmetrisch zu den Messreihen-XML-Konfigurationen
---- und kann ohne erneute Vollvermessung in den \texttt{<expected\_workload>}-Filter zurückgespeist werden;
-damit schließt sich der Kreis zwischen Messung, gelernter Heuristik und konfigurationsleitender Auswahl
-(Abbildung~\ref{fig:heuristic-loop}). Dieser \emph{measure $\to$ profile $\to$ config $\to$
-filter}-Kreislauf ist die klassische, etablierte Form des \emph{empirischen, messgetriebenen Autotunings}:
-Er steht in der Linie von Autotuning-Frameworks wie OpenTuner~\cite{ansel2014opentuner} und den
-messen-im-Kreis-Autotunern FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}; die
-lastprofil-getriebene Konfigurationswahl mit Workload-Filter findet ihre Datenbank-Entsprechung in
-OtterTune~\cite{vanaken2017ottertune} und im Database Tuning Advisor mit Workload-Kompression~\cite{agrawal2005autoadmin},
-die online-laufzeitnahe Variante in Active Harmony~\cite{tapus2002activeharmony}; die Bezeichnung
-\enquote{Software-in-the-Loop} selbst entstammt der X-in-the-Loop-Validierungstaxonomie~\cite{tibba2016xil}.
-Die ML-Klassifikation ist nicht implementiert und bleibt zukünftiger Arbeit vorbehalten
-(Kapitel~\ref{ch:conclusion}); die Schleife selbst ist jedoch nur die erste Stufe eines größeren
-Betriebs-Zielbilds, das der folgende Unterabschnitt entwickelt.
+als eigenständiges Artefakt aus.
+Die Funktions-Synthese der Messkurven --- natürliche kubische Splines über die Stützstellen je Achse und
+$x$-Dimension mit der Break-Even-Entscheidung aus den Spline-Schnittpunkten --- ist mehrstufig und wird in
+Abschnitt~\ref{sec:heuristics-curves} aufgelöst. Eine ML-gestützte Klassifikation ist nicht implementiert und
+bleibt Ausblick des Hybrid-Tiers (Kapitel~\ref{ch:conclusion}). Erst in Kombination mit dem Hybrid-Tier
+entsteht eine weitere Kette build $\to$ measure $\to$ compare $\to$ release, keine geschlossene Schleife;
+die Messkette und die Funktions-Synthese sind die Grundlage der vier Betriebsmodi, die der folgende
+Unterabschnitt entwickelt.
+%% ORDER-526 F-06: Literatur-Einordnung Autotuning, Verbleib = Owner-Entscheid
+%% Originalsaetze (DE lang), am 26.09.2026 aus dem Fliesstext genommen:
+%% Dieser \emph{measure $\to$ profile $\to$ config $\to$
+%% filter}-Kreislauf ist die klassische, etablierte Form des \emph{empirischen, messgetriebenen Autotunings}:
+%% Er steht in der Linie von Autotuning-Frameworks wie OpenTuner~\cite{ansel2014opentuner} und den
+%% messen-im-Kreis-Autotunern FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}; die
+%% lastprofil-getriebene Konfigurationswahl mit Workload-Filter findet ihre Datenbank-Entsprechung in
+%% OtterTune~\cite{vanaken2017ottertune} und im Database Tuning Advisor mit Workload-Kompression~\cite{agrawal2005autoadmin},
+%% die online-laufzeitnahe Variante in Active Harmony~\cite{tapus2002activeharmony}; die Bezeichnung
+%% \enquote{Software-in-the-Loop} selbst entstammt der X-in-the-Loop-Validierungstaxonomie~\cite{tibba2016xil}.
 \end{nurlang}
 \begin{nurkurz}
-\subsection{Heuristik-Schleife und gelernte Lastprofile}\label{sec:heuristics-loop}
+\subsection{Sequentielle Achsensuche und Funktions-Synthese}\label{sec:heuristics-loop}
 Aus den Messreihen lässt sich je Last- und Datentyp-Profil die beste
 Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
+Die Messkette ist gerade und hat keine Rückkante: ein XML-Experiment führt zu einer Konfiguration, diese zum
+Workload-Filter, und daraus folgen die Messung mit den Messreihen A/B/C und die Funktions-Synthese der
+Messergebnisse. Der Workload-Filter ist im Regelfall nicht einschränkend: alle Workloads sind Pflicht, damit
+kein Bias entsteht. Die Sezierung der Achsen eröffnet einen per Schalter aktivierbaren Suchmodus: Achse für
+Achse (T0 bis T17) wird nacheinander durchprobiert, je Achse bleibt die schnellste Belegung stehen, und nach
+T17 beginnt der Durchlauf von vorn unter den Default-Achsen des letzten Durchlaufs (depth-first, lazy
+Materialisierung), bis die Achsen-Belegung anhand der Messwerte konvergiert. Dieser Suchmodus ist als
+Betriebsmodus vorgesehen (Konzept, Festlegung vom 26.09.2026) und nicht Teil der gemessenen Kette dieser
+Arbeit.
 
-\emph{Die volle Schleife ist ein Ausblick-Mechanismus; realisiert sind davon die automatische Auswahl und der
-Binary-Versand (Abschnitt~\ref{sec:contributions}).} Der Selektor liest die Messwert-Mappe --- die xlsx-Mappe
+\emph{Realisiert sind die automatische Auswahl und der Binary-Versand (Abschnitt~\ref{sec:contributions}).}
+Der Selektor liest die Messwert-Mappe --- die xlsx-Mappe
 ist die Ausgabe des Apparats, die CSV-Form ihr aus ihr erzeugter Baum-Abzug (Abschnitt~\ref{sec:eval-dataflow})
 ---, rankt je Interface-Funktion und Metrik über die gültigen Zwei-Phasen-Zeilen (Median, Nearest-Rank),
 bestimmt bei konkurrierenden Zielgrößen die Pareto-Front, löst die \texttt{binary\_id} zur Binary im Lager auf
-und liefert Binary, Versions-Sidecar und Manifest aus. Die Heuristik-Kurven entstehen als natürliche kubische
-Splines über die Stützstellen je Achse und $x$-Dimension; ein Entscheidungs-Lambda-Baum liest die
-Break-Even-Schwellen aus den Spline-Schnittpunkten und wählt an einer Anfrage-Koordinate die führende Binary.
-Über die reine Rangbildung hinaus ist eine \emph{Heuristik-Extraktion} als Folge-Phase nach \textbf{Persist},
-der letzten Phase der Sieben-Phasen-Pipeline (Abschnitt~\ref{sec:impl-pipeline}), als ML-Klassifikation in drei
-Schritten vorgesehen: Aus der Messwert-Mappe werden je Permutation Lastprofil-, Datensatz- und Achsen-Merkmale
-mit der gemessenen Bestleistung als Zielgröße gewonnen; ein \emph{ML-Klassifikator} lernt darüber die Abbildung
-auf die beste Konfiguration; und er liefert je Workload-/Datensatz-Klasse die empfohlene Achsen-Komposition,
-ohne den Permutationsraum erneut zu fahren. Das Ergebnis wird als wiederverwendbares \emph{XML-Lastprofil}
-persistiert und in den \texttt{<expected\_workload>}-Filter zurückgespeist; dieser \emph{measure $\to$ profile
-$\to$ config $\to$ filter}-Kreislauf ist messgetriebenes Autotuning in der Linie von
-OpenTuner~\cite{ansel2014opentuner}, FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}, mit der
-Datenbank-Entsprechung in OtterTune~\cite{vanaken2017ottertune} und dem Database Tuning
-Advisor~\cite{agrawal2005autoadmin}, der online-laufzeitnahen Variante in Active
-Harmony~\cite{tapus2002activeharmony} und der Bezeichnung \enquote{Software-in-the-Loop} aus der
-X-in-the-Loop-Taxonomie~\cite{tibba2016xil}. Die ML-Klassifikation ist nicht implementiert
-(Kapitel~\ref{ch:conclusion}); die Schleife selbst ist nur die erste Stufe des Betriebs-Zielbilds, das der
-folgende Unterabschnitt entwickelt.
+und liefert Binary, Versions-Sidecar und Manifest aus.
+Die Funktions-Synthese der Messkurven --- natürliche kubische Splines je Achse und $x$-Dimension mit der
+Break-Even-Entscheidung aus den Spline-Schnittpunkten --- ist mehrstufig und wird in
+Abschnitt~\ref{sec:heuristics-curves} aufgelöst. Eine ML-gestützte Klassifikation ist nicht implementiert und
+bleibt Ausblick des Hybrid-Tiers (Kapitel~\ref{ch:conclusion}). Erst in Kombination mit dem Hybrid-Tier
+entsteht eine weitere Kette build $\to$ measure $\to$ compare $\to$ release, keine geschlossene Schleife; die
+Messkette und die Funktions-Synthese sind die Grundlage der vier Betriebsmodi, die der folgende Unterabschnitt
+entwickelt.
+%% ORDER-526 F-06: Literatur-Einordnung Autotuning, Verbleib = Owner-Entscheid
+%% Originalsatz (DE kurz), am 26.09.2026 aus dem Fliesstext genommen:
+%% dieser \emph{measure $\to$ profile
+%% $\to$ config $\to$ filter}-Kreislauf ist messgetriebenes Autotuning in der Linie von
+%% OpenTuner~\cite{ansel2014opentuner}, FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}, mit der
+%% Datenbank-Entsprechung in OtterTune~\cite{vanaken2017ottertune} und dem Database Tuning
+%% Advisor~\cite{agrawal2005autoadmin}, der online-laufzeitnahen Variante in Active
+%% Harmony~\cite{tapus2002activeharmony} und der Bezeichnung \enquote{Software-in-the-Loop} aus der
+%% X-in-the-Loop-Taxonomie~\cite{tibba2016xil}.
 \end{nurkurz}
 
 \begin{nurlang}
 \subsection{Die vier Betriebsmodi des Builders}\label{sec:heuristics-modes}
 %% INTERN-272: KA-049
-Die Heuristik-Schleife ist der Kern eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden
+Die Messkette und die Funktions-Synthese aus Abschnitt~\ref{sec:heuristics-loop} sind die Grundlage
+eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden
 Betriebsmodi des Builder-Interfaces. Von der Ablauf-Kette build $\to$ measure $\to$ compare $\to$ release
 (Abschnitt~\ref{sec:anatomy-levels}, Abbildung~\ref{fig:modi-kette}) sind diese Betriebs-Zielbilder zu
 unterscheiden, in denen der Apparat betrieben wird; die Zuordnung ist eindeutig: Der \emph{Mess-Modus}
@@ -3189,7 +3198,8 @@ originalgetreu durchzumessen; er ist nicht implementiert und bleibt Ausblick (Ab
 \begin{nurkurz}
 \subsection{Die vier Betriebsmodi des Builders}\label{sec:heuristics-modes}
 %% INTERN-272: KA-049
-Die Heuristik-Schleife ist der Kern eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden Betriebsmodi
+Die Messkette und die Funktions-Synthese aus Abschnitt~\ref{sec:heuristics-loop} sind die Grundlage
+eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden Betriebsmodi
 des Builder-Interfaces, die von der Ablauf-Kette build $\to$ measure $\to$ compare $\to$ release
 (Abschnitt~\ref{sec:anatomy-levels}, Abbildung~\ref{fig:modi-kette}) zu unterscheiden sind; die Zuordnung ist
 eindeutig: Der \emph{Mess-Modus} umfasst build und measure, der \emph{Auswertungs-Modus} ist compare, der
@@ -3360,7 +3370,7 @@ Operationstyp und Beobachter-Typ und je Mess-Ebene wallclock, macro und micro
 (Abschnitt~\ref{sec:measurement-system}); jede Achse wird im Experimentbaum übersetzungsstatisch wie
 laufzeit-dynamisch separat durchgefahren, sodass jede Achse eine vollständige Übersicht ihrer
 Eigenschaften und Einzelmessungen erhält. Über alle Permutationen zusammengenommen entsteht so je
-Tier-Binary eine mehrdimensionale Mess-Datenbank, aus der die Heuristik-Kurven der Schleife
+Tier-Binary eine mehrdimensionale Mess-Datenbank, aus der die Heuristik-Kurven der Achsensuche
 (Abschnitt~\ref{sec:heuristics-loop}) abgelesen werden; die synthetisierten Kurven werden als Dateien im
 Lager gehalten (Abschnitt~\ref{sec:lager}). Die Kardinalität jeder Dimension dieses
 Typsystems ist strategisch in Klassen und Hierarchien einzuteilen: design-feste Konstanten (etwa die
