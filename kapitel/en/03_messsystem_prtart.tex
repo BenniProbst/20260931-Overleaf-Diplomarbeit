@@ -1,7 +1,6 @@
 \chapter{Concepts of a Cache-Aware Measurement System}\label{ch:measurement}
 
-% [SKELETON] cache-aware focus. The task assignment is made SELF-EXPLANATORY here (nobody reads it)
-% and draws on ALL concerns of Chapter 2. ALL tables live in this chapter.
+%% INTERN-272: KA-007
 
 \begin{nurlang}
 Building on the foundations from Chapter~\ref{ch:foundations}, this chapter first develops the problem
@@ -1235,7 +1234,7 @@ and the telemetry (measurement instrumentation, Section~\ref{sec:axis-triad}) re
 store is not connected (dotted). The graph is an example wiring of the storage organ,
 not a structure evaluated in the code.}\label{fig:usage}
 \end{figure}
-\subsection{The Three-Level Model and the Four Families}\label{sec:anatomy-levels}
+\subsection{The Three-Level Model and the Four Concepts}\label{sec:anatomy-levels}
 These organs are embedded in \emph{one} architecture --- a single, self-contained hierarchy
 without parallel trees. At its root stands the \texttt{ExecutionEngine} as the common, measurable
 abstraction over everything measurable --- it persists because \texttt{IExecutionEngine} forms the
@@ -1286,7 +1285,7 @@ in which the one uses the interface of the other (mandatorily or optionally) or 
 assignments; sub-question RQ1.b (Section~\ref{sec:rqs}) addresses it for node type, SIMD, and path
 compression --- across all organs together yields a directed inter-organ usage graph with the storage
 organ as the only canonical hub.
-\subsection{The Three-Level Model and the Four Families}\label{sec:anatomy-levels}
+\subsection{The Three-Level Model and the Four Concepts}\label{sec:anatomy-levels}
 These organs are embedded in \emph{one} architecture --- a single hierarchy without parallel trees. At its
 root stands the \texttt{ExecutionEngine} as the common, measurable abstraction (\texttt{IExecutionEngine}
 as the measurable root, \texttt{IAnatomyBase} as the anatomy-bearing view beneath it); beneath that lie
@@ -1986,7 +1985,8 @@ actually measures the intended concept; external: transferability to other platf
 \emph{fairness} (identical keys, workloads, and
 warm-up; missing capabilities as \emph{N/A} rather than covertly emulated), and \emph{dispersion} as part of the
 statement (percentiles instead of arithmetic means, with significance testing; the distributional view is provided by
-HDR histograms in the downstream evaluation). Reported percentiles follow the
+HDR histograms (high dynamic range: bins of fixed relative resolution over several orders of
+magnitude) in the downstream evaluation). Reported percentiles follow the
 nearest-rank method: the rank $R(q,n)=\lceil q\cdot n\rceil$ is one-based, the corresponding
 array index $k=R-1$ zero-based; the median is the special case $q=0.5$ of the same method and
 yields, for even $n$, the lower middle value, not the mean of the two middle values; p95, p99, and
@@ -2124,7 +2124,9 @@ measurement stamp line; (c) the measurement categories as a \emph{sub}-axis of t
 manifest as columns of the result tables --- the registry carries sixteen, yet with the collection per
 axis interface their number grows dynamically and is never a fixed count; and (d) the run methodology as
 sub-axis \texttt{work\_mode} with the four modes build, measure, compare, and release
-(Section~\ref{sec:anatomy-levels}). Measurement axes are strictly binary-id-neutral. Within the categories
+(Section~\ref{sec:anatomy-levels}), where \texttt{--debug} is a flag of the planner shell and not a mode
+(the build variants debug, measurement, and release remain in force). Measurement axes are strictly
+binary-id-neutral. Within the categories
 there is a \emph{regime bipartition}: the time- and observer-based regime (nine categories, among them
 latency, throughput, memory footprint) and the counter-based PMC regime (seven categories, among them
 cache, dTLB, and branch misses, IPC/CPI, energy); the regime is a property of the measurement axis, not of
@@ -3284,7 +3286,7 @@ pattern; therefore two release artefacts are stored, without and with sidecar
 The \emph{hybrid mode}, finally --- the goal of this thesis --- combines working mode and measurement. Its
 centrepiece is that the heuristic adapter is a \emph{concept} of its own with its own family --- the fourth
 concept \texttt{HeuristikAdapter} with the reroute family \texttt{FunctionInterfaceReroute}
-(Section~\ref{sec:anatomy-levels}): it adopts by metaprogramming the family and
+(Section~\ref{sec:anatomy-levels}): it adopts by metaprogramming the concept and
 family interfaces of its tier binaries, is itself compiled into a tier binary, and docks at the
 probe dock of the builder like every single tier; it passes commands via the
 \emph{Command} pattern~\cite{gamma1994patterns} on to the single tier binaries statically assigned to it.
