@@ -122,7 +122,9 @@ introduces the term.
   \item[Concept] (\emph{Konzept}; code: \texttt{AnatomyGattung}) The topmost level beneath the
   kingdom (level~1): the animal class as the measurement surface --- Map (mammal), Container (bird),
   Graph (plant), HeuristikAdapter (insect) ---, the externally visible measurement interface that
-  defines measurability; per family a probe dock materializes it. The concept is not maintained as a
+  defines measurability; per family a probe dock materializes it. The concept core is the intersection
+  of the interfaces of its families (the same intersection rule as between family and genus). The concept
+  is not maintained as a
   second datum but determined at run time from the family, via a concept-independent C symbol (the
   symbol bears the same name for every concept). In the product-line reading the concept is the
   feature core composition, the family the feature special composition. Reading note:
@@ -135,7 +137,7 @@ introduces the term.
   subset (Appendix~\ref{app:interfaces}), so that only comparable things are compared. Under
   \texttt{--debug} it additionally runs the standard test set of the tier interface: the
   family-generic part (valid for all genera) and the genus-specific part (the extended
-  sub-interfaces); this indirect debug mode coincides with the release build and is not kept as a
+  special interfaces); this indirect debug mode coincides with the release build and is not kept as a
   separate mode (see \emph{Family}, \emph{Genus}).
   \item[Consumer] (\emph{Konsument}) The role of the thesis code towards the engine: a consumer
   links exclusively against the cache engine and uses one door (\texttt{get\_cache\_engine()}); the
@@ -192,7 +194,8 @@ introduces the term.
   of the classification; the concept is determined from it at run time. Per docking family there is
   exactly one probe dock (five docks for SearchAlgorithm, Set, Sequence, Adapter and View), whereas
   the classifying family FunctionInterfaceReroute has none and its binaries dock at the dock of the
-  reported target family. The family tests of the conformance gate are generic for all genera of the
+  reported target family. The tier binary shows the probe dock its family interface; docks of different
+  families are never mixed. The family tests of the conformance gate are generic for all genera of the
   family. Code bridge: \texttt{AnatomyGenus} (renaming in the code after the defence; see
   \emph{Concept}, \emph{Genus}, \emph{Three-level model}).
   \item[Fingerprint] The cryptographic identity hash per carrier stage: the planner carries a
@@ -219,14 +222,17 @@ introduces the term.
   construction kit --- the same type that the candidate under test PRT-ART corresponds to. Of the 33 profiles,
   30 are full profiles and 3 abstract.
   \item[Genus] (\emph{Genus}) The third level (level~3) and second tier-interface level: the
-  subspecies, the implementation of the family interface with possibly extended sub-interfaces (in
+  subspecies, the implementation of the family interface with possibly extended special interfaces (in
   the metaphor canon the elephant species mammoth $=$ ART, African elephant $=$ HOT, Indian elephant
   $=$ START beneath the family SearchAlgorithm; the giraffe is reserved, CoCo has no code object).
   Beneath the genus lie one or more search strategies (simple $=$ assignment of a single axis,
   complex $=$ composition of several axes); the organs are a classification of their own (level~4)
   that the genus implementation binds. The genus is neither the search-strategy axis nor the
-  composition of its organs. The genus tests of the conformance gate check only the special
-  interfaces. As-is: today the code carries the genus only as an axis assignment; the genus
+  composition of its organs (the composition from axes is a matter of the version stamp,
+  Section~\ref{sec:stamp-model}, not of the taxonomy). The special interfaces of the genus are checked by
+  the conformance gate only under \texttt{--debug} (genus tests); to the probe dock the tier binary shows
+  its family interface, not the genus. The genus implementation runs, per function, one main algorithm
+  that works exclusively through axis-interface calls, and it calls foreign axes first. As-is: today the code carries the genus only as an axis assignment; the genus
   implementation class is missing (an acknowledged architecture error, fix after the defence). The
   hybrid artefact is classified by the family FunctionInterfaceReroute; \texttt{genus()} of a hybrid
   binary, by contrast, reports the inherited target family, the rerouting remains transparent to the
