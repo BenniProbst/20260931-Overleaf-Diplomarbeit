@@ -3393,10 +3393,10 @@ fünftens die Messfehler-Interpolation über die Mess-Konstellationen (nicht imp
 Aus den Auswertungen ergibt sich eine \emph{Filterkette}: Jedes Kettenglied prüft anhand der bisherigen
 Kurven, ob eine Permutations-Familie weiterverfolgt wird, und reicht die Entscheidung andernfalls an das
 nächste Glied weiter --- das Entwurfsmuster \emph{Chain of Responsibility}~\cite{gamma1994patterns}. Die
-Kette ist im CacheEngineBuilder verortet, weil sie die \emph{Generierung} der nächsten Bau-Runde
-kontrolliert und die Feedback-Kante von der Auswahl zur Bereitstellung schließt: Auswertung, Filter, dann
-die Entscheidung, welche Permutationen als Nächstes gebaut und welche verworfen werden. Da in compare
-build und measure bereits durchlaufen sind, filtert sie zugleich aus den Messwerten für den release,
+Kette ist im CacheEngineBuilder verortet und arbeitet in der Station compare der Kette build $\to$ measure
+$\to$ compare $\to$ release: Auswertung, Filter, dann die Entscheidung, welche Permutations-Familien
+weiterverfolgt und welche verworfen werden; eine Rückkante zu Bau oder Messung gibt es nicht. Da in compare
+build und measure bereits durchlaufen sind, filtert sie aus den Messwerten für den release,
 welche Binary nach den in der XML geforderten Eigenschaften statistisch die schnellste für einen
 Verwendungszweck ist --- Vorgabe ist die Ausführungszeit, weitere Filter sind nicht Gegenstand dieser
 Arbeit. Implementiert sind der Mechanismus (mit den Urteilen Pass, Reject und Weiterreichen: Ein
@@ -3475,8 +3475,9 @@ vorgeladenen Tier-Binaries aus den mitgeschnittenen Interface-Zugriffen (nicht i
 Messfehler-Interpolation über die Mess-Konstellationen (nicht implementiert). Die \emph{Filterkette} folgt dem
 Entwurfsmuster \emph{Chain of Responsibility}~\cite{gamma1994patterns}: Jedes Kettenglied prüft anhand der
 bisherigen Kurven, ob eine Permutations-Familie weiterverfolgt wird, oder reicht die Entscheidung weiter; sie
-ist im CacheEngineBuilder verortet, weil sie die nächste Bau-Runde kontrolliert, und filtert für den release
-die nach den XML-Anforderungen statistisch schnellste Binary. Implementiert sind der Mechanismus (Urteile Pass,
+ist im CacheEngineBuilder verortet, arbeitet in der Station compare der Kette build $\to$ measure $\to$ compare
+$\to$ release (eine Rückkante zu Bau oder Messung gibt es nicht) und filtert für den release die nach den
+XML-Anforderungen statistisch schnellste Binary. Implementiert sind der Mechanismus (Urteile Pass,
 Reject und Weiterreichen) und ein Kern-Glied für die Wiederaufnahme unterbrochener Läufe; die Auswerte-Glieder
 Paper-Vergleich und Pareto-Dominanz folgen, mit dem Vorrang des Paper-Vergleichs.
 
