@@ -17,7 +17,8 @@ parameters to the hull: one template parameter demands all function interfaces o
 \texttt{std::map<K,\,std::tuple<\ldots>>} (Section~\ref{sec:impl-architecture}). The cache engine
 derives the types from the same rule --- with one parameter the key is assigned implicitly as a
 monotonically counted 64-bit value, with $N>2$ the value becomes the tuple ---; its two contract
-hulls are implemented as separate concept adapters: the Map concept via the functional drive of the
+hulls are implemented as separate family adapters: the SearchAlgorithm family (concept Map) via the
+functional drive of the
 module boundary with the five operations \texttt{tier\_insert}, \texttt{tier\_lookup},
 \texttt{tier\_erase}, \texttt{tier\_clear}, and \texttt{tier\_size}, the Sequence family via the
 sequence drive with \texttt{tier\_push\_back}, \texttt{tier\_at}, \texttt{tier\_size}, and
@@ -52,10 +53,12 @@ of the cache engine; it records, per standard function, the hop path and the sta
 boundary.
 
 \emph{Conformance subset.} Before each measurement, the conformance gate
-(Section~\ref{sec:measurement-system}) checks, per concept, a core subset of the hull operations
-against an oracle of the standard library --- \texttt{std::map} for the Map concept,
-\texttt{std::deque} for the Sequence family ---, so that only comparable things are compared; the
-subset is marked with $\dagger$ in both tables.
+(Section~\ref{sec:measurement-system}) checks, per family, a core subset of the hull operations
+against an oracle of the standard library --- \texttt{std::map} for the SearchAlgorithm family
+(concept Map), \texttt{std::deque} for the Sequence family ---, so that only comparable things are
+compared; the subset is marked with $\dagger$ in both tables. Under \texttt{--debug} the gate
+additionally runs the standard test set of the tier interface (family-generic part and genus-specific
+part).
 
 \section{\texttt{std::map} (Ordered Associative)}\label{asec:if-map}
 Table~\ref{tab:if-map} lists the complete interface of
@@ -278,7 +281,7 @@ composition. The ordered operations --- \texttt{begin}/\texttt{end}, \texttt{low
 therefore carried as a separate, additive capability of the module boundary; unordered axes
 satisfy the same hull without it and pay for the missing order with linear effort on ordered
 reading. Exactly this interchangeability is the object of the measurement
-(Section~\ref{sec:measurement-system}). The conformance gate checks, per concept, the core subset
+(Section~\ref{sec:measurement-system}). The conformance gate checks, per family, the core subset
 marked with $\dagger$ in Tables~\ref{tab:if-map} and~\ref{tab:if-vector}.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{3.1cm}@{}}
@@ -305,7 +308,8 @@ marked with $\dagger$ in Tables~\ref{tab:if-map} and~\ref{tab:if-vector}.
 \end{longtable}
 
 \noindent At the module boundary, the order of primitiveness of this table is reversed: the one
-insert drive of the Map concept carries the semantics of \texttt{insert\_or\_assign} --- insert or
+insert drive of the SearchAlgorithm family (concept Map) carries the semantics of
+\texttt{insert\_or\_assign} --- insert or
 update, the return reports whether a new key arose ---, so that \texttt{insert\_or\_assign} is the
 pass-through and the non-overwriting forms \texttt{insert}, \texttt{emplace}, and
 \texttt{try\_emplace} are composed host-side as an exact lookup followed by insertion only on a

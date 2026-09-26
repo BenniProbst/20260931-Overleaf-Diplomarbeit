@@ -157,7 +157,9 @@ Modus mit eingeschalteter Messung; \texttt{compare} liest das Messwertlager und 
 gemessene Sichten --- die Stufe \emph{vor} dem Release; \texttt{release} erzeugt die Referenz-Binary ohne
 Instrumentierung. Alle vier bauen als CMake-Release; ein messendes Debug-Regime existiert nicht mehr, weil
 parallel erhobene Zahlen mit Ein-Thread-Messungen nicht vergleichbar sind, und der Verdrahtungs-Check, den
-es leistete, ist als Schalter \texttt{--debug} der Planer-Shell realisiert --- ein Flag, kein Zustand.
+es leistete, ist als Schalter \texttt{--debug} der Planer-Shell realisiert --- ein Flag, kein Zustand;
+unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Genus-Testsatz, und dieser indirekte
+Debug-Modus fällt mit dem Release-Bau zusammen und wird nicht separat geführt.
 Umsetzungsstand: \texttt{compare} ist ein wählbares Etikett mit \texttt{release}-gleicher Bausemantik;
 sein modus-spezifischer Ablauf (Replay-Vergleich statt Messen) ist vorgesehen, aber nicht
 implementiert (Abschnitt~\ref{sec:anatomy-levels}).
@@ -261,7 +263,8 @@ einzige Modus mit eingeschalteter Messung, \texttt{compare} liest das Messwertla
 wählbares Etikett, der Replay-Vergleich ist nicht implementiert), \texttt{release} erzeugt die
 Referenz-Binary ohne Instrumentierung; alle vier bauen als CMake-Release, und der Verdrahtungs-Check des
 früheren Debug-Regimes ist als Schalter \texttt{--debug} der Planer-Shell realisiert --- ein Flag, kein
-Zustand.
+Zustand; unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Genus-Testsatz, ein indirekter
+Debug-Modus, der mit dem Release-Bau zusammenfällt.
 \end{nurkurz}
 
 \begin{nurlang}
@@ -1220,7 +1223,8 @@ und je Pfad der mixed-radix-kodierte Binary-Identifier hin- und zurückübersetz
 Signatur-Roundtrip) --- gegen ein Fake-E2, das keine einzige Binary baut; dazu tritt ein Konformitäts-Gate
 im Voll-Lauf-Pfad
 (\texttt{test\_\allowbreak{}e3\_\allowbreak{}contract\_\allowbreak{}conformance\_\allowbreak{}gate\_\allowbreak{}wirksam}),
-das jede importierte Binary vor der Messung gegen den festgeschriebenen Vertrag prüft. Für die
+das jede importierte Binary vor der Messung gegen den festgeschriebenen Vertrag prüft (unter
+\texttt{--debug} zusätzlich gegen den Standard-Testsatz des Tier-Interfaces). Für die
 Tier-Binaries~E2 ist der Vertrag die ABI selbst
 (\texttt{test\_\allowbreak{}e2\_\allowbreak{}contract\_\allowbreak{}abi\_\allowbreak{}vertrag}): Die
 Wormhole-Referenz-DLL wird geladen und muss die festgeschriebene Schnittstellen-Folge erfüllen ---
@@ -1324,7 +1328,8 @@ die Schicht ihre Definition \emph{verlustfrei} weiterreicht, wird zum ausführba
 Je Schicht (die Harness-Namen zeigt Abbildung~\ref{fig:impl-layers}): Für E4 vergleichen Golden-Fixtures
 die aus einem Profil emittierten Achsen-Ebenen gegen eine Referenz, ein Fake-E3 ersetzt den
 Permutationsbaum; für E3 wird die Bijektion der Binary-Identität (mixed-radix hin und zurück) gegen ein
-Fake-E2 gefahren, dazu prüft ein Konformitäts-Gate jede importierte Binary vor der Messung; für E2 ist der
+Fake-E2 gefahren, dazu prüft ein Konformitäts-Gate jede importierte Binary vor der Messung (unter
+\texttt{--debug} auch gegen den Standard-Testsatz des Tier-Interfaces); für E2 ist der
 Vertrag die ABI selbst: Die Wormhole-Referenz-DLL muss \texttt{IAnatomyBase}, \texttt{IObservableTier}
 und \texttt{IResourceControllableTier} erfüllen, und die Antwort einer Stellgrößen-Anfrage
 (\texttt{apply}) ist die \emph{Zahl der Achsen, die den Wert tatsächlich angenommen haben} --- nichts wird

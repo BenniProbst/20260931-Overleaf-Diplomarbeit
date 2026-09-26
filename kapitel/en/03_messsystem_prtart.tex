@@ -1560,7 +1560,10 @@ with options of its own and computes which tier binary or hybrid recombination m
 best; \emph{release} generates from that the fully optimized binary without measurement instrumentation
 and re-measures its wall clock. On the hybrid level the same chain repeats synchronously
 (Figure~\ref{fig:modi-kette}). There is no debug state: \texttt{--debug} is a switch of
-the planner shell for the wiring check --- a flag, not a work mode. Implementation status: the
+the planner shell for the wiring check --- a flag, not a work mode; under \texttt{--debug} the conformance
+gate additionally runs the genus test set (as planned: tests only with the debug binaries, debug and
+release build side by side), and this indirect debug mode coincides with the release build and is not
+kept as a separate mode; it stays locked for users (rc~8). Implementation status: the
 four modes are selectable and validatable and take effect on the build of the binaries; the mode-specific procedure
 of compare (replay comparison instead of measuring) and release (generation of the optimal binary from the
 measured values) is envisioned but not implemented --- compare and release are
@@ -1584,9 +1587,9 @@ selectable, validatable labels with release-equivalent build semantics.
   \node[plan] (hr) at (9.3,-2.0){\textbf{release}\\with and without sidecar};
   \draw[->] (hb)--(hm); \draw[->] (hm)--(hc); \draw[->] (hc)--(hr);
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
-  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug} is a flag of the planner shell, not a mode.};
+  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug} is a flag of the planner shell, not a mode (under \texttt{--debug}: genus test set additionally).};
 \end{tikzpicture}
-\caption{The run chain of the four work modes build $\to$ measure $\to$ compare $\to$ release as a registered sub-axis of the measurement realm, cumulative in this order and repeated synchronously on the hybrid level; compare reads the measurement store and computes the best binary or recombination, release generates the fully optimized binary without measurement sensors and re-measures its wall clock. A debug state does not exist. The assignment to the operating target pictures measurement, evaluation, working, and hybrid mode is given by Section~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
+\caption{The run chain of the four work modes build $\to$ measure $\to$ compare $\to$ release as a registered sub-axis of the measurement realm, cumulative in this order and repeated synchronously on the hybrid level; compare reads the measurement store and computes the best binary or recombination, release generates the fully optimized binary without measurement sensors and re-measures its wall clock. A debug state does not exist; under \texttt{--debug} the conformance gate additionally runs the genus test set, an indirect debug mode that coincides with the release build. The assignment to the operating target pictures measurement, evaluation, working, and hybrid mode is given by Section~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
 \end{nurlang}
 \begin{nurkurz}
@@ -1597,7 +1600,9 @@ store; \emph{compare} computes from the store the tier binary or hybrid recombin
 to the measurement, be the best; \emph{release} generates from that the fully optimized binary without
 measurement instrumentation and re-measures its wall clock; on the hybrid level the same chain repeats
 (Figure~\ref{fig:modi-kette}). There is no debug state: \texttt{--debug} is a flag of the planner shell,
-not a work mode. Implementation status: the four modes are selectable, validatable, and effective in the
+not a work mode; under \texttt{--debug} the conformance gate additionally runs the genus test set, and this
+indirect debug mode coincides with the release build (locked for users, rc~8). Implementation status:
+the four modes are selectable, validatable, and effective in the
 build; the mode-specific procedure of compare and release is not implemented, both are labels with
 release-equivalent build semantics.
 \begin{figure}[htbp]\centering
@@ -1619,9 +1624,9 @@ release-equivalent build semantics.
   \node[plan] (hr) at (9.3,-2.0){\textbf{release}\\with and without sidecar};
   \draw[->] (hb)--(hm); \draw[->] (hm)--(hc); \draw[->] (hc)--(hr);
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
-  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug} is a flag of the planner shell, not a mode.};
+  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){green: mode selectable, validatable, and effective in the build.\\dashed/orange: mode selectable; the mode-specific procedure (replay comparison,\\generation of the optimal binary) is envisioned but not implemented.\\\texttt{--debug} is a flag of the planner shell, not a mode (under \texttt{--debug}: genus test set additionally).};
 \end{tikzpicture}
-\caption{The run chain of the four work modes build $\to$ measure $\to$ compare $\to$ release as a registered sub-axis of the measurement realm, cumulative in this order and repeated synchronously on the hybrid level; compare reads the measurement store and computes the best binary or recombination, release generates the fully optimized binary without measurement sensors and re-measures its wall clock. A debug state does not exist. The assignment to the operating target pictures measurement, evaluation, working, and hybrid mode is given by Section~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
+\caption{The run chain of the four work modes build $\to$ measure $\to$ compare $\to$ release as a registered sub-axis of the measurement realm, cumulative in this order and repeated synchronously on the hybrid level; compare reads the measurement store and computes the best binary or recombination, release generates the fully optimized binary without measurement sensors and re-measures its wall clock. A debug state does not exist; under \texttt{--debug} the conformance gate additionally runs the genus test set, an indirect debug mode that coincides with the release build. The assignment to the operating target pictures measurement, evaluation, working, and hybrid mode is given by Section~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
 \end{nurkurz}
 
@@ -1948,7 +1953,7 @@ standard containers --- out of necessity, not convenience: only thus do the axes
 tier binary remain controllable, only thus does the micro measurement reproduce the same runtime on every
 run, and only thus do the properties of \texttt{SearchAlgorithm} and container that
 resemble each other remain seamlessly comparable over a uniform interface; with the standard containers of the
-C++ library this control would be lost. The shared core of the container family consists of
+C++ library this control would be lost. The shared core of the container concept consists of
 identity, axis observation, and size (Section~\ref{sec:anatomy-metaphor}); the families Set, Sequence,
 Adapter, and View are implemented. The hulls \texttt{std::map} (\texttt{SearchAlgorithm}) and
 \texttt{std::vector} (container) are to be carried out completely in the implementation; the measurement
@@ -1962,7 +1967,7 @@ of the axes equally at compile time; this family iterator library is not impleme
 The container families are formed from the same axis pool as the search algorithms and are no standard
 containers --- out of necessity: only thus do the axes permitted in the compiled artefact remain
 controllable, does the micro measurement reproduce the same runtime, and do \texttt{SearchAlgorithm} and
-container remain comparable over a uniform interface. The shared core of the container family consists of
+container remain comparable over a uniform interface. The shared core of the container concept consists of
 identity, axis observation, and size (Section~\ref{sec:anatomy-metaphor}); the families Set, Sequence,
 Adapter, and View are implemented; the hulls \texttt{std::map} and \texttt{std::vector} are to be carried
 out completely, and the family iterator library for the order-based operations is not implemented.
@@ -1990,7 +1995,10 @@ previously cold cache and estimates the speed-up that the method achieves agains
 only rows with a valid second phase enter the evaluation ---; the collection is
 \emph{hybrid} --- isolated axis algorithms directly against one another, a composed living being
 centrally over an ABI-stable per-axis observer interface ---; a \emph{conformance gate}
-checks the \texttt{std::map} contract before every measurement, so that only comparable things are compared; and a
+checks the \texttt{std::map} contract before every measurement, so that only comparable things are compared,
+and under \texttt{--debug} additionally runs the standard test set of the respective tier interface: the
+family-generic part (valid for all genera of the family) and the genus-specific part (the possibly
+extended sub-interfaces of the genus); and a
 plausibility criterion discards every run in which a measurement with measurement sensors is not slower than
 the same without. Where such a criterion needs a threshold, it is \emph{platform-calibrated} ---
 determined per machine signature from measurement runs on the respective platform, not set as a fixed
@@ -2013,7 +2021,9 @@ separates a discarded warm-up from the measurement in a definitely warm cache, w
 difference between the two phases is itself a source of insight and only rows with a valid second phase
 enter the evaluation; the collection is \emph{hybrid} (isolated axis algorithms directly against one
 another, a composed living being centrally over an ABI-stable observer interface); a \emph{conformance
-gate} checks the \texttt{std::map} contract before every measurement; and a plausibility criterion
+gate} checks the \texttt{std::map} contract before every measurement and under \texttt{--debug} additionally
+runs the standard test set of the tier interface (family-generic part for all genera, genus-specific part
+for the extended sub-interfaces); and a plausibility criterion
 discards every run in which a measurement with measurement sensors is not slower than the same without.
 Thresholds are \emph{platform-calibrated} (determined per machine signature from measurement runs); the
 values are not available (Section~\ref{sec:answers}). These concepts form the \emph{definitional classes}
@@ -2083,7 +2093,9 @@ the registry carries sixteen categories, yet with the collection per axis interf
 parameter set their number grows dynamically (sixteen categories times parameter sets) and is never a
 fixed count; and (d) the run methodology as sub-axis \texttt{work\_mode} with the four modes
 build, measure, compare, and release (Section~\ref{sec:anatomy-levels}), where \texttt{--debug} is a
-flag of the planner shell and not a mode. None of these sub-axes ever becomes part of a binary identity:
+flag of the planner shell and not a mode (under \texttt{--debug} the conformance gate additionally runs the
+genus test set; this indirect debug mode coincides with the release build). None of these sub-axes ever
+becomes part of a binary identity:
 measurement axes are strictly binary-id-neutral. Within the categories there is a
 \emph{regime bipartition}: the time- and observer-based regime (runtime clocks and observer hulls;
 nine categories, among them latency, throughput, memory footprint, and fill-buffer occupancy) and the

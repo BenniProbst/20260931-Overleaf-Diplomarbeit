@@ -246,8 +246,9 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   Ein-Thread-Messlauf, der einzige Modus mit Messung), \texttt{compare} (liest das Messwertlager, die
   Stufe vor \texttt{release}) und \texttt{release} (Voll-Optimierung ohne Mess-Instrumentierung); der
   Arbeitsmodus ist eine Unter-Achse des Mess-Realms und geht nicht in die Binary-Identität ein, einen
-  Debug-Zustand gibt es nicht (\texttt{--debug} ist ein Flag der Planer-Shell), und den
-  Mess-Aggregator führt der \texttt{ExperimentDriver} host-seitig.
+  Debug-Zustand gibt es nicht (\texttt{--debug} ist ein Flag der Planer-Shell; unter \texttt{--debug} fährt
+  das Konformitäts-Gate zusätzlich den Genus-Testsatz, ein indirekter Debug-Modus, der mit dem
+  Release-Bau zusammenfällt), und den Mess-Aggregator führt der \texttt{ExperimentDriver} host-seitig.
   \textbf{Konsequenz:} Der Produktiv-Pfad bleibt mess-frei und verursacht keinen Mess-Overhead; wählbar sind
   vier Modi, in der Bau-Semantik verschieden ist allein \texttt{measure} --- alle vier Registry-Zeilen
   führen den Release-Bautyp.
@@ -268,10 +269,16 @@ ADR-20 & XML als einzige Steuerung & Abschn.~\ref{sec:impl-pipeline} & teilweise
   Standard-Orakel gehalten --- \texttt{Set} gegen \texttt{std::set}, \texttt{Sequence} gegen
   \texttt{std::deque}, \texttt{Adapter} gegen \texttt{std::queue}, \texttt{std::stack} und
   \texttt{std::priority\_queue}, \texttt{View} gegen \texttt{std::span} ---, und \texttt{std::vector}
-  dient als Inner-Substrat des Gattung \texttt{Adapter}. Ein Konformitäts-Gate prüft diesen Vertrag vor
-  jeder Messung in der bindenden Reihenfolge Import $\to$ Gate $\to$ Messen, über die fünf
-  Kern-Operationen \texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{clear} und \texttt{size},
-  mit Konformitäts-Quoten als Ergebnisform.
+  dient als Inner-Substrat der Gattung \texttt{Adapter}. Ein Konformitäts-Gate prüft diesen Vertrag vor
+  jeder Messung in der bindenden Reihenfolge Import $\to$ Gate $\to$ Messen: die siebzehn in
+  Anhang~\ref{app:interfaces} markierten \texttt{std::map}-Operationen (zwölf Kern-Prüfblöcke,
+  \texttt{std::map} als Orakel), mit Konformitäts-Quoten als Ergebnisform; die fünf Antriebs-Operationen
+  der Modulgrenze (\texttt{insert}, \texttt{lookup}, \texttt{erase}, \texttt{clear}, \texttt{size}) sind
+  die ABI-Primitive, über denen der host-seitige Adapter diesen Vertrag komponiert, nicht der
+  Prüfumfang. Unter \texttt{--debug} fährt das Gate zusätzlich den Standard-Testsatz des jeweiligen
+  Tier-Interfaces: den generischen Gattungs-Teil (gültig für alle Genera) und den Genus-speziellen Teil
+  (die gegebenenfalls erweiterten Teil-Interfaces); dieser indirekte Debug-Modus fällt mit dem
+  Release-Bau zusammen und wird nicht separat geführt.
   \textbf{Konsequenz:} Nur Vergleichbares wird verglichen; die Achsen beschreiben ausschließlich
   das innere Verhalten hinter der festen Schnittstelle.
   \textbf{Umsetzungsstand:} Der Ausbau des Gates auf die volle \texttt{std::map}-Schnittstelle und die

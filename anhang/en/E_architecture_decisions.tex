@@ -240,8 +240,9 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \texttt{compare} (reads the measurement store, the stage before \texttt{release}) and
   \texttt{release} (full optimization without measurement instrumentation); the work mode is a
   sub-axis of the measurement realm and does not enter the binary identity, a debug state does not
-  exist (\texttt{--debug} is a flag of the planner shell), and the measurement aggregator is run
-  host-side by the \texttt{ExperimentDriver}.
+  exist (\texttt{--debug} is a flag of the planner shell; under \texttt{--debug} the conformance gate
+  additionally runs the genus test set, an indirect debug mode that coincides with the release build),
+  and the measurement aggregator is run host-side by the \texttt{ExperimentDriver}.
   \textbf{Consequence:} The production path stays measurement-free and causes no measurement
   overhead; four modes are selectable, in build semantics only \texttt{measure} differs --- all
   four registry rows carry the release build type.
@@ -261,8 +262,14 @@ ADR-20 & XML as the only control & Sect.~\ref{sec:impl-pipeline} & partial (crea
   \texttt{std::priority\_queue}, \texttt{View} against \texttt{std::span} ---, and
   \texttt{std::vector} serves as the inner substrate of the family \texttt{Adapter}. A conformance
   gate checks this contract before every measurement in the binding order import $\to$ gate $\to$
-  measure, via the five core operations \texttt{insert}, \texttt{lookup}, \texttt{erase},
-  \texttt{clear} and \texttt{size}, with conformance ratios as the result form.
+  measure: the seventeen \texttt{std::map} operations marked in Appendix~\ref{app:interfaces} (twelve
+  core check blocks, \texttt{std::map} as oracle), with conformance ratios as the result form; the five
+  drive operations of the module boundary (\texttt{insert}, \texttt{lookup}, \texttt{erase},
+  \texttt{clear}, \texttt{size}) are the ABI primitives over which the host-side adapter composes this
+  contract, not the scope of the check. Under \texttt{--debug} the gate additionally runs the standard
+  test set of the respective tier interface: the family-generic part (valid for all genera) and the
+  genus-specific part (the possibly extended sub-interfaces); this indirect debug mode coincides with
+  the release build and is not kept as a separate mode.
   \textbf{Consequence:} Only comparables are compared; the axes describe exclusively the inner
   behaviour behind the fixed interface.
   \textbf{Implementation status:} The extension of the gate to the full \texttt{std::map}

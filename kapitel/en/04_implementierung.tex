@@ -164,7 +164,9 @@ measurement switched on; \texttt{compare} reads the measurement store and compar
 measured --- the stage \emph{before} the release; \texttt{release} produces the reference binary without
 instrumentation. All four build as CMake Release; a measuring debug regime no longer exists, because
 numbers collected in parallel are not comparable with single-thread measurements, and the wiring check
-it performed is realized as the switch \texttt{--debug} of the planner shell --- a flag, not a state.
+it performed is realized as the switch \texttt{--debug} of the planner shell --- a flag, not a state;
+under \texttt{--debug} the conformance gate additionally runs the genus test set, and this indirect debug
+mode coincides with the release build and is not kept separately.
 Implementation status: \texttt{compare} is a selectable label with build semantics identical to
 \texttt{release}; its mode-specific execution (replay comparison instead of measuring) is planned but
 not implemented (Section~\ref{sec:anatomy-levels}).
@@ -272,7 +274,8 @@ measurement run and the only mode with measurement switched on, \texttt{compare}
 store (implementation status: a selectable label, the replay comparison is not implemented),
 \texttt{release} produces the reference binary without instrumentation; all four build as CMake
 Release, and the wiring check of the former debug regime is realized as the switch \texttt{--debug} of
-the planner shell --- a flag, not a state.
+the planner shell --- a flag, not a state; under \texttt{--debug} the conformance gate additionally runs
+the genus test set, an indirect debug mode that coincides with the release build.
 \end{nurkurz}
 
 \begin{nurlang}
@@ -1235,7 +1238,8 @@ run and, per path, the mixed-radix-encoded binary identifier is translated back 
 plus signature round trip) --- against a fake E2 that builds not a single binary; added to this is a
 conformance gate in the full-run path
 (\texttt{test\_\allowbreak{}e3\_\allowbreak{}contract\_\allowbreak{}conformance\_\allowbreak{}gate\_\allowbreak{}wirksam}),
-which checks every imported binary against the fixed contract before the measurement. For the tier
+which checks every imported binary against the fixed contract before the measurement (under
+\texttt{--debug} additionally against the standard test set of the tier interface). For the tier
 binaries~E2 the contract is the ABI itself
 (\texttt{test\_\allowbreak{}e2\_\allowbreak{}contract\_\allowbreak{}abi\_\allowbreak{}vertrag}): the
 Wormhole reference DLL is loaded and must satisfy the fixed interface sequence ---
@@ -1337,7 +1341,8 @@ executable acceptance test.
 Per layer (the harness names are shown in Figure~\ref{fig:impl-layers}): for E4, golden fixtures
 compare the axis levels emitted from a profile against a reference, a fake E3 replaces the permutation
 tree; for E3 the bijection of the binary identity (mixed-radix back and forth) is run against a fake
-E2, and in addition a conformance gate checks every imported binary before the measurement; for E2 the
+E2, and in addition a conformance gate checks every imported binary before the measurement (under
+\texttt{--debug} also against the standard test set of the tier interface); for E2 the
 contract is the ABI itself: the Wormhole reference DLL must satisfy \texttt{IAnatomyBase},
 \texttt{IObservableTier} and \texttt{IResourceControllableTier}, and the response to a control-quantity
 request (\texttt{apply}) is the \emph{number of axes that actually accepted the value} --- nothing is

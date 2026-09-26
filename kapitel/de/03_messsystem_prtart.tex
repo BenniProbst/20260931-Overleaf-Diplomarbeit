@@ -1573,7 +1573,10 @@ mit eigenen Optionen und errechnet, welche Tier-Binary oder Hybrid-Rekombination
 beste sein muss; \emph{release} erzeugt daraus die voll optimierte Binary ohne Mess-Instrumentierung
 und misst ihre Wall-Clock nach. Auf der Hybrid-Ebene wiederholt sich dieselbe Kette synchron
 (Abbildung~\ref{fig:modi-kette}). Einen Debug-Zustand gibt es nicht: \texttt{--debug} ist ein Schalter
-der Planer-Shell für den Verdrahtungs-Check --- ein Flag, kein Arbeitsmodus. Umsetzungsstand: Die
+der Planer-Shell für den Verdrahtungs-Check --- ein Flag, kein Arbeitsmodus; unter \texttt{--debug} fährt
+das Konformitäts-Gate zusätzlich den Genus-Testsatz (wie geplant: Tests nur mit den Debug-Binaries,
+Debug- und Release-Kompilat parallel), und dieser indirekte Debug-Modus fällt mit dem Release-Bau
+zusammen und wird nicht separat geführt; für Anwender bleibt er gesperrt (rc~8). Umsetzungsstand: Die
 vier Modi sind wählbar und validierbar und wirken auf den Bau der Binaries; der modus-spezifische Ablauf
 von compare (Replay-Vergleich statt Messen) und release (Erzeugung der optimalen Binary aus den
 Messwerten) ist vorgesehen, aber nicht implementiert --- compare und release sind
@@ -1597,9 +1600,9 @@ wählbare, validierbare Etiketten mit release-gleicher Bausemantik.
   \node[plan] (hr) at (9.3,-2.0){\textbf{release}\\mit und ohne Sidecar};
   \draw[->] (hb)--(hm); \draw[->] (hm)--(hc); \draw[->] (hc)--(hr);
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
-  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){grün: Modus wählbar, validierbar und im Bau wirksam.\\gestrichelt/orange: Modus wählbar; der modus-spezifische Ablauf (Replay-Vergleich,\\Erzeugung der optimalen Binary) ist vorgesehen, aber nicht implementiert.\\\texttt{--debug} ist ein Flag der Planer-Shell, kein Modus.};
+  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){grün: Modus wählbar, validierbar und im Bau wirksam.\\gestrichelt/orange: Modus wählbar; der modus-spezifische Ablauf (Replay-Vergleich,\\Erzeugung der optimalen Binary) ist vorgesehen, aber nicht implementiert.\\\texttt{--debug} ist ein Flag der Planer-Shell, kein Modus (unter \texttt{--debug}: Genus-Testsatz zusätzlich).};
 \end{tikzpicture}
-\caption{Die Ablauf-Kette der vier Arbeitsmodi build $\to$ measure $\to$ compare $\to$ release als registrierte Unter-Achse des Mess-Realms, kumulativ in dieser Reihenfolge und auf der Hybrid-Ebene synchron wiederholt; compare liest das Messwertlager und errechnet die beste Binary bzw. Rekombination, release erzeugt die voll optimierte Binary ohne Messfühler und misst ihre Wall-Clock nach. Ein Debug-Zustand existiert nicht. Die Zuordnung zu den Betriebs-Zielbildern Mess-, Auswertungs-, Arbeits- und Hybrid-Modus gibt Abschnitt~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
+\caption{Die Ablauf-Kette der vier Arbeitsmodi build $\to$ measure $\to$ compare $\to$ release als registrierte Unter-Achse des Mess-Realms, kumulativ in dieser Reihenfolge und auf der Hybrid-Ebene synchron wiederholt; compare liest das Messwertlager und errechnet die beste Binary bzw. Rekombination, release erzeugt die voll optimierte Binary ohne Messfühler und misst ihre Wall-Clock nach. Ein Debug-Zustand existiert nicht; unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Genus-Testsatz, ein indirekter Debug-Modus, der mit dem Release-Bau zusammenfällt. Die Zuordnung zu den Betriebs-Zielbildern Mess-, Auswertungs-, Arbeits- und Hybrid-Modus gibt Abschnitt~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
 \end{nurlang}
 \begin{nurkurz}
@@ -1609,7 +1612,9 @@ misst nicht; \emph{measure} ist der deterministische Ein-Thread-Mess-Lauf, der d
 \emph{compare} errechnet aus dem Lager die laut Vermessung beste Tier-Binary oder Hybrid-Rekombination;
 \emph{release} erzeugt daraus die voll optimierte Binary ohne Mess-Instrumentierung und misst ihre Wall-Clock
 nach; auf der Hybrid-Ebene wiederholt sich dieselbe Kette (Abbildung~\ref{fig:modi-kette}). Einen
-Debug-Zustand gibt es nicht: \texttt{--debug} ist ein Flag der Planer-Shell, kein Arbeitsmodus.
+Debug-Zustand gibt es nicht: \texttt{--debug} ist ein Flag der Planer-Shell, kein Arbeitsmodus; unter
+\texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Genus-Testsatz, und dieser indirekte
+Debug-Modus fällt mit dem Release-Bau zusammen (für Anwender gesperrt, rc~8).
 Umsetzungsstand: Die vier Modi sind wählbar, validierbar und bau-wirksam; der modus-spezifische Ablauf von
 compare und release ist nicht implementiert, beide sind Etiketten mit release-gleicher Bausemantik.
 \begin{figure}[htbp]\centering
@@ -1631,9 +1636,9 @@ compare und release ist nicht implementiert, beide sind Etiketten mit release-gl
   \node[plan] (hr) at (9.3,-2.0){\textbf{release}\\mit und ohne Sidecar};
   \draw[->] (hb)--(hm); \draw[->] (hm)--(hc); \draw[->] (hc)--(hr);
   \draw[->,gray] (r.south) -- ++(0,-0.3) -| (hb.north);
-  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){grün: Modus wählbar, validierbar und im Bau wirksam.\\gestrichelt/orange: Modus wählbar; der modus-spezifische Ablauf (Replay-Vergleich,\\Erzeugung der optimalen Binary) ist vorgesehen, aber nicht implementiert.\\\texttt{--debug} ist ein Flag der Planer-Shell, kein Modus.};
+  \node[font=\tiny,align=left,anchor=north west] at (-3.0,-2.95){grün: Modus wählbar, validierbar und im Bau wirksam.\\gestrichelt/orange: Modus wählbar; der modus-spezifische Ablauf (Replay-Vergleich,\\Erzeugung der optimalen Binary) ist vorgesehen, aber nicht implementiert.\\\texttt{--debug} ist ein Flag der Planer-Shell, kein Modus (unter \texttt{--debug}: Genus-Testsatz zusätzlich).};
 \end{tikzpicture}
-\caption{Die Ablauf-Kette der vier Arbeitsmodi build $\to$ measure $\to$ compare $\to$ release als registrierte Unter-Achse des Mess-Realms, kumulativ in dieser Reihenfolge und auf der Hybrid-Ebene synchron wiederholt; compare liest das Messwertlager und errechnet die beste Binary bzw. Rekombination, release erzeugt die voll optimierte Binary ohne Messfühler und misst ihre Wall-Clock nach. Ein Debug-Zustand existiert nicht. Die Zuordnung zu den Betriebs-Zielbildern Mess-, Auswertungs-, Arbeits- und Hybrid-Modus gibt Abschnitt~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
+\caption{Die Ablauf-Kette der vier Arbeitsmodi build $\to$ measure $\to$ compare $\to$ release als registrierte Unter-Achse des Mess-Realms, kumulativ in dieser Reihenfolge und auf der Hybrid-Ebene synchron wiederholt; compare liest das Messwertlager und errechnet die beste Binary bzw. Rekombination, release erzeugt die voll optimierte Binary ohne Messfühler und misst ihre Wall-Clock nach. Ein Debug-Zustand existiert nicht; unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Genus-Testsatz, ein indirekter Debug-Modus, der mit dem Release-Bau zusammenfällt. Die Zuordnung zu den Betriebs-Zielbildern Mess-, Auswertungs-, Arbeits- und Hybrid-Modus gibt Abschnitt~\ref{sec:heuristics-modes}.}\label{fig:modi-kette}
 \end{figure}
 \end{nurkurz}
 
@@ -2009,7 +2014,10 @@ zuvor kalten Cache nach und schätzt die Beschleunigung, die das Verfahren gegen
 erzielt; nur Zeilen mit gültiger zweiter Phase gehen in die Auswertung ein ---; die Erhebung erfolgt
 \emph{hybrid} --- isolierte Achsen-Algorithmen direkt gegeneinander, ein zusammengesetztes Lebewesen
 zentral über eine ABI-stabile Per-Achsen-Beobachter-Schnittstelle ---; ein \emph{Konformitäts-Gate}
-prüft vor jeder Messung den \texttt{std::map}-Vertrag, damit nur Vergleichbares verglichen wird; und ein
+prüft vor jeder Messung den \texttt{std::map}-Vertrag, damit nur Vergleichbares verglichen wird, und fährt
+unter \texttt{--debug} zusätzlich den Standard-Testsatz des jeweiligen Tier-Interfaces: den generischen
+Gattungs-Teil (gültig für alle Genera der Gattung) und den Genus-speziellen Teil (die gegebenenfalls
+erweiterten Teil-Interfaces des Genus); und ein
 Plausibilitäts-Kriterium verwirft jeden Lauf, in dem eine Messung mit Messfühlern nicht langsamer ist als
 dieselbe ohne. Wo ein solches Kriterium eine Schwelle braucht, ist sie \emph{plattform-kalibriert} ---
 je Maschinen-Signatur aus Messläufen auf der jeweiligen Plattform bestimmt, nicht als feste
@@ -2032,7 +2040,9 @@ Cache, wobei der Parameter-Unterschied zwischen beiden Phasen selbst eine Erkenn
 mit gültiger zweiter Phase in die Auswertung eingehen; die Erhebung erfolgt \emph{hybrid} (isolierte
 Achsen-Algorithmen direkt gegeneinander, ein zusammengesetztes Lebewesen zentral über eine ABI-stabile
 Beobachter-Schnittstelle); ein \emph{Konformitäts-Gate} prüft vor jeder Messung den
-\texttt{std::map}-Vertrag; und ein Plausibilitäts-Kriterium verwirft jeden Lauf, in dem eine Messung mit
+\texttt{std::map}-Vertrag und fährt unter \texttt{--debug} zusätzlich den Standard-Testsatz des
+Tier-Interfaces (generischer Gattungs-Teil für alle Genera, Genus-spezieller Teil für die erweiterten
+Teil-Interfaces); und ein Plausibilitäts-Kriterium verwirft jeden Lauf, in dem eine Messung mit
 Messfühlern nicht langsamer ist als dieselbe ohne. Schwellen sind \emph{plattform-kalibriert} (je
 Maschinen-Signatur aus Messläufen bestimmt); die Werte liegen nicht vor (Abschnitt~\ref{sec:answers}). Diese
 Konzepte bilden die \emph{Definitions-Klassen} des Messens; ihre technischen \emph{Instanzen} hat
@@ -2102,7 +2112,9 @@ die Registry führt sechzehn Kategorien, doch mit der Erhebung je Achsen-Interfa
 Parametersatz wächst ihre Zahl dynamisch (sechzehn Kategorien mal Parametersätze) und ist nie eine
 feste Anzahl; und (d) die Ablauf-Methodik als Unter-Achse \texttt{work\_mode} mit den vier Modi
 build, measure, compare und release (Abschnitt~\ref{sec:anatomy-levels}), wobei \texttt{--debug} ein
-Flag der Planer-Shell und kein Modus ist. Keine dieser Unter-Achsen wird je Teil einer Binary-Identität:
+Flag der Planer-Shell und kein Modus ist (unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich
+den Genus-Testsatz; dieser indirekte Debug-Modus fällt mit dem Release-Bau zusammen). Keine dieser
+Unter-Achsen wird je Teil einer Binary-Identität:
 Mess-Achsen sind strikt binary-id-neutral. Innerhalb der Kategorien besteht eine
 \emph{Regime-Zweiteilung}: das zeit- und observer-basierte Regime (Laufzeit-Uhren und Beobachter-Hüllen;
 neun Kategorien, darunter Latenz, Durchsatz, Speicher-Fußabdruck und Fill-Buffer-Auslastung) und das
