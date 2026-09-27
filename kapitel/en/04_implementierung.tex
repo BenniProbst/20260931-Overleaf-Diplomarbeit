@@ -1,8 +1,5 @@
 \chapter{Implementation and Concrete Algorithm Components}\label{ch:impl}
 
-% [SKELETON] Detail focus. After a brief known SOTA, each PRT-ART algorithm as a figure + description;
-% then axis implementation (one overall-concept figure per axis) and all levels of the measurement system.
-
 \begin{nurlang}
 This chapter descends into detail: first the repository architecture with the carrier-stage chain
 (Section~\ref{sec:anatomy-levels}) and the four work modes of a permutation, then each key point of
@@ -10,10 +7,12 @@ PRT-ART individually and visually, next the axis implementation together with th
 in code, the code shape of the build chain, the levels E4--E0 in code and the contract surfaces at the
 carrier binaries, after that the quality assurance via contract tests per layer including the two-gate
 protocol and the code shape of the realm roots --- system and measurement axes including the hardware
-detection --- and finally the register of design patterns, the hybrid stage and the store. At its core,
-the \emph{one} architecture is a self-optimizing compiler-compiler structure: the planner generates the
-build orders from the user XML, the builder generates the compiled artefacts from them, and the evaluation
-of the measured values feeds the next planning (Section~\ref{sec:mess-chain}). The apparatus thus stands
+detection --- and finally the register of design patterns, the hybrid stage and the store. At its core, the
+\emph{one} architecture is a compiler-compiler structure: the planner generates the build orders from the
+user XML, the builder generates the compiled artefacts from them (Section~\ref{sec:mess-chain}),
+the selector chooses the delivery from the measured values by ranking, and the function synthesis derives the
+heuristic curves for the break-even decision from the same measured values
+(Section~\ref{sec:heuristics-loop}). The apparatus thus stands
 in the line of the empirical autotuning systems that generate candidate implementations, measure them and
 make the selection from the measured
 values~\cite{whaley2001atlas,frigo1998fftw,ansel2014opentuner,balaprakash2018autotuning}; the difference
@@ -24,9 +23,11 @@ of a living being, and a separate binary is generated per permutation.
 This chapter descends into detail: from the repository architecture with the carrier-stage chain
 (Section~\ref{sec:anatomy-levels}) through the key points of PRT-ART, the axis implementation, the build
 chain and the contract tests to the realm roots, the hybrid stage and the store. At its core, the
-\emph{one} architecture is a self-optimizing compiler-compiler structure: the planner generates the
-build orders from the user XML, the builder generates the compiled artefacts from them, and the
-evaluation of the measured values feeds the next planning (Section~\ref{sec:mess-chain}) --- the line of
+\emph{one} architecture is a compiler-compiler structure: the planner generates the build orders from the
+user XML, the builder generates the compiled artefacts from them (Section~\ref{sec:mess-chain}),
+the selector chooses the delivery from the measured values by ranking, and the function synthesis derives the
+heuristic curves for the break-even decision from the same measured values
+(Section~\ref{sec:heuristics-loop}) --- the line of
 the empirical autotuning
 systems~\cite{whaley2001atlas,frigo1998fftw,ansel2014opentuner,balaprakash2018autotuning}, except that
 here the organ assignment of a living being is permuted and a separate binary is generated per
@@ -272,9 +273,10 @@ The four \emph{work modes} \texttt{build}, \texttt{measure}, \texttt{compare} an
 registered as a sub-axis of the measurement realm (Section~\ref{sec:anatomy-levels}): \texttt{build}
 builds without measuring and may run in parallel, \texttt{measure} is the deterministic single-thread
 measurement run and the only mode with measurement switched on, \texttt{compare} reads the measurement
-store (implementation status: a selectable label, the replay comparison is not implemented),
-\texttt{release} produces the reference binary without instrumentation; all four build as CMake
-Release, and the wiring check of the former debug regime is realized as the switch \texttt{--debug} of
+store (implementation status: a selectable label, the replay comparison is planned for later main
+waves but not implemented), \texttt{release} produces the reference binary without instrumentation;
+all four build as CMake Release (alongside, the build variants debug, measurement, and release remain
+in force, and the debug variant is being extended further), and the wiring check of the former debug regime is realized as the switch \texttt{--debug} of
 the planner shell --- a flag, not a state; under \texttt{--debug} the conformance gate additionally runs
 the standard test set of the tier interface, an indirect debug mode that coincides with the release build.
 \end{nurkurz}
@@ -425,7 +427,7 @@ enable flag of the configuration and the detection flag \texttt{COMDARE\_HAVE\_<
 --- a missing vendor switches the building block off instead of breaking the build ---; SOTA building
 blocks are switched on or off at compile time via constexpr enable flags together with
 \texttt{mp\_filter} (the \texttt{COMDARE\_AXIS\_*\_USE\_}/\texttt{ENABLE\_} flag family), each with a
-safe fallback chosen per concept: allocator adapters replace the missing vendor in \texttt{if constexpr}
+safe fallback chosen per family: allocator adapters replace the missing vendor in \texttt{if constexpr}
 branches with the portable aligned allocation (\texttt{portable\_aligned\_alloc}), the vendor shim
 supplies only forward stubs for the never-executed branch, and the axis value \texttt{StdMalloc} is a
 building block of its own, not a makeshift; data-structure adapters of foreign search techniques
@@ -452,7 +454,7 @@ from the type list of all building blocks (\texttt{All*}) a compile-time filter 
 assigns exactly one type per slot; the hot path contains neither \texttt{virtual} calls nor runtime
 switches --- an unused abstraction costs nothing~\cite{stroustrup2012foundations}. SOTA designs and
 allocators are integrated via thin \emph{adapters}: vendor shims switch the building block off when the
-vendor is missing instead of breaking the build, with a fallback chosen per concept
+vendor is missing instead of breaking the build, with a fallback chosen per family
 (\texttt{portable\_aligned\_alloc}; \texttt{StdMalloc} is a building block of its own, not a makeshift),
 and a stub that throws a \texttt{runtime\_error} at runtime does not occur in the organ axes. The organ
 axes not occupied by the candidate under test draw their building block from the cache engine
@@ -714,7 +716,7 @@ two reports \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} and
 \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus}, spelled identically across all concepts, as
 well as the version lines of the stamp. The identical spelling is a condition, not a convenience: the
 concept-independent loader loads every binary via the same loading route (POSIX
-\texttt{dlopen}~\cite{posix_dlopen}) and can determine the family \emph{before} it constructs an
+\texttt{dlopen}~\cite{posix_dlopen}) and can determine the concept \emph{before} it constructs an
 instance --- concept-independent names with concept-specific values; the concept is here derived from the
 family. The ABI carries major version~9, whose seam is the family interface. The variadic 1/2/N hybrid
 API belongs to the candidate under test: its \texttt{PrtArtSearchEngine<Ts\ldots>} specializes by parameter count ---
@@ -811,7 +813,7 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   \draw[->] (topic)--(crtp); \draw[->] (crtp)--(all); \draw[->] (all)--(filt); \draw[->] (filt)--(en); \draw[->] (en)--(slot);
   \draw[->,dashed,gray] (body.east) to[bend right=14] node[midway,below,font=\scriptsize\itshape,text=gray]{composes 18 axes} (topic.west);
 \end{tikzpicture}
-\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase}, the four families and six families and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the eighteen axes) and its ABI runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), which is measured via the drive/observer contracts \texttt{IDriveableTier}/\texttt{IObservableTier} and whose measurement crosses as surface~3 through the visitor \texttt{IMessVisitor}; on the right the live path repeated per axis --- a two-layer \texttt{Concept}, a \texttt{requires}-secured CRTP base, the complete \texttt{mp\_list} building-block family, the compile-time filter over the enable flag and the composition slot, which contains exactly one type. The variant-based resolution \texttt{resolve\_baustein} is a rejected alternative isolated from the build (dashed).}\label{fig:uml-interfaces}
+\caption{UML map of the code interfaces: on the left the engine/anatomy hierarchy --- the measurable root \texttt{IExecutionEngine} as the \emph{driver of measurement} (Anatomy\,$\cup$\,Virus\,$\cup$\,Hybrid) over \texttt{IAnatomyBase}, the four concepts and six families and the axis-less \texttt{IVirus\-Execution\-Engine}, beneath it the \emph{body} \texttt{Search\-Algorithm\-Anatomy<C>} (composition \emph{and wiring} of the eighteen axes) and its ABI runtime view \texttt{Search\-Algorithm\-Abi\-Adapter<A>} (\enquote{SearchEngine}), which is measured via the drive/observer contracts \texttt{IDriveableTier}/\texttt{IObservableTier} and whose measurement crosses as surface~3 through the visitor \texttt{IMessVisitor}; on the right the live path repeated per axis --- a two-layer \texttt{Concept}, a \texttt{requires}-secured CRTP base, the complete \texttt{mp\_list} building-block family, the compile-time filter over the enable flag and the composition slot, which contains exactly one type. The variant-based resolution \texttt{resolve\_baustein} is a rejected alternative isolated from the build (dashed).}\label{fig:uml-interfaces}
 \end{figure}
 \end{nurlang}
 
@@ -2030,7 +2032,7 @@ with \texttt{HybridDockVariant} (the one permitted variant site, Section~\ref{se
 runtime cap \texttt{max\_docks}, which rejects the $(N+1)$-th docking with \enquote{array full}, the
 parser of the \texttt{<hybrid\_tier>} section (two-way switch \texttt{enabled}, exclusive per chain,
 \texttt{max\_docks} mandatory with the stage switched on) and the binary proxy, which makes a hybrid
-.so an ordinary tier binary to the outside: it satisfies \texttt{IAnatomyBase}, holds the dock array
+\texttt{.so} an ordinary tier binary to the outside: it satisfies \texttt{IAnatomyBase}, holds the dock array
 and passes the drive through to the target that sits at a dock. Not implemented are the \texttt{.so}
 export of the hybrid stage (it depends on an open layering requirement, because a hybrid \texttt{.so} would
 have to link builder code), the eviction and the router (it needs actual measurement curves). Measured

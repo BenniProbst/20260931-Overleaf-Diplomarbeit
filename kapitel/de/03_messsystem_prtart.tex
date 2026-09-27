@@ -1110,7 +1110,7 @@ durchgängig mit diesem Modell.
   \draw[red!60!black,thick] (4.15,1.15) -- (4.15,-1.45);
   \foreach \y in {0.9,0.2,-0.5,-1.2}{\draw[red!60!black,thick] (4.15,\y) -- (4.3,\y);}
   \node[font=\tiny,text=red!60!black,rotate=90] at (3.95,-0.15){Blut $=$ Verbindung der Organ-Achsen};
-  \node[habitat,minimum width=8.2cm] (hab) at (2.7,-2.45){\textbf{Lebensraum} (System-Achsen): der Planet mit seinen Ressourcen --- immer präsent, keiner Gattung zugehörig};
+  \node[habitat,minimum width=8.2cm] (hab) at (2.7,-2.45){\textbf{Lebensraum} (System-Achsen): der Planet mit seinen Ressourcen --- immer präsent, keinem Konzept zugehörig};
   \node[draw, fill=blue!8, font=\scriptsize, align=center] (mess) at (8.3,-0.15){Mess-System\\(\enquote{Labor})};
   \draw[->,blue] (mess) -- (a1); \draw[->,blue] (mess) -- (a2);
   \draw[->,blue] (mess) -- (a3); \draw[->,blue] (mess) -- (a4);
@@ -2006,7 +2006,8 @@ misst tatsächlich das gemeinte Konzept; extern: Übertragbarkeit auf andere Pla
 \emph{Fairness} (identische Schlüssel, Workloads und
 Warmup; fehlende Fähigkeiten als \emph{N/A} statt verdeckt emuliert) und die \emph{Streuung} als Teil der
 Aussage (Perzentile statt arithmetischer Mittel, mit Signifikanzprüfung; die Verteilungssicht liefern
-HDR-Histogramme in der nachgelagerten Auswertung). Berichtete Perzentile folgen dem
+HDR-Histogramme (High Dynamic Range: Klassen fester relativer Auflösung über mehrere
+Größenordnungen) in der nachgelagerten Auswertung). Berichtete Perzentile folgen dem
 Nearest-Rank-Verfahren: der Rang $R(q,n)=\lceil q\cdot n\rceil$ ist einsbasiert, der zugehörige
 Feldindex $k=R-1$ nullbasiert; der Median ist der Sonderfall $q=0{,}5$ desselben Verfahrens und
 liefert bei geradem $n$ die untere Mitte, nicht das Mittel der beiden mittleren Werte; p95, p99 und
@@ -2142,7 +2143,9 @@ Mess-Tooling-Haupt-Achse mit den drei Mess-Ebenen wallclock, macro und micro
 \emph{Unter}-Achse dieses Toolings, die sich als Spalten der Ergebnis-Tabellen manifestieren --- die Registry
 führt sechzehn, doch mit der Erhebung je Achsen-Interface wächst ihre Zahl dynamisch und ist nie eine feste
 Anzahl; und (d) die Ablauf-Methodik als Unter-Achse \texttt{work\_mode} mit den vier Modi build, measure,
-compare und release (Abschnitt~\ref{sec:anatomy-levels}). Mess-Achsen sind strikt binary-id-neutral. Innerhalb
+compare und release (Abschnitt~\ref{sec:anatomy-levels}), wobei \texttt{--debug} ein Flag der Planer-Shell
+und kein Modus ist (die Bau-Varianten Debug, Messung und Release gelten fort). Mess-Achsen sind strikt
+binary-id-neutral. Innerhalb
 der Kategorien besteht eine \emph{Regime-Zweiteilung}: das zeit- und observer-basierte Regime (neun Kategorien,
 darunter Latenz, Durchsatz, Speicher-Fußabdruck) und das zählerbasierte PMC-Regime (sieben Kategorien, darunter
 Cache-, dTLB- und Branch-Misses, IPC/CPI, Energie); das Regime ist ein Merkmal der Mess-Achse, nicht des
@@ -2160,7 +2163,7 @@ ausschließlich der Sammel-Hub der Hardware-Meta-Achsen (SIMD-/Vektor-Erweiterun
 externe Beschleuniger), und gebündelt werden die drei durch den Command-Wrapper
 \texttt{build\_target\_complex} (Abschnitt~\ref{sec:complex-axis}). In der Anatomie-Metapher sind die
 System-Achsen kein weiteres Organ, sondern der \emph{Lebensraum} des Tiers: immer präsent, sobald
-gemessen wird, keiner Gattung zugehörig --- und ein Tier ist umso besser, je genauer es an ihn angepasst
+gemessen wird, keinem Konzept zugehörig --- und ein Tier ist umso besser, je genauer es an ihn angepasst
 ist. Daraus folgen drei Invarianten. Erstens berühren System-Achsen niemals die Binary-Identität
 (in der Registry: \texttt{binary\_id} $=$ \texttt{never}) --- kein Mess-Instrument und keine Plattform-Größe
 verändert, \emph{was} an Organen gebaut wird; umgekehrt dürfen die Effekte der Organ-Achsen nie mit den
@@ -2182,7 +2185,7 @@ in fester Ordnung --- die Ziel-ISA (\texttt{target\_isa}), das Betriebssystem (\
 die Erweiterungs-Hardware (\texttt{external\_utils}), letztere ausschließlich der Sammel-Hub der
 Hardware-Meta-Achsen (SIMD-/Vektor-Erweiterungen, GPU/FPGA/NPU, externe Beschleuniger) ---, gebündelt durch den
 Command-Wrapper \texttt{build\_target\_complex} (Abschnitt~\ref{sec:complex-axis}). In der Metapher sind sie kein
-Organ, sondern der \emph{Lebensraum} des Tiers: immer präsent, sobald gemessen wird, keiner Gattung zugehörig.
+Organ, sondern der \emph{Lebensraum} des Tiers: immer präsent, sobald gemessen wird, keinem Konzept zugehörig.
 Daraus folgen drei Invarianten. Erstens berühren System-Achsen niemals die Binary-Identität (\texttt{binary\_id}
 $=$ \texttt{never}); die Effekte der Organ-Achsen dürfen nie mit denen von Plattform und Mess-Instrumenten
 vermengt werden. Zweitens sind sie gleichwohl permutierbar: Der Planer gibt frei, welche
@@ -2478,7 +2481,7 @@ enthält. Gemessene \emph{Werte} --- etwa eine erhobene RAM-Rate --- erscheinen 
 %% INTERN-272: KA-043
 \subsection{Das Lager: Bestände unter Stempel-Schlüsseln}\label{sec:lager}
 Das \emph{Lager} (repository) ist der persistente Bestand des Apparats, in dem Gebautes und Gemessenes
-unter Stempel-Schlüsseln liegt (Abbildung~\ref{fig:lager-bestaende}). Der Lager-Baum ist nach Gattung,
+unter Stempel-Schlüsseln liegt (Abbildung~\ref{fig:lager-bestaende}). Der Lager-Baum ist nach Konzept,
 Gattung und Realm gegliedert --- \texttt{gattung=} $\to$ \texttt{genus=} $\to$ \texttt{realm=}
 (\texttt{binaries} oder \texttt{messdaten}) ---, und das Hybrid-Konzept wird darin wie jede andere
 Gattung einsortiert. Vier Bestände sind im Schlüssel-Schema übersetzungsstatisch festgeschrieben:
@@ -3073,32 +3076,42 @@ ist über dasselbe Prüf-Dock messbar wie jedes rekonstruierte SOTA-Verfahren.
 
 \section{Schärfung durch Heuristiken}\label{sec:heuristics}
 Die Messreihen liefern mehr als Ranglisten: Aus ihnen lassen sich Heuristiken gewinnen, die das
-Mess-System schrittweise von einem Prüfstand zu einem sich selbst optimierenden Auslieferungs-System
+Mess-System schrittweise von einem Prüfstand zu einem durch Messung optimierten Auslieferungs-System
 schärfen. Dieser Abschnitt entwickelt diese Schärfung als Konzept in drei Stufen --- die
-Heuristik-Schleife über gelernte Lastprofile, die vier Betriebsmodi des Builders bis zum Hybrid-Modus
+sequentielle Achsensuche und die Funktions-Synthese, die vier Betriebsmodi des Builders bis zum Hybrid-Modus
 als Zielbild der Arbeit und das Messkurven-Typsystem samt Filterkette und Messfehler-Erkennung, das
 diese Modi mit Daten versorgt.
 
 \begin{nurlang}
-\subsection{Heuristik-Schleife und gelernte Lastprofile}\label{sec:heuristics-loop}
+\subsection{Sequentielle Achsensuche und Funktions-Synthese}\label{sec:heuristics-loop}
 Aus den Messreihen lässt sich je Last- und Datentyp-Profil die beste
-Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
+Achsen-Komposition ableiten.
+Die Messkette ist gerade und hat keine Rückkante: ein XML-Experiment führt zu einer Konfiguration, diese
+zum Workload-Filter, und daraus folgen die Messung mit den Messreihen A/B/C und die Funktions-Synthese der
+Messergebnisse (Abbildung~\ref{fig:mess-kette}). Der Workload-Filter ist im Regelfall nicht einschränkend:
+alle Workloads sind Pflicht, damit kein Bias entsteht. Die Sezierung der Achsen eröffnet einen per Schalter
+aktivierbaren Suchmodus: Achse für Achse (T0 bis T17) wird nacheinander durchprobiert, und je Achse bleibt
+die schnellste Belegung stehen; nach T17 beginnt der Durchlauf von vorn unter den Default-Achsen des letzten
+Durchlaufs (depth-first, lazy Materialisierung); der Vorgang wiederholt sich, bis die Achsen-Belegung anhand
+der Messwerte konvergiert. Dieser Suchmodus ist als Konzept
+festgehalten und nicht Teil der gemessenen Kette dieser Arbeit.
 \begin{figure}[htbp]\centering
 \begin{tikzpicture}[font=\footnotesize,>=Stealth,thick,align=center,
-  stage/.style={draw,rounded corners,fill=blue!4,minimum width=2.8cm,minimum height=1cm}]
-  \node[stage] (mess) at (0,0){Messung\\{\scriptsize Messreihen A/B/C}};
-  \node[stage] (profil) at (4.4,0){XML-Lastprofil\\{\scriptsize gelernte Zuordnung}};
-  \node[stage] (konfig) at (4.4,-2.2){Konfiguration\\{\scriptsize beste Achsen-Komposition}};
-  \node[stage] (filter) at (0,-2.2){Workload-Filter\\{\scriptsize \texttt{<expected\_workload>}}};
-  \draw[->] (mess)--(profil);\draw[->] (profil)--(konfig);
-  \draw[->] (konfig)--(filter);\draw[->] (filter)--(mess);
+  stage/.style={draw,rounded corners,fill=blue!4,minimum height=1cm,text width=2.4cm,inner sep=3pt}]
+  \node[stage] (xml) at (0,0){XML-Experiment};
+  \node[stage] (konfig) at (3,0){Konfiguration};
+  \node[stage] (filter) at (6,0){Workload-Filter\\{\scriptsize Default: alle Workloads}};
+  \node[stage] (mess) at (9,0){Messung\\{\scriptsize Messreihen A/B/C}};
+  \node[stage] (synth) at (12,0){Funktions-Synthese\\{\scriptsize Messkurven, mehrstufig, Abschnitt~\ref{sec:heuristics-curves}}};
+  \draw[->] (xml)--(konfig);\draw[->] (konfig)--(filter);
+  \draw[->] (filter)--(mess);\draw[->] (mess)--(synth);
 \end{tikzpicture}
-\caption{Die Heuristik-Schleife: aus den Messreihen wird je Lastprofil die beste Achsen-Komposition gelernt, als XML-Lastprofil abgelegt und über den Workload-Filter in die nächste Messung zurückgeführt.}\label{fig:heuristic-loop}
+\caption{Die gerade Messkette: ein XML-Experiment legt die Konfiguration fest, der Workload-Filter lässt im Regelfall alle Workloads zu, die Messung liefert die Messreihen A/B/C, und die Funktions-Synthese verdichtet die Messergebnisse mehrstufig zu Messkurven (Abschnitt~\ref{sec:heuristics-curves}); eine Rückkante gibt es nicht.}\label{fig:mess-kette}
 \end{figure}
 
 %% INTERN-272: KA-048
-\emph{Die volle Schleife ist ein Ausblick-Mechanismus; realisiert sind davon die automatische Auswahl
-und der Binary-Versand (Abschnitt~\ref{sec:contributions}).} Der Selektor liest die Messwert-Mappe ---
+\emph{Realisiert sind die automatische Auswahl und der Binary-Versand (Abschnitt~\ref{sec:contributions}).}
+Der Selektor liest die Messwert-Mappe ---
 die xlsx-Mappe ist die Ausgabe und der Standard des Apparats; die CSV-Form ist kein einzelnes
 Kind-Dokument, sondern ein aus der Mappe erzeugter, geordneter Baum aus CSV-Dateien mit denselben Spalten
 (ein Gesamtordner je Mappe, darunter ein Ordner je Blatt, darin die CSV-Dateien der einzelnen
@@ -3106,69 +3119,67 @@ Unter-Achsen-Fahrten) ---, rankt je
 Interface-Funktion und Metrik über die gültigen Zwei-Phasen-Zeilen (Median, Nearest-Rank), bestimmt bei
 konkurrierenden Zielgrößen die Pareto-Front der nicht-dominierten Kandidaten statt eines Einzelsiegers,
 löst die \texttt{binary\_id} zur Binary im Lager auf und liefert Binary, Versions-Sidecar und Manifest
-als eigenständiges Artefakt aus. Die Heuristik-Kurven entstehen als natürliche kubische Splines über die
-Stützstellen je Achse und $x$-Dimension; ein Entscheidungs-Lambda-Baum liest die Break-Even-Schwellen
-aus den Spline-Schnittpunkten und wählt an einer Anfrage-Koordinate rückwärts die führende Binary ---
-synthetische Stützstellen weist er als Gerüst aus, ohne gültige Kurven trifft er keine Entscheidung.
-Über die reine Rangbildung hinaus ist eine \emph{Heuristik-Extraktion} als Folge-Phase nach
-\textbf{Persist} --- der letzten Phase der Sieben-Phasen-Pipeline (Abschnitt~\ref{sec:impl-pipeline}) ---
-vorgesehen, die aus den gesammelten Messungen automatisch ableitet, welche Achsen-Konfiguration je Workload
-und Datensatz die beste ist. Der angestrebte Mechanismus ist eine ML-Klassifikation in drei Schritten:
-Zunächst werden aus der Messwert-Mappe je Permutation Merkmale gewonnen --- die Lastprofil- und Datensatz-Merkmale (Workload-Typ,
-Schlüssel-Verteilung, Schreib-/Lese-Anteil, Alphabet- und Präfix-Charakteristik sowie Schlüssel- und
-Wert-Datentyp) sowie die Achsen-Belegung ---, mit der je
-Lastmuster gemessenen Bestleistung (etwa Durchsatz oder Tail-Latenz) als Zielgröße; darüber lernt ein \emph{ML-Klassifikator} die Abbildung
-von Lastprofil-/Achsen-Merkmalen auf die beste Konfiguration; und dieser liefert je Workload-/Datensatz-Klasse
-die empfohlene Achsen-Komposition, ohne den gesamten Permutationsraum erneut zu fahren. Das Ergebnis wird
-als wiederverwendbares \emph{XML-Lastprofil} persistiert --- symmetrisch zu den Messreihen-XML-Konfigurationen
---- und kann ohne erneute Vollvermessung in den \texttt{<expected\_workload>}-Filter zurückgespeist werden;
-damit schließt sich der Kreis zwischen Messung, gelernter Heuristik und konfigurationsleitender Auswahl
-(Abbildung~\ref{fig:heuristic-loop}). Dieser \emph{measure $\to$ profile $\to$ config $\to$
-filter}-Kreislauf ist die klassische, etablierte Form des \emph{empirischen, messgetriebenen Autotunings}:
-Er steht in der Linie von Autotuning-Frameworks wie OpenTuner~\cite{ansel2014opentuner} und den
-messen-im-Kreis-Autotunern FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}; die
-lastprofil-getriebene Konfigurationswahl mit Workload-Filter findet ihre Datenbank-Entsprechung in
-OtterTune~\cite{vanaken2017ottertune} und im Database Tuning Advisor mit Workload-Kompression~\cite{agrawal2005autoadmin},
-die online-laufzeitnahe Variante in Active Harmony~\cite{tapus2002activeharmony}; die Bezeichnung
-\enquote{Software-in-the-Loop} selbst entstammt der X-in-the-Loop-Validierungstaxonomie~\cite{tibba2016xil}.
-Die ML-Klassifikation ist nicht implementiert und bleibt zukünftiger Arbeit vorbehalten
-(Kapitel~\ref{ch:conclusion}); die Schleife selbst ist jedoch nur die erste Stufe eines größeren
-Betriebs-Zielbilds, das der folgende Unterabschnitt entwickelt.
+als eigenständiges Artefakt aus.
+Die Funktions-Synthese der Messkurven --- natürliche kubische Splines über die Stützstellen je Achse und
+$x$-Dimension mit der Break-Even-Entscheidung aus den Spline-Schnittpunkten --- ist mehrstufig und wird in
+Abschnitt~\ref{sec:heuristics-curves} aufgelöst. Eine ML-gestützte Klassifikation ist nicht implementiert und
+bleibt Ausblick des Hybrid-Tiers (Kapitel~\ref{ch:conclusion}). Erst in Kombination mit dem Hybrid-Tier
+entsteht eine weitere Kette build $\to$ measure $\to$ compare $\to$ release, keine geschlossene Schleife;
+die Messkette und die Funktions-Synthese sind die Grundlage der vier Betriebsmodi, die der folgende
+Unterabschnitt entwickelt.
+%% ORDER-526 F-06: Literatur-Einordnung Autotuning, Verbleib = Owner-Entscheid
+%% Originalsaetze (DE lang), am 26.09.2026 aus dem Fliesstext genommen:
+%% Dieser \emph{measure $\to$ profile $\to$ config $\to$
+%% filter}-Kreislauf ist die klassische, etablierte Form des \emph{empirischen, messgetriebenen Autotunings}:
+%% Er steht in der Linie von Autotuning-Frameworks wie OpenTuner~\cite{ansel2014opentuner} und den
+%% messen-im-Kreis-Autotunern FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}; die
+%% lastprofil-getriebene Konfigurationswahl mit Workload-Filter findet ihre Datenbank-Entsprechung in
+%% OtterTune~\cite{vanaken2017ottertune} und im Database Tuning Advisor mit Workload-Kompression~\cite{agrawal2005autoadmin},
+%% die online-laufzeitnahe Variante in Active Harmony~\cite{tapus2002activeharmony}; die Bezeichnung
+%% \enquote{Software-in-the-Loop} selbst entstammt der X-in-the-Loop-Validierungstaxonomie~\cite{tibba2016xil}.
 \end{nurlang}
 \begin{nurkurz}
-\subsection{Heuristik-Schleife und gelernte Lastprofile}\label{sec:heuristics-loop}
+\subsection{Sequentielle Achsensuche und Funktions-Synthese}\label{sec:heuristics-loop}
 Aus den Messreihen lässt sich je Last- und Datentyp-Profil die beste
-Achsen-Komposition ableiten und als wiederverwendbares Profil ablegen.
+Achsen-Komposition ableiten.
+Die Messkette ist gerade und hat keine Rückkante: ein XML-Experiment führt zu einer Konfiguration, diese zum
+Workload-Filter, und daraus folgen die Messung mit den Messreihen A/B/C und die Funktions-Synthese der
+Messergebnisse. Der Workload-Filter ist im Regelfall nicht einschränkend: alle Workloads sind Pflicht, damit
+kein Bias entsteht. Die Sezierung der Achsen eröffnet einen per Schalter aktivierbaren Suchmodus: Achse für
+Achse (T0 bis T17) wird nacheinander durchprobiert, je Achse bleibt die schnellste Belegung stehen, und nach
+T17 beginnt der Durchlauf von vorn unter den Default-Achsen des letzten Durchlaufs (depth-first, lazy
+Materialisierung), bis die Achsen-Belegung anhand der Messwerte konvergiert. Dieser Suchmodus ist als Konzept
+festgehalten und nicht Teil der gemessenen Kette dieser Arbeit.
 
-\emph{Die volle Schleife ist ein Ausblick-Mechanismus; realisiert sind davon die automatische Auswahl und der
-Binary-Versand (Abschnitt~\ref{sec:contributions}).} Der Selektor liest die Messwert-Mappe --- die xlsx-Mappe
+\emph{Realisiert sind die automatische Auswahl und der Binary-Versand (Abschnitt~\ref{sec:contributions}).}
+Der Selektor liest die Messwert-Mappe --- die xlsx-Mappe
 ist die Ausgabe des Apparats, die CSV-Form ihr aus ihr erzeugter Baum-Abzug (Abschnitt~\ref{sec:eval-dataflow})
 ---, rankt je Interface-Funktion und Metrik über die gültigen Zwei-Phasen-Zeilen (Median, Nearest-Rank),
 bestimmt bei konkurrierenden Zielgrößen die Pareto-Front, löst die \texttt{binary\_id} zur Binary im Lager auf
-und liefert Binary, Versions-Sidecar und Manifest aus. Die Heuristik-Kurven entstehen als natürliche kubische
-Splines über die Stützstellen je Achse und $x$-Dimension; ein Entscheidungs-Lambda-Baum liest die
-Break-Even-Schwellen aus den Spline-Schnittpunkten und wählt an einer Anfrage-Koordinate die führende Binary.
-Über die reine Rangbildung hinaus ist eine \emph{Heuristik-Extraktion} als Folge-Phase nach \textbf{Persist},
-der letzten Phase der Sieben-Phasen-Pipeline (Abschnitt~\ref{sec:impl-pipeline}), als ML-Klassifikation in drei
-Schritten vorgesehen: Aus der Messwert-Mappe werden je Permutation Lastprofil-, Datensatz- und Achsen-Merkmale
-mit der gemessenen Bestleistung als Zielgröße gewonnen; ein \emph{ML-Klassifikator} lernt darüber die Abbildung
-auf die beste Konfiguration; und er liefert je Workload-/Datensatz-Klasse die empfohlene Achsen-Komposition,
-ohne den Permutationsraum erneut zu fahren. Das Ergebnis wird als wiederverwendbares \emph{XML-Lastprofil}
-persistiert und in den \texttt{<expected\_workload>}-Filter zurückgespeist; dieser \emph{measure $\to$ profile
-$\to$ config $\to$ filter}-Kreislauf ist messgetriebenes Autotuning in der Linie von
-OpenTuner~\cite{ansel2014opentuner}, FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}, mit der
-Datenbank-Entsprechung in OtterTune~\cite{vanaken2017ottertune} und dem Database Tuning
-Advisor~\cite{agrawal2005autoadmin}, der online-laufzeitnahen Variante in Active
-Harmony~\cite{tapus2002activeharmony} und der Bezeichnung \enquote{Software-in-the-Loop} aus der
-X-in-the-Loop-Taxonomie~\cite{tibba2016xil}. Die ML-Klassifikation ist nicht implementiert
-(Kapitel~\ref{ch:conclusion}); die Schleife selbst ist nur die erste Stufe des Betriebs-Zielbilds, das der
-folgende Unterabschnitt entwickelt.
+und liefert Binary, Versions-Sidecar und Manifest aus.
+Die Funktions-Synthese der Messkurven --- natürliche kubische Splines je Achse und $x$-Dimension mit der
+Break-Even-Entscheidung aus den Spline-Schnittpunkten --- ist mehrstufig und wird in
+Abschnitt~\ref{sec:heuristics-curves} aufgelöst. Eine ML-gestützte Klassifikation ist nicht implementiert und
+bleibt Ausblick des Hybrid-Tiers (Kapitel~\ref{ch:conclusion}). Erst in Kombination mit dem Hybrid-Tier
+entsteht eine weitere Kette build $\to$ measure $\to$ compare $\to$ release, keine geschlossene Schleife; die
+Messkette und die Funktions-Synthese sind die Grundlage der vier Betriebsmodi, die der folgende Unterabschnitt
+entwickelt.
+%% ORDER-526 F-06: Literatur-Einordnung Autotuning, Verbleib = Owner-Entscheid
+%% Originalsatz (DE kurz), am 26.09.2026 aus dem Fliesstext genommen:
+%% dieser \emph{measure $\to$ profile
+%% $\to$ config $\to$ filter}-Kreislauf ist messgetriebenes Autotuning in der Linie von
+%% OpenTuner~\cite{ansel2014opentuner}, FFTW~\cite{frigo1998fftw} und ATLAS~\cite{whaley2001atlas}, mit der
+%% Datenbank-Entsprechung in OtterTune~\cite{vanaken2017ottertune} und dem Database Tuning
+%% Advisor~\cite{agrawal2005autoadmin}, der online-laufzeitnahen Variante in Active
+%% Harmony~\cite{tapus2002activeharmony} und der Bezeichnung \enquote{Software-in-the-Loop} aus der
+%% X-in-the-Loop-Taxonomie~\cite{tibba2016xil}.
 \end{nurkurz}
 
 \begin{nurlang}
 \subsection{Die vier Betriebsmodi des Builders}\label{sec:heuristics-modes}
 %% INTERN-272: KA-049
-Die Heuristik-Schleife ist der Kern eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden
+Die Messkette und die Funktions-Synthese aus Abschnitt~\ref{sec:heuristics-loop} sind die Grundlage
+eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden
 Betriebsmodi des Builder-Interfaces. Von der Ablauf-Kette build $\to$ measure $\to$ compare $\to$ release
 (Abschnitt~\ref{sec:anatomy-levels}, Abbildung~\ref{fig:modi-kette}) sind diese Betriebs-Zielbilder zu
 unterscheiden, in denen der Apparat betrieben wird; die Zuordnung ist eindeutig: Der \emph{Mess-Modus}
@@ -3189,7 +3200,8 @@ originalgetreu durchzumessen; er ist nicht implementiert und bleibt Ausblick (Ab
 \begin{nurkurz}
 \subsection{Die vier Betriebsmodi des Builders}\label{sec:heuristics-modes}
 %% INTERN-272: KA-049
-Die Heuristik-Schleife ist der Kern eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden Betriebsmodi
+Die Messkette und die Funktions-Synthese aus Abschnitt~\ref{sec:heuristics-loop} sind die Grundlage
+eines Betriebsregimes aus \emph{vier} aufeinander aufbauenden Betriebsmodi
 des Builder-Interfaces, die von der Ablauf-Kette build $\to$ measure $\to$ compare $\to$ release
 (Abschnitt~\ref{sec:anatomy-levels}, Abbildung~\ref{fig:modi-kette}) zu unterscheiden sind; die Zuordnung ist
 eindeutig: Der \emph{Mess-Modus} umfasst build und measure, der \emph{Auswertungs-Modus} ist compare, der
@@ -3247,7 +3259,7 @@ Achsen-Permutationen am ABI-stabilen Interface --- derselbe Mechanismus des Bina
 Mess-Modus nutzt, nur last-getrieben statt mess-getrieben. Ebenen-richtig bleibt dabei der
 Übersetzungszeit-Grundsatz gewahrt: Es gibt keinen Laufzeit-Umschalter \emph{im} Tier --- die Binaries
 selbst bleiben übersetzungszeitlich permutiert; gewechselt wird \emph{zwischen} vorgeladenen Binaries an
-der bewussten ABI-Grenze. Das Prüf-Dock der Gattung (Abschnitt~\ref{sec:anatomy-levels}) heißt in diesem
+der bewussten ABI-Grenze. Das Prüf-Dock des Konzepts (Abschnitt~\ref{sec:anatomy-levels}) heißt in diesem
 Modus \emph{Arbeits-Dock}: Dieselbe Schnittstelle, über die im Mess-Modus geprüft wird, liefert nun die
 produktiven Antworten. Die Dock-Schicht dieses Wechsels ist implementiert --- die Dock-Verträge, das Prüf-Dock,
 die Dock-Fabrik als einziger Konstruktions-Ort, das Dock-Feld mit Anschluss und Trennung, der Parser
@@ -3261,7 +3273,7 @@ Workload-Last relevanten Tier-Binaries vorgeladen im Arbeitsspeicher und wechsel
 speziell optimalen Achsen-Permutationen am ABI-stabilen Interface --- derselbe Mechanismus des Binary-Wechsels,
 den der Mess-Modus nutzt, nur last-getrieben. Der Übersetzungszeit-Grundsatz bleibt gewahrt: Es gibt keinen
 Laufzeit-Umschalter \emph{im} Tier, gewechselt wird \emph{zwischen} vorgeladenen Binaries an der ABI-Grenze. Das
-Prüf-Dock der Gattung (Abschnitt~\ref{sec:anatomy-levels}) heißt in diesem Modus \emph{Arbeits-Dock}: Dieselbe
+Prüf-Dock des Konzepts (Abschnitt~\ref{sec:anatomy-levels}) heißt in diesem Modus \emph{Arbeits-Dock}: Dieselbe
 Schnittstelle liefert nun die produktiven Antworten. Die Dock-Schicht dieses Wechsels ist implementiert
 (Dock-Verträge, Prüf-Dock, Dock-Fabrik, Dock-Feld, Parser der Hybrid-Sektion der XML, Binary-Proxy); Router,
 Eviction und der \texttt{.so}-Export sind nicht implementiert. Der Hybrid kompiliert stets mithilfe des
@@ -3295,9 +3307,9 @@ Hybrid-Muster auftritt; deshalb werden zwei Release-Artefakte eingelagert, ohne 
 
 \begin{nurlang}
 Der \emph{Hybrid-Modus} schließlich --- das Ziel der Arbeit --- verbindet Arbeitsmodus und Messung. Sein
-Kernstück ist, dass der Heuristik-Adapter eine eigene \emph{Gattung} mit eigenem Gattung ist --- die vierte
-Gattung \texttt{HeuristikAdapter} mit der Reroute-Gattung \texttt{FunctionInterfaceReroute}
-(Abschnitt~\ref{sec:anatomy-levels}): Er übernimmt per Metaprogrammierung die Gattungs- und
+Kernstück ist, dass der Heuristik-Adapter ein eigenes \emph{Konzept} mit eigener Gattung ist --- das vierte
+Konzept \texttt{HeuristikAdapter} mit der Reroute-Gattung \texttt{FunctionInterfaceReroute}
+(Abschnitt~\ref{sec:anatomy-levels}): Er übernimmt per Metaprogrammierung die Konzept- und
 Gattungs-Interfaces seiner Tier-Binaries, wird selbst zu einer Tier-Binary kompiliert und dockt am
 Prüf-Dock des Builders an wie jedes einzelne Tier; Befehle reicht er über das
 \emph{Command}-Muster~\cite{gamma1994patterns} an die ihm statisch zugewiesenen einzelnen Tier-Binaries
@@ -3314,7 +3326,7 @@ Rekombination werden die kombinierte Wall-Clock-Zeit sowie Makro- und Mikro-Benc
 \end{nurlang}
 \begin{nurkurz}
 Der \emph{Hybrid-Modus} schließlich --- das Ziel der Arbeit --- verbindet Arbeitsmodus und Messung. Sein
-Kernstück ist, dass der Heuristik-Adapter eine eigene \emph{Gattung} mit eigenem Gattung ist, das vierte Konzept
+Kernstück ist, dass der Heuristik-Adapter ein eigenes \emph{Konzept} mit eigener Gattung ist, das vierte Konzept
 \texttt{HeuristikAdapter} mit der Reroute-Gattung \texttt{FunctionInterfaceReroute}
 (Abschnitt~\ref{sec:anatomy-levels}): Er übernimmt per Metaprogrammierung die Konzept- und Gattungs-Interfaces
 seiner Tier-Binaries, wird selbst zu einer Tier-Binary kompiliert, dockt am Prüf-Dock des Builders an und
@@ -3360,7 +3372,7 @@ Operationstyp und Beobachter-Typ und je Mess-Ebene wallclock, macro und micro
 (Abschnitt~\ref{sec:measurement-system}); jede Achse wird im Experimentbaum übersetzungsstatisch wie
 laufzeit-dynamisch separat durchgefahren, sodass jede Achse eine vollständige Übersicht ihrer
 Eigenschaften und Einzelmessungen erhält. Über alle Permutationen zusammengenommen entsteht so je
-Tier-Binary eine mehrdimensionale Mess-Datenbank, aus der die Heuristik-Kurven der Schleife
+Tier-Binary eine mehrdimensionale Mess-Datenbank, aus der die Heuristik-Kurven der Funktions-Synthese
 (Abschnitt~\ref{sec:heuristics-loop}) abgelesen werden; die synthetisierten Kurven werden als Dateien im
 Lager gehalten (Abschnitt~\ref{sec:lager}). Die Kardinalität jeder Dimension dieses
 Typsystems ist strategisch in Klassen und Hierarchien einzuteilen: design-feste Konstanten (etwa die
@@ -3382,12 +3394,14 @@ fünftens die Messfehler-Interpolation über die Mess-Konstellationen (nicht imp
 
 %% INTERN-272: KA-054
 Aus den Auswertungen ergibt sich eine \emph{Filterkette}: Jedes Kettenglied prüft anhand der bisherigen
-Kurven, ob eine Permutations-Familie weiterverfolgt wird, und reicht die Entscheidung andernfalls an das
+Kurven, ob eine Permutations-Familie als Kandidat für den release bestehen bleibt, und reicht die
+Entscheidung andernfalls an das
 nächste Glied weiter --- das Entwurfsmuster \emph{Chain of Responsibility}~\cite{gamma1994patterns}. Die
-Kette ist im CacheEngineBuilder verortet, weil sie die \emph{Generierung} der nächsten Bau-Runde
-kontrolliert und die Feedback-Kante von der Auswahl zur Bereitstellung schließt: Auswertung, Filter, dann
-die Entscheidung, welche Permutationen als Nächstes gebaut und welche verworfen werden. Da in compare
-build und measure bereits durchlaufen sind, filtert sie zugleich aus den Messwerten für den release,
+Kette ist im CacheEngineBuilder verortet und arbeitet in der Station compare der Kette build $\to$ measure
+$\to$ compare $\to$ release: Auswertung, Filter, dann die Entscheidung, welche Permutations-Familien
+als Kandidaten für den release bestehen bleiben und welche verworfen werden;
+eine Rückkante zu Bau oder Messung gibt es nicht. Da in compare
+build und measure bereits durchlaufen sind, filtert sie aus den Messwerten für den release,
 welche Binary nach den in der XML geforderten Eigenschaften statistisch die schnellste für einen
 Verwendungszweck ist --- Vorgabe ist die Ausführungszeit, weitere Filter sind nicht Gegenstand dieser
 Arbeit. Implementiert sind der Mechanismus (mit den Urteilen Pass, Reject und Weiterreichen: Ein
@@ -3465,9 +3479,11 @@ die Permutations-Familien (Mechanismus implementiert, Auswerte-Glieder nicht); v
 vorgeladenen Tier-Binaries aus den mitgeschnittenen Interface-Zugriffen (nicht implementiert); und fünftens die
 Messfehler-Interpolation über die Mess-Konstellationen (nicht implementiert). Die \emph{Filterkette} folgt dem
 Entwurfsmuster \emph{Chain of Responsibility}~\cite{gamma1994patterns}: Jedes Kettenglied prüft anhand der
-bisherigen Kurven, ob eine Permutations-Familie weiterverfolgt wird, oder reicht die Entscheidung weiter; sie
-ist im CacheEngineBuilder verortet, weil sie die nächste Bau-Runde kontrolliert, und filtert für den release
-die nach den XML-Anforderungen statistisch schnellste Binary. Implementiert sind der Mechanismus (Urteile Pass,
+bisherigen Kurven, ob eine Permutations-Familie als Kandidat für den release bestehen bleibt, oder reicht die
+Entscheidung weiter; sie
+ist im CacheEngineBuilder verortet, arbeitet in der Station compare der Kette build $\to$ measure $\to$ compare
+$\to$ release (eine Rückkante zu Bau oder Messung gibt es nicht) und filtert für den release die nach den
+XML-Anforderungen statistisch schnellste Binary. Implementiert sind der Mechanismus (Urteile Pass,
 Reject und Weiterreichen) und ein Kern-Glied für die Wiederaufnahme unterbrochener Läufe; die Auswerte-Glieder
 Paper-Vergleich und Pareto-Dominanz folgen, mit dem Vorrang des Paper-Vergleichs.
 

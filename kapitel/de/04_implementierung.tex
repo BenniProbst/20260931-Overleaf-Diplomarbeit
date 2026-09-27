@@ -8,9 +8,11 @@ im Code, der Code-Gestalt der Bau-Kette, den Ebenen E4--E0 im Code und den Vertr
 Träger-Binaries, danach die Qualitätssicherung über Contract-Tests je Schicht samt Zwei-Gate-Protokoll
 und die Code-Gestalt der Realm-Wurzeln --- System- und Mess-Achsen einschließlich der Hardware-Erkennung ---
 und zuletzt das Register der Entwurfsmuster, die Hybrid-Stufe und das Lager. Im Kern ist die \emph{eine}
-Architektur eine selbst-optimierende Compiler-Compiler-Struktur: Der Planer erzeugt aus der Anwender-XML
-die Bau-Aufträge, der Builder erzeugt daraus die Kompilate, und die Auswertung der Messwerte speist die
-nächste Planung (Abschnitt~\ref{sec:mess-chain}). Damit steht der Apparat in der Linie der empirischen
+Architektur eine Compiler-Compiler-Struktur: Der Planer erzeugt aus der Anwender-XML die Bau-Aufträge, der
+Builder erzeugt daraus die Kompilate (Abschnitt~\ref{sec:mess-chain}), der Selektor wählt aus den
+Messwerten per Ranking die Auslieferung, und die Funktions-Synthese gewinnt aus denselben Messwerten die
+Heuristik-Kurven für die Break-Even-Entscheidung
+(Abschnitt~\ref{sec:heuristics-loop}). Damit steht der Apparat in der Linie der empirischen
 Autotuning-Systeme, die Kandidaten-Implementierungen erzeugen, vermessen und die Auswahl aus den Messwerten
 treffen~\cite{whaley2001atlas,frigo1998fftw,ansel2014opentuner,balaprakash2018autotuning}; der Unterschied
 liegt darin, dass hier nicht die Parameter einer festen Implementierung, sondern die Organ-Belegung eines
@@ -20,9 +22,11 @@ Lebewesens permutiert und je Permutation eine eigene Binary erzeugt wird.
 Dieses Kapitel steigt in das Detail: von der Repository-Architektur mit der Träger-Stufenkette
 (Abschnitt~\ref{sec:anatomy-levels}) über die Schlüsselstellen von PRT-ART, die Achsen-Implementierung, die
 Bau-Kette und die Contract-Tests bis zu den Realm-Wurzeln, der Hybrid-Stufe und dem Lager. Im Kern ist die
-\emph{eine} Architektur eine selbst-optimierende Compiler-Compiler-Struktur: Der Planer erzeugt aus der
-Anwender-XML die Bau-Aufträge, der Builder daraus die Kompilate, und die Auswertung der Messwerte speist die
-nächste Planung (Abschnitt~\ref{sec:mess-chain}) --- die Linie der empirischen
+\emph{eine} Architektur eine Compiler-Compiler-Struktur: Der Planer erzeugt aus der Anwender-XML die
+Bau-Aufträge, der Builder daraus die Kompilate (Abschnitt~\ref{sec:mess-chain}), der Selektor wählt aus den
+Messwerten per Ranking die Auslieferung, und die Funktions-Synthese gewinnt aus denselben Messwerten die
+Heuristik-Kurven für die Break-Even-Entscheidung
+(Abschnitt~\ref{sec:heuristics-loop}) --- die Linie der empirischen
 Autotuning-Systeme~\cite{whaley2001atlas,frigo1998fftw,ansel2014opentuner,balaprakash2018autotuning}, nur
 dass hier die Organ-Belegung eines Lebewesens permutiert und je Permutation eine eigene Binary erzeugt wird.
 \end{nurkurz}
@@ -109,7 +113,7 @@ Abbildung~\ref{fig:traeger-stufen} zeigt sie mit ihren Binaries, Legenden-Formen
   \node[st] (s1) at (0,0){\textbf{Stufe 1: Planer}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny löst die Anwender-XML gegen die drei Kataloge auf; Director-Walk; Legende \texttt{ceb:build:\allowbreak[a,b,c]}}};
   \node[st] (s2) at (3.95,0){\textbf{Stufe 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny führt die Mess-Wahl einkompiliert, permutiert System $\times$ Organ; ein Prüf-Dock als Anschluss für Tier oder Hybrid; Legende je Host \texttt{tier:build-batch:\allowbreak<host>}, Testate \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
   \node[st] (s3) at (11.85,0){\textbf{Stufe 3: Tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny eine Organ-Permutation je Binary; sieben Pflicht-Symbole; Mess-Batch je Host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, Mess-Testate \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[hy] (s4) at (7.9,0){\textbf{Einschub: Hybrid}\\{\tiny optional, zwischen Stufe 2 und 3; Hybrid-\texttt{.so}}\\[2pt]{\tiny Mux-Schalter am CEB-Prüf-Dock; Dock-Slots 1 bis $N$ für Tier-Binaries; dieselben Pflicht-Symbole; \texttt{genus()} meldet den Ziel-Gattung}};
+  \node[hy] (s4) at (7.9,0){\textbf{Einschub: Hybrid}\\{\tiny optional, zwischen Stufe 2 und 3; Hybrid-\texttt{.so}}\\[2pt]{\tiny Mux-Schalter am CEB-Prüf-Dock; Dock-Slots 1 bis $N$ für Tier-Binaries; dieselben Pflicht-Symbole; \texttt{genus()} meldet die Ziel-Gattung}};
   \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s4); \draw[->,thick] (s4)--(s3);
   \draw[->,thick] (s2.north) -- ++(0,0.5) coordinate (bp) -| (s3.north);
   \node[font=\tiny,anchor=south,text width=11.5cm,align=center] at ([xshift=3.95cm,yshift=1pt]bp){Standardweg ohne Hybrid: CEB-Prüf-Dock $\to$ Tier-Binary direkt; mit Hybrid: Prüf-Dock $\to$ Mux $\to$ Dock-Slot $\to$ Tier-Binary};
@@ -229,7 +233,7 @@ zeigt sie mit ihren Binaries, Legenden-Formen und Flächen.
   \node[st] (s1) at (0,0){\textbf{Stufe 1: Planer}\\{\tiny\texttt{comdare-experiment-planner}}\\[2pt]{\tiny löst die Anwender-XML gegen die drei Kataloge auf; Director-Walk; Legende \texttt{ceb:build:\allowbreak[a,b,c]}}};
   \node[st] (s2) at (3.95,0){\textbf{Stufe 2: CEB}\\{\tiny\texttt{comdare-messung-driver}}\\[2pt]{\tiny führt die Mess-Wahl einkompiliert, permutiert System $\times$ Organ; ein Prüf-Dock als Anschluss für Tier oder Hybrid; Legende je Host \texttt{tier:build-batch:\allowbreak<host>}, Testate \texttt{zelle=\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
   \node[st] (s3) at (11.85,0){\textbf{Stufe 3: Tier}\\{\tiny\texttt{comdare\_perm\_<fp>.so}}\\[2pt]{\tiny eine Organ-Permutation je Binary; sieben Pflicht-Symbole; Mess-Batch je Host \texttt{measure:\allowbreak[a,b,c]:\allowbreak batch:\allowbreak<host>}, Mess-Testate \texttt{zelle=\allowbreak[a,b,c]\allowbreak[d,e,f]\allowbreak[g,h,i]}}};
-  \node[hy] (s4) at (7.9,0){\textbf{Einschub: Hybrid}\\{\tiny optional, zwischen Stufe 2 und 3; Hybrid-\texttt{.so}}\\[2pt]{\tiny Mux-Schalter am CEB-Prüf-Dock; Dock-Slots 1 bis $N$ für Tier-Binaries; dieselben Pflicht-Symbole; \texttt{genus()} meldet den Ziel-Gattung}};
+  \node[hy] (s4) at (7.9,0){\textbf{Einschub: Hybrid}\\{\tiny optional, zwischen Stufe 2 und 3; Hybrid-\texttt{.so}}\\[2pt]{\tiny Mux-Schalter am CEB-Prüf-Dock; Dock-Slots 1 bis $N$ für Tier-Binaries; dieselben Pflicht-Symbole; \texttt{genus()} meldet die Ziel-Gattung}};
   \draw[->,thick] (s1)--(s2); \draw[->,thick] (s2)--(s4); \draw[->,thick] (s4)--(s3);
   \draw[->,thick] (s2.north) -- ++(0,0.5) coordinate (bp) -| (s3.north);
   \node[font=\tiny,anchor=south,text width=11.5cm,align=center] at ([xshift=3.95cm,yshift=1pt]bp){Standardweg ohne Hybrid: CEB-Prüf-Dock $\to$ Tier-Binary direkt; mit Hybrid: Prüf-Dock $\to$ Mux $\to$ Dock-Slot $\to$ Tier-Binary};
@@ -261,8 +265,10 @@ Die vier \emph{Arbeitsmodi} \texttt{build}, \texttt{measure}, \texttt{compare} u
 als Unter-Achse des Mess-Realms registriert (Abschnitt~\ref{sec:anatomy-levels}): \texttt{build} baut ohne
 zu messen und darf parallel laufen, \texttt{measure} ist der deterministische Ein-Thread-Messlauf und der
 einzige Modus mit eingeschalteter Messung, \texttt{compare} liest das Messwertlager (Umsetzungsstand: ein
-wählbares Etikett, der Replay-Vergleich ist nicht implementiert), \texttt{release} erzeugt die
-Referenz-Binary ohne Instrumentierung; alle vier bauen als CMake-Release, und der Verdrahtungs-Check des
+wählbares Etikett, der Replay-Vergleich ist für spätere Haupt-Wellen vorgesehen, nicht implementiert),
+\texttt{release} erzeugt die Referenz-Binary ohne Instrumentierung; alle vier bauen als CMake-Release (daneben
+gelten die Bau-Varianten Debug, Messung und Release fort, und die Debug-Variante wird weiter ausgebaut), und
+der Verdrahtungs-Check des
 früheren Debug-Regimes ist als Schalter \texttt{--debug} der Planer-Shell realisiert --- ein Flag, kein
 Zustand; unter \texttt{--debug} fährt das Konformitäts-Gate zusätzlich den Standard-Testsatz des Tier-Interfaces, ein indirekter
 Debug-Modus, der mit dem Release-Bau zusammenfällt.
@@ -610,7 +616,7 @@ Vertrag aus sieben Methoden: \texttt{warm\_up}, \texttt{run}, \texttt{reset} und
 Mess-Lebenszyklus sowie \texttt{engine\_name}, \texttt{engine\_kind} und \texttt{lifecycle\_state} als
 Auskünfte. Unter ihr liegen auf Ebene~1 die vier Konzepte Map, Container, Graph und HeuristikAdapter
 (Abschnitt~\ref{sec:anatomy-levels}) --- Graph als deklarierter Stub ohne Gattung --- und auf Ebene~2 die
-sechs Gattungen SearchAlgorithm, Set, Sequence, Adapter, View und FunctionInterfaceReroute; die Gattung ist im
+sechs Gattungen SearchAlgorithm, Set, Sequence, Adapter, View und FunctionInterfaceReroute; das Konzept ist im
 Code die Ableitung der Gattung (\texttt{gattung\_of}), kein zweites Etikett. Das Lebewesen
 \texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind zwei
 Sichten desselben Gegenstands über die Modulgrenze, kein paralleles Konstrukt: Der Körper ist
@@ -634,7 +640,7 @@ Wurzel ist \texttt{IExecutionEngine} mit drei Engine-Arten --- Anatomy, Virus, H
 aus sieben Methoden (\texttt{warm\_up}, \texttt{run}, \texttt{reset} und \texttt{shutdown} als
 Mess-Lebenszyklus sowie \texttt{engine\_name}, \texttt{engine\_kind} und \texttt{lifecycle\_state} als
 Auskünfte). Unter ihr liegen die vier Konzepte und die sechs Gattungen (Abschnitt~\ref{sec:anatomy-levels});
-die Gattung ist im Code die Ableitung der Gattung (\texttt{gattung\_of}), kein zweites Etikett. Das Lebewesen
+das Konzept ist im Code die Ableitung der Gattung (\texttt{gattung\_of}), kein zweites Etikett. Das Lebewesen
 \texttt{SearchAlgorithm} und seine ABI-Laufzeit-Sicht --- die \enquote{SearchEngine} --- sind zwei Sichten
 desselben Gegenstands über die Modulgrenze: Der Körper ist \texttt{SearchAlgorithmAnatomy<C>}, die
 Komposition und Verdrahtung der achtzehn Organe, und die Sicht ist \texttt{SearchAlgorithmAbiAdapter<A>}.
@@ -698,17 +704,17 @@ Builder je Permutation ein eigenes Kompilat erzeugt.
 Konkret ist die Modulgrenze eine C-stabile Schnittstelle --- die ABI (Application Binary Interface) des
 Apparats ---, die je Permutation genau ein Lebewesen exportiert (Abbildung~\ref{fig:abi}): Jede Tier-Binary
 enthält sieben Pflicht-Symbole mit C-Bindung --- die vier Ur-Symbole ABI-Version, Magic-Zahl, Factory
-\texttt{comdare\_\allowbreak{}create\_\allowbreak{}anatomy} und Destroy, dazu die zwei über alle Gattungen
+\texttt{comdare\_\allowbreak{}create\_\allowbreak{}anatomy} und Destroy, dazu die zwei über alle Konzepte
 buchstabengleichen Auskünfte \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} und
 \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus} sowie die Versions-Zeilen des Stempels. Die
 Buchstabengleichheit ist Bedingung, nicht Bequemlichkeit: Der konzeptunabhängige Loader lädt jede Binary
 über dieselbe Ladestrecke (POSIX \texttt{dlopen}~\cite{posix_dlopen}) und kann das Konzept ermitteln,
-\emph{bevor} er eine Instanz baut --- konzeptunabhängige Namen mit konzept-spezifischen Werten; die
-Gattung ist dabei aus der Gattung abgeleitet. Die ABI führt die Major-Version~9, deren Naht das
+\emph{bevor} er eine Instanz baut --- konzeptunabhängige Namen mit konzept-spezifischen Werten; das
+Konzept ist dabei aus der Gattung abgeleitet. Die ABI führt die Major-Version~9, deren Naht das
 Gattungs-Interface ist. Die variadische 1/2/N-Hybrid-API gehört zum Prüfling: Seine
 \texttt{PrtArtSearchEngine<Ts\ldots>} spezialisiert sich nach Parameterzahl --- ein Parameter fordert alle
 Funktionsinterfaces eines \texttt{std::vector}, zwei die eines \texttt{std::map}, mehr als zwei die eines
-\texttt{std::map} auf ein Tupel ---, und die Slot-Aritäten der Gattungen der Cache-Engine (achtzehn für das
+\texttt{std::map} auf ein Tupel ---, und die Slot-Aritäten der Gattungen der Cache-Engine (achtzehn für die
 Gattung SearchAlgorithm, je eigene für Set, Sequence, Adapter und View aus der Gattungs-Bau-Zulassung) sind
 davon getrennt zu lesen. Komplexe Schlüssel reduziert eine Fingerprint-Komponente der Cache-Engine
 (\texttt{fixed\_\allowbreak{}length\_\allowbreak{}fingerprint}, FNV-1a-Basis) auf 16-Byte-Binärstrings
@@ -723,7 +729,7 @@ fasst die UML-Landkarte in Abbildung~\ref{fig:uml-interfaces} zusammen.
 Konkret ist die Modulgrenze eine C-stabile Schnittstelle --- die ABI des Apparats ---, die je Permutation
 genau ein Lebewesen exportiert: Jede Tier-Binary enthält sieben Pflicht-Symbole mit C-Bindung --- die vier
 Ur-Symbole ABI-Version, Magic-Zahl, Factory \texttt{comdare\_\allowbreak{}create\_\allowbreak{}anatomy} und
-Destroy, dazu die zwei über alle Gattungen buchstabengleichen Auskünfte
+Destroy, dazu die zwei über alle Konzepte buchstabengleichen Auskünfte
 \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}gattung} und
 \texttt{comdare\_\allowbreak{}anatomy\_\allowbreak{}genus} sowie die Versions-Zeilen des Stempels. Die
 Buchstabengleichheit ist Bedingung: Der konzeptunabhängige Loader lädt jede Binary über dieselbe
@@ -759,7 +765,7 @@ extern "C" {
 //   N > 2        ->  std::map<K, std::tuple<V1, ..., VN>>
 template<class K, class First, class... Rest> class PrtArtSearchEngine;
 \end{lstlisting}
-  \caption{Die ABI-stabile C-Modulgrenze (sieben Pflicht-Symbole; die Hybrid-.so exportiert dieselbe Menge
+  \caption{Die ABI-stabile C-Modulgrenze (sieben Pflicht-Symbole; die Hybrid-\texttt{.so} exportiert dieselbe Menge
   und meldet über \texttt{genus} ihre Ziel-Gattung) und die variadische 1/2/N-API als Sicht des Prüflings.
   Komplexe Schlüssel reduziert eine Fingerprint-Komponente auf 16-Byte-Binärstrings fester Länge; die
   Identität einer Binary führen davon getrennt das \texttt{permutation\_fingerprint}-Feld des ABI-POD, der
@@ -778,7 +784,7 @@ template<class K, class First, class... Rest> class PrtArtSearchEngine;
   \node[iface,minimum height=1.0cm] (exec) at (-4.9,5.05){IExecutionEngine\\{\normalfont\scriptsize Treiber der Messung}};
   \node[iface] (anat) at (-4.9,3.75){IAnatomyBase};
   \node[iface] (virus) at (-0.2,5.05){IVirusExecutionEngine};
-  \node[comp] (gatt) at (-4.9,2.75){Gattung (4, Ebene 1)};
+  \node[comp] (gatt) at (-4.9,2.75){Konzept (4, Ebene 1)};
   \node[comp] (genus) at (-4.9,1.75){Gattung (6, Ebene 2)};
   \node[comp] (body) at (-4.9,0.75){SearchAlgorithmAnatomy<C>};
   \node[comp] (abi) at (-4.9,-0.25){SearchAlgorithmAbiAdapter<A>};
@@ -1161,7 +1167,7 @@ host-seitig quert, ohne die Binary-Identität zu berühren.}\label{fig:impl-laye
 Die Verträge zwischen den Träger-Stufen sind an den Binaries in Flächen zergliedert. Das
 Drei-Flächen-Modell (Abschnitt~\ref{sec:anatomy-levels}) ist im Code namentlich vorhanden: Fläche~1 ist
 das Gattungs-Interface der Tier-Binary, Fläche~2 der Stempel und Fläche~3 der Mess-Durchstich
-\texttt{IMessVisitor} --- ein Visitor am \texttt{dlopen}-Übergang, der existiert, \emph{damit} Gattungs-
+\texttt{IMessVisitor} --- ein Visitor am \texttt{dlopen}-Übergang, der existiert, \emph{damit} Konzept-
 und Gattungs-Interfaces unverändert bleiben. Der Stempel-Vertrag ist als Matrix aus sieben Interfaces und
 vier Trägern ausgeführt --- 28~Zellen mit dreiwertiger Zulassung (Tabelle~\ref{tab:stempel-matrix}); die
 Absenz der Organ-Zeile beim CEB ist die statische Sperre \enquote{der CEB führt keine Organ-Achsen}, und
@@ -2025,10 +2031,10 @@ Dock-Array mit \texttt{HybridDockVariant} (die eine erlaubte variant-Stelle,
 Abschnitt~\ref{sec:axes-impl}) und dem Laufzeit-Deckel \texttt{max\_docks}, der das $(N+1)$-te Andocken
 mit \enquote{Array voll} abweist, der Parser der \texttt{<hybrid\_tier>}-Sektion (Zweiweg-Schalter
 \texttt{enabled}, exklusiv je Kette, \texttt{max\_docks} Pflicht bei eingeschalteter Stufe) und der
-Binary-Proxy, der eine Hybrid-.so nach außen zu einer gewöhnlichen Tier-Binary macht: Er erfüllt
+Binary-Proxy, der eine Hybrid-\texttt{.so} nach außen zu einer gewöhnlichen Tier-Binary macht: Er erfüllt
 \texttt{IAnatomyBase}, hält das Dock-Array und leitet den Antrieb an das Ziel durch, das an einem Dock
 steckt. Nicht implementiert sind der \texttt{.so}-Export der Hybrid-Stufe (er hängt an einer offenen
-Schichtungs-Auflage, weil eine Hybrid-.so Builder-Code linken müsste), die Eviction und der Router (er
+Schichtungs-Auflage, weil eine Hybrid-\texttt{.so} Builder-Code linken müsste), die Eviction und der Router (er
 braucht tatsächliche Messkurven). Gemessen an der Dateiliste, die die \texttt{README} des Verzeichnisses
 \texttt{hybrid/} für die Dock-, Proxy- und Router-Schicht vorsieht, sind sechs der neun Dateien implementiert
 (Dock-Verträge, Prüf-Dock, Dock-Factory, Dock-Array, XML-Parser, Binary-Proxy) und drei nicht (das Tier-Modul
@@ -2037,9 +2043,9 @@ Modul-ABI ---, die Eviction und der Router); daneben führt das Verzeichnis die 
 Klassifikations-Schicht (Klassifikation, Concept-Gate, Strategie je Gattung, Synthese-Matrix) und drei weitere
 Header für das Andocken, das Modul-ABI und die Stempel-Kette, insgesamt dreizehn Header.
 Die Hybrid Module ABI v1 exportiert dieselben Pflicht-Symbole wie die plain
-Tiere samt Konzept und Gattung, und \texttt{comdare\_anatomy\_genus} meldet den \emph{Ziel}-Gattung (das, was
-das Modul für den Aufrufer ist), nie den Reroute-Gattung der Klassifikation --- derselbe
-gattungsunabhängige Loader lädt die Hybrid-.so über die eine Ladestrecke; die Stempel-Kette der
+Tiere samt Konzept und Gattung, und \texttt{comdare\_anatomy\_genus} meldet die \emph{Ziel}-Gattung (das, was
+das Modul für den Aufrufer ist), nie die Reroute-Gattung der Klassifikation --- derselbe
+konzeptunabhängige Loader lädt die Hybrid-\texttt{.so} über die eine Ladestrecke; die Stempel-Kette der
 Hybrid-Stufe und die Hybrid-Positionen des Mess-Gate-Glieds (\texttt{hm}/\texttt{hmi}) führen ihre
 Identität, und die Gattungs-Bau-Zulassung führt sechs Einträge, den sechsten für die Reroute-Gattung mit dem
 Dock-Deckel (Default 32) als Arität. Das Hybrid-Live-Ranking ist als vierte
@@ -2072,17 +2078,17 @@ Behebung der Schema-Drift, dass das XSD die \texttt{<hybrid\_tier>}-Sektion nich
   \draw[->,dashed] (fac)--(proxy);
   \node[ex] (xml) at (-6.3,-1.4){\texttt{<hybrid\_tier enabled=true max\_docks=N>}\\Parser: \texttt{enabled} exklusiv je Kette, \texttt{max\_docks} Pflicht};
   \draw[->,dashed] (xml)--(d1);
-  \node[ex] (sym) at (6.3,0.9){Exporte: sieben Pflicht-Symbole wie plain Tiere; \texttt{genus()} meldet den Ziel-Gattung (Weg C)};
+  \node[ex] (sym) at (6.3,0.9){Exporte: sieben Pflicht-Symbole wie plain Tiere; \texttt{genus()} meldet die Ziel-Gattung (Weg C)};
   \draw[->,dashed] (frame.east)--(sym);
   \node[ex] (st) at (6.3,-1.4){Stempel-Kette der Hybrid-Stufe; Mess-Gate-Felder \texttt{hm}/\texttt{hmi}; Gattungs-Bau-Zulassung: 6.\ Eintrag};
 \end{tikzpicture}
 \caption[Die Hybrid-Stufe im Code]{Die Hybrid-Stufe im Code: die optional zwischen CEB-Prüf-Dock und Tier-Binary
 eingeschobene Mux-Stufe, am CEB-Prüf-Dock angesetzt und mit Dock-Slots für Tier-Binaries (Standardweg ohne
-Hybrid: Prüf-Dock direkt zur Tier-Binary). Der Binary-Proxy macht die Hybrid-.so nach außen zu einer
+Hybrid: Prüf-Dock direkt zur Tier-Binary). Der Binary-Proxy macht die Hybrid-\texttt{.so} nach außen zu einer
 gewöhnlichen Tier-Binary und hält das Dock-Array mit dem Laufzeit-Deckel \texttt{max\_docks}; je Dock gilt
 einer von vier Verträgen, die Dock-Factory ist der einzige Konstruktions-Ort, die
 \texttt{<hybrid\_tier>}-Sektion der XML schaltet die Stufe und setzt den Deckel. Die Exporte sind
-buchstabengleich zu den plain Tieren, \texttt{genus()} meldet den Ziel-Gattung. Nicht implementiert: \texttt{.so}-Export,
+buchstabengleich zu den plain Tieren, \texttt{genus()} meldet die Ziel-Gattung. Nicht implementiert: \texttt{.so}-Export,
 Eviction, Router.}\label{fig:hybrid-dock}
 \end{figure}
 
@@ -2168,10 +2174,10 @@ unter \texttt{hybrid/}. Implementiert sind die Dock-Verträge (vier Vertragsform
 Prüf-Dock, die Dock-Factory als einziger Konstruktions-Ort, das Dock-Array mit \texttt{HybridDockVariant}
 (die eine erlaubte variant-Stelle, Abschnitt~\ref{sec:axes-impl}) und dem Laufzeit-Deckel
 \texttt{max\_docks}, der Parser der \texttt{<hybrid\_tier>}-Sektion und der Binary-Proxy, der eine
-Hybrid-.so nach außen zu einer gewöhnlichen Tier-Binary macht; nicht implementiert sind \texttt{.so}-Export,
+Hybrid-\texttt{.so} nach außen zu einer gewöhnlichen Tier-Binary macht; nicht implementiert sind \texttt{.so}-Export,
 Eviction und Router --- sechs der neun Dateien der Schicht. Die Hybrid Module ABI exportiert dieselben
-Pflicht-Symbole wie die plain Tiere, \texttt{comdare\_anatomy\_genus} meldet den \emph{Ziel}-Gattung, nie
-den Reroute-Gattung, und die Gattungs-Bau-Zulassung führt als sechsten Eintrag die Reroute-Gattung mit dem
+Pflicht-Symbole wie die plain Tiere, \texttt{comdare\_anatomy\_genus} meldet die \emph{Ziel}-Gattung, nie
+die Reroute-Gattung, und die Gattungs-Bau-Zulassung führt als sechsten Eintrag die Reroute-Gattung mit dem
 Dock-Deckel (Default 32) als Arität. Das Hybrid-Live-Ranking als vierte Auswertungs-Komponente der
 compare-Stufe und der Zustandsabgleich per Memento mit zwei Release-Artefakten, single und hybrid, im
 Lager sind vorgesehen (Abschnitt~\ref{sec:heuristics-modes}), aber nicht implementiert, ebenso nicht die
